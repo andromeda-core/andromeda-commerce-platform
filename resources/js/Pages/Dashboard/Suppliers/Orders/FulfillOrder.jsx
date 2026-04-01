@@ -217,15 +217,15 @@ export default function fulFillOrder({
             rows.length > 0
                 ? rows
                 : [
-                      {
-                          smartphone_id: '',
-                          storage_location_id: '',
-                          imei1: '',
-                          imei2: '',
-                          eid: '',
-                          serial_no: '',
-                      },
-                  ];
+                    {
+                        smartphone_id: '',
+                        storage_location_id: '',
+                        imei1: '',
+                        imei2: '',
+                        eid: '',
+                        serial_no: '',
+                    },
+                ];
 
         setInventoryItems(finalRows);
         setData('inventory_items', finalRows);
@@ -264,15 +264,15 @@ export default function fulFillOrder({
             rows.length > 0
                 ? rows
                 : [
-                      {
-                          smartphone_id: '',
-                          storage_location_id: '',
-                          imei1: '',
-                          imei2: '',
-                          eid: '',
-                          serial_no: '',
-                      },
-                  ];
+                    {
+                        smartphone_id: '',
+                        storage_location_id: '',
+                        imei1: '',
+                        imei2: '',
+                        eid: '',
+                        serial_no: '',
+                    },
+                ];
 
         setInventoryItems(finalRows);
         setData('inventory_items', finalRows);
@@ -317,7 +317,7 @@ export default function fulFillOrder({
             }
 
             if (draft?.invoices) setData('invoices', draft.invoices);
-        } catch (e) {}
+        } catch (e) { }
     }, [assignment?.id]);
 
     const handleSaveDraft = () => {
@@ -529,7 +529,7 @@ export default function fulFillOrder({
                         Content={
                             <>
                                 {/* Header Row */}
-                                <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+                                <div className="flex flex-wrap items-start justify-between gap-3 mb-4">
                                     <div>
                                         <h3 className="text-base font-semibold text-gray-900 dark:text-white">
                                             Order Requirements Summary
@@ -548,7 +548,7 @@ export default function fulFillOrder({
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-4 w-4 text-violet-600 dark:text-violet-400"
+                                                className="w-4 h-4 text-violet-600 dark:text-violet-400"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -569,7 +569,7 @@ export default function fulFillOrder({
                                 </div>
 
                                 {/* Stats Row */}
-                                <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-3">
+                                <div className="grid grid-cols-2 gap-3 mb-5 md:grid-cols-3">
                                     {[
                                         {
                                             label: 'Total Items Required',
@@ -617,7 +617,7 @@ export default function fulFillOrder({
 
                                 {/* Admin Memo */}
                                 {assignment?.note && (
-                                    <div className="mb-5 flex gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800/40 dark:bg-amber-900/10">
+                                    <div className="flex gap-3 p-4 mb-5 border rounded-lg border-amber-200 bg-amber-50 dark:border-amber-800/40 dark:bg-amber-900/10">
                                         <div className="mt-0.5 shrink-0">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -625,7 +625,7 @@ export default function fulFillOrder({
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-4 w-4 text-amber-600 dark:text-amber-400"
+                                                className="w-4 h-4 text-amber-600 dark:text-amber-400"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -634,11 +634,11 @@ export default function fulFillOrder({
                                                 />
                                             </svg>
                                         </div>
-                                        <div className="min-w-0 flex-1">
+                                        <div className="flex-1 min-w-0">
                                             <p className="mb-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
                                                 Note from Administrator
                                             </p>
-                                            <p className="break-words text-sm text-amber-800 dark:text-amber-300">
+                                            <p className="text-sm break-words text-amber-800 dark:text-amber-300">
                                                 {assignment.note}
                                             </p>
                                         </div>
@@ -647,7 +647,7 @@ export default function fulFillOrder({
 
                                 {/* Per Item Breakdown Table */}
                                 {required_items?.length > 0 && (
-                                    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-zinc-700">
+                                    <div className="overflow-x-auto border border-gray-200 rounded-lg dark:border-zinc-700">
                                         <table className="w-full text-sm">
                                             <thead className="bg-gray-100 dark:bg-zinc-800">
                                                 <tr>
@@ -675,7 +675,7 @@ export default function fulFillOrder({
                                                     return (
                                                         <tr
                                                             key={idx}
-                                                            className="bg-white transition-colors hover:bg-gray-50 dark:bg-zinc-900 dark:hover:bg-zinc-800"
+                                                            className="transition-colors bg-white hover:bg-gray-50 dark:bg-zinc-900 dark:hover:bg-zinc-800"
                                                         >
                                                             <td className="px-4 py-2.5 text-xs text-gray-500 dark:text-gray-400">
                                                                 {idx + 1}
@@ -696,11 +696,10 @@ export default function fulFillOrder({
                                                             <td className="px-4 py-2.5 text-center">
                                                                 <div className="flex flex-col items-center gap-1">
                                                                     <span
-                                                                        className={`inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold ${
-                                                                            missing > 0
+                                                                        className={`inline-flex items-center justify-center rounded-full px-2 py-0.5 text-xs font-semibold ${missing > 0
                                                                                 ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                                                                                 : 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                                        }`}
+                                                                            }`}
                                                                     >
                                                                         {missing > 0
                                                                             ? `${missing} still needed`
@@ -741,7 +740,7 @@ export default function fulFillOrder({
                 <Card
                     Content={
                         <>
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Back To Orders'}
                                     URL={route('dashboard.supplier-assigned-orders.index')}
@@ -840,7 +839,7 @@ export default function fulFillOrder({
                                                 />
                                             </div>
 
-                                            <div className="mt-3 grid grid-cols-1 gap-4">
+                                            <div className="grid grid-cols-1 gap-4 mt-3">
                                                 <FileUploaderInput
                                                     Label={
                                                         'Drag & Drop your Batch Invoice or <span class="filepond--label-action">Browse</span>'
@@ -1220,7 +1219,7 @@ export default function fulFillOrder({
                                             </div>
 
                                             {!isReadOnly && (
-                                                <div className="flex w-full items-center justify-end">
+                                                <div className="flex items-center justify-end w-full">
                                                     <PrimaryButton
                                                         Text={'Add Extra Cost'}
                                                         Type={'button'}
@@ -1249,19 +1248,19 @@ export default function fulFillOrder({
                                             )}
 
                                             {extraCosts.length > 0 && (
-                                                <div className="col-span-1 grid grid-cols-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
+                                                <div className="grid grid-cols-1 col-span-1 gap-5 overflow-x-auto scrollbar-thin dark:scrollbar-track-slate-900 dark:scrollbar-thumb-slate-700">
                                                     <table className="w-full border-collapse">
                                                         <thead>
                                                             <tr>
                                                                 <th
                                                                     colSpan={2}
-                                                                    className="border p-2 text-left text-gray-700 dark:border-gray-700 dark:text-gray-400"
+                                                                    className="p-2 text-left text-gray-700 border dark:border-gray-700 dark:text-gray-400"
                                                                 >
                                                                     Extra Costs
                                                                 </th>
 
                                                                 {!isReadOnly && (
-                                                                    <th className="border p-2 text-center text-gray-700 dark:border-gray-700 dark:text-gray-400">
+                                                                    <th className="p-2 text-center text-gray-700 border dark:border-gray-700 dark:text-gray-400">
                                                                         Action
                                                                     </th>
                                                                 )}
@@ -1270,7 +1269,7 @@ export default function fulFillOrder({
                                                         <tbody>
                                                             {extraCosts.map((item, idx) => (
                                                                 <tr key={idx}>
-                                                                    <td className="border p-2 dark:border-gray-700">
+                                                                    <td className="p-2 border dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Cost Type'}
                                                                             Id={'cost_type'}
@@ -1278,7 +1277,7 @@ export default function fulFillOrder({
                                                                             Disabled={isReadOnly}
                                                                             Error={
                                                                                 errors[
-                                                                                    `extra_costs.${idx}.cost_type`
+                                                                                `extra_costs.${idx}.cost_type`
                                                                                 ]
                                                                             }
                                                                             Value={item.cost_type}
@@ -1296,7 +1295,7 @@ export default function fulFillOrder({
                                                                             }
                                                                         />
                                                                     </td>
-                                                                    <td className="border p-2 dark:border-gray-700">
+                                                                    <td className="p-2 border dark:border-gray-700">
                                                                         <Input
                                                                             InputName={'Amount'}
                                                                             Id={'amount'}
@@ -1304,7 +1303,7 @@ export default function fulFillOrder({
                                                                             Disabled={isReadOnly}
                                                                             Error={
                                                                                 errors[
-                                                                                    `extra_costs.${idx}.amount`
+                                                                                `extra_costs.${idx}.amount`
                                                                                 ]
                                                                             }
                                                                             Value={item.amount}
@@ -1324,7 +1323,7 @@ export default function fulFillOrder({
                                                                     </td>
 
                                                                     {!isReadOnly && (
-                                                                        <td className="border p-2 dark:border-gray-700">
+                                                                        <td className="p-2 border dark:border-gray-700">
                                                                             <div className="flex items-center justify-center">
                                                                                 <PrimaryButton
                                                                                     Type={'button'}
@@ -1371,14 +1370,14 @@ export default function fulFillOrder({
                                             {assignment?.draft_data &&
                                                 !isEditMode &&
                                                 !isReadOnly && (
-                                                    <div className="mb-3 flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs text-blue-700 dark:border-blue-800/40 dark:bg-blue-900/10 dark:text-blue-400">
+                                                    <div className="flex items-center gap-2 px-3 py-2 mb-3 text-xs text-blue-700 border border-blue-200 rounded-lg bg-blue-50 dark:border-blue-800/40 dark:bg-blue-900/10 dark:text-blue-400">
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="h-4 w-4 shrink-0"
+                                                            className="w-4 h-4 shrink-0"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1392,7 +1391,7 @@ export default function fulFillOrder({
                                                 )}
 
                                             {!isReadOnly && (
-                                                <div className="mt-2 flex flex-wrap items-center gap-3">
+                                                <div className="flex flex-wrap items-center gap-3 mt-2">
                                                     <PrimaryButton
                                                         Text={'FulFill Stock'}
                                                         Type={'submit'}
@@ -1415,7 +1414,7 @@ export default function fulFillOrder({
                                                                 (item) =>
                                                                     item.smartphone_id === '' ||
                                                                     item.storage_location_id ===
-                                                                        '' ||
+                                                                    '' ||
                                                                     item.imei1 === '',
                                                             )
                                                         }
@@ -1453,7 +1452,7 @@ export default function fulFillOrder({
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={1.5}
                                                                     stroke="currentColor"
-                                                                    className="h-4 w-4"
+                                                                    className="w-4 h-4"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -1500,15 +1499,15 @@ export default function fulFillOrder({
                                                     <div key={idx} className="flex gap-3">
                                                         {/* Line + dot */}
                                                         <div className="flex flex-col items-center">
-                                                            <div className="mt-1 h-2 w-2 shrink-0 rounded-full bg-blue-500" />
+                                                            <div className="w-2 h-2 mt-1 bg-blue-500 rounded-full shrink-0" />
                                                             {idx !== logs.length - 1 && (
-                                                                <div className="mt-1 w-px flex-1 bg-gray-200 dark:bg-zinc-700" />
+                                                                <div className="flex-1 w-px mt-1 bg-gray-200 dark:bg-zinc-700" />
                                                             )}
                                                         </div>
 
                                                         {/* Content */}
                                                         <div className="flex-1 pb-4">
-                                                            <div className="mb-1 flex flex-wrap items-center gap-2">
+                                                            <div className="flex flex-wrap items-center gap-2 mb-1">
                                                                 <span className="text-xs font-semibold text-gray-700 dark:text-gray-300">
                                                                     {log.author?.name ?? 'Supplier'}
                                                                 </span>
@@ -1554,7 +1553,7 @@ export default function fulFillOrder({
                                             </div>
 
                                             {/* Append new log */}
-                                            <div className="mt-4 border-t border-gray-200 pt-4 dark:border-zinc-700">
+                                            <div className="pt-4 mt-4 border-t border-gray-200 dark:border-zinc-700">
                                                 <p className="mb-3 text-xs font-semibold text-gray-600 dark:text-gray-400">
                                                     Add to Log
                                                 </p>
@@ -1586,7 +1585,7 @@ export default function fulFillOrder({
                                                     }}
                                                 />
 
-                                                <div className="mt-3 flex items-center gap-3">
+                                                <div className="flex items-center gap-3 mt-3">
                                                     <PrimaryButton
                                                         CustomClass={'w-[200px]'}
                                                         Text={'Add to Log'}
@@ -1604,7 +1603,7 @@ export default function fulFillOrder({
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={1.5}
                                                                 stroke="currentColor"
-                                                                className="h-4 w-4"
+                                                                className="w-4 h-4"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1626,24 +1625,24 @@ export default function fulFillOrder({
 
                 {activeScanner && (
                     <>
-                        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                             <div className="fixed inset-0 backdrop-blur-[32px]" />
-                            <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-deepcharcoal">
-                                <div className="flex items-center justify-between border-b px-6 py-4 dark:border-white/10">
+                            <div className="relative z-10 w-full max-w-md overflow-hidden bg-white shadow-2xl rounded-2xl dark:bg-deepcharcoal">
+                                <div className="flex items-center justify-between px-6 py-4 border-b dark:border-white/10">
                                     <div className="flex items-center gap-2">
-                                        <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
                                         <h3 className="text-sm font-semibold text-gray-800 dark:text-white">
                                             Scanning:{' '}
-                                            <span className="capitalize text-blue-600 dark:text-blue-400">
+                                            <span className="text-blue-600 capitalize dark:text-blue-400">
                                                 {activeScanner.field === 'smartphone'
                                                     ? 'Smartphone'
                                                     : activeScanner.field === 'imei1'
-                                                      ? 'IMEI 1'
-                                                      : activeScanner.field === 'imei2'
-                                                        ? 'IMEI 2'
-                                                        : activeScanner.field === 'eid'
-                                                          ? 'EID'
-                                                          : 'Serial No'}{' '}
+                                                        ? 'IMEI 1'
+                                                        : activeScanner.field === 'imei2'
+                                                            ? 'IMEI 2'
+                                                            : activeScanner.field === 'eid'
+                                                                ? 'EID'
+                                                                : 'Serial No'}{' '}
                                                 — Item #{activeScanner.index + 1}
                                             </span>
                                         </h3>
@@ -1657,11 +1656,10 @@ export default function fulFillOrder({
                                                     ? 'Turn off flashlight'
                                                     : 'Turn on flashlight'
                                             }
-                                            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${
-                                                torchOn
+                                            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${torchOn
                                                     ? 'bg-yellow-400 text-gray-900 hover:bg-yellow-300'
                                                     : 'text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10'
-                                            }`}
+                                                }`}
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1682,7 +1680,7 @@ export default function fulFillOrder({
                                         {/* Close button */}
                                         <button
                                             onClick={closeScanner}
-                                            className="flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10"
+                                            className="flex items-center justify-center text-gray-400 rounded-lg h-7 w-7 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1708,14 +1706,14 @@ export default function fulFillOrder({
                                     >
                                         <video
                                             ref={scannerVideoRef}
-                                            className="h-full w-full object-cover"
+                                            className="object-cover w-full h-full"
                                             muted
                                             playsInline
                                             onClick={refocus}
                                             onTouchStart={refocus}
                                         />
                                         {/* Dark vignette with bright scan hole — desktop */}
-                                        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                             <div
                                                 ref={scanOverlayRef}
                                                 className="relative h-32 w-72"
@@ -1741,7 +1739,7 @@ export default function fulFillOrder({
 
                                         {/* Torch active indicator */}
                                         {torchOn && (
-                                            <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 rounded-full bg-yellow-400/90 px-2 py-1 text-xs font-semibold text-gray-900">
+                                            <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none right-2 top-2 bg-yellow-400/90">
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     fill="none"
@@ -1760,10 +1758,10 @@ export default function fulFillOrder({
                                             </div>
                                         )}
                                     </div>
-                                    <p className="mt-3 text-center text-xs text-gray-400 dark:text-white/40">
+                                    <p className="mt-3 text-xs text-center text-gray-400 dark:text-white/40">
                                         Align barcode within the frame
                                     </p>
-                                    <div className="mt-3 flex justify-center">
+                                    <div className="flex justify-center mt-3">
                                         <PrimaryButton
                                             Action={closeScanner}
                                             Text={'Close Scanner'}
@@ -1811,6 +1809,9 @@ export default function fulFillOrder({
 
                         if (meta?.fields) {
                             Object.entries(meta.fields).forEach(([key, val]) => {
+
+                                if (key === 'upc') return; // Skip UPC as it's not stored in inventory
+
                                 handleInventoryChange(nativeScan.index, key, val);
                             });
                         } else {
@@ -1821,21 +1822,21 @@ export default function fulFillOrder({
                 />
 
                 {showProgressModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                         <div className="fixed inset-0 backdrop-blur-[32px]"></div>
 
                         {/* Modal content */}
-                        <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                        <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                             <div className="text-center">
                                 <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                     Please Wait While We Are Uploading Your Files
                                 </h2>
 
-                                <div className="mt-5 flex items-center justify-center">
+                                <div className="flex items-center justify-center mt-5">
                                     <div role="status">
                                         <svg
                                             aria-hidden="true"
-                                            className="h-8 w-8 animate-spin fill-blue-600 text-gray-200 dark:text-gray-600"
+                                            className="w-8 h-8 text-gray-200 animate-spin fill-blue-600 dark:text-gray-600"
                                             viewBox="0 0 100 101"
                                             fill="none"
                                             xmlns="http://www.w3.org/2000/svg"

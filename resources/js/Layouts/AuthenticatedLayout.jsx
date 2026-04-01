@@ -6,6 +6,7 @@ import { router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import Toast from '@/Components/Toast';
 import AppStatusManager from '@/Components/AppStatusManager';
+import SuccessToastModal from '@/Components/SuccessToastModal';
 export default function AuthenticatedLayout({ children }) {
     // Global General Setting Prop
     const { auth, generalSetting, asset, flash } = usePage().props;
@@ -66,6 +67,26 @@ export default function AuthenticatedLayout({ children }) {
     const [darkMode, setDarkMode] = useState(false);
 
 
+
+    // State for verification message
+    const [realtimeToast, setRealtimeToast] = useState(null);
+
+
+    useEffect(() => {
+        if (!auth?.user?.id) return;
+
+        const channel = window.Echo.private(`user.${auth.user.id}`);
+
+        channel.listen('.order-verification-success', (e) => {
+            setRealtimeToast(e.message);
+        });
+
+        return () => {
+            window.Echo.leaveChannel(`private-user.${auth.user.id}`);
+        };
+    }, [auth?.user?.id]);
+
+
     return (
         <>
             <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-deepcharcoal">
@@ -93,6 +114,16 @@ export default function AuthenticatedLayout({ children }) {
                     />
 
                     <Toast flash={flash} />
+
+                    {realtimeToast && (
+                        <div className="fixed z-[999999] space-y-3 transform -translate-x-1/2 bottom-6 left-1/2">
+                            <SuccessToastModal
+                                showSuccess={true}
+                                setShowSuccess={() => setRealtimeToast(null)}
+                                message={realtimeToast}
+                            />
+                        </div>
+                    )}
 
                     <main>
                         <div className="max-w-(--breakpoint-2xl) mx-auto p-4 md:p-6">

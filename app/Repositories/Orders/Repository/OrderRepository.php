@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Orders\Repository;
 
+use App\Events\OrderVerificationSuccess;
 use App\Helpers\Trans;
 use App\Jobs\CourierInvoiceDestroyOnAWS;
 use App\Jobs\CourierInvoiceStoreOnAWS;
@@ -3092,6 +3093,12 @@ class OrderRepository implements IOrderRepository
             if (! $exists) {
                 throw new Exception($this->trans->get('Please Scan A Valid CODE'));
             }
+
+            broadcast(new OrderVerificationSuccess(
+                user_id: $order->customer->user_id,
+                code: $request->code,
+                message: $this->trans->get("Verification Successful For CODE $request->code")
+            ))->toOthers();
 
             return [
                 'status' => true,
