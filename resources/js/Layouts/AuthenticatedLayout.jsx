@@ -78,7 +78,6 @@ export default function AuthenticatedLayout({ children }) {
         const channel = window.Echo.private(`user.${auth?.user?.id}`);
 
         channel.listen('.order-verification-success', (e) => {
-            console.log("Received event:", e);
             setRealtimeToast(e.message);
         });
 
@@ -122,6 +121,7 @@ export default function AuthenticatedLayout({ children }) {
                                 showSuccess={true}
                                 setShowSuccess={() => setRealtimeToast(null)}
                                 message={realtimeToast}
+                                dismissable={false}
                             />
                         </div>
                     )}

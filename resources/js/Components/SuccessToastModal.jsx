@@ -1,9 +1,10 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 
-export default function SuccessToastModal({ showSuccess, setShowSuccess, message, closing }) {
+export default function SuccessToastModal({ showSuccess, setShowSuccess, message, dismissable = true }) {
     useEffect(() => {
-        if (showSuccess) {
+
+        if (showSuccess && dismissable) {
             const timer = setTimeout(() => {
                 setShowSuccess(false);
             }, 3000);
