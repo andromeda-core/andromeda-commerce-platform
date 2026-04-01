@@ -5,6 +5,7 @@ import { useNativeScanner } from '@/Hooks/useNativeScanner';
 import NativeScannerPreview from '@/Components/NativeScannerPreview';
 import axios from 'axios';
 import beepSound from '../../assets/sounds/Beep.mp3';
+import getSocketId from './getSocketId';
 
 
 const PackageVerificationRecorder = memo(
@@ -100,10 +101,16 @@ const PackageVerificationRecorder = memo(
                         isSuccess = result?.success === true;
                         responseMsg = result?.message;
                     } else {
+                        const socketId = await getSocketId();
                         // Default: orders verify API
                         const { data } = await axios.post(route('dashboard.orders.verify'), {
                             order_no: orderNo,
                             code: trimmed,
+                        }, {
+
+                            headers: {
+                                'X-Socket-ID': socketId,
+                            }
                         });
                         isSuccess =
                             data.status === true || data.status === 1 || data.status === 'success';
