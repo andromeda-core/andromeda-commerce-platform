@@ -65,7 +65,8 @@ export default function AuthenticatedLayout({ children }) {
 
     // Managing Dark Mode State
     const [darkMode, setDarkMode] = useState(false);
-
+    // Detect mobile device
+    const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
 
     // State for verification message
@@ -73,7 +74,7 @@ export default function AuthenticatedLayout({ children }) {
 
 
     useEffect(() => {
-        if (!auth?.user?.id) return;
+        if (!auth?.user?.id || isMobileDevice) return;
 
         const channel = window.Echo.private(`user.${auth?.user?.id}`);
 

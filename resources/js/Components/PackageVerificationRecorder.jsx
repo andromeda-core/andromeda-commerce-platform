@@ -104,13 +104,7 @@ const PackageVerificationRecorder = memo(
                         const { data } = await axios.post(route('dashboard.orders.verify'), {
                             order_no: orderNo,
                             code: trimmed,
-                        },
-                            {
-                                headers: {
-                                    'X-Socket-ID': window.Echo.socketId(),
-                                }
-                            }
-                        );
+                        });
                         isSuccess =
                             data.status === true || data.status === 1 || data.status === 'success';
                         responseMsg = data?.message;
