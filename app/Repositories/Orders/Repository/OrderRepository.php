@@ -3095,7 +3095,7 @@ class OrderRepository implements IOrderRepository
             }
 
             broadcast(new OrderVerificationSuccess(
-                user_id: $order->customer->user_id,
+                user_id: $request?->user()?->id,
                 code: $request->code,
                 message: $this->trans->get("Verification Successful For CODE $request->code")
             ));
