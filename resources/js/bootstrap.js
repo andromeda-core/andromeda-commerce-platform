@@ -19,3 +19,10 @@ window.Echo = new Echo({
     enabledTransports: ['ws', 'wss'],
     authEndpoint: '/broadcasting/auth',
 });
+
+window.Echo.connector.pusher.connection.bind('connected', () => {
+    const socketId = window.Echo.socketId();
+    if (socketId) {
+        window.axios.defaults.headers.common['X-Socket-ID'] = socketId;
+    }
+});
