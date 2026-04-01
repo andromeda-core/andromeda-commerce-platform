@@ -75,7 +75,7 @@ export default function AuthenticatedLayout({ children }) {
     useEffect(() => {
         if (!auth?.user?.id) return;
 
-        const channel = window.Echo.private(`user.${auth.user.id}`);
+        const channel = window.Echo.private(`user.${auth?.user?.id}`);
 
         channel.listen('.order-verification-success', (e) => {
             console.log("Received event:", e);
@@ -83,7 +83,7 @@ export default function AuthenticatedLayout({ children }) {
         });
 
         return () => {
-            window.Echo.leaveChannel(`private-user.${auth.user.id}`);
+            window.Echo.leaveChannel(`user.${auth?.user?.id}`);
         };
     }, [auth?.user?.id]);
 

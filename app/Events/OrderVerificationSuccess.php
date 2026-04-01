@@ -3,9 +3,9 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\PrivateChannel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
-class OrderVerificationSuccess implements ShouldBroadcast
+class OrderVerificationSuccess implements ShouldBroadcastNow
 {
     public function __construct(
         public int $user_id,

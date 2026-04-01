@@ -3098,7 +3098,7 @@ class OrderRepository implements IOrderRepository
                 user_id: $order->customer->user_id,
                 code: $request->code,
                 message: $this->trans->get("Verification Successful For CODE $request->code")
-            ))->toOthers();
+            ));
 
             return [
                 'status' => true,
