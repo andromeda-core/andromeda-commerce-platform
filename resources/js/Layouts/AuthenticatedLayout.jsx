@@ -75,6 +75,8 @@ export default function AuthenticatedLayout({ children }) {
         const channel = window.Echo.private(`user.${auth?.user?.id}`);
 
         channel.listen('.order-verification-success', (e) => {
+            const mySocketId = window.Echo?.socketId();
+            if (mySocketId && e.socket_id && e.socket_id === mySocketId) return;
             setRealtimeToast(e.message);
         });
 
