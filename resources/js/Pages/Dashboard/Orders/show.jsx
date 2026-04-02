@@ -74,6 +74,7 @@ export default function show({ order, auth }) {
     const [verificationStatus, setVerificationStatus] = useState(null);
     const [verificationMessage, setVerificationMessage] = useState('');
     const [deleteingVideo, setDeletingVideo] = useState(null);
+    const [togglingVideo, setTogglingVideo] = useState(null);
 
     useEffect(() => {
         if (package_video?.package_video) {
@@ -111,6 +112,18 @@ export default function show({ order, auth }) {
                 onFinish: () => setDeletingVideo(null),
             });
         }
+    };
+
+    const togglePackageVideoVisibility = (packageID) => {
+        setTogglingVideo(packageID);
+        router.put(
+            route('dashboard.package-recordings.toggle', packageID),
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setTogglingVideo(null),
+            },
+        );
     };
 
     useEffect(() => {
@@ -1033,6 +1046,60 @@ export default function show({ order, auth }) {
                                                                             d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                                                                         />
                                                                     </svg>
+                                                                </button>
+
+                                                                <button
+                                                                    onClick={() =>
+                                                                        togglePackageVideoVisibility(
+                                                                            item.id,
+                                                                        )
+                                                                    }
+                                                                    title={
+                                                                        item.is_visible
+                                                                            ? 'Visible to customer'
+                                                                            : 'Hidden from customer'
+                                                                    }
+                                                                    className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
+                                                                        item.is_visible
+                                                                            ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400'
+                                                                            : 'bg-gray-50 text-gray-400 hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-500'
+                                                                    }`}
+                                                                >
+                                                                    {togglingVideo === item.id ? (
+                                                                        <Spinner
+                                                                            customSize={'size-3'}
+                                                                        />
+                                                                    ) : item.is_visible ? (
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="none"
+                                                                            viewBox="0 0 24 24"
+                                                                            strokeWidth={1.5}
+                                                                            stroke="currentColor"
+                                                                            className="h-4 w-4"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253M3.284 14.253A8.959 8.959 0 0 1 3 12c0-.778.099-1.533.284-2.253"
+                                                                            />
+                                                                        </svg>
+                                                                    ) : (
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="none"
+                                                                            viewBox="0 0 24 24"
+                                                                            strokeWidth={1.5}
+                                                                            stroke="currentColor"
+                                                                            className="h-4 w-4"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
+                                                                            />
+                                                                        </svg>
+                                                                    )}
                                                                 </button>
 
                                                                 {can(
