@@ -2,7 +2,7 @@ import Card from '@/Components/Card';
 import LinkButton from '@/Components/LinkButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
 
 import { useEffect, useState } from 'react';
@@ -61,6 +61,13 @@ export default function index({ package_recordings }) {
                     }
 
                     return <span className="rounded-lg bg-green-500 p-2 text-white">Opened</span>;
+                },
+            },
+
+            {
+                label: 'Visible',
+                render: (item) => {
+                    return <ToggleButton item={item} />;
                 },
             },
             { key: 'added_at', label: 'Added At' },
@@ -144,5 +151,43 @@ export default function index({ package_recordings }) {
                 />
             </AuthenticatedLayout>
         </>
+    );
+}
+
+function ToggleButton({ item }) {
+    const [loading, setLoading] = useState(false);
+    const [isVisible, setIsVisible] = useState(item.is_visible);
+
+    const handleToggle = () => {
+        setLoading(true);
+        router.put(
+            route('dashboard.package-recordings.toggle', item.id),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setIsVisible((prev) => !prev);
+                },
+                onFinish: () => {
+                    setLoading(false);
+                },
+            },
+        );
+    };
+
+    return (
+        <button
+            onClick={handleToggle}
+            disabled={loading}
+            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50 ${
+                isVisible ? 'bg-violet-600' : 'bg-gray-300 dark:bg-zinc-600'
+            }`}
+        >
+            <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
+                    isVisible ? 'translate-x-6' : 'translate-x-1'
+                }`}
+            />
+        </button>
     );
 }

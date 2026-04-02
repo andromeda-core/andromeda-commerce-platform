@@ -1450,7 +1450,9 @@ class OrderRepository implements IOrderRepository
         $order = $this->order->with(
             [
                 'collaborator',
-                'orderPackageRecordings',
+                'orderPackageRecordings' => function ($q) {
+                    $q->where('is_visible', true);
+                },
                 'orderItems',
                 'orderItems.smartphone',
                 'orderItems.smartphone.model_name',
@@ -1471,6 +1473,7 @@ class OrderRepository implements IOrderRepository
         }
 
         return $order;
+
     }
 
     public function uploadPaymentProof(Request $request)

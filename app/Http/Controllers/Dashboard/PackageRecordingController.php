@@ -112,4 +112,18 @@ class PackageRecordingController extends Controller implements HasMiddleware
         return back()->with('success', $deleted['message']);
 
     }
+
+    public function toggle(?string $id = null)
+    {
+        if (empty($id)) {
+            return to_route('dashboard.package-recordings.index')->with('error', 'Package Recording Not Found');
+        }
+        $toggled = $this->package_recording->toggleVisibility($id);
+
+        if ($toggled['status'] === false) {
+            return back()->with('error', $toggled['message']);
+        }
+
+        return back()->with('success', $toggled['message']);
+    }
 }

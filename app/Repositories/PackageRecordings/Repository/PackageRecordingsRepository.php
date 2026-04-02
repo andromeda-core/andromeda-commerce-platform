@@ -208,6 +208,35 @@ class PackageRecordingsRepository implements IPackageRecordingsRepository
         }
     }
 
+    public function toggleVisibility(string $id)
+    {
+        try {
+            $package_recording = $this->package_recording->find($id);
+            if (empty($package_recording)) {
+                throw new Exception('Package Recording Not Found');
+            }
+
+            $updated = $package_recording->update([
+                'is_visible' => ! $package_recording->is_visible,
+            ]);
+
+            if (! $updated) {
+                throw new Exception('Something Went Wrong While Toggling Package Recording Visibility');
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Package Recording Visibility Toggled Successfully',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+
+            ];
+        }
+    }
+
     public function getOrders()
     {
         return $this->order

@@ -18,5 +18,7 @@ interface IPackageRecordingsRepository
 
     public function destroyPackageRecordingBySelection(Request $request);
 
+    public function toggleVisibility(string $id);
+
     public function getOrders();
 }

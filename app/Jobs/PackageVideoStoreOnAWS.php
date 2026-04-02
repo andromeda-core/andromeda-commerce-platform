@@ -3,10 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\PackageRecording;
-use App\Notifications\OrderPackageVideoAddedNotification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Str;
 
@@ -64,15 +62,6 @@ class PackageVideoStoreOnAWS implements ShouldQueue
 
         if (! $updated) {
             return;
-        }
-
-        if (
-            ! empty(Cache::get('smtp_config')) &&
-            $this->package_recording->order &&
-            $this->package_recording->order->customer->user &&
-            $this->package_recording->order->customer->user->email
-        ) {
-            $this->package_recording->order->customer->user->notify(new OrderPackageVideoAddedNotification($this->package_recording));
         }
 
     }

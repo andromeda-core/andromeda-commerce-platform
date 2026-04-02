@@ -443,6 +443,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/package-recordings', 'index')->name('index');
             Route::get('/package-recordings-create', 'create')->name('create');
             Route::post('/package-recordings-store', 'store')->name('store');
+            Route::put('/package-recordings-toggle/{id?}', 'toggle')->name('toggle');
             // Route::get('/package-recordings-edit/{id?}', 'edit')->name('edit');
             // Route::put('/package-recordings-update/{id?}', 'update')->name('update');
             Route::delete('/package-recordings-destroy/{id?}', 'destroy')->name('destroy');
@@ -889,8 +890,7 @@ Route::match(['get', 'post'], '/meta/webhook', [MetaController::class, 'webhook'
 // Device Finger Print
 Route::post('/device-fingerprint', DeviceFingerPrintController::class)->name('device-fingerprint.store');
 
-
- Route::post('/scanner/ai-decode', [OpenAiController::class, 'aiDecode'])
-        ->name('scanner.ai-decode');
+Route::post('/scanner/ai-decode', [OpenAiController::class, 'aiDecode'])
+    ->name('scanner.ai-decode');
 
 require __DIR__.'/auth.php';
