@@ -249,7 +249,7 @@ class TranslationRepository implements ITranslationRepository
                     'translation_key_id' => $keysMap[$key],
                 ],
                 [
-                    'value' => trim((string) $row['translation_value']),
+                    'value' => $this->normalizeTranslationValue((string) $row['translation_value']),
                 ]
             );
         }
@@ -265,6 +265,37 @@ class TranslationRepository implements ITranslationRepository
         }
         $value = preg_replace('/[\p{Cc}\p{Cf}]/u', '', $value);
 
+        $value = preg_replace('/[\p{Z}\s]+/u', ' ', $value);
+
+        return trim($value);
+    }
+
+    private function normalizeTranslationValue(string $value): string
+    {
+
+        $ligatures = [
+            "\u{FB00}" => 'ff',
+            "\u{FB01}" => 'fi',
+            "\u{FB02}" => 'fl',
+            "\u{FB03}" => 'ffi',
+            "\u{FB04}" => 'ffl',
+            "\u{FB05}" => 'st',
+            "\u{FB06}" => 'st',
+        ];
+        $value = str_replace(array_keys($ligatures), array_values($ligatures), $value);
+
+        // Remove BOM
+        $value = preg_replace('/^\xEF\xBB\xBF/u', '', $value);
+
+        // Unicode normalization
+        if (class_exists(\Normalizer::class)) {
+            $value = \Normalizer::normalize($value, \Normalizer::FORM_C);
+        }
+
+        // Remove invisible characters
+        $value = preg_replace('/[\p{Cc}\p{Cf}]/u', '', $value);
+
+        // Normalize whitespace
         $value = preg_replace('/[\p{Z}\s]+/u', ' ', $value);
 
         return trim($value);
