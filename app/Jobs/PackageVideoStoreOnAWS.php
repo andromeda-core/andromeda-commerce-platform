@@ -21,8 +21,10 @@ class PackageVideoStoreOnAWS implements ShouldQueue
     public function __construct(
         private array $file,
         private PackageRecording $package_recording,
-        private $package_recording_dir = 'PackageRecording/Videos/',
-        private $package_recording_thumbnails_dir = 'PackageRecording/Videos/Thumbnails/',
+        private string $column_name,
+        private string $thumbnail_column,
+        private string $package_recording_dir = 'PackageRecording/Videos/',
+        private string $package_recording_thumbnails_dir = 'PackageRecording/Videos/Thumbnails/',
     ) {}
 
     public function handle(): void
@@ -58,7 +60,7 @@ class PackageVideoStoreOnAWS implements ShouldQueue
 
         $thumb_url = Storage::disk('s3')->url($this->package_recording_thumbnails_dir.$new_thumb_name);
 
-        $updated = $this->package_recording->update(['package_video' => $url, 'thumbnail_url' => $thumb_url]);
+        $updated = $this->package_recording->update([$this->column_name => $url, $this->thumbnail_column => $thumb_url]);
 
         if (! $updated) {
             return;

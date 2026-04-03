@@ -37,6 +37,11 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Download', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'All', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Send Verification', 'created_at' => $now, 'updated_at' => $now],
+              ['key' => 'Packaging Video Already Marked As Viewed', 'created_at' => $now, 'updated_at' => $now],
+ ['key' => 'Packaging Verification', 'created_at' => $now, 'updated_at' => $now],
+  ['key' => 'Barcode Photo', 'created_at' => $now, 'updated_at' => $now],
+    ['key' => 'Screen Recording', 'created_at' => $now, 'updated_at' => $now],
+      ['key' => 'Scene Video', 'created_at' => $now, 'updated_at' => $now],
 
             ['key' => 'pending', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'paid', 'created_at' => $now, 'updated_at' => $now],

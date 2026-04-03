@@ -863,14 +863,6 @@ const index = ({ order_no, order }) => {
                                                 )}
                                             </div>
 
-                                            {/* Flash ON badge */}
-                                            {torchOn && (
-                                                <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 rounded-full bg-yellow-400/90 px-2 py-1 text-xs font-semibold text-gray-900">
-                                                    <Flashlight className="size-3" />
-                                                    {__('Flash ON')}
-                                                </div>
-                                            )}
-
                                             {/* Active indicator */}
                                             {!isVerifying && !scanCooldown && (
                                                 <div className="flex items-center gap-2">
@@ -907,8 +899,29 @@ const index = ({ order_no, order }) => {
                 itemNumber={null}
                 onResult={(text, meta) => {
                     setNativeScanOpen(false);
-                    const code = (meta?.fields ? Object.values(meta.fields)[0] : null) ?? text;
-                    handleIMEIScan(code);
+
+                    if (meta?.fields) {
+                        const priority = ['imei1', 'imei2'];
+                        const excluded = ['upc'];
+
+                        // Try priority fields first
+                        for (const key of priority) {
+                            if (meta.fields[key]) {
+                                handleIMEIScan(meta.fields[key]);
+                                return;
+                            }
+                        }
+
+                        // Fallback: first non-excluded field
+                        for (const [key, val] of Object.entries(meta.fields)) {
+                            if (!excluded.includes(key) && val) {
+                                handleIMEIScan(val);
+                                return;
+                            }
+                        }
+                    } else if (text) {
+                        handleIMEIScan(text);
+                    }
                 }}
                 onClose={() => setNativeScanOpen(false)}
                 scanBoxWidth={400}

@@ -48,6 +48,51 @@ export default function index({ package_recordings }) {
                     );
                 },
             },
+            {
+                label: 'Barcode Photo',
+                render: (item) =>
+                    item?.barcode_photo ? (
+                        <a
+                            href={item.barcode_photo}
+                            target="_blank"
+                            className="text-sm text-violet-600 hover:underline"
+                        >
+                            View Photo
+                        </a>
+                    ) : (
+                        <span className="text-sm text-gray-800 dark:text-white/60">N/A</span>
+                    ),
+            },
+            {
+                label: 'Screen Recording',
+                render: (item) =>
+                    item?.screen_recording_video ? (
+                        <a
+                            href={item.screen_recording_video}
+                            target="_blank"
+                            className="text-sm text-blue-500 hover:underline"
+                        >
+                            View Video
+                        </a>
+                    ) : (
+                        <span className="text-sm text-gray-800 dark:text-white/60">N/A</span>
+                    ),
+            },
+            {
+                label: 'Scene Video',
+                render: (item) =>
+                    item?.scene_video ? (
+                        <a
+                            href={item.scene_video}
+                            target="_blank"
+                            className="text-sm text-green-600 hover:underline"
+                        >
+                            View Video
+                        </a>
+                    ) : (
+                        <span className="text-sm text-gray-800 dark:text-white/60">N/A</span>
+                    ),
+            },
             { key: 'opened_at', label: 'Opened At' },
             {
                 label: 'Opened',

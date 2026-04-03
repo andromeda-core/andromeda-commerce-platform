@@ -11,7 +11,9 @@ class InventoryVerification extends Model
         'verified_by_id',
         'inventory_id',
         'scanned_code',
-        'video',
+        'barcode_photo',
+        'screen_recording_video',
+        'scene_video',
         'verified_at',
     ];
 

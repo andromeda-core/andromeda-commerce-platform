@@ -15,6 +15,7 @@ class UploadInventoryVerificationVideoOnAWSJob implements ShouldQueue
     public function __construct(
         private InventoryVerification $verification,
         private string $tempPath,
+        private string $column_name = 'screen_recording_video',
         private string $dir = 'InventoryVerification/Videos/',
     ) {}
 
@@ -23,14 +24,16 @@ class UploadInventoryVerificationVideoOnAWSJob implements ShouldQueue
         if (empty($this->tempPath)) {
             return;
         }
+
         $fullLocalPath = Storage::disk('local')->path($this->tempPath);
         $extension = pathinfo($this->tempPath, PATHINFO_EXTENSION);
         $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
+
         Storage::disk('s3')->put($this->dir.$new_name, file_get_contents($fullLocalPath));
         Storage::disk('local')->delete($this->tempPath);
 
         $url = Storage::disk('s3')->url($this->dir.$new_name);
 
-        $this->verification->update(['video' => $url]);
+        $this->verification->update([$this->column_name => $url]);
     }
 }

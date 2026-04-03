@@ -51,46 +51,95 @@ class PackageRecordingsRepository implements IPackageRecordingsRepository
 
     public function storePackageRecording(Request $request)
     {
+
         $validated_req = $request->validate([
-            'order_id' => ['required', 'exists:orders,id'],
-            'package_video' => ['required', 'file', 'mimetypes:video/webm,video/mp4', 'max:10485760'],
+            'order_no' => ['required', 'exists:orders,order_no'],
+            'barcode_photo' => ['required', 'image', 'mimetypes:image/jpeg,image/png,image/webp', 'max:10240'],
+            'screen_recording' => ['required', 'file', 'mimetypes:video/webm,video/mp4,video/quicktime', 'max:10485760'],
+            'scene_video' => ['required', 'file', 'mimetypes:video/webm,video/mp4,video/quicktime', 'max:10485760'],
         ], [
-            'order_id.required' => 'The Order Field Is Required.',
-            'order_id.exists' => 'The selected order is invalid.',
-            'package_video.required' => 'The Package Video Field Is Required.',
-            'package_video.file' => 'The Package Video Field Must Be A File.',
-            'package_video.mimetypes' => 'The Package Video Field Must Be A Video File.',
-            'package_video.max' => 'The Package Video Field Must Be Less Than 10GB.',
+            'order_no.required' => 'The Order Field Is Required.',
+            'order_no.exists' => 'The selected order is invalid.',
+
+            'barcode_photo.required' => 'The Barcode Photo Is Required.',
+            'barcode_photo.image' => 'The Barcode Photo Must Be An Image.',
+            'barcode_photo.mimetypes' => 'The Barcode Photo Must Be A JPEG, PNG, or WebP Image.',
+            'barcode_photo.max' => 'The Barcode Photo Must Be Less Than 10MB.',
+
+            'screen_recording.required' => 'The Screen Recording Video Is Required.',
+            'screen_recording.file' => 'The Screen Recording Must Be A File.',
+            'screen_recording.mimetypes' => 'The Screen Recording Must Be A Video File (MP4, WebM, MOV).',
+            'screen_recording.max' => 'The Screen Recording Must Be Less Than 10GB.',
+
+            'scene_video.required' => 'The Scene Video Is Required.',
+            'scene_video.file' => 'The Scene Video Must Be A File.',
+            'scene_video.mimetypes' => 'The Scene Video Must Be A Video File (MP4, WebM, MOV).',
+            'scene_video.max' => 'The Scene Video Must Be Less Than 10GB.',
         ]);
 
         try {
 
-            unset($validated_req['package_video']);
-            $created = $this->package_recording
-                ->create($validated_req);
+            $order = $this->order->where('order_no', $validated_req['order_no'])->first();
 
-            if (empty($created)) {
-                throw new Exception('Something Went Wrong While Uploading Package Recording');
+            if (empty($order)) {
+                throw new Exception('Order Not Found');
             }
 
-            $video = $request->file('package_video');
-            $new_video_file = 'OPV-'.time().uniqid().'.'.$video->getClientOriginalExtension();
-            $tempPath = 'temp/uploads/'.$new_video_file;
+            // Create the record first (without file paths)
+            $created = $this->package_recording->create([
+                'order_id' => $order->id,
+            ]);
 
-            Storage::disk('local')->put($tempPath, file_get_contents($video->getRealPath()));
+            if (empty($created)) {
+                throw new Exception('Something Went Wrong While Creating Package Recording');
+            }
 
-            dispatch(new CompressPackageRecordingWithFFMPEG($tempPath, $created))->onQueue('video');
+            // ── Barcode Photo — store directly to S3 (small image, no compression needed)
+            $photo = $request->file('barcode_photo');
+            $photoName = 'BPH-'.time().uniqid().'.'.$photo->getClientOriginalExtension();
+            $photoPath = Storage::disk('s3')->putFileAs(
+                'PackageRecording/photos',
+                $photo,
+                $photoName
+            );
+
+            $photoUrl = Storage::disk('s3')->url($photoPath);
+            $created->barcode_photo = $photoUrl;
+            $created->save();
+
+            // ── Screen Recording — temp store then compress via job
+            $screenVideo = $request->file('screen_recording');
+            $screenVideoName = 'SCR-'.time().uniqid().'.'.$screenVideo->getClientOriginalExtension();
+            $screenTempPath = 'temp/uploads/'.$screenVideoName;
+            Storage::disk('local')->put($screenTempPath, file_get_contents($screenVideo->getRealPath()));
+
+            dispatch(new CompressPackageRecordingWithFFMPEG(
+                $screenTempPath,
+                $created,
+                'screen_recording_video'  // column name to update after compression
+            ))->onQueue('video');
+
+            // ── Scene Video — temp store then compress via job
+            $sceneVideo = $request->file('scene_video');
+            $sceneVideoName = 'SCV-'.time().uniqid().'.'.$sceneVideo->getClientOriginalExtension();
+            $sceneTempPath = 'temp/uploads/'.$sceneVideoName;
+            Storage::disk('local')->put($sceneTempPath, file_get_contents($sceneVideo->getRealPath()));
+
+            dispatch(new CompressPackageRecordingWithFFMPEG(
+                $sceneTempPath,
+                $created,
+                'scene_video'  // column name to update after compression
+            ))->onQueue('video');
 
             return [
                 'status' => true,
-                'message' => 'Package Recording Uploaded Succesfully',
+                'message' => 'Package Recording Uploaded Successfully',
             ];
 
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
-
             ];
         }
     }
@@ -146,15 +195,28 @@ class PackageRecordingsRepository implements IPackageRecordingsRepository
 
     public function destroyPackageRecording(string $id)
     {
-
         try {
             $package_recording = $this->package_recording->find($id);
+
             if (empty($package_recording)) {
                 throw new Exception('Package Recording Not Found');
             }
 
-            if (! empty($package_recording->package_video)) {
-                dispatch(new PackageVideoDestroyOnAWS($package_recording->package_video, $package_recording->thumbnail_url));
+            // Dispatch delete job only if at least one file exists
+            $hasAnyFile = $package_recording->barcode_photo
+                || $package_recording->screen_recording_video
+                || $package_recording->screen_recording_thumbnail
+                || $package_recording->scene_video
+                || $package_recording->scene_video_thumbnail;
+
+            if ($hasAnyFile) {
+                dispatch(new PackageVideoDestroyOnAWS(
+                    $package_recording->barcode_photo,
+                    $package_recording->screen_recording_video,
+                    $package_recording->screen_recording_thumbnail,
+                    $package_recording->scene_video,
+                    $package_recording->scene_video_thumbnail,
+                ));
             }
 
             $deleted = $package_recording->delete();
@@ -167,11 +229,11 @@ class PackageRecordingsRepository implements IPackageRecordingsRepository
                 'status' => true,
                 'message' => 'Package Recording Deleted Successfully',
             ];
+
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
-
             ];
         }
     }

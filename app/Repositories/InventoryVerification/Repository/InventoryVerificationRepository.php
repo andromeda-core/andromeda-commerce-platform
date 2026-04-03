@@ -8,7 +8,7 @@ use App\Models\InventoryVerification;
 use App\Repositories\InventoryVerification\Interface\IInventoryVerificationRepository;
 use Exception;
 use Illuminate\Http\Request;
-use Str;
+use Illuminate\Support\Facades\Storage;
 
 class InventoryVerificationRepository implements IInventoryVerificationRepository
 {
@@ -73,11 +73,12 @@ class InventoryVerificationRepository implements IInventoryVerificationRepositor
     public function storeInventoryVerification(Request $request)
     {
         try {
-
             $request->validate([
                 'inventory_id' => ['required', 'exists:inventories,id'],
                 'scanned_code' => ['required', 'string', 'max:255'],
-                'verification_video' => ['nullable', 'mimes:mp4,mov,ogg,qt,wmv,webm', 'max:10000'],
+                'barcode_photo' => ['required', 'image', 'mimetypes:image/jpeg,image/png,image/webp', 'max:10240'],
+                'screen_recording' => ['required', 'file', 'mimetypes:video/webm,video/mp4,video/quicktime', 'max:10485760'],
+                'scene_video' => ['required', 'file', 'mimetypes:video/webm,video/mp4,video/quicktime', 'max:10485760'],
             ]);
 
             $user = $request->user();
@@ -93,11 +94,41 @@ class InventoryVerificationRepository implements IInventoryVerificationRepositor
                 throw new Exception('Something Went Wrong While Creating Verification');
             }
 
-            $video = $request->file('verification_video');
-            $originalName = time().uniqid().'-'.Str::random(8).'.'.$video->getClientOriginalExtension();
-            $tempPath = $video->storeAs('temp/uploads', $originalName, 'local');
+            // ── Barcode Photo — direct S3 (no compression needed)
+            $photo = $request->file('barcode_photo');
+            $photoName = 'BPH-'.time().uniqid().'.'.$photo->getClientOriginalExtension();
+            $photoPath = Storage::disk('s3')->putFileAs(
+                'InventoryVerification/Photos',
+                $photo,
+                $photoName
+            );
+            $photoUrl = Storage::disk('s3')->url($photoPath);
+            $created->barcode_photo = $photoUrl;
+            $created->save();
 
-            dispatch(new UploadInventoryVerificationVideoOnAWSJob($created, $tempPath));
+            // ── Screen Recording
+            $screenVideo = $request->file('screen_recording');
+            $screenVideoName = 'SCR-'.time().uniqid().'.'.$screenVideo->getClientOriginalExtension();
+            $screenTempPath = 'temp/uploads/'.$screenVideoName;
+            Storage::disk('local')->put($screenTempPath, file_get_contents($screenVideo->getRealPath()));
+
+            dispatch(new UploadInventoryVerificationVideoOnAWSJob(
+                $created,
+                $screenTempPath,
+                'screen_recording_video'
+            ));
+
+            // ── Scene Video
+            $sceneVideo = $request->file('scene_video');
+            $sceneVideoName = 'SCV-'.time().uniqid().'.'.$sceneVideo->getClientOriginalExtension();
+            $sceneTempPath = 'temp/uploads/'.$sceneVideoName;
+            Storage::disk('local')->put($sceneTempPath, file_get_contents($sceneVideo->getRealPath()));
+
+            dispatch(new UploadInventoryVerificationVideoOnAWSJob(
+                $created,
+                $sceneTempPath,
+                'scene_video'
+            ));
 
             return [
                 'status' => true,

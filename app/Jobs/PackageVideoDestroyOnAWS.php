@@ -18,26 +18,37 @@ class PackageVideoDestroyOnAWS implements ShouldQueue
     public $timeout = 300;
 
     public function __construct(
-        private ?string $video_url,
-        private ?string $thumbnail_url
+        private ?string $barcode_photo,
+        private ?string $screen_recording_video,
+        private ?string $screen_recording_thumbnail,
+        private ?string $scene_video,
+        private ?string $scene_video_thumbnail,
     ) {}
 
     public function handle(): void
     {
-        if (! empty($this->video_url)) {
-            $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $this->video_url);
+        $files = [
+            $this->barcode_photo,
+            $this->screen_recording_video,
+            $this->screen_recording_thumbnail,
+            $this->scene_video,
+            $this->scene_video_thumbnail,
+        ];
+
+        foreach ($files as $file) {
+            if (empty($file)) {
+                continue;
+            }
+
+            $relative_path = Str::replaceFirst(
+                config('filesystems.disks.s3.url').'/',
+                '',
+                $file
+            );
+
             if (Storage::disk('s3')->exists($relative_path)) {
                 Storage::disk('s3')->delete($relative_path);
             }
-
-        }
-
-        if (! empty($this->thumbnail_url)) {
-            $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $this->thumbnail_url);
-            if (Storage::disk('s3')->exists($relative_path)) {
-                Storage::disk('s3')->delete($relative_path);
-            }
-
         }
     }
 }

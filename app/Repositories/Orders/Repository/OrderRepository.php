@@ -1643,8 +1643,17 @@ class OrderRepository implements IOrderRepository
             ];
         }
 
-        $package_video->is_opened = true;
-        $package_video->save();
+        if ($package_video->is_opened) {
+            return [
+                'status' => true,
+                'message' => $this->trans::get('Packaging Video Already Marked As Viewed'),
+            ];
+        }
+
+        $package_video->updateQuietly([
+            'is_opened' => true,
+            'opened_at' => now(),
+        ]);
 
         return [
             'status' => true,

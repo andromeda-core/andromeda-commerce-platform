@@ -6,7 +6,6 @@ import { Head, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
 import { useEffect, useState } from 'react';
 
-
 export default function index({ inventory_verifications }) {
     // Bulk Delete Form Data
     const { props } = usePage();
@@ -14,27 +13,54 @@ export default function index({ inventory_verifications }) {
 
     useEffect(() => {
         const columns = [
-
             { key: 'verified_by.name', label: 'Verified By Name' },
             { key: 'verified_by.email', label: 'Verified By Email' },
             { key: 'verified_by.phone', label: 'Verified By Phone' },
 
-
-
             {
-                label: 'View Video', render: (item) => {
-                    if (item?.video) {
-
-                        return (
-                            <a href={item?.video} target='__blank' className="text-blue-500 underline cursor-pointer">
-                                View Video
-                            </a>
-                        )
-                    } else {
-                        return 'Processing...'
-                    }
-
-                }
+                label: 'Barcode Photo',
+                render: (item) =>
+                    item?.barcode_photo ? (
+                        <a
+                            href={item.barcode_photo}
+                            target="_blank"
+                            className="text-sm text-violet-600 hover:underline"
+                        >
+                            View Photo
+                        </a>
+                    ) : (
+                        <span className="text-sm text-gray-800 dark:text-white/60">N/A</span>
+                    ),
+            },
+            {
+                label: 'Screen Recording',
+                render: (item) =>
+                    item?.screen_recording_video ? (
+                        <a
+                            href={item.screen_recording_video}
+                            target="_blank"
+                            className="text-sm text-blue-500 hover:underline"
+                        >
+                            View Video
+                        </a>
+                    ) : (
+                        <span className="text-sm text-gray-800 dark:text-white/60">N/A</span>
+                    ),
+            },
+            {
+                label: 'Scene Video',
+                render: (item) =>
+                    item?.scene_video ? (
+                        <a
+                            href={item.scene_video}
+                            target="_blank"
+                            className="text-sm text-green-600 hover:underline"
+                        >
+                            View Video
+                        </a>
+                    ) : (
+                        <span className="text-sm text-gray-800 dark:text-white/60">N/A</span>
+                    ),
             },
 
             {
@@ -46,9 +72,7 @@ export default function index({ inventory_verifications }) {
                 key: 'verified_at',
                 label: 'Verified At',
             },
-
         ];
-
 
         setColumns(columns);
     }, []);
@@ -68,8 +92,7 @@ export default function index({ inventory_verifications }) {
                 <Card
                     Content={
                         <>
-
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Verify Inventory'}
                                     URL={route('dashboard.inventory-verifications.create')}
@@ -93,7 +116,6 @@ export default function index({ inventory_verifications }) {
                             </div>
 
                             <Table
-
                                 EditRoute={null}
                                 // SearchRoute={'dashboard.distributors.index'}
                                 Search={false}

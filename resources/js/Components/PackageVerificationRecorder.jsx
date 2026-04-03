@@ -1,64 +1,69 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
-import { useVideoRecorder } from '@/Hooks/useVideoRecorder';
 import { useScanner } from '@/Hooks/useScanner';
 import { useNativeScanner } from '@/Hooks/useNativeScanner';
 import NativeScannerPreview from '@/Components/NativeScannerPreview';
 import axios from 'axios';
 import beepSound from '../../assets/sounds/Beep.mp3';
 import getSocketId from './getSocketId';
-
+import { router } from '@inertiajs/react';
 
 const PackageVerificationRecorder = memo(
-    ({ isOpen, onClose, onSave, orderNo, onVerified, onVerify }) => {
-        const {
-            recordingVideoRef,
-            isReady,
-            isRecording,
-            recordedFile,
-            recordedUrl,
-            cameraError,
-            elapsed,
-            startCamera,
-            stopCamera,
-            startRecording,
-            stopRecording,
-            pauseRecording,
-            resumeRecording,
-            retake,
-        } = useVideoRecorder();
-
-
-
+    ({
+        isOpen,
+        onClose,
+        onSave,
+        orderNo,
+        scannedCode,
+        inventoryId,
+        onVerified,
+        onVerify,
+        uploadRoute,
+        heading = 'Package Verification',
+    }) => {
+        // ── Refs ───────────────────────────────────────────────────────────────
         const audioRef = useRef(null);
+        const videoRef = useRef(null); // PC only — useScanner feeds into this
+        const isVerifiedRef = useRef(false);
+        const isScanningRef = useRef(false);
 
+        // ── State ──────────────────────────────────────────────────────────────
         const [torchOn, setTorchOn] = useState(false);
         const [nativeScan, setNativeScan] = useState(false);
+        const [nativeScanImageUrl, setNativeScanImageUrl] = useState(null);
         const [desktopScanActive, setDesktopScanActive] = useState(false);
         const [verificationStatus, setVerificationStatus] = useState(null);
         const [verificationMessage, setVerificationMessage] = useState('');
-        const [isSaving, setIsSaving] = useState(false);
+        const [isUploading, setIsUploading] = useState(false);
+        const [capturedPhoto, setCapturedPhoto] = useState(null); // blob URL preview
+        const [capturedPhotoFile, setCapturedPhotoFile] = useState(null); // File for upload
+        const [screenRecordingFile, setScreenRecordingFile] = useState(null);
+        const [sceneVideoFile, setSceneVideoFile] = useState(null);
 
-        const isVerifiedRef = useRef(false);
-        const verifiedCodesRef = useRef([]);
-        const manualStopRef = useRef(false);
-        const pendingCloseRef = useRef(false);
-        const isScanningRef = useRef(false);
-
+        // ── Device detect ──────────────────────────────────────────────────────
         const isMobileDevice =
             /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
             (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+        // ── useScanner — PC only, completely unchanged behavior ────────────────
+        // active: true only on PC when desktopScanActive is true
+        // On mobile: always idle (active: false)
         const { refocus, toggleTorch } = useScanner({
-            sourceVideoRef: recordingVideoRef,
-            active: false,
-            onScan: () => { },
+            sourceVideoRef: videoRef,
+            active: !isMobileDevice && desktopScanActive,
+            onScan: async (text) => {
+                if (isScanningRef.current) return;
+                setDesktopScanActive(false);
+                await handleScannedCode(text);
+            },
         });
 
+        const { captureImage } = useNativeScanner();
+
+        // ── Audio ──────────────────────────────────────────────────────────────
         useEffect(() => {
             audioRef.current = new Audio(beepSound);
             audioRef.current.preload = 'auto';
         }, []);
-
 
         const playBeep = async () => {
             try {
@@ -66,20 +71,45 @@ const PackageVerificationRecorder = memo(
                 audioRef.current.currentTime = 0;
                 await audioRef.current.play();
             } catch (err) {
-                console.warn('[NativeScanner] Beep blocked:', err);
+                console.warn('[PackageRecorder] Beep blocked:', err);
             }
         };
 
-        const { captureImage } = useNativeScanner();
-        const [nativeScanImageUrl, setNativeScanImageUrl] = useState(null);
-
+        // ── Torch ──────────────────────────────────────────────────────────────
         const handleTorchToggle = useCallback(async () => {
             const result = await toggleTorch();
             if (result !== null) setTorchOn(result);
         }, [toggleTorch]);
 
+        // ── Full reset + close ─────────────────────────────────────────────────
+        const _doClose = useCallback(() => {
+            setNativeScan(false);
+            setNativeScanImageUrl(null);
+            setDesktopScanActive(false);
+            setTorchOn(false);
+            setVerificationStatus(null);
+            setVerificationMessage('');
+            setIsUploading(false);
+            setCapturedPhoto((prev) => {
+                if (prev) URL.revokeObjectURL(prev);
+                return null;
+            });
+            setCapturedPhotoFile(null);
+            setScreenRecordingFile(null);
+            setSceneVideoFile(null);
+            isVerifiedRef.current = false;
+            isScanningRef.current = false;
+            onClose();
+        }, [onClose]);
+
+        const handleClose = useCallback(() => {
+            if (desktopScanActive) return; // block close while PC scanning
+            _doClose();
+        }, [desktopScanActive, _doClose]);
+
+        // ── handleScannedCode ──────────────────────────────────────────────────
         const handleScannedCode = useCallback(
-            async (text, meta) => {
+            async (text) => {
                 if (isScanningRef.current) return;
                 isScanningRef.current = true;
 
@@ -96,32 +126,23 @@ const PackageVerificationRecorder = memo(
                     let responseMsg = null;
 
                     if (onVerify) {
-                        // Custom verify function provided (e.g. inventory verification)
                         const result = await onVerify(trimmed);
                         isSuccess = result?.success === true;
                         responseMsg = result?.message;
                     } else {
                         const socketId = await getSocketId();
-                        // Default: orders verify API
-                        const { data } = await axios.post(route('dashboard.orders.verify'), {
-                            order_no: orderNo,
-                            code: trimmed,
-                        }, {
-
-                            headers: {
-                                'X-Socket-ID': socketId,
-                            }
-                        });
+                        const { data } = await axios.post(
+                            route('dashboard.orders.verify'),
+                            { order_no: orderNo, code: trimmed },
+                            { headers: { 'X-Socket-ID': socketId } },
+                        );
                         isSuccess =
                             data.status === true || data.status === 1 || data.status === 'success';
                         responseMsg = data?.message;
                     }
 
                     if (isSuccess) {
-                        verifiedCodesRef.current = [...verifiedCodesRef.current, trimmed];
                         isVerifiedRef.current = true;
-                        // stopRecording();
-                        resumeRecording();
                         const msg =
                             responseMsg || `Verification successful. CODE ${trimmed} matched.`;
                         setVerificationStatus('success');
@@ -130,274 +151,185 @@ const PackageVerificationRecorder = memo(
                     } else {
                         const msg = responseMsg || `CODE does not match: ${trimmed}`;
                         if (onVerify) {
-                            // Custom verify mismatch: stop recording, show error + preview
-                            // Upload stays locked, user can Retake or Close
                             setVerificationStatus('mismatch');
                             setVerificationMessage(msg);
-                            // stopRecording();
-                            resumeRecording();
                         } else {
-                            // Default orders mismatch: fire page banner, close modal
                             onVerified?.('mismatch', msg);
-                            setNativeScan(false);
-                            setDesktopScanActive(false);
-                            setTorchOn(false);
-                            setVerificationStatus(null);
-                            setVerificationMessage('');
-                            setIsSaving(false);
-                            isVerifiedRef.current = false;
-                            manualStopRef.current = false;
-                            pendingCloseRef.current = false;
-                            isScanningRef.current = false;
-                            stopCamera();
-                            onClose();
+                            _doClose();
                             return;
                         }
                     }
                 } catch (err) {
                     console.error('[PackageRecorder] Verify request failed:', err);
-                    const msg = 'Verification failed. Recording resumed, please try again.';
                     setVerificationStatus('scan_error');
-                    setVerificationMessage(msg);
-                    resumeRecording();
+                    setVerificationMessage('Verification failed. Please try again.');
                 } finally {
                     setNativeScan(false);
                     isScanningRef.current = false;
                 }
             },
-            [orderNo, stopRecording, stopCamera, onClose, resumeRecording, onVerified],
+            [orderNo, onVerify, onVerified, _doClose],
         );
 
+        // ── handleSnapshot ─────────────────────────────────────────────────────
+        // PC:     activates useScanner live scan overlay (unchanged behavior)
+        // Mobile: opens native camera, stores photo, opens NativeScannerPreview
         const handleSnapshot = useCallback(async () => {
-            if (!isRecording || isScanningRef.current) return;
+            if (isScanningRef.current) return;
             setVerificationStatus(null);
             setVerificationMessage('');
-            pauseRecording();
 
             if (isMobileDevice) {
-                const { cancelled, imageUrl } = await captureImage();
-
-                if (cancelled || !imageUrl) {
-                    setTimeout(() => resumeRecording(), 200);
-                    return;
-                }
+                const { cancelled, imageUrl, file } = await captureImage();
+                if (cancelled || !imageUrl) return;
+                setCapturedPhoto(imageUrl);
+                setCapturedPhotoFile(file);
                 setNativeScanImageUrl(imageUrl);
                 setNativeScan(true);
             } else {
                 setDesktopScanActive(true);
             }
-        }, [isRecording, isMobileDevice, pauseRecording, resumeRecording, captureImage]);
+        }, [isMobileDevice, captureImage]);
+
+        // ── Cancel PC scan ─────────────────────────────────────────────────────
         const handleCancelDesktopScan = useCallback(() => {
             setDesktopScanActive(false);
-            resumeRecording();
-        }, [resumeRecording]);
+        }, []);
 
-        const handleStopRecording = useCallback(() => {
+        // ── Rescan — clear verification, keep modal open ───────────────────────
+        const handleRescan = useCallback(() => {
+            isVerifiedRef.current = false;
+            isScanningRef.current = false;
+            setCapturedPhoto((prev) => {
+                if (prev) URL.revokeObjectURL(prev);
+                return null;
+            });
+            setCapturedPhotoFile(null);
+            setScreenRecordingFile(null);
+            setSceneVideoFile(null);
+            setVerificationStatus(null);
+            setVerificationMessage('');
+        }, []);
 
-            if (isVerifiedRef.current) {
-                stopRecording();
+        // ── handleSave — upload barcode photo + optional videos ────────────────
+        const handleSave = useCallback(async () => {
+            if (!isVerifiedRef.current) return;
+
+            // Required validation
+            if (!screenRecordingFile) {
+                setVerificationStatus('scan_error');
+                setVerificationMessage('Screen Recording Video is required.');
+                return;
+            }
+            if (!sceneVideoFile) {
+                setVerificationStatus('scan_error');
+                setVerificationMessage('Scene Video is required.');
                 return;
             }
 
-            manualStopRef.current = true;
-            setDesktopScanActive(false);
-            setNativeScan(false);
-            stopRecording();
-        }, [stopRecording]);
-
-        const _doClose = useCallback(() => {
-            setNativeScan(false);
-            setNativeScanImageUrl(null);
-            setDesktopScanActive(false);
-            setTorchOn(false);
-            setVerificationStatus(null);
-            setVerificationMessage('');
-            setIsSaving(false);
-            isVerifiedRef.current = false;
-            manualStopRef.current = false;
-            pendingCloseRef.current = false;
-            isScanningRef.current = false;
-            stopCamera();
-            onClose();
-        }, [stopCamera, onClose]);
-
-        const handleSave = useCallback(() => {
-            if (!recordedFile || !isVerifiedRef.current) return;
-            setIsSaving(true);
+            setIsUploading(true);
             try {
-                onSave(recordedFile);
-                setNativeScan(false);
-                setDesktopScanActive(false);
-                setTorchOn(false);
-                setVerificationStatus(null);
-                setVerificationMessage('');
-                setIsSaving(false);
-                isVerifiedRef.current = false;
-                manualStopRef.current = false;
-                pendingCloseRef.current = false;
-                isScanningRef.current = false;
-                stopCamera();
+                const formData = new FormData();
+                if (inventoryId) formData.append('inventory_id', inventoryId);
+                if (orderNo) formData.append('order_no', orderNo);
+                if (capturedPhotoFile) formData.append('barcode_photo', capturedPhotoFile);
+                if (screenRecordingFile) formData.append('screen_recording', screenRecordingFile);
+                if (sceneVideoFile) formData.append('scene_video', sceneVideoFile);
+
+                const uploadUrl = uploadRoute ?? route('dashboard.orders.packagerecordingstore');
+
+                if (uploadRoute) {
+                    formData.append('scanned_code', scannedCode);
+                    router.post(uploadRoute, formData, {
+                        forceFormData: true,
+                        onSuccess: () => {
+                            onSave?.();
+                            _doClose();
+                        },
+                        onError: (errors) => {
+                            const firstError = Object.values(errors)[0];
+                            setVerificationMessage(
+                                firstError || 'Validation failed. Please check your files.',
+                            );
+                            setVerificationStatus('scan_error');
+                            setIsUploading(false);
+                        },
+                        onFinish: () => {
+                            setIsUploading(false);
+                        },
+                    });
+                } else {
+                    await axios.post(uploadUrl, formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                    });
+                    onSave?.();
+                    _doClose();
+                }
             } catch (err) {
-                console.error('[PackageRecorder] Save error:', err);
-                setIsSaving(false);
+                console.error('[PackageRecorder] Upload failed:', err);
+                if (err.response?.status === 422) {
+                    const errors = err.response.data?.errors;
+                    if (errors) {
+                        const firstError = Object.values(errors)[0]?.[0];
+                        setVerificationMessage(
+                            firstError || 'Validation failed. Please check your files.',
+                        );
+                    } else {
+                        setVerificationMessage(err.response.data?.message || 'Validation failed.');
+                    }
+                } else {
+                    setVerificationMessage('Upload failed. Please try again.');
+                }
+                setVerificationStatus('scan_error');
+            } finally {
+                setIsUploading(false);
             }
-        }, [recordedFile, onSave, stopCamera]);
+        }, [
+            orderNo,
+            capturedPhotoFile,
+            inventoryId,
+            uploadRoute,
+            screenRecordingFile,
+            sceneVideoFile,
+            onSave,
+            _doClose,
+        ]);
 
-        const handleRetake = useCallback(() => {
-            isVerifiedRef.current = false;
-            manualStopRef.current = false;
-            verifiedCodesRef.current = [];
-            isScanningRef.current = false;
-            setDesktopScanActive(false);
-            setNativeScan(false);
-            setVerificationStatus(null);
-            setVerificationMessage('');
-            retake();
-            setTimeout(() => startRecording(), 50);
-        }, [retake, startRecording]);
-
-        const handleClose = useCallback(() => {
-            if (isRecording) {
-                pendingCloseRef.current = true;
-                manualStopRef.current = true;
-                setDesktopScanActive(false);
-                setNativeScan(false);
-                stopRecording();
-                return;
-            }
-            _doClose();
-        }, [isRecording, stopRecording, _doClose]);
-
-        // Start/stop camera with modal
+        // ── Reset when modal closes externally ────────────────────────────────
         useEffect(() => {
-            if (isOpen) startCamera();
-            else {
+            if (!isOpen) {
                 setNativeScan(false);
                 setDesktopScanActive(false);
             }
         }, [isOpen]);
-
-        useEffect(() => {
-            if (isReady && isOpen && !isRecording && !recordedUrl) {
-                isVerifiedRef.current = false;
-                manualStopRef.current = false;
-                startRecording();
-            }
-        }, [isReady]);
-
-        useEffect(() => {
-            if (!isRecording && pendingCloseRef.current) _doClose();
-        }, [isRecording]);
-
-        useEffect(() => {
-            if (recordedUrl && manualStopRef.current && !isVerifiedRef.current) {
-                retake();
-                manualStopRef.current = false;
-            }
-        }, [recordedUrl]);
-
-        useEffect(() => {
-            if (!desktopScanActive) return;
-
-            let cancelled = false;
-
-            const runScanner = async () => {
-                try {
-                    const { BrowserMultiFormatReader } = await import('@zxing/browser');
-                    const { BarcodeFormat, DecodeHintType } = await import('@zxing/library');
-
-                    const hints = new Map();
-                    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
-                        BarcodeFormat.CODE_128,
-                        BarcodeFormat.EAN_13,
-                        BarcodeFormat.QR_CODE,
-                    ]);
-                    hints.set(DecodeHintType.TRY_HARDER, true);
-
-                    const reader = new BrowserMultiFormatReader(hints);
-
-                    const tick = async () => {
-                        if (cancelled || isScanningRef.current) return;
-
-                        const video = recordingVideoRef.current;
-                        if (!video || !video.videoWidth || !video.videoHeight) return;
-
-                        const vW = video.videoWidth;
-                        const vH = video.videoHeight;
-                        const eH = video.offsetHeight || Math.round((vW * 9) / 16);
-
-                        const cropW = Math.round(vW * 0.65);
-                        const cropH = Math.max(40, Math.round(vH * (56 / eH)));
-                        const cropX = Math.round((vW - cropW) / 2);
-                        const cropY = Math.round((vH - cropH) / 2);
-
-                        const canvas = document.createElement('canvas');
-                        canvas.width = cropW;
-                        canvas.height = cropH;
-                        canvas
-                            .getContext('2d')
-                            .drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
-
-                        try {
-                            const result = await reader.decodeFromCanvas(canvas);
-                            if (result && !cancelled && !isScanningRef.current) {
-                                setDesktopScanActive(false);
-                                await handleScannedCode(result.getText());
-                            }
-                        } catch {
-                            // No barcode in region — keep scanning
-                        }
-                    };
-
-                    const interval = setInterval(tick, 300);
-                    return () => clearInterval(interval);
-                } catch (err) {
-                    console.error('[PackageRecorder] Region scanner init error:', err);
-                }
-            };
-
-            let cleanup = () => { };
-            runScanner().then((fn) => {
-                if (fn) cleanup = fn;
-            });
-
-            return () => {
-                cancelled = true;
-                cleanup();
-            };
-        }, [desktopScanActive, handleScannedCode]);
 
         if (!isOpen) return null;
 
         return (
             <>
                 <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
+                    {/* Backdrop */}
                     <div
                         className="fixed inset-0 hidden bg-black/60 sm:block"
-                        onClick={isRecording || desktopScanActive ? undefined : handleClose}
-                        style={isRecording || desktopScanActive ? { cursor: 'not-allowed' } : {}}
+                        onClick={desktopScanActive ? undefined : handleClose}
+                        style={desktopScanActive ? { cursor: 'not-allowed' } : {}}
                     />
 
-                    <div className="relative z-10 flex flex-col w-full h-full text-gray-900 bg-white dark:bg-deepcharcoal dark:text-white/80 sm:h-auto sm:flex-none sm:max-w-2xl sm:rounded-2xl sm:shadow-2xl">
-                        {/* Header */}
-                        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b dark:border-white/10">
+                    <div className="relative z-10 flex h-full w-full flex-col bg-white text-gray-900 dark:bg-deepcharcoal dark:text-white/80 sm:h-auto sm:max-w-2xl sm:flex-none sm:rounded-2xl sm:shadow-2xl">
+                        {/* ── Header ── */}
+                        <div className="flex items-center justify-between border-b px-6 pb-4 pt-5 dark:border-white/10">
                             <h3 className="text-base font-semibold">
-                                {desktopScanActive
-                                    ? 'Hold Barcode in the Scan Box'
-                                    : 'Package Verification Recorder'}
+                                {desktopScanActive ? 'Hold Barcode in the Scan Box' : heading}
                             </h3>
                             <div className="flex items-center gap-2">
-                                {/* Torch — live feed only, not during desktop scan (can confuse) */}
-                                {!recordedUrl && !desktopScanActive && (
+                                {/* Torch — PC only, during scan */}
+                                {!isMobileDevice && desktopScanActive && (
                                     <button
                                         onClick={handleTorchToggle}
                                         title={
                                             torchOn ? 'Turn off flashlight' : 'Turn on flashlight'
                                         }
-                                        className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${torchOn
-                                            ? 'bg-yellow-400 text-gray-900 lg:hover:bg-yellow-300'
-                                            : 'text-gray-400 lg:hover:bg-gray-100 lg:hover:text-gray-600 dark:lg:hover:bg-white/10'
-                                            }`}
+                                        className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors ${torchOn ? 'bg-yellow-400 text-gray-900 lg:hover:bg-yellow-300' : 'text-gray-400 lg:hover:bg-gray-100 lg:hover:text-gray-600 dark:lg:hover:bg-white/10'}`}
                                     >
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -415,15 +347,14 @@ const PackageVerificationRecorder = memo(
                                         </svg>
                                     </button>
                                 )}
-
-                                {/* Close — disabled while recording or desktop scanning */}
-                                {!isRecording && !desktopScanActive && (
+                                {/* Close — disabled while PC scanning */}
+                                {!desktopScanActive && (
                                     <button
                                         onClick={handleClose}
-                                        className="flex items-center justify-center w-8 h-8 text-gray-400 rounded-full lg:hover:bg-gray-100 dark:lg:hover:bg-white/10"
+                                        className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 lg:hover:bg-gray-100 dark:lg:hover:bg-white/10"
                                     >
                                         <svg
-                                            className="w-4 h-4"
+                                            className="h-4 w-4"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -440,28 +371,13 @@ const PackageVerificationRecorder = memo(
                             </div>
                         </div>
 
-                        <div className="flex flex-col flex-1 gap-4 p-5 overflow-hidden">
-                            {/* Camera Error */}
-                            {cameraError && (
-                                <div className="p-3 mb-4 border border-red-200 rounded-lg bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-                                    <p className="mb-2 text-sm text-red-800 dark:text-red-300">
-                                        {cameraError}
-                                    </p>
-                                    <button
-                                        onClick={startCamera}
-                                        className="px-3 py-1 text-sm text-red-800 bg-red-100 rounded-lg lg:hover:bg-red-200"
-                                    >
-                                        Retry Camera
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* Verification Banners */}
+                        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
+                            {/* ── Verification Banners ── */}
                             {verificationStatus === 'success' && (
-                                <div className="flex items-center gap-3 p-3 mb-4 border border-green-200 rounded-lg bg-green-50 dark:border-green-800 dark:bg-green-900/20">
-                                    <div className="flex items-center justify-center flex-shrink-0 bg-green-100 rounded-full h-7 w-7 dark:bg-green-900/40">
+                                <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
+                                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40">
                                         <svg
-                                            className="w-4 h-4 text-green-600 dark:text-green-400"
+                                            className="h-4 w-4 text-green-600 dark:text-green-400"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -475,15 +391,15 @@ const PackageVerificationRecorder = memo(
                                         </svg>
                                     </div>
                                     <p className="text-sm font-medium text-green-800 dark:text-green-300">
-                                        {verificationMessage || 'CODE verified. Upload or retake.'}
+                                        {verificationMessage || 'Code verified successfully.'}
                                     </p>
                                 </div>
                             )}
                             {verificationStatus === 'mismatch' && (
-                                <div className="flex items-center gap-3 p-3 mb-4 border border-red-200 rounded-lg bg-red-50 dark:border-red-800 dark:bg-red-900/20">
-                                    <div className="flex items-center justify-center flex-shrink-0 bg-red-100 rounded-full h-7 w-7 dark:bg-red-900/40">
+                                <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
+                                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40">
                                         <svg
-                                            className="w-4 h-4 text-red-600 dark:text-red-400"
+                                            className="h-4 w-4 text-red-600 dark:text-red-400"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -497,16 +413,15 @@ const PackageVerificationRecorder = memo(
                                         </svg>
                                     </div>
                                     <p className="text-sm font-medium text-red-800 dark:text-red-300">
-                                        {verificationMessage ||
-                                            'CODE mismatch. Video discarded. Recording restarted.'}
+                                        {verificationMessage || 'Code mismatch. Please try again.'}
                                     </p>
                                 </div>
                             )}
                             {verificationStatus === 'scan_error' && (
-                                <div className="flex items-center gap-3 p-3 mb-4 border border-orange-200 rounded-lg bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20">
-                                    <div className="flex items-center justify-center flex-shrink-0 bg-orange-100 rounded-full h-7 w-7 dark:bg-orange-900/40">
+                                <div className="flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-900/20">
+                                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40">
                                         <svg
-                                            className="w-4 h-4 text-orange-600 dark:text-orange-400"
+                                            className="h-4 w-4 text-orange-600 dark:text-orange-400"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -520,275 +435,321 @@ const PackageVerificationRecorder = memo(
                                         </svg>
                                     </div>
                                     <p className="text-sm font-medium text-orange-800 dark:text-orange-300">
-                                        {verificationMessage ||
-                                            'Scan failed. Recording resumed, try again.'}
+                                        {verificationMessage || 'Scan failed. Please try again.'}
                                     </p>
                                 </div>
                             )}
 
-                            {/* Video Area */}
-                            <div className="relative overflow-hidden bg-black rounded-xl flex-1 min-h-0 sm:flex-none sm:[aspect-ratio:16/9]">
-                                {/* Live Feed — always mounted, hidden during playback */}
-                                <video
-                                    ref={recordingVideoRef}
-                                    autoPlay
-                                    muted
-                                    playsInline
-                                    className={`h-full w-full object-cover ${recordedUrl ? 'hidden' : 'block'}`}
-                                    onTouchStart={refocus}
-                                    onClick={desktopScanActive ? undefined : refocus}
-                                />
-
-                                {/* Playback after stop */}
-                                {recordedUrl && (
+                            {/* ── PC: live scan video (useScanner feeds videoRef) ── */}
+                            {!isMobileDevice && desktopScanActive && (
+                                <div className="relative min-h-0 flex-1 overflow-hidden rounded-xl bg-black sm:flex-none sm:[aspect-ratio:16/9]">
                                     <video
-                                        key={recordedUrl}
-                                        src={recordedUrl}
-                                        controls
+                                        ref={videoRef}
                                         autoPlay
-                                        className="object-cover w-full h-full"
+                                        muted
+                                        playsInline
+                                        className="h-full w-full object-cover"
+                                        onClick={refocus}
+                                        onTouchStart={refocus}
                                     />
-                                )}
-
-                                {/* ── Desktop Scan Overlay — same vignette + scan box as useScanner ── */}
-                                {desktopScanActive && !recordedUrl && (
                                     <div
-                                        className="absolute inset-0 pointer-events-none"
+                                        className="pointer-events-none absolute inset-0"
                                         style={{ boxShadow: '0 0 0 9999px rgba(0,0,0,0.65)' }}
                                     >
-                                        {/* Scan Box */}
                                         <div
-                                            className="absolute -translate-x-1/2 -translate-y-1/2 border-2 border-green-400 rounded left-1/2 top-1/2"
-                                            style={{
-                                                width: '65%',
-                                                height: '56px',
-                                                boxShadow: 'none',
-                                            }}
+                                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border-2 border-green-400"
+                                            style={{ width: '65%', height: '56px' }}
                                         >
-                                            {/* Corner accents */}
                                             <div className="absolute -left-0.5 -top-0.5 h-4 w-4 rounded-tl border-l-4 border-t-4 border-green-400" />
                                             <div className="absolute -right-0.5 -top-0.5 h-4 w-4 rounded-tr border-r-4 border-t-4 border-green-400" />
                                             <div className="absolute -bottom-0.5 -left-0.5 h-4 w-4 rounded-bl border-b-4 border-l-4 border-green-400" />
                                             <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-br border-b-4 border-r-4 border-green-400" />
-                                            {/* Animated scan line */}
                                             <div className="absolute left-2 right-2 top-1/2 h-0.5 -translate-y-1/2 animate-pulse bg-green-400 opacity-80" />
                                         </div>
-                                        {/* Hint text */}
                                         <p className="absolute bottom-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/70 px-3 py-1.5 text-xs text-white">
                                             Hold barcode in the green box to scan
                                         </p>
                                     </div>
-                                )}
-
-                                {/* Scanning active badge */}
-                                {desktopScanActive && !recordedUrl && (
-                                    <div className="absolute flex items-center gap-2 px-3 py-1 text-xs font-semibold text-white bg-green-600 rounded-full left-3 top-3">
-                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                                    <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white">
+                                        <div className="h-2 w-2 animate-pulse rounded-full bg-white" />{' '}
                                         SCANNING
                                     </div>
-                                )}
-
-                                {/* REC Badge */}
-                                {isRecording && !desktopScanActive && (
-                                    <div className="absolute flex items-center gap-2 px-3 py-1 text-sm font-semibold text-white bg-red-600 rounded-full left-3 top-3">
-                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                                        REC{' '}
-                                        {elapsed > 0 &&
-                                            `${Math.floor(elapsed / 60)}:${String(elapsed % 60).padStart(2, '0')}`}
-                                    </div>
-                                )}
-
-                                {/* Paused Badge (while desktop scan is active) */}
-                                {!isRecording && desktopScanActive && (
-                                    <div className="absolute flex items-center gap-2 px-3 py-1 text-xs font-semibold text-white rounded-full right-3 top-3 bg-amber-500">
-                                        ⏸ Recording Paused
-                                    </div>
-                                )}
-
-                                {/* Flash ON Badge */}
-                                {torchOn && !recordedUrl && !desktopScanActive && (
-                                    <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none right-2 top-2 bg-yellow-400/90">
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
-                                            viewBox="0 0 24 24"
-                                            strokeWidth={2}
-                                            stroke="currentColor"
-                                            className="size-3"
-                                        >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
-                                            />
-                                        </svg>
-                                        Flash ON
-                                    </div>
-                                )}
-
-                                {/* Camera Initializing */}
-                                {!isReady && !recordedUrl && !cameraError && (
-                                    <div className="absolute inset-0 flex items-center justify-center text-white">
-                                        <div className="text-center">
+                                    {torchOn && (
+                                        <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 rounded-full bg-yellow-400/90 px-2 py-1 text-xs font-semibold text-gray-900">
                                             <svg
-                                                className="w-8 h-8 mx-auto mb-2 animate-spin"
+                                                xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="size-3"
                                             >
-                                                <circle
-                                                    className="opacity-25"
-                                                    cx="12"
-                                                    cy="12"
-                                                    r="10"
-                                                    stroke="currentColor"
-                                                    strokeWidth="4"
-                                                />
                                                 <path
-                                                    className="opacity-75"
-                                                    fill="currentColor"
-                                                    d="M4 12a8 8 0 018-8v8z"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"
                                                 />
                                             </svg>
-                                            <p className="text-sm">Starting camera...</p>
+                                            Flash ON
                                         </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
+                            )}
 
-                                {/* Bottom Hint during recording */}
-                                {isRecording && !desktopScanActive && (
-                                    <div className="absolute flex items-center gap-2 px-3 py-1 text-xs text-white -translate-x-1/2 rounded-full bottom-3 left-1/2 whitespace-nowrap bg-black/60">
-                                        <div className="w-2 h-2 rounded-full animate-pulse bg-violet-400" />
-                                        Press "Snapshot &amp; Scan" to verify order
+                            {/* ── Mobile: captured barcode photo preview ── */}
+                            {isMobileDevice && capturedPhoto && (
+                                <div className="relative overflow-hidden rounded-xl bg-black">
+                                    <img
+                                        src={capturedPhoto}
+                                        alt="Captured barcode"
+                                        className="max-h-52 w-full object-contain"
+                                    />
+                                    <div className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-xs font-semibold text-white">
+                                        Barcode Photo
                                     </div>
-                                )}
-                            </div>
+                                    {verificationStatus === 'success' && (
+                                        <div className="absolute right-2 top-2 rounded-full bg-green-600 px-2 py-1 text-xs font-semibold text-white">
+                                            ✓ Verified
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
-                            {/* Controls */}
-                            <div className="flex flex-shrink-0 flex-wrap justify-center gap-3 pb-[env(safe-area-inset-bottom)] sm:pb-0">
-                                {!recordedUrl ? (
-                                    <>
-                                        {/* Desktop scan active — show cancel */}
-                                        {desktopScanActive && (
-                                            <button
-                                                onClick={handleCancelDesktopScan}
-                                                className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white transition-transform bg-gray-500 rounded-lg lg:hover:bg-gray-600 "
+                            {/* ── Instructions — shown before verification ── */}
+                            {!isVerifiedRef.current && !desktopScanActive && (
+                                <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 p-5 dark:border-white/10 dark:bg-white/5">
+                                    <div className="mb-3 flex items-center gap-2">
+                                        <div className="flex flex-shrink-0 items-center justify-center rounded-full bg-violet-100 p-1 dark:bg-violet-900/30">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="h-4 w-4 text-violet-600 dark:text-violet-400"
                                             >
-                                                <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    strokeWidth={1.5}
-                                                    stroke="currentColor"
-                                                    className="size-4"
-                                                >
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        d="M6 18L18 6M6 6l12 12"
-                                                    />
-                                                </svg>
-                                                Cancel Scan
-                                            </button>
-                                        )}
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                                                />
+                                            </svg>
+                                        </div>
+                                        <p className="text-sm font-semibold text-gray-800 dark:text-white/80">
+                                            How to complete verification
+                                        </p>
+                                    </div>
 
-                                        {/* Normal recording controls */}
-                                        {!desktopScanActive && (
-                                            <>
-                                                {/* Snapshot & Scan — only during recording */}
-                                                {isRecording && (
-                                                    <button
-                                                        onClick={handleSnapshot}
-                                                        className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white transition-transform rounded-lg bg-violet-600 lg:hover:bg-violet-700"
-                                                    >
-                                                        <svg
-                                                            xmlns="http://www.w3.org/2000/svg"
-                                                            fill="none"
-                                                            viewBox="0 0 24 24"
-                                                            strokeWidth={1.5}
-                                                            stroke="currentColor"
-                                                            className="size-4"
-                                                        >
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
-                                                            />
-                                                            <path
-                                                                strokeLinecap="round"
-                                                                strokeLinejoin="round"
-                                                                d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"
-                                                            />
-                                                        </svg>
-                                                        Snapshot &amp; Scan
-                                                    </button>
-                                                )}
+                                    <ol className="space-y-2.5 text-sm text-gray-600 dark:text-white/60">
+                                        <li className="flex items-start gap-2.5">
+                                            <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white">
+                                                1
+                                            </span>
+                                            <span>
+                                                {isMobileDevice
+                                                    ? "Start your phone's screen recorder (swipe down → Screen Record)"
+                                                    : 'Ensure your barcode is ready and visible to the camera'}
+                                            </span>
+                                        </li>
+                                        <li className="flex items-start gap-2.5">
+                                            <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white">
+                                                2
+                                            </span>
+                                            <span>
+                                                {isMobileDevice
+                                                    ? 'Tap "Capture & Scan Barcode"  point camera at barcode and take photo'
+                                                    : 'Click "Snapshot & Scan"  hold barcode in the green scan box'}
+                                            </span>
+                                        </li>
+                                        <li className="flex items-start gap-2.5">
+                                            <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-violet-600 text-xs font-bold text-white">
+                                                3
+                                            </span>
+                                            <span>
+                                                Once verified, upload your screen recording and
+                                                scene video as evidence
+                                            </span>
+                                        </li>
+                                    </ol>
 
-                                                {/* Stop Recording */}
-                                                {isRecording && (
-                                                    <button
-                                                        onClick={handleStopRecording}
-                                                        className="px-5 py-2 text-sm font-medium text-white transition-transform bg-red-600 rounded-lg lg:hover:bg-red-700 "
-                                                    >
-                                                        Stop Recording
-                                                    </button>
-                                                )}
+                                    {isMobileDevice && (
+                                        <div className="mt-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800/50 dark:bg-amber-900/20">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
+                                                />
+                                            </svg>
+                                            <p className="text-xs text-amber-700 dark:text-amber-300">
+                                                Start screen recorder before tapping Capture & Scan
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
-                                                {/* Camera preparing */}
-                                                {!isReady && !isRecording && !cameraError && (
-                                                    <p className="text-sm text-gray-400 animate-pulse dark:text-white/40">
-                                                        Preparing camera...
-                                                    </p>
-                                                )}
-
-                                                {/* Close — only when not recording */}
-                                                {!isRecording && (
-                                                    <button
-                                                        onClick={handleClose}
-                                                        className="px-5 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg lg:hover:bg-gray-600"
-                                                    >
-                                                        Close
-                                                    </button>
-                                                )}
-                                            </>
-                                        )}
-                                    </>
-                                ) : (
-                                    <>
-                                        {/* Upload — locked until verified */}
+                            {/* ── Controls: before verification ── */}
+                            {!isVerifiedRef.current && (
+                                <div className="flex flex-shrink-0 flex-wrap justify-center gap-3">
+                                    {!desktopScanActive && (
                                         <button
-                                            onClick={handleSave}
-                                            disabled={isSaving || !isVerifiedRef.current}
-                                            title={
-                                                !isVerifiedRef.current
-                                                    ? 'Scan a barcode to verify the order first'
-                                                    : ''
-                                            }
-                                            className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg lg:hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                            onClick={handleSnapshot}
+                                            disabled={isScanningRef.current}
+                                            className="flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-2 text-sm font-medium text-white transition-transform disabled:opacity-50 lg:hover:bg-violet-700"
                                         >
-                                            {isSaving ? 'Uploading...' : 'Upload Video'}
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-4"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
+                                                />
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"
+                                                />
+                                            </svg>
+                                            {isMobileDevice
+                                                ? 'Capture & Scan Barcode'
+                                                : 'Snapshot & Scan'}
                                         </button>
-
-                                        {/* Retake */}
+                                    )}
+                                    {!isMobileDevice && desktopScanActive && (
                                         <button
-                                            onClick={handleRetake}
-                                            className="px-5 py-2 text-sm font-medium text-white rounded-lg bg-amber-500 lg:hover:bg-amber-600"
+                                            onClick={handleCancelDesktopScan}
+                                            className="flex items-center gap-2 rounded-lg bg-gray-500 px-5 py-2 text-sm font-medium text-white transition-transform lg:hover:bg-gray-600"
                                         >
-                                            Retake
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-4"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                            Cancel Scan
                                         </button>
-
-                                        {/* Close */}
+                                    )}
+                                    {!desktopScanActive && (
                                         <button
                                             onClick={handleClose}
-                                            className="px-5 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg lg:hover:bg-gray-600"
+                                            className="rounded-lg bg-gray-500 px-5 py-2 text-sm font-medium text-white lg:hover:bg-gray-600"
                                         >
                                             Close
                                         </button>
-                                    </>
-                                )}
-                            </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* ── Upload fields + actions after verification ── */}
+                            {isVerifiedRef.current && (
+                                <div className="flex flex-col gap-4">
+                                    {/* Screen Recording Video */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-white/70">
+                                            Screen Recording Video
+                                            <span className="ml-1.5 text-xs font-semibold text-red-500">
+                                                *required
+                                            </span>
+                                        </label>
+                                        <p className="text-xs text-gray-400 dark:text-white/40">
+                                            Upload the video recorded using your phone's screen
+                                            recorder
+                                        </p>
+                                        <input
+                                            type="file"
+                                            accept="video/*"
+                                            onChange={(e) =>
+                                                setScreenRecordingFile(e.target.files?.[0] ?? null)
+                                            }
+                                            className="block w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-violet-700 dark:text-white/50 dark:file:bg-white/10 dark:file:text-white/70 lg:hover:file:bg-violet-100"
+                                        />
+                                        {screenRecordingFile && (
+                                            <p className="text-xs text-green-600 dark:text-green-400">
+                                                ✓ {screenRecordingFile.name}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Scene Video */}
+                                    <div className="flex flex-col gap-1.5">
+                                        <label className="text-sm font-medium text-gray-700 dark:text-white/70">
+                                            Scene Video
+                                            <span className="ml-1.5 text-xs font-semibold text-red-500">
+                                                *required
+                                            </span>
+                                        </label>
+                                        <p className="text-xs text-gray-400 dark:text-white/40">
+                                            Upload video recorded by an external camera showing the
+                                            full packing scene
+                                        </p>
+                                        <input
+                                            type="file"
+                                            accept="video/*"
+                                            onChange={(e) =>
+                                                setSceneVideoFile(e.target.files?.[0] ?? null)
+                                            }
+                                            className="block w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-blue-700 dark:text-white/50 dark:file:bg-white/10 dark:file:text-white/70 lg:hover:file:bg-blue-100"
+                                        />
+                                        {sceneVideoFile && (
+                                            <p className="text-xs text-green-600 dark:text-green-400">
+                                                ✓ {sceneVideoFile.name}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Buttons */}
+                                    <div className="flex flex-shrink-0 flex-wrap justify-center gap-3 pb-[env(safe-area-inset-bottom)] sm:pb-0">
+                                        <button
+                                            onClick={handleSave}
+                                            disabled={isUploading}
+                                            className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 lg:hover:bg-blue-700"
+                                        >
+                                            {isUploading ? 'Uploading...' : 'Save & Done'}
+                                        </button>
+                                        <button
+                                            onClick={handleRescan}
+                                            disabled={isUploading}
+                                            className="rounded-lg bg-amber-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-50 lg:hover:bg-amber-600"
+                                        >
+                                            Rescan
+                                        </button>
+                                        <button
+                                            onClick={handleClose}
+                                            disabled={isUploading}
+                                            className="rounded-lg bg-gray-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-50 lg:hover:bg-gray-600"
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
+
+                {/* ── NativeScannerPreview — mobile only ── */}
                 <NativeScannerPreview
                     isOpen={nativeScan}
                     fieldLabel="Order Code / Barcode"
@@ -803,7 +764,7 @@ const PackageVerificationRecorder = memo(
                     onClose={() => {
                         setNativeScan(false);
                         setNativeScanImageUrl(null);
-                        resumeRecording();
+                        // photo already captured + stored — keep it, user can retry
                     }}
                     scanBoxWidth={400}
                     scanBoxHeight={50}
@@ -813,4 +774,5 @@ const PackageVerificationRecorder = memo(
     },
 );
 
+PackageVerificationRecorder.displayName = 'PackageVerificationRecorder';
 export default PackageVerificationRecorder;

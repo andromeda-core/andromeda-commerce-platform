@@ -22,11 +22,17 @@ class CompressPackageRecordingWithFFMPEG implements ShouldQueue
 
     public function __construct(
         private string $tempPath,
-        private PackageRecording $pr
+        private PackageRecording $pr,
+        private string $column_name
     ) {}
 
     public function handle(): void
     {
+        $thumbnailColumn = match ($this->column_name) {
+            'screen_recording_video' => 'screen_recording_thumbnail',
+            'scene_video' => 'scene_video_thumbnail',
+            default => 'screen_recording_thumbnail',
+        };
 
         $path = [];
 
@@ -95,6 +101,6 @@ class CompressPackageRecordingWithFFMPEG implements ShouldQueue
             'thumbnail' => 'temp/uploads/'.$thumbnailName,
         ];
 
-        dispatch(new PackageVideoStoreOnAWS($path, $this->pr));
+        dispatch(new PackageVideoStoreOnAWS($path, $this->pr, column_name: $this->column_name, thumbnail_column: $thumbnailColumn));
     }
 }

@@ -25,8 +25,12 @@ export default function OrderView({ order, countries }) {
     const [showVideoModal, setShowVideoModal] = useState(false);
     const [selectedVideo, setSelectedVideo] = useState({});
     const [showImageModal, setShowImageModal] = useState(false);
-    const [selectedImage, setSelectedImage] = useState(null);
+
+    const [showRecordingModal, setShowRecordingModal] = useState(false);
+    const [selectedRecording, setSelectedRecording] = useState(null);
     const [selectedPackageVideoID, setSelectedPackageVideoID] = useState(null);
+
+    const [selectedImage, setSelectedImage] = useState(null);
     const [ErrorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
 
@@ -50,9 +54,9 @@ export default function OrderView({ order, countries }) {
         city: order?.shipping_city || '',
         state: order?.shipping_state || '',
         postal_code: order?.shipping_postal_code || '',
-        country_id: countries.filter((country) => country.name === order?.shipping_country)[0]?.id || '',
+        country_id:
+            countries.filter((country) => country.name === order?.shipping_country)[0]?.id || '',
     });
-
 
     const handleVideoView = (recording) => {
         setSelectedVideo({
@@ -67,12 +71,16 @@ export default function OrderView({ order, countries }) {
         setShowImageModal(true);
     };
 
+    const handleRecordingView = (recording) => {
+        setSelectedRecording(recording);
+        setShowRecordingModal(true);
+        setSelectedPackageVideoID(recording.id);
+    };
+
     // Payment proof upload states
     const [paymentProofFile, setPaymentProofFile] = useState(null);
     const [paymentProofPreview, setPaymentProofPreview] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
-
-
 
     const handleFileSelect = (file) => {
         setPaymentProofFile(file);
@@ -112,7 +120,8 @@ export default function OrderView({ order, countries }) {
                 onError: (errors) => {
                     setShowErrorMessage(true);
                     setErrorMessage(
-                        errors.payment_proof || __('Failed to upload payment proof. Please try again.'),
+                        errors.payment_proof ||
+                            __('Failed to upload payment proof. Please try again.'),
                     );
                 },
                 onFinish: () => {
@@ -129,10 +138,9 @@ export default function OrderView({ order, countries }) {
         window.history.replaceState({}, '', cleanUrl);
     }, []);
 
-
     // Prevent body scroll when modal is open
     useEffect(() => {
-        if (showVideoModal || showImageModal) {
+        if (showImageModal || showRecordingModal) {
             document.body.style.overflow = 'hidden';
             document.body.style.touchAction = 'none';
         } else {
@@ -144,58 +152,49 @@ export default function OrderView({ order, countries }) {
             document.body.style.overflow = '';
             document.body.style.touchAction = '';
         };
-    }, [showVideoModal, showImageModal]);
-
+    }, [showImageModal, showRecordingModal]);
 
     // updating history whenever modal opens/closes
     useEffect(() => {
         const url = new URL(window.location.href);
 
-        if (showVideoModal) {
+        if (showImageModal) {
             window.history.pushState({}, '', window.location.pathname);
-
-            url.searchParams.set('modal', 'packaging-recordings');
-            url.searchParams.set('url', selectedVideo?.url);
-            url.searchParams.set('thumbnail_url', selectedVideo?.thumbnail_url);
-
-            window.history.replaceState({}, '', url.toString());
-        } else if (showImageModal) {
-            window.history.pushState({}, '', window.location.pathname);
-
             url.searchParams.set('modal', 'payment-proof');
             url.searchParams.set('url', selectedImage);
-
+            window.history.replaceState({}, '', url.toString());
+        } else if (showRecordingModal) {
+            window.history.pushState({}, '', window.location.pathname);
+            url.searchParams.set('modal', 'packaging-recording');
             window.history.replaceState({}, '', url.toString());
         } else {
             url.searchParams.delete('modal');
             url.searchParams.delete('url');
-            url.searchParams?.delete('thumbnail_url');
+            url.searchParams.delete('thumbnail_url');
             window.history.replaceState({}, '', route('website.orders.index'));
             window.history.replaceState({}, '', route('website.orders.order-view', order.order_no));
         }
-    }, [showVideoModal, showImageModal, selectedVideo, selectedImage]);
+    }, [showImageModal, showRecordingModal, selectedImage]);
 
     // Pop State Handling
     useEffect(() => {
         const handlePopState = () => {
-            if (showVideoModal) {
-                setShowVideoModal(false);
-                setSelectedVideo({});
-                setSelectedPackageVideoID(null);
-                return;
-            }
             if (showImageModal) {
                 setShowImageModal(false);
                 setSelectedImage(null);
                 return;
             }
-
+            if (showRecordingModal) {
+                setShowRecordingModal(false);
+                setSelectedRecording(null);
+                return;
+            }
         };
 
         const preventInertiaNavigation = (event) => {
             const pathname = event.detail?.visit?.url?.pathname || '';
             const currentPath = `/orders/order-view/${order.order_no}`;
-            if ((showVideoModal || showImageModal) && pathname === currentPath) {
+            if ((showImageModal || showRecordingModal) && pathname === currentPath) {
                 event.preventDefault();
             }
         };
@@ -207,7 +206,7 @@ export default function OrderView({ order, countries }) {
             window.removeEventListener('popstate', handlePopState);
             if (removeRouterEvent) removeRouterEvent();
         };
-    }, [showVideoModal, showImageModal]);
+    }, [showImageModal, showRecordingModal]);
 
     useEffect(() => {
         if (selectedPackageVideoID != null) {
@@ -218,7 +217,6 @@ export default function OrderView({ order, countries }) {
             );
         }
     }, [selectedPackageVideoID]);
-
 
     return (
         <MainLayout>
@@ -237,42 +235,39 @@ export default function OrderView({ order, countries }) {
             )}
 
             <div className="min-h-screen transition-colors duration-200">
-
                 <div
-                    className={`max-w-8xl lg:my-7 mx-auto px-6 lg:px-8 ${windowSize.width <= 1024 && 'mb-20'}`}
+                    className={`max-w-8xl mx-auto px-6 lg:my-7 lg:px-8 ${windowSize.width <= 1024 && 'mb-20'}`}
                 >
-
                     {/* Header */}
                     <div className="my-2">
                         <Link
                             href={route('website.orders.index')}
-                            className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-main-text-light transition-colors dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                         >
                             <ChevronLeft />
                         </Link>
 
                         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                            <div className='flex items-center gap-5'>
+                            <div className="flex items-center gap-5">
                                 <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                                     {__('View Details')} - #{order.order_no}
                                 </h1>
 
-
                                 <span
-                                    className={`inline-flex items-center self-start rounded-full px-5 py-1 text-sm font-semibold uppercase sm:self-center text-main-text-dark  bg-main-text-light  dark:bg-main-text-dark dark:text-main-text-light text-[16px]`}
+                                    className={`inline-flex items-center self-start rounded-full bg-main-text-light px-5 py-1 text-[16px] text-sm font-semibold uppercase text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light sm:self-center`}
                                 >
-                                    {__(order.status.replace(/_/g, ' ').toUpperCase(), true)} {order?.is_purchase_confirmed ? `(${__("Purchase Confirmed")}) ` : order?.is_delivery_confirmed ? `(${__("Delivery Confirmed")}) ` : ""}
-
+                                    {__(order.status.replace(/_/g, ' ').toUpperCase(), true)}{' '}
+                                    {order?.is_purchase_confirmed
+                                        ? `(${__('Purchase Confirmed')}) `
+                                        : order?.is_delivery_confirmed
+                                          ? `(${__('Delivery Confirmed')}) `
+                                          : ''}
                                 </span>
-
                             </div>
-
                         </div>
                     </div>
 
-
-
-                    <div className="grid grid-cols-1 gap-8 mb-20 lg:grid-cols-3">
+                    <div className="mb-20 grid grid-cols-1 gap-8 lg:grid-cols-3">
                         {/* Left Section: Shipping & Payment */}
                         <div className="space-y-6 lg:col-span-2">
                             {/* Shipping Information */}
@@ -282,97 +277,76 @@ export default function OrderView({ order, countries }) {
                                 __={__}
                             />
 
+                            <CourierInfoCard order={order} __={__} />
 
-                            <CourierInfoCard
-                                order={order}
-                                __={__}
-                            />
+                            {(order?.payment_method === 'bank_transfer' ||
+                                order?.secondary_payment_method === 'bank_transfer') &&
+                                order?.status === 'pending' && (
+                                    <>
+                                        <OrderReferenceCard
+                                            order={order}
+                                            setCopied={setCopied}
+                                            setCopiedMessage={setCopiedMessage}
+                                            __={__}
+                                        />
 
+                                        <BankDetailsCard
+                                            order={order}
+                                            setCopied={setCopied}
+                                            setCopiedMessage={setCopiedMessage}
+                                            __={__}
+                                        />
 
-                            {(order?.payment_method === 'bank_transfer' || order?.secondary_payment_method === 'bank_transfer') && order?.status === 'pending' && (
-                                <>
-                                    <OrderReferenceCard
-                                        order={order}
-                                        setCopied={setCopied}
-                                        setCopiedMessage={setCopiedMessage}
-                                        __={__}
-                                    />
+                                        <PaymentProof
+                                            order={order}
+                                            __={__}
+                                            handleFileRemove={handleFileRemove}
+                                            handleFileSelect={handleFileSelect}
+                                            isUploading={isUploading}
+                                            paymentProofFile={paymentProofFile}
+                                            paymentProofPreview={paymentProofPreview}
+                                            handleUploadPaymentProof={handleUploadPaymentProof}
+                                            handleImageView={handleImageView}
+                                        />
+                                    </>
+                                )}
 
-
-                                    <BankDetailsCard
-                                        order={order}
-                                        setCopied={setCopied}
-                                        setCopiedMessage={setCopiedMessage}
-                                        __={__}
-                                    />
-
-
-                                    <PaymentProof
-                                        order={order}
-                                        __={__}
-                                        handleFileRemove={handleFileRemove}
-                                        handleFileSelect={handleFileSelect}
-                                        isUploading={isUploading}
-                                        paymentProofFile={paymentProofFile}
-                                        paymentProofPreview={paymentProofPreview}
-                                        handleUploadPaymentProof={handleUploadPaymentProof}
-                                        handleImageView={handleImageView}
-                                    />
-
-
-
-                                </>
-                            )}
-
-
-                            <OrderItems
-                                __={__}
-                                currency={currency}
-                                order={order}
-
-                            />
+                            <OrderItems __={__} currency={currency} order={order} />
 
                             <PackagingVideos
                                 __={__}
                                 handleVideoView={handleVideoView}
                                 order={order}
                                 setSelectedPackageVideoID={setSelectedPackageVideoID}
+                                handleRecordingView={handleRecordingView}
                             />
-
                         </div>
 
                         {/* Right Section: Order Summary */}
                         <div className="lg:col-span-1">
                             <div className="space-y-4">
-                                <OrderSummaryCard
-                                    currency={currency}
-                                    order={order}
-                                    __={__}
-                                />
-
-
+                                <OrderSummaryCard currency={currency} order={order} __={__} />
 
                                 {/* Help Section */}
-                                <div className="p-6 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                <div className="rounded-md border border-surface-3-light bg-white p-6 dark:border-surface-3-dark dark:bg-surface-1-dark">
                                     <h2 className="mb-2 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('Need Help')}?
                                     </h2>
                                     <p className="mb-4 text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                        {__('Contact our support team if you have any questions about your order.')}
+                                        {__(
+                                            'Contact our support team if you have any questions about your order.',
+                                        )}
                                     </p>
                                     <Link
                                         href={route('website.contact.index')}
-                                        className="flex items-center justify-center w-full gap-2 px-4 py-2 font-semibold transition-all rounded-md bg-main-text-light text-md text-main-text-dark dark:text-main-text-light dark:bg-main-text-dark hover:bg-main-text-light/80 dark:hover:bg-main-text-dark/80 "
+                                        className="text-md flex w-full items-center justify-center gap-2 rounded-md bg-main-text-light px-4 py-2 font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                                     >
-
                                         {__('Contact Support')}
                                     </Link>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-
                 </div>
             </div>
 
@@ -388,7 +362,7 @@ export default function OrderView({ order, countries }) {
                 createPortal(
                     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4">
                         <div
-                            className="fixed inset-0 transition-opacity duration-300 bg-black/40 backdrop-blur-sm"
+                            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
                             onClick={() => {
                                 setShowImageModal(false);
                                 setSelectedImage(null);
@@ -411,14 +385,13 @@ export default function OrderView({ order, countries }) {
                     document.getElementById('modal-root') || document.body,
                 )}
 
-
             {/* Video Modal */}
             {showVideoModal &&
                 Object.values(selectedVideo).length > 0 &&
                 createPortal(
                     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4">
                         <div
-                            className="fixed inset-0 transition-opacity duration-300 bg-black/40 backdrop-blur-sm"
+                            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
                             onClick={() => {
                                 setShowVideoModal(false);
                                 setSelectedVideo({});
@@ -436,8 +409,147 @@ export default function OrderView({ order, countries }) {
                                 videoUrl={selectedVideo?.url}
                                 className="h-auto max-h-[80vh] w-full object-cover"
                                 controls={true}
-                                type='customized'
+                                type="customized"
                             />
+                        </div>
+                    </div>,
+                    document.getElementById('modal-root') || document.body,
+                )}
+
+            {showRecordingModal &&
+                selectedRecording &&
+                createPortal(
+                    <div
+                        className={`fixed inset-0 z-[100] flex justify-center overflow-y-auto ${
+                            windowSize.width <= 1024
+                                ? 'items-stretch'
+                                : 'items-end sm:items-center sm:p-4'
+                        }`}
+                    >
+                        <div
+                            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+                            onClick={() => {
+                                setShowRecordingModal(false);
+                                setSelectedRecording(null);
+                            }}
+                        />
+                        <div
+                            role="dialog"
+                            aria-modal="true"
+                            className={`relative z-[101] w-full overflow-y-auto bg-white dark:bg-surface-1-dark ${
+                                windowSize.width <= 1024
+                                    ? 'h-full max-h-screen rounded-none'
+                                    : 'max-h-[90vh] rounded-t-2xl sm:max-w-2xl sm:rounded-2xl'
+                            }`}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-surface-3-light bg-white px-5 py-4 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                <h3 className="text-base font-semibold text-main-text-light dark:text-main-text-dark">
+                                    {__('Packaging Verification')} #{selectedRecording.index + 1}
+                                </h3>
+                                <button
+                                    onClick={() => {
+                                        setShowRecordingModal(false);
+                                        setSelectedRecording(null);
+                                    }}
+                                    className="flex h-8 w-8 items-center justify-center rounded-md text-sub-text-light hover:bg-surface-1-light dark:text-sub-text-dark dark:hover:bg-surface-3-dark"
+                                >
+                                    <svg
+                                        className="h-4 w-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M6 18L18 6M6 6l12 12"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="flex flex-col gap-5 p-5">
+                                {/* Barcode Photo */}
+                                {selectedRecording.barcode_photo && (
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-sub-text-light dark:text-sub-text-dark">
+                                            {__('Barcode Photo')}
+                                        </p>
+                                        <div className="overflow-hidden rounded-xl bg-surface-3-light dark:bg-surface-3-dark">
+                                            <img
+                                                src={selectedRecording.barcode_photo}
+                                                alt="Barcode"
+                                                onError={(e) => (e.target.src = Placeholder)}
+                                                className="max-h-56 w-full object-contain"
+                                                style={{ touchAction: 'pinch-zoom' }}
+                                                onMouseMove={(e) => {
+                                                    const rect =
+                                                        e.currentTarget.getBoundingClientRect();
+                                                    const x =
+                                                        ((e.clientX - rect.left) / rect.width) *
+                                                        100;
+                                                    const y =
+                                                        ((e.clientY - rect.top) / rect.height) *
+                                                        100;
+                                                    e.currentTarget.style.transformOrigin = `${x}% ${y}%`;
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.transform = 'scale(2.5)';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.transform = 'scale(1)';
+                                                    e.currentTarget.style.transformOrigin =
+                                                        'center center';
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                {/* Screen Recording */}
+                                {selectedRecording.screen_recording_video && (
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-sub-text-light dark:text-sub-text-dark">
+                                            {__('Screen Recording')}
+                                        </p>
+                                        <div className="overflow-hidden rounded-xl bg-black">
+                                            <VideoWithThumbnail
+                                                thumbnail={
+                                                    selectedRecording.screen_recording_thumbnail ||
+                                                    Placeholder
+                                                }
+                                                videoUrl={selectedRecording.screen_recording_video}
+                                                className="w-full"
+                                                controls={true}
+                                                type="customized"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Scene Video */}
+                                {selectedRecording.scene_video && (
+                                    <div className="flex flex-col gap-2">
+                                        <p className="text-xs font-semibold uppercase tracking-wide text-sub-text-light dark:text-sub-text-dark">
+                                            {__('Scene Video')}
+                                        </p>
+                                        <div className="overflow-hidden rounded-xl bg-black">
+                                            <VideoWithThumbnail
+                                                thumbnail={
+                                                    selectedRecording.scene_video_thumbnail ||
+                                                    Placeholder
+                                                }
+                                                videoUrl={selectedRecording.scene_video}
+                                                className="w-full"
+                                                controls={true}
+                                                type="customized"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>,
                     document.getElementById('modal-root') || document.body,
@@ -447,11 +559,7 @@ export default function OrderView({ order, countries }) {
 }
 
 // Shipping Info Component
-function ShippingInfoCard({
-    shippingInfo,
-    countries,
-    __,
-}) {
+function ShippingInfoCard({ shippingInfo, countries, __ }) {
     // Get country name from ID
     const countryName =
         countries?.find((country) => country.id === Number(shippingInfo.country_id))?.name ||
@@ -473,9 +581,9 @@ function ShippingInfoCard({
     };
 
     return (
-        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="flex items-start justify-between mb-4">
+            <div className="mb-4 flex items-start justify-between">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Shipping Information')}
                 </h2>
@@ -507,15 +615,12 @@ function ShippingInfoCard({
     );
 }
 
-
-
-
 // Courier Info component
 function CourierInfoCard({ order, __ }) {
     return (
-        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="flex items-start justify-between mb-4">
+            <div className="mb-4 flex items-start justify-between">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Courier Details')}
                 </h2>
@@ -524,66 +629,66 @@ function CourierInfoCard({ order, __ }) {
             {/* Information */}
             <div className="space-y-1 break-words">
                 <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
-                    {__("Courier Company")}:  {order?.courier_company || "N/A"}
+                    {__('Courier Company')}: {order?.courier_company || 'N/A'}
                 </p>
 
                 <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
-                    {__("Tracking Number")}: {order?.tracking_no || "N/A"}
+                    {__('Tracking Number')}: {order?.tracking_no || 'N/A'}
                 </p>
 
                 <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
-                    {__("Shipping Date")}: {order?.shipping_date || "N/A"}
+                    {__('Shipping Date')}: {order?.shipping_date || 'N/A'}
                 </p>
-
-
             </div>
         </div>
     );
 }
 
-
 // Reference Info Component
 function OrderReferenceCard({ order, __, setCopied, setCopiedMessage }) {
-    if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected') return null;
+    if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected')
+        return null;
     return (
-        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="flex items-start justify-between mb-4">
+            <div className="mb-4 flex items-start justify-between">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
-                    {__('Reference No')}  <span className='ml-2 text-sm font-normal text-sub-text-light dark:text-sub-text-dark'> {__('Use this reference when making the bank transfer')} </span>
+                    {__('Reference No')}{' '}
+                    <span className="ml-2 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">
+                        {' '}
+                        {__('Use this reference when making the bank transfer')}{' '}
+                    </span>
                 </h2>
             </div>
 
             {/* Information */}
             <div className="space-y-1 break-words">
-                <p className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
-                    <span>
-                        {order?.order_no || "N/A"}
-                    </span>
+                <p className="flex items-center gap-2 text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                    <span>{order?.order_no || 'N/A'}</span>
 
-                    <button onClick={() => {
-                        navigator.clipboard.writeText(order?.order_no);
-                        setCopiedMessage(__('Reference Copied'));
-                        setCopied(true);
-
-                    }}>
-                        <Copy className='size-4' />
+                    <button
+                        onClick={() => {
+                            navigator.clipboard.writeText(order?.order_no);
+                            setCopiedMessage(__('Reference Copied'));
+                            setCopied(true);
+                        }}
+                    >
+                        <Copy className="size-4" />
                     </button>
                 </p>
-
             </div>
         </div>
     );
 }
 
-
 // Bank Details Component
 function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
-    if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected') return null;
+    if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected')
+        return null;
     return (
-        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="flex items-start justify-between mb-4">
+            <div className="mb-4 flex items-start justify-between">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Bank Details')}
                 </h2>
@@ -591,106 +696,102 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
 
             {/* Information */}
             <div className="space-y-2 break-words">
-                <p className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
+                <p className="flex items-center gap-2 text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                     <span>
-                        {__("Bank Name")}:   {order?.order_items[0]?.smartphone
-                            ?.category?.distributor
-                            ?.bank_name || 'N/A'}
+                        {__('Bank Name')}:{' '}
+                        {order?.order_items[0]?.smartphone?.category?.distributor?.bank_name ||
+                            'N/A'}
                     </span>
 
-                    <button onClick={() => {
-                        navigator.clipboard.writeText(order?.order_no);
-                        setCopiedMessage(__('Bank Name Copied'));
-                        setCopied(true);
-
-                    }}>
-                        <Copy className='size-4' />
+                    <button
+                        onClick={() => {
+                            navigator.clipboard.writeText(order?.order_no);
+                            setCopiedMessage(__('Bank Name Copied'));
+                            setCopied(true);
+                        }}
+                    >
+                        <Copy className="size-4" />
                     </button>
                 </p>
 
-
-                <div className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
+                <div className="flex items-center gap-2 text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                     <span>
-                        {__("Account Holder")}:   {order?.order_items[0]?.smartphone
-                            ?.category?.distributor
+                        {__('Account Holder')}:{' '}
+                        {order?.order_items[0]?.smartphone?.category?.distributor
                             ?.bank_account_name || 'N/A'}
                     </span>
 
-
-
-                    <button onClick={() => {
-                        navigator.clipboard.writeText(order?.order_no);
-                        setCopiedMessage(__('Account Holder Copied'));
-                        setCopied(true);
-
-                    }}>
-                        <Copy className='size-4' />
+                    <button
+                        onClick={() => {
+                            navigator.clipboard.writeText(order?.order_no);
+                            setCopiedMessage(__('Account Holder Copied'));
+                            setCopied(true);
+                        }}
+                    >
+                        <Copy className="size-4" />
                     </button>
                 </div>
 
-
-
-                <p className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
+                <p className="flex items-center gap-2 text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                     <span>
-                        {__("Account Number")}:   {order?.order_items[0]?.smartphone
-                            ?.category?.distributor
+                        {__('Account Number')}:{' '}
+                        {order?.order_items[0]?.smartphone?.category?.distributor
                             ?.bank_account_no || 'N/A'}
                     </span>
 
-                    <button onClick={() => {
-                        navigator.clipboard.writeText(order?.order_no);
-                        setCopiedMessage(__('Account Number Copied'));
-                        setCopied(true);
-
-                    }}>
-                        <Copy className='size-4' />
+                    <button
+                        onClick={() => {
+                            navigator.clipboard.writeText(order?.order_no);
+                            setCopiedMessage(__('Account Number Copied'));
+                            setCopied(true);
+                        }}
+                    >
+                        <Copy className="size-4" />
                     </button>
                 </p>
 
-
-                <p className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
+                <p className="flex items-center gap-2 text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                     <span>
-                        {__("IBAN")}:   {order?.order_items[0]?.smartphone
-                            ?.category?.distributor?.iban ||
+                        {__('IBAN')}:{' '}
+                        {order?.order_items[0]?.smartphone?.category?.distributor?.iban || 'N/A'}
+                    </span>
+
+                    <button
+                        onClick={() => {
+                            navigator.clipboard.writeText(order?.order_no);
+                            setCopiedMessage(__('IBAN Copied'));
+                            setCopied(true);
+                        }}
+                    >
+                        <Copy className="size-4" />
+                    </button>
+                </p>
+
+                <p className="flex items-center gap-2 text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                    <span>
+                        {__('SWIFT Code')}:{' '}
+                        {order?.order_items[0]?.smartphone?.category?.distributor?.swift_code ||
                             'N/A'}
                     </span>
 
-                    <button onClick={() => {
-                        navigator.clipboard.writeText(order?.order_no);
-                        setCopiedMessage(__('IBAN Copied'));
-                        setCopied(true);
-
-                    }}>
-                        <Copy className='size-4' />
+                    <button
+                        onClick={() => {
+                            navigator.clipboard.writeText(order?.order_no);
+                            setCopiedMessage(__('Swift Code Copied'));
+                            setCopied(true);
+                        }}
+                    >
+                        <Copy className="size-4" />
                     </button>
                 </p>
-
-
-                <p className="text-[14px] flex items-center gap-2 font-semibold text-main-text-light dark:text-main-text-dark">
-                    <span>
-                        {__("SWIFT Code")}:   {order?.order_items[0]?.smartphone
-                            ?.category?.distributor?.swift_code ||
-                            'N/A'}
-                    </span>
-
-                    <button onClick={() => {
-                        navigator.clipboard.writeText(order?.order_no);
-                        setCopiedMessage(__('Swift Code Copied'));
-                        setCopied(true);
-
-                    }}>
-                        <Copy className='size-4' />
-                    </button>
-                </p>
-
             </div>
 
-            <div className="border border-[#FBBABA] bg-red-50 dark:bg-surface-1-dark dark:border-surface-3-dark rounded-md p-4 px-7 mt-5  w-full">
-                <h3 className="text-main-text-light dark:text-main-text-dark text-[13px] font-semibold mb-2">
+            <div className="mt-5 w-full rounded-md border border-[#FBBABA] bg-red-50 p-4 px-7 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                <h3 className="mb-2 text-[13px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Important Instructions')}
                 </h3>
 
-                <ul className="list-disc list-inside  text-main-text-light dark:text-main-text-dark text-[13px] font-medium mb-2 space-y-1">
+                <ul className="mb-2 list-inside list-disc space-y-1 text-[13px] font-medium text-main-text-light dark:text-main-text-dark">
                     <li>{__('Please include your order number in the payment reference')}</li>
                     <li>{__('Upload payment proof after completing the transfer')}</li>
                     <li>{__('Processing time: 2–3 business days')}</li>
@@ -700,11 +801,20 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
     );
 }
 
-
 // Payment Proof
-function PaymentProof({ order, __, handleFileSelect, handleFileRemove, paymentProofPreview, paymentProofFile, isUploading, handleUploadPaymentProof, handleImageView }) {
-
-    if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected') return null;
+function PaymentProof({
+    order,
+    __,
+    handleFileSelect,
+    handleFileRemove,
+    paymentProofPreview,
+    paymentProofFile,
+    isUploading,
+    handleUploadPaymentProof,
+    handleImageView,
+}) {
+    if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected')
+        return null;
 
     const getRemainingTime = (expiresAt) => {
         if (!expiresAt) return null;
@@ -732,45 +842,41 @@ function PaymentProof({ order, __, handleFileSelect, handleFileRemove, paymentPr
     const remainingTime = getRemainingTime(order?.expires_at);
 
     return (
-        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="flex items-center justify-start gap-4 mb-4">
+            <div className="mb-4 flex items-center justify-start gap-4">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Payment Proof')}
-
-
                 </h2>
 
-                {(['pending'].includes(order.status.toLowerCase()) && order?.payment_proof === null) && (
-                    <span className="text-[14px] font-semibold text-[#ff0000]">
-                        {remainingTime && (
-                            remainingTime === 'Expired'
-                                ? __('Expired', true)
-                                : `${__('Expires in', true)} ${remainingTime}`
-                        )}
-                    </span>
-                )}
+                {['pending'].includes(order.status.toLowerCase()) &&
+                    order?.payment_proof === null && (
+                        <span className="text-[14px] font-semibold text-[#ff0000]">
+                            {remainingTime &&
+                                (remainingTime === 'Expired'
+                                    ? __('Expired', true)
+                                    : `${__('Expires in', true)} ${remainingTime}`)}
+                        </span>
+                    )}
             </div>
 
             {/* Information */}
             <div className="space-y-2 break-words">
-
-
                 {order.payment_proof ? (
                     <div>
                         <div
                             onClick={() => handleImageView(order.payment_proof)}
-                            className="overflow-hidden transition-all border-2 rounded-md cursor-pointer bg-surface-3-light border-surface-3-light group dark:bg-surface-3-dark dark:border-surface-3-dark"
+                            className="group cursor-pointer overflow-hidden rounded-md border-2 border-surface-3-light bg-surface-3-light transition-all dark:border-surface-3-dark dark:bg-surface-3-dark"
                         >
                             <img
                                 src={order.payment_proof}
                                 alt={__('Payment Proof')}
-                                className="object-contain w-full h-64 transition-transform duration-300 group-hover:scale-105"
+                                className="h-64 w-full object-contain transition-transform duration-300 group-hover:scale-105"
                             />
                         </div>
 
                         {order.status === 'pending' && (
-                            <div className="p-4 mt-4 border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+                            <div className="mt-4 rounded-md border border-surface-3-light bg-surface-1-light p-4 dark:border-surface-3-dark dark:bg-surface-1-dark">
                                 <div className="flex gap-3">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -778,7 +884,7 @@ function PaymentProof({ order, __, handleFileSelect, handleFileRemove, paymentPr
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="flex-shrink-0 w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 flex-shrink-0 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -810,7 +916,9 @@ function PaymentProof({ order, __, handleFileSelect, handleFileRemove, paymentPr
                             fileSize={paymentProofFile?.size}
                             uploadButtonText={__('Upload Payment Proof')}
                             disabled={isUploading}
-                            customMessage={__('Please upload proof of your bank transfer to complete the payment.')}
+                            customMessage={__(
+                                'Please upload proof of your bank transfer to complete the payment.',
+                            )}
                         />
 
                         {/* Upload Button */}
@@ -818,12 +926,12 @@ function PaymentProof({ order, __, handleFileSelect, handleFileRemove, paymentPr
                             <button
                                 onClick={handleUploadPaymentProof}
                                 disabled={isUploading}
-                                className="flex items-center justify-center w-full gap-2 px-6 py-4 text-sm font-semibold transition-all rounded-md bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="flex w-full items-center justify-center gap-2 rounded-md bg-main-text-light px-6 py-4 text-sm font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                             >
                                 {isUploading ? (
                                     <>
                                         <svg
-                                            className="w-5 h-5 animate-spin"
+                                            className="h-5 w-5 animate-spin"
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
@@ -852,7 +960,7 @@ function PaymentProof({ order, __, handleFileSelect, handleFileRemove, paymentPr
                                             viewBox="0 0 24 24"
                                             strokeWidth={2}
                                             stroke="currentColor"
-                                            className="w-5 h-5"
+                                            className="h-5 w-5"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -868,8 +976,6 @@ function PaymentProof({ order, __, handleFileSelect, handleFileRemove, paymentPr
                     </div>
                 )}
             </div>
-
-
         </div>
     );
 }
@@ -881,9 +987,9 @@ function OrderItems({ order, currency, __ }) {
     };
 
     return (
-        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header */}
-            <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark mb-10">
+            <h2 className="mb-10 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                 {__('Order Items')} ({order.order_items?.length || 0})
             </h2>
 
@@ -894,7 +1000,7 @@ function OrderItems({ order, currency, __ }) {
                     const addonsTotal =
                         item.smartphone_addons?.reduce(
                             (total, addon) => total + Number(addon.total_price),
-                            0
+                            0,
                         ) || 0;
 
                     // Calculate product total (unit price × quantity)
@@ -904,71 +1010,71 @@ function OrderItems({ order, currency, __ }) {
                     const finalItemTotal = Number(item.sub_total) + addonsTotal;
 
                     return (
-                        <div
-                            key={item.id}
-                        >
+                        <div key={item.id}>
                             <div className="flex flex-col items-start gap-6 lg:flex-row">
                                 {/* Product Image */}
                                 {(item?.smartphone?.smartphone_image_urls?.length > 0 ||
                                     item?.smartphone?.smartphone_video_urls?.length > 0) && (
-                                        <div
-                                            className="relative overflow-hidden transition-all rounded-md cursor-pointer group/img aspect-square h-28 w-28 shrink-0 bg-surface-2-light dark:bg-surface-2-dark"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                router.get(
-                                                    route('home') +
+                                    <div
+                                        className="group/img relative aspect-square h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-md bg-surface-2-light transition-all dark:bg-surface-2-dark"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            router.get(
+                                                route('home') +
                                                     generateSmartphoneURL(
                                                         item?.smartphone,
                                                         true,
-                                                        true
-                                                    )
-                                                );
-                                            }}
-                                        >
-                                            <img
-                                                src={
-                                                    item?.smartphone?.smartphone_image_urls?.[0] ||
-                                                    item?.smartphone?.smartphone_video_urls?.[0]
-                                                        ?.thumbnail_url ||
-                                                    Placeholder
-                                                }
-                                                alt={item?.smartphone?.model_name?.name}
-                                                className="object-cover w-full h-full transition-transform duration-300 lg:group-hover/img:scale-110"
-                                                loading="lazy"
-                                                onError={(e) => (e.target.src = Placeholder)}
-                                            />
-                                        </div>
-                                    )}
-
-
+                                                        true,
+                                                    ),
+                                            );
+                                        }}
+                                    >
+                                        <img
+                                            src={
+                                                item?.smartphone?.smartphone_image_urls?.[0] ||
+                                                item?.smartphone?.smartphone_video_urls?.[0]
+                                                    ?.thumbnail_url ||
+                                                Placeholder
+                                            }
+                                            alt={item?.smartphone?.model_name?.name}
+                                            className="h-full w-full object-cover transition-transform duration-300 lg:group-hover/img:scale-110"
+                                            loading="lazy"
+                                            onError={(e) => (e.target.src = Placeholder)}
+                                        />
+                                    </div>
+                                )}
 
                                 {/* Product Details */}
                                 <div className="flex-1 space-y-2">
                                     {/* Item Name */}
                                     <div>
                                         <h3 className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                            {__('Item Name')} : {item?.smartphone?.model_name?.name || 'N/A'}
+                                            {__('Item Name')} :{' '}
+                                            {item?.smartphone?.model_name?.name || 'N/A'}
                                         </h3>
                                     </div>
 
                                     {/* Product Options */}
                                     {(item?.smartphone?.capacity?.name || item?.color?.name) && (
                                         <div className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                            <span className="font-medium">{__('Product Options')} : </span>
-                                            {[
-                                                item?.smartphone?.capacity?.name,
-                                                item?.color?.name,
-                                            ]
+                                            <span className="font-medium">
+                                                {__('Product Options')} :{' '}
+                                            </span>
+                                            {[item?.smartphone?.capacity?.name, item?.color?.name]
                                                 .filter(Boolean)
                                                 .join(', ')}
                                         </div>
                                     )}
 
                                     {/* UPC / EAN */}
-                                    {['shipped', 'arrived_locally', 'delivered'].includes(order.status.toLowerCase()) && (
+                                    {['shipped', 'arrived_locally', 'delivered'].includes(
+                                        order.status.toLowerCase(),
+                                    ) && (
                                         <div className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                            <span className="font-medium">{__('UPC / EAN')} : </span>
+                                            <span className="font-medium">
+                                                {__('UPC / EAN')} :{' '}
+                                            </span>
                                             {item?.smartphone?.upc || 'N/A'}
                                         </div>
                                     )}
@@ -988,7 +1094,9 @@ function OrderItems({ order, currency, __ }) {
 
                                     {/* Product Total */}
                                     <div className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
-                                        <span className="font-medium">{__('Product Total')} : </span>
+                                        <span className="font-medium">
+                                            {__('Product Total')} :{' '}
+                                        </span>
                                         {currency?.symbol}
                                         {productTotal.toLocaleString('en-US')}
                                     </div>
@@ -1008,12 +1116,11 @@ function OrderItems({ order, currency, __ }) {
                                         {Number(item.import_cost || 0).toLocaleString('en-US')}
                                     </div>
 
-
                                     {/* Add-ons */}
                                     {item.smartphone_addons?.length > 0 && (
                                         <>
                                             <div className="mt-10 border-t border-surface-3-light dark:border-surface-3-dark" />
-                                            <div className="py-3 space-y-2">
+                                            <div className="space-y-2 py-3">
                                                 {item.smartphone_addons.map((addon) => (
                                                     <div
                                                         key={addon.id}
@@ -1030,11 +1137,10 @@ function OrderItems({ order, currency, __ }) {
                                         </>
                                     )}
 
-
                                     <div className="mt-10 border-b border-surface-3-light dark:border-surface-3-dark" />
 
                                     {/* Final Item Total */}
-                                    <div className="pt-4 text-[16px] font-semibold  text-main-text-light dark:text-main-text-dark">
+                                    <div className="pt-4 text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('Final Item Total')} : {currency?.symbol}
                                         {Number(finalItemTotal).toLocaleString('en-US')}
                                     </div>
@@ -1043,9 +1149,8 @@ function OrderItems({ order, currency, __ }) {
 
                             {/* Divider */}
                             {index < order.order_items.length - 1 && (
-                                <div className="mt-10 mb-10 border-b border-surface-3-light dark:border-surface-3-dark" />
+                                <div className="mb-10 mt-10 border-b border-surface-3-light dark:border-surface-3-dark" />
                             )}
-
                         </div>
                     );
                 })}
@@ -1054,24 +1159,18 @@ function OrderItems({ order, currency, __ }) {
     );
 }
 
-
-
 // ORder Summary
-function OrderSummaryCard({
-    order,
-    currency,
-    __,
-}) {
+function OrderSummaryCard({ order, currency, __ }) {
     return (
         <div className="space-y-3">
             {/* Summary Card */}
-            <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
                 <h2 className="mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Order Summary')}
                 </h2>
 
                 {/* Price Breakdown */}
-                <div className="pb-5 mb-5 space-y-3 border-b border-surface-3-light dark:border-surface-3-dark">
+                <div className="mb-5 space-y-3 border-b border-surface-3-light pb-5 dark:border-surface-3-dark">
                     {/* Items Total */}
                     <div className="flex items-center justify-between">
                         <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
@@ -1079,7 +1178,9 @@ function OrderSummaryCard({
                         </span>
                         <span className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
                             {currency?.symbol}
-                            {(Number(order?.sub_total || 0) + Number(order.addons_sub_total || 0)).toLocaleString('en-US')}
+                            {(
+                                Number(order?.sub_total || 0) + Number(order.addons_sub_total || 0)
+                            ).toLocaleString('en-US')}
                         </span>
                     </div>
 
@@ -1106,21 +1207,17 @@ function OrderSummaryCard({
                         </span>
                     </div>
 
-
                     {/* Points */}
                     <div className="flex items-center justify-between">
                         <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                             {__('Points')}
                         </span>
-                        <span className="font-semibold text-[#ff4400] text-[20px]">
+                        <span className="text-[20px] font-semibold text-[#ff4400]">
                             - {currency?.symbol}
                             {Number(order.points_used).toLocaleString('en-US')}
                         </span>
                     </div>
                 </div>
-
-
-
 
                 {/* Total Due */}
                 <div className="flex items-center justify-between">
@@ -1132,69 +1229,136 @@ function OrderSummaryCard({
                         {Number(order?.amount).toLocaleString('en-US')}
                     </span>
                 </div>
-
-
             </div>
         </div>
     );
 }
 
-
 // Packaging Videos Component
-function PackagingVideos({ order, __, handleVideoView, setSelectedPackageVideoID }) {
+function PackagingVideos({ order, __, handleRecordingView }) {
+    if (!order.order_package_recordings?.length) return null;
+
     return (
-        <>
-            {/* Packaging Videos */}
-            {order.order_package_recordings?.length > 0 && (
-                <div className="p-6 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
-                    <h2 className="mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-6 dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <h2 className="mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                {__('Packaging Verification')}
+            </h2>
 
-                        {__('Packaging Videos')}
-                    </h2>
-                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                        {order.order_package_recordings.map((recording, index) => (
-                            <div
-                                key={index}
-                                onClick={() => {
-                                    handleVideoView(recording);
-                                    setSelectedPackageVideoID(recording.id);
-                                }}
-                                className="relative overflow-hidden transition-all bg-white rounded-md cursor-pointer border-1 border-surface-3-light group dark:bg-surface-3-dark dark:border-surface-3-dark"
-                            >
-                                <div className="flex items-center justify-center aspect-video bg-surface-3-dark">
-                                    <img
-                                        src={recording.thumbnail_url || Placeholder}
-                                        alt={"Thumbnail " + index}
-                                        onError={(e) => e.target.src = Placeholder}
-                                    />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {order.order_package_recordings.map((recording, index) => {
+                    const hasBarcodePhoto = !!recording.barcode_photo;
+                    const hasScreenRecording = !!recording.screen_recording_video;
+                    const hasSceneVideo = !!recording.scene_video;
+                    const mediaCount = [hasBarcodePhoto, hasScreenRecording, hasSceneVideo].filter(
+                        Boolean,
+                    ).length;
 
-                                    <div className="absolute inset-0 flex items-center justify-center transition group-hover:bg-surface-1-light/20 dark:group-hover:bg-surface-1-dark/20">
+                    // Thumbnail — prefer screen recording, fallback scene video thumbnail, fallback placeholder
+                    const thumbnail =
+                        recording.screen_recording_thumbnail ||
+                        recording.scene_video_thumbnail ||
+                        Placeholder;
+
+                    return (
+                        <div
+                            key={index}
+                            onClick={() => handleRecordingView({ ...recording, index })}
+                            className="group relative cursor-pointer overflow-hidden rounded-xl border border-surface-3-light bg-white transition-all hover:shadow-md dark:border-surface-3-dark dark:bg-surface-1-dark"
+                        >
+                            {/* Thumbnail */}
+                            <div className="relative aspect-video overflow-hidden bg-surface-3-dark">
+                                <img
+                                    src={thumbnail}
+                                    alt={'Recording ' + (index + 1)}
+                                    onError={(e) => (e.target.src = Placeholder)}
+                                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                />
+                                {/* Play overlay */}
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition group-hover:bg-black/35">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg transition group-hover:scale-110">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
-                                            fill="none"
                                             viewBox="0 0 24 24"
-                                            strokeWidth="1.5"
-                                            stroke="currentColor"
-                                            className="w-12 h-12 text-main-text-dark"
+                                            fill="currentColor"
+                                            className="h-5 w-5 translate-x-0.5 text-main-text-light"
                                         >
-                                            <path
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                d="M5.25 5.25v13.5l13.5-6.75L5.25 5.25z"
-                                            />
+                                            <path d="M5.25 5.25v13.5l13.5-6.75L5.25 5.25z" />
                                         </svg>
                                     </div>
                                 </div>
-                                <div className="p-3 text-center">
-                                    <p className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
-                                        {__('Packaging Video')} {index + 1}
-                                    </p>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="px-3 py-3">
+                                <p className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                    {__('Verification')} #{index + 1}
+                                </p>
+
+                                {/* Media type pills */}
+                                <div className="mt-1.5 flex flex-wrap gap-1">
+                                    {hasBarcodePhoto && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 px-2 py-0.5 text-[10px] font-medium text-violet-700 dark:bg-violet-900/20 dark:text-violet-300">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                className="h-2.5 w-2.5"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
+                                                />
+                                            </svg>
+                                            {__('Photo')}
+                                        </span>
+                                    )}
+                                    {hasScreenRecording && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                className="h-2.5 w-2.5"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25A2.25 2.25 0 0 1 5.25 3h13.5A2.25 2.25 0 0 1 21 5.25Z"
+                                                />
+                                            </svg>
+                                            {__('Screen')}
+                                        </span>
+                                    )}
+                                    {hasSceneVideo && (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-medium text-green-700 dark:bg-green-900/20 dark:text-green-300">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="currentColor"
+                                                strokeWidth="2"
+                                                className="h-2.5 w-2.5"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
+                                                />
+                                            </svg>
+                                            {__('Scene')}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-        </>
-    )
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
 }

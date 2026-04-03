@@ -604,7 +604,7 @@ export default function show({ order, auth }) {
                                                         {Number(order?.points_used) ===
                                                         Number(order?.full_amount) ? (
                                                             <p className="text-sm text-gray-600 dark:text-gray-400">
-                                                                Paid with Points — no proof required
+                                                                Paid with Points no proof required
                                                             </p>
                                                         ) : (
                                                             <>
@@ -958,170 +958,266 @@ export default function show({ order, auth }) {
 
                                             {/* Video list */}
                                             {order?.order_package_recordings?.length > 0 ? (
-                                                order.order_package_recordings.map(
-                                                    (item, index) => (
-                                                        <div
-                                                            key={index}
-                                                            className="group relative rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-all hover:shadow-md dark:border-gray-700 dark:bg-deepcharcoal"
-                                                        >
-                                                            <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-lg bg-gradient-to-br from-red-50 to-red-100 dark:from-green-900/20 dark:to-red-800/20">
-                                                                <svg
-                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                    fill="none"
-                                                                    viewBox="0 0 24 24"
-                                                                    strokeWidth={1.5}
-                                                                    stroke="currentColor"
-                                                                    className="h-8 w-8 text-red-600 dark:text-red-400"
-                                                                >
-                                                                    <path
-                                                                        strokeLinecap="round"
-                                                                        strokeLinejoin="round"
-                                                                        d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
-                                                                    />
-                                                                </svg>
-                                                            </div>
-                                                            <p className="mb-4 truncate text-center text-sm font-medium text-gray-900 dark:text-white/90">
-                                                                Packaging Video {index + 1}
-                                                            </p>
-                                                            <div className="flex justify-center space-x-2">
-                                                                <a
-                                                                    onClick={(e) => {
-                                                                        if (!item?.package_video) {
-                                                                            e.preventDefault();
-                                                                            setVideoIsntBeignUploadedYetOnAWS(
-                                                                                true,
-                                                                            );
-                                                                        }
-                                                                    }}
-                                                                    href={
-                                                                        item?.package_video || '#'
-                                                                    }
-                                                                    target="_blank"
-                                                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 transition-colors hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400"
-                                                                >
-                                                                    <svg
-                                                                        className="h-4 w-4"
-                                                                        fill="none"
-                                                                        stroke="currentColor"
-                                                                        viewBox="0 0 24 24"
-                                                                    >
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            strokeWidth="2"
-                                                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                                                                        />
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            strokeWidth="2"
-                                                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                                                        />
-                                                                    </svg>
-                                                                </a>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        if (!item?.package_video)
-                                                                            setVideoIsntBeignUploadedYetOnAWS(
-                                                                                true,
-                                                                            );
-                                                                        else
-                                                                            handleFileDownload(
-                                                                                'Packaging Video',
-                                                                                item.package_video,
-                                                                            );
-                                                                    }}
-                                                                    className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-50 text-gray-600 transition-colors hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400"
-                                                                >
-                                                                    <svg
-                                                                        className="h-4 w-4"
-                                                                        fill="none"
-                                                                        stroke="currentColor"
-                                                                        viewBox="0 0 24 24"
-                                                                    >
-                                                                        <path
-                                                                            strokeLinecap="round"
-                                                                            strokeLinejoin="round"
-                                                                            strokeWidth="2"
-                                                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                                        />
-                                                                    </svg>
-                                                                </button>
+                                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                                    {order.order_package_recordings.map(
+                                                        (item, index) => (
+                                                            <div
+                                                                key={index}
+                                                                className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-700 dark:bg-deepcharcoal"
+                                                            >
+                                                                {/* Header */}
+                                                                <p className="mb-3 text-center text-sm font-semibold text-gray-900 dark:text-white/90">
+                                                                    Recording {index + 1}
+                                                                </p>
 
-                                                                <button
-                                                                    onClick={() =>
-                                                                        togglePackageVideoVisibility(
-                                                                            item.id,
-                                                                        )
-                                                                    }
-                                                                    title={
-                                                                        item.is_visible
-                                                                            ? 'Visible to customer'
-                                                                            : 'Hidden from customer'
-                                                                    }
-                                                                    className={`flex h-9 w-9 items-center justify-center rounded-full transition-colors ${
-                                                                        item.is_visible
-                                                                            ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400'
-                                                                            : 'bg-gray-50 text-gray-400 hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-500'
-                                                                    }`}
-                                                                >
-                                                                    {togglingVideo === item.id ? (
-                                                                        <Spinner
-                                                                            customSize={'size-3'}
-                                                                        />
-                                                                    ) : item.is_visible ? (
-                                                                        <svg
-                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                            fill="none"
-                                                                            viewBox="0 0 24 24"
-                                                                            strokeWidth={1.5}
-                                                                            stroke="currentColor"
-                                                                            className="h-4 w-4"
-                                                                        >
-                                                                            <path
-                                                                                strokeLinecap="round"
-                                                                                strokeLinejoin="round"
-                                                                                d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253M3.284 14.253A8.959 8.959 0 0 1 3 12c0-.778.099-1.533.284-2.253"
-                                                                            />
-                                                                        </svg>
+                                                                {/* Barcode Photo */}
+                                                                <div className="mb-3">
+                                                                    <p className="mb-1 text-xs font-medium text-gray-500 dark:text-white/50">
+                                                                        Barcode Photo
+                                                                    </p>
+                                                                    {item.barcode_photo ? (
+                                                                        <div className="flex gap-2">
+                                                                            <a
+                                                                                href={
+                                                                                    item.barcode_photo
+                                                                                }
+                                                                                target="_blank"
+                                                                                className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400"
+                                                                            >
+                                                                                <svg
+                                                                                    className="h-3.5 w-3.5"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                                                    />
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                                                    />
+                                                                                </svg>
+                                                                            </a>
+                                                                            <button
+                                                                                onClick={() =>
+                                                                                    handleFileDownload(
+                                                                                        'Barcode Photo',
+                                                                                        item.barcode_photo,
+                                                                                    )
+                                                                                }
+                                                                                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400"
+                                                                            >
+                                                                                <svg
+                                                                                    className="h-3.5 w-3.5"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                                                    />
+                                                                                </svg>
+                                                                            </button>
+                                                                        </div>
                                                                     ) : (
-                                                                        <svg
-                                                                            xmlns="http://www.w3.org/2000/svg"
-                                                                            fill="none"
-                                                                            viewBox="0 0 24 24"
-                                                                            strokeWidth={1.5}
-                                                                            stroke="currentColor"
-                                                                            className="h-4 w-4"
-                                                                        >
-                                                                            <path
-                                                                                strokeLinecap="round"
-                                                                                strokeLinejoin="round"
-                                                                                d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
-                                                                            />
-                                                                        </svg>
+                                                                        <span className="text-xs text-amber-500">
+                                                                            Processing...
+                                                                        </span>
                                                                     )}
-                                                                </button>
+                                                                </div>
 
-                                                                {can(
-                                                                    'Package Recordings Delete',
-                                                                ) && (
+                                                                {/* Screen Recording */}
+                                                                <div className="mb-3">
+                                                                    <p className="mb-1 text-xs font-medium text-gray-500 dark:text-white/50">
+                                                                        Screen Recording
+                                                                    </p>
+                                                                    {item.screen_recording_video ? (
+                                                                        <div className="flex gap-2">
+                                                                            <a
+                                                                                href={
+                                                                                    item.screen_recording_video
+                                                                                }
+                                                                                target="_blank"
+                                                                                className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400"
+                                                                            >
+                                                                                <svg
+                                                                                    className="h-3.5 w-3.5"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                                                    />
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                                                    />
+                                                                                </svg>
+                                                                            </a>
+                                                                            <button
+                                                                                onClick={() =>
+                                                                                    handleFileDownload(
+                                                                                        'Screen Recording',
+                                                                                        item.screen_recording_video,
+                                                                                    )
+                                                                                }
+                                                                                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400"
+                                                                            >
+                                                                                <svg
+                                                                                    className="h-3.5 w-3.5"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                                                    />
+                                                                                </svg>
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                setVideoIsntBeignUploadedYetOnAWS(
+                                                                                    true,
+                                                                                )
+                                                                            }
+                                                                            className="text-xs text-amber-500 hover:underline"
+                                                                        >
+                                                                            Processing... (tap to
+                                                                            see status)
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Scene Video */}
+                                                                <div className="mb-4">
+                                                                    <p className="mb-1 text-xs font-medium text-gray-500 dark:text-white/50">
+                                                                        Scene Video
+                                                                    </p>
+                                                                    {item.scene_video ? (
+                                                                        <div className="flex gap-2">
+                                                                            <a
+                                                                                href={
+                                                                                    item.scene_video
+                                                                                }
+                                                                                target="_blank"
+                                                                                className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400"
+                                                                            >
+                                                                                <svg
+                                                                                    className="h-3.5 w-3.5"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                                                                    />
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                                                                                    />
+                                                                                </svg>
+                                                                            </a>
+                                                                            <button
+                                                                                onClick={() =>
+                                                                                    handleFileDownload(
+                                                                                        'Scene Video',
+                                                                                        item.scene_video,
+                                                                                    )
+                                                                                }
+                                                                                className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-400"
+                                                                            >
+                                                                                <svg
+                                                                                    className="h-3.5 w-3.5"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                                                    />
+                                                                                </svg>
+                                                                            </button>
+                                                                        </div>
+                                                                    ) : (
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                setVideoIsntBeignUploadedYetOnAWS(
+                                                                                    true,
+                                                                                )
+                                                                            }
+                                                                            className="text-xs text-amber-500 hover:underline"
+                                                                        >
+                                                                            Processing... (tap to
+                                                                            see status)
+                                                                        </button>
+                                                                    )}
+                                                                </div>
+
+                                                                {/* Actions: Toggle Visibility + Delete */}
+                                                                <div className="flex justify-center gap-2 border-t border-gray-100 pt-3 dark:border-white/10">
                                                                     <button
-                                                                        onClick={() => {
-                                                                            deletePackageVideo(
+                                                                        onClick={() =>
+                                                                            togglePackageVideoVisibility(
                                                                                 item.id,
-                                                                            );
-                                                                        }}
-                                                                        className="flex h-9 w-9 items-center justify-center rounded-full bg-red-50 text-red-600 transition-colors hover:bg-red-100 dark:bg-zinc-900/80 dark:text-red-400"
+                                                                            )
+                                                                        }
+                                                                        title={
+                                                                            item.is_visible
+                                                                                ? 'Visible to customer'
+                                                                                : 'Hidden from customer'
+                                                                        }
+                                                                        className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+                                                                            item.is_visible
+                                                                                ? 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400'
+                                                                                : 'bg-gray-50 text-gray-400 hover:bg-gray-100 dark:bg-zinc-900/80 dark:text-gray-500'
+                                                                        }`}
                                                                     >
-                                                                        {deleteingVideo ===
+                                                                        {togglingVideo ===
                                                                         item.id ? (
-                                                                            <>
-                                                                                <Spinner
-                                                                                    customSize={
-                                                                                        'size-3'
-                                                                                    }
+                                                                            <Spinner customSize="size-3" />
+                                                                        ) : item.is_visible ? (
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                fill="none"
+                                                                                viewBox="0 0 24 24"
+                                                                                strokeWidth={1.5}
+                                                                                stroke="currentColor"
+                                                                                className="h-4 w-4"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    d="M12 21a9.004 9.004 0 0 0 8.716-6.747M12 21a9.004 9.004 0 0 1-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 0 1 7.843 4.582M12 3a8.997 8.997 0 0 0-7.843 4.582m15.686 0A11.953 11.953 0 0 1 12 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0 1 21 12c0 .778-.099 1.533-.284 2.253M3.284 14.253A8.959 8.959 0 0 1 3 12c0-.778.099-1.533.284-2.253"
                                                                                 />
-                                                                            </>
+                                                                            </svg>
                                                                         ) : (
                                                                             <svg
                                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1134,16 +1230,51 @@ export default function show({ order, auth }) {
                                                                                 <path
                                                                                     strokeLinecap="round"
                                                                                     strokeLinejoin="round"
-                                                                                    d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                                                    d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"
                                                                                 />
                                                                             </svg>
                                                                         )}
                                                                     </button>
-                                                                )}
+
+                                                                    {can(
+                                                                        'Package Recordings Delete',
+                                                                    ) && (
+                                                                        <button
+                                                                            onClick={() =>
+                                                                                deletePackageVideo(
+                                                                                    item.id,
+                                                                                )
+                                                                            }
+                                                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-red-50 text-red-600 hover:bg-red-100 dark:bg-zinc-900/80 dark:text-red-400"
+                                                                        >
+                                                                            {deleteingVideo ===
+                                                                            item.id ? (
+                                                                                <Spinner customSize="size-3" />
+                                                                            ) : (
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    fill="none"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    strokeWidth={
+                                                                                        1.5
+                                                                                    }
+                                                                                    stroke="currentColor"
+                                                                                    className="h-4 w-4"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0"
+                                                                                    />
+                                                                                </svg>
+                                                                            )}
+                                                                        </button>
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    ),
-                                                )
+                                                        ),
+                                                    )}
+                                                </div>
                                             ) : (
                                                 <div className="rounded-xl border-2 border-dashed border-gray-200 bg-gray-50/50 p-6 text-center dark:border-gray-700 dark:bg-deepcharcoal">
                                                     <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-deepcharcoal">
@@ -1744,6 +1875,7 @@ export default function show({ order, auth }) {
                     onSave={(file) => {
                         setPackageVideo('package_video', file);
                         setOpenRecorder(false);
+                        router.reload({ only: ['order'] });
                     }}
                     orderNo={order.order_no}
                     onVerified={(status, message) => {

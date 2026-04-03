@@ -192,7 +192,7 @@ export function useNativeScanner() {
                 try {
                     fileInputRef.current.onchange = null;
                     document.body.removeChild(fileInputRef.current);
-                } catch { }
+                } catch {}
                 fileInputRef.current = null;
             }
 
@@ -254,14 +254,20 @@ export function useNativeScanner() {
             const cleanup = () => {
                 document.removeEventListener('visibilitychange', onVisibilityChange);
                 window.removeEventListener('focus', onFocus);
-                if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; }
-                if (focusIgnoreTimer) { clearTimeout(focusIgnoreTimer); focusIgnoreTimer = null; }
+                if (fallbackTimer) {
+                    clearTimeout(fallbackTimer);
+                    fallbackTimer = null;
+                }
+                if (focusIgnoreTimer) {
+                    clearTimeout(focusIgnoreTimer);
+                    focusIgnoreTimer = null;
+                }
                 try {
                     if (fileInputRef.current === input) {
                         document.body.removeChild(input);
                         fileInputRef.current = null;
                     }
-                } catch { }
+                } catch {}
             };
 
             input.onchange = (e) => {
@@ -270,10 +276,10 @@ export function useNativeScanner() {
                 cleanup();
                 const file = e.target.files?.[0];
                 if (!file) {
-                    resolve({ cancelled: true, imageUrl: null });
+                    resolve({ cancelled: true, imageUrl: null, file: null });
                     return;
                 }
-                resolve({ cancelled: false, imageUrl: URL.createObjectURL(file) });
+                resolve({ cancelled: false, imageUrl: URL.createObjectURL(file), file: file });
             };
 
             document.addEventListener('visibilitychange', onVisibilityChange);
@@ -301,19 +307,11 @@ export function useNativeScanner() {
                     formData.append('image', blob, 'scan.jpg');
 
                     try {
-
-
-                        const response = await axios.post(
-                            route('scanner.ai-decode'),
-                            formData,
-                            {
-                                headers: {
-                                    Accept: 'application/json',
-                                },
-                            }
-                        );
-
-
+                        const response = await axios.post(route('scanner.ai-decode'), formData, {
+                            headers: {
+                                Accept: 'application/json',
+                            },
+                        });
 
                         const data = response.data;
 
@@ -354,7 +352,11 @@ export function useNativeScanner() {
                     } catch (err) {
                         // Differentiate network errors from 419/500 server errors
                         if (err.response) {
-                            console.warn('[NativeScanner] AI fallback server error:', err.response.status, err.response.data);
+                            console.warn(
+                                '[NativeScanner] AI fallback server error:',
+                                err.response.status,
+                                err.response.data,
+                            );
                         } else {
                             console.warn('[NativeScanner] AI fallback network error:', err.message);
                         }
@@ -674,7 +676,7 @@ export function useNativeScanner() {
         if (imageUrl)
             try {
                 URL.revokeObjectURL(imageUrl);
-            } catch { }
+            } catch {}
     }, []);
 
     useEffect(() => {
@@ -682,12 +684,12 @@ export function useNativeScanner() {
             if (fileInputRef.current) {
                 try {
                     document.body.removeChild(fileInputRef.current);
-                } catch { }
+                } catch {}
                 fileInputRef.current = null;
             }
             try {
                 readerRef.current?.reset?.();
-            } catch { }
+            } catch {}
         };
     }, []);
 
