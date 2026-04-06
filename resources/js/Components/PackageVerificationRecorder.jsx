@@ -6,6 +6,7 @@ import axios from 'axios';
 import beepSound from '../../assets/sounds/Beep.mp3';
 import getSocketId from './getSocketId';
 import { router } from '@inertiajs/react';
+import Spinner from './Spinner';
 
 const PackageVerificationRecorder = memo(
     ({
@@ -315,9 +316,9 @@ const PackageVerificationRecorder = memo(
                         style={desktopScanActive ? { cursor: 'not-allowed' } : {}}
                     />
 
-                    <div className="relative z-10 flex h-full w-full flex-col bg-white text-gray-900 dark:bg-deepcharcoal dark:text-white/80 sm:h-auto sm:max-w-2xl sm:flex-none sm:rounded-2xl sm:shadow-2xl">
+                    <div className="relative z-10 flex flex-col w-full h-full text-gray-900 bg-white dark:bg-deepcharcoal dark:text-white/80 sm:h-auto sm:max-w-2xl sm:flex-none sm:rounded-2xl sm:shadow-2xl">
                         {/* ── Header ── */}
-                        <div className="flex items-center justify-between border-b px-6 pb-4 pt-5 dark:border-white/10">
+                        <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b dark:border-white/10">
                             <h3 className="text-base font-semibold">
                                 {desktopScanActive ? 'Hold Barcode in the Scan Box' : heading}
                             </h3>
@@ -351,10 +352,11 @@ const PackageVerificationRecorder = memo(
                                 {!desktopScanActive && (
                                     <button
                                         onClick={handleClose}
-                                        className="flex h-8 w-8 items-center justify-center rounded-full text-gray-400 lg:hover:bg-gray-100 dark:lg:hover:bg-white/10"
+                                        disabled={isUploading}
+                                        className="flex items-center justify-center w-8 h-8 text-gray-400 rounded-full lg:hover:bg-gray-100 dark:lg:hover:bg-white/10"
                                     >
                                         <svg
-                                            className="h-4 w-4"
+                                            className="w-4 h-4"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -371,13 +373,13 @@ const PackageVerificationRecorder = memo(
                             </div>
                         </div>
 
-                        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-5">
+                        <div className="flex flex-col flex-1 gap-4 p-5 overflow-y-auto">
                             {/* ── Verification Banners ── */}
                             {verificationStatus === 'success' && (
-                                <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
-                                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/40">
+                                <div className="flex items-center gap-3 p-3 border border-green-200 rounded-lg bg-green-50 dark:border-green-800 dark:bg-green-900/20">
+                                    <div className="flex items-center justify-center flex-shrink-0 bg-green-100 rounded-full h-7 w-7 dark:bg-green-900/40">
                                         <svg
-                                            className="h-4 w-4 text-green-600 dark:text-green-400"
+                                            className="w-4 h-4 text-green-600 dark:text-green-400"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -396,10 +398,10 @@ const PackageVerificationRecorder = memo(
                                 </div>
                             )}
                             {verificationStatus === 'mismatch' && (
-                                <div className="flex items-center gap-3 rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-800 dark:bg-red-900/20">
-                                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40">
+                                <div className="flex items-center gap-3 p-3 border border-red-200 rounded-lg bg-red-50 dark:border-red-800 dark:bg-red-900/20">
+                                    <div className="flex items-center justify-center flex-shrink-0 bg-red-100 rounded-full h-7 w-7 dark:bg-red-900/40">
                                         <svg
-                                            className="h-4 w-4 text-red-600 dark:text-red-400"
+                                            className="w-4 h-4 text-red-600 dark:text-red-400"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -418,10 +420,10 @@ const PackageVerificationRecorder = memo(
                                 </div>
                             )}
                             {verificationStatus === 'scan_error' && (
-                                <div className="flex items-center gap-3 rounded-lg border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-900/20">
-                                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40">
+                                <div className="flex items-center gap-3 p-3 border border-orange-200 rounded-lg bg-orange-50 dark:border-orange-800 dark:bg-orange-900/20">
+                                    <div className="flex items-center justify-center flex-shrink-0 bg-orange-100 rounded-full h-7 w-7 dark:bg-orange-900/40">
                                         <svg
-                                            className="h-4 w-4 text-orange-600 dark:text-orange-400"
+                                            className="w-4 h-4 text-orange-600 dark:text-orange-400"
                                             fill="none"
                                             stroke="currentColor"
                                             viewBox="0 0 24 24"
@@ -448,16 +450,16 @@ const PackageVerificationRecorder = memo(
                                         autoPlay
                                         muted
                                         playsInline
-                                        className="h-full w-full object-cover"
+                                        className="object-cover w-full h-full"
                                         onClick={refocus}
                                         onTouchStart={refocus}
                                     />
                                     <div
-                                        className="pointer-events-none absolute inset-0"
+                                        className="absolute inset-0 pointer-events-none"
                                         style={{ boxShadow: '0 0 0 9999px rgba(0,0,0,0.65)' }}
                                     >
                                         <div
-                                            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded border-2 border-green-400"
+                                            className="absolute -translate-x-1/2 -translate-y-1/2 border-2 border-green-400 rounded left-1/2 top-1/2"
                                             style={{ width: '65%', height: '56px' }}
                                         >
                                             <div className="absolute -left-0.5 -top-0.5 h-4 w-4 rounded-tl border-l-4 border-t-4 border-green-400" />
@@ -470,12 +472,12 @@ const PackageVerificationRecorder = memo(
                                             Hold barcode in the green box to scan
                                         </p>
                                     </div>
-                                    <div className="absolute left-3 top-3 flex items-center gap-2 rounded-full bg-green-600 px-3 py-1 text-xs font-semibold text-white">
-                                        <div className="h-2 w-2 animate-pulse rounded-full bg-white" />{' '}
+                                    <div className="absolute flex items-center gap-2 px-3 py-1 text-xs font-semibold text-white bg-green-600 rounded-full left-3 top-3">
+                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" />{' '}
                                         SCANNING
                                     </div>
                                     {torchOn && (
-                                        <div className="pointer-events-none absolute right-2 top-2 flex items-center gap-1 rounded-full bg-yellow-400/90 px-2 py-1 text-xs font-semibold text-gray-900">
+                                        <div className="absolute flex items-center gap-1 px-2 py-1 text-xs font-semibold text-gray-900 rounded-full pointer-events-none right-2 top-2 bg-yellow-400/90">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
@@ -498,17 +500,17 @@ const PackageVerificationRecorder = memo(
 
                             {/* ── Mobile: captured barcode photo preview ── */}
                             {isMobileDevice && capturedPhoto && (
-                                <div className="relative overflow-hidden rounded-xl bg-black">
+                                <div className="relative overflow-hidden bg-black rounded-xl">
                                     <img
                                         src={capturedPhoto}
                                         alt="Captured barcode"
-                                        className="max-h-52 w-full object-contain"
+                                        className="object-contain w-full max-h-52"
                                     />
-                                    <div className="absolute left-2 top-2 rounded-full bg-black/70 px-2 py-1 text-xs font-semibold text-white">
+                                    <div className="absolute px-2 py-1 text-xs font-semibold text-white rounded-full left-2 top-2 bg-black/70">
                                         Barcode Photo
                                     </div>
                                     {verificationStatus === 'success' && (
-                                        <div className="absolute right-2 top-2 rounded-full bg-green-600 px-2 py-1 text-xs font-semibold text-white">
+                                        <div className="absolute px-2 py-1 text-xs font-semibold text-white bg-green-600 rounded-full right-2 top-2">
                                             ✓ Verified
                                         </div>
                                     )}
@@ -517,16 +519,16 @@ const PackageVerificationRecorder = memo(
 
                             {/* ── Instructions — shown before verification ── */}
                             {!isVerifiedRef.current && !desktopScanActive && (
-                                <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50/50 p-5 dark:border-white/10 dark:bg-white/5">
-                                    <div className="mb-3 flex items-center gap-2">
-                                        <div className="flex flex-shrink-0 items-center justify-center rounded-full bg-violet-100 p-1 dark:bg-violet-900/30">
+                                <div className="p-5 border border-gray-200 border-dashed rounded-xl bg-gray-50/50 dark:border-white/10 dark:bg-white/5">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="flex items-center justify-center flex-shrink-0 p-1 rounded-full bg-violet-100 dark:bg-violet-900/30">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-4 w-4 text-violet-600 dark:text-violet-400"
+                                                className="w-4 h-4 text-violet-600 dark:text-violet-400"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -573,14 +575,14 @@ const PackageVerificationRecorder = memo(
                                     </ol>
 
                                     {isMobileDevice && (
-                                        <div className="mt-3 flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-800/50 dark:bg-amber-900/20">
+                                        <div className="flex items-center gap-2 px-3 py-2 mt-3 border rounded-lg border-amber-200 bg-amber-50 dark:border-amber-800/50 dark:bg-amber-900/20">
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
                                                 fill="none"
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={1.5}
                                                 stroke="currentColor"
-                                                className="h-4 w-4 flex-shrink-0 text-amber-600 dark:text-amber-400"
+                                                className="flex-shrink-0 w-4 h-4 text-amber-600 dark:text-amber-400"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -598,12 +600,12 @@ const PackageVerificationRecorder = memo(
 
                             {/* ── Controls: before verification ── */}
                             {!isVerifiedRef.current && (
-                                <div className="flex flex-shrink-0 flex-wrap justify-center gap-3">
+                                <div className="flex flex-wrap justify-center flex-shrink-0 gap-3">
                                     {!desktopScanActive && (
                                         <button
                                             onClick={handleSnapshot}
                                             disabled={isScanningRef.current}
-                                            className="flex items-center gap-2 rounded-lg bg-violet-600 px-5 py-2 text-sm font-medium text-white transition-transform disabled:opacity-50 lg:hover:bg-violet-700"
+                                            className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white transition-transform rounded-lg bg-violet-600 disabled:opacity-50 lg:hover:bg-violet-700"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -632,7 +634,7 @@ const PackageVerificationRecorder = memo(
                                     {!isMobileDevice && desktopScanActive && (
                                         <button
                                             onClick={handleCancelDesktopScan}
-                                            className="flex items-center gap-2 rounded-lg bg-gray-500 px-5 py-2 text-sm font-medium text-white transition-transform lg:hover:bg-gray-600"
+                                            className="flex items-center gap-2 px-5 py-2 text-sm font-medium text-white transition-transform bg-gray-500 rounded-lg lg:hover:bg-gray-600"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -654,7 +656,7 @@ const PackageVerificationRecorder = memo(
                                     {!desktopScanActive && (
                                         <button
                                             onClick={handleClose}
-                                            className="rounded-lg bg-gray-500 px-5 py-2 text-sm font-medium text-white lg:hover:bg-gray-600"
+                                            className="px-5 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg lg:hover:bg-gray-600"
                                         >
                                             Close
                                         </button>
@@ -724,21 +726,21 @@ const PackageVerificationRecorder = memo(
                                         <button
                                             onClick={handleSave}
                                             disabled={isUploading}
-                                            className="rounded-lg bg-blue-600 px-5 py-2 text-sm font-medium text-white disabled:cursor-not-allowed disabled:opacity-50 lg:hover:bg-blue-700"
+                                            className="px-5 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg disabled:cursor-not-allowed disabled:opacity-50 lg:hover:bg-blue-700"
                                         >
-                                            {isUploading ? 'Uploading...' : 'Save & Done'}
+                                            {isUploading ? <Spinner customSize={"size-4"} /> : 'Save & Done'}
                                         </button>
                                         <button
                                             onClick={handleRescan}
                                             disabled={isUploading}
-                                            className="rounded-lg bg-amber-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-50 lg:hover:bg-amber-600"
+                                            className="px-5 py-2 text-sm font-medium text-white rounded-lg bg-amber-500 disabled:opacity-50 lg:hover:bg-amber-600"
                                         >
                                             Rescan
                                         </button>
                                         <button
                                             onClick={handleClose}
                                             disabled={isUploading}
-                                            className="rounded-lg bg-gray-500 px-5 py-2 text-sm font-medium text-white disabled:opacity-50 lg:hover:bg-gray-600"
+                                            className="px-5 py-2 text-sm font-medium text-white bg-gray-500 rounded-lg disabled:opacity-50 lg:hover:bg-gray-600"
                                         >
                                             Close
                                         </button>
