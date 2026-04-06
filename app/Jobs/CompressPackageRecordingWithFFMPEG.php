@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Models\PackageRecording;
 use FFMpeg\FFMpeg;
-use FFMpeg\Format\Video\X264;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Support\Facades\Storage;
@@ -37,9 +36,6 @@ class CompressPackageRecordingWithFFMPEG implements ShouldQueue
         $path = [];
 
         $realPath = Storage::disk('local')->path($this->tempPath);
-
-        $compressedName = time().uniqid().'-'.Str::random(8).'.mp4';
-        $compressedPath = Storage::disk('local')->path('temp/uploads/'.$compressedName);
 
         $ffmpeg = FFMpeg::create([
             'ffmpeg.binaries' => '/usr/bin/ffmpeg',
@@ -80,24 +76,10 @@ class CompressPackageRecordingWithFFMPEG implements ShouldQueue
             ->encode(new WebpEncoder(quality: 70));
 
         Storage::disk('local')->put('temp/uploads/'.$thumbnailName, (string) $compressedThumb);
-
-        $format = new X264('aac', 'libx264');
-
-        $format->setAdditionalParameters([
-            '-crf', '28',
-            '-preset', 'medium',
-            '-movflags', '+faststart',
-            '-pix_fmt', 'yuv420p',
-            '-f', 'mp4',
-        ]);
-
-        $videoFile->save($format, $compressedPath);
-
         Storage::disk('local')->delete("temp/uploads/$rawThumbnailName");
-        Storage::disk('local')->delete($this->tempPath);
 
         $path = [
-            'video' => 'temp/uploads/'.$compressedName,
+            'video' => $this->tempPath,
             'thumbnail' => 'temp/uploads/'.$thumbnailName,
         ];
 
