@@ -257,14 +257,24 @@ class TranslationRepository implements ITranslationRepository
 
     private function normalizeKey(string $value): string
     {
+        $ligatures = [
+            "\u{FB00}" => 'ff',
+            "\u{FB01}" => 'fi',
+            "\u{FB02}" => 'fl',
+            "\u{FB03}" => 'ffi',
+            "\u{FB04}" => 'ffl',
+            "\u{FB05}" => 'st',
+            "\u{FB06}" => 'st',
+        ];
+        $value = str_replace(array_keys($ligatures), array_values($ligatures), $value);
 
         $value = preg_replace('/^\xEF\xBB\xBF/u', '', $value);
 
         if (class_exists(\Normalizer::class)) {
             $value = \Normalizer::normalize($value, \Normalizer::FORM_C);
         }
-        $value = preg_replace('/[\p{Cc}\p{Cf}]/u', '', $value);
 
+        $value = preg_replace('/[\p{Cc}\p{Cf}]/u', '', $value);
         $value = preg_replace('/[\p{Z}\s]+/u', ' ', $value);
 
         return trim($value);
