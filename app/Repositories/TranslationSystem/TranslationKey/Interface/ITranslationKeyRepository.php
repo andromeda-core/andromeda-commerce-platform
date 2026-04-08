@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 interface ITranslationKeyRepository
 {
-    public function getAllTranslationKeys();
+    public function getAllTranslationKeys(Request $request);
 
     public function getSingleTranslationKey(string $id);
 

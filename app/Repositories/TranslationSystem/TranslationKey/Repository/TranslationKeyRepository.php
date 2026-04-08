@@ -13,9 +13,14 @@ class TranslationKeyRepository implements ITranslationKeyRepository
         private TranslationKey $translation_key
     ) {}
 
-    public function getAllTranslationKeys()
+    public function getAllTranslationKeys(Request $request)
     {
-        $translation_keys = $this->translation_key->latest()->paginate(10);
+        $search = $request->string('search')->trim();
+        $translation_keys = $this->translation_key
+            ->when($search, fn ($q) => $q->where('key', 'like', "%{$search}%"))
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
         return $translation_keys;
     }

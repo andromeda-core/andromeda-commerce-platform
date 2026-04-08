@@ -54,7 +54,7 @@ export default function index({ translation_keys }) {
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end gap-4 my-3">
+                            <div className="my-3 flex flex-wrap justify-end gap-4">
                                 <LinkButton
                                     Text={'Back To Translation System'}
                                     URL={route('dashboard.translation-system.index')}
@@ -76,10 +76,11 @@ export default function index({ translation_keys }) {
                                     }
                                 />
 
-
                                 <LinkButton
                                     Text={'Create Translation Key'}
-                                    URL={route('dashboard.translation-system.translation-keys.create')}
+                                    URL={route(
+                                        'dashboard.translation-system.translation-keys.create',
+                                    )}
                                     Icon={
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -111,9 +112,12 @@ export default function index({ translation_keys }) {
                                 BulkDeleteRoute={
                                     'dashboard.translation-system.translation-keys.destroybyselection'
                                 }
-                                SingleDeleteRoute={'dashboard.translation-system.translation-keys.destroy'}
-                                Search={false}
-                                DefaultSearchInput={false}
+                                SingleDeleteRoute={
+                                    'dashboard.translation-system.translation-keys.destroy'
+                                }
+                                Search={true}
+                                DefaultSearchInput={true}
+                                SearchRoute={'dashboard.translation-system.translation-keys.index'}
                                 items={translation_keys}
                                 props={props}
                                 columns={columns}

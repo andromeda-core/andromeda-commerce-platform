@@ -30,11 +30,15 @@ class TranslationKeyController extends Controller implements HasMiddleware
         private ITranslationKeyRepository $translation_key
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $translation_keys = $this->translation_key->getAllTranslationKeys();
+        $translation_keys = $this->translation_key->getAllTranslationKeys($request);
 
-        return Inertia::render('Dashboard/TranslationSystem/TranslationKeys/index', compact('translation_keys'));
+        return Inertia::render('Dashboard/TranslationSystem/TranslationKeys/index',
+            [
+                'translation_keys' => $translation_keys,
+                'search' => $request->string('search')->toString(),
+            ]);
     }
 
     public function create()
