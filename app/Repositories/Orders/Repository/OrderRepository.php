@@ -958,7 +958,8 @@ class OrderRepository implements IOrderRepository
             // $this->ip_resolver->resolveCountryIDFromIP($request->ip()),
             // $shipping_address->country_id
             // );
-            if ($this->ip_resolver->resolveCountryIDFromIP($request->ip()) != $shipping_address->country_id) {
+
+            if (!app()->isLocal() && ($this->ip_resolver->resolveCountryIDFromIP($request->ip()) != $shipping_address->country_id)) {
                 throw new Exception($this->trans::get('For security reasons, the shipping address country must match your current detected location to place the order.'));
             }
 
