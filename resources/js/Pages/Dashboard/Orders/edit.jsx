@@ -19,18 +19,20 @@ export default function edit({ order, smartphones, customers }) {
         ...(order.status === 'pending' ? { payment_proof: '' } : {}),
         ...(order.status === 'paid'
             ? {
-                courier_company: '',
-                shipping_date: '',
-                tracking_no: '',
-                courier_invoice: '',
-            }
+                  courier_company: '',
+                  courier_company_address: '',
+                  courier_company_postal_code: '',
+                  courier_company_phone: '',
+                  shipping_date: '',
+                  tracking_no: '',
+                  courier_invoice: '',
+              }
             : {}),
-
 
         ...(order.status === 'arrived_locally'
             ? {
-                final_attachments: [],
-            }
+                  final_attachments: [],
+              }
             : {}),
 
         ...(order.status !== 'pending' ? { is_cash_collected: order.is_cash_collected ?? '' } : {}),
@@ -78,7 +80,7 @@ export default function edit({ order, smartphones, customers }) {
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Orders'}
                                     URL={route('dashboard.orders.index')}
@@ -195,6 +197,79 @@ export default function edit({ order, smartphones, customers }) {
                                                         />
 
                                                         <Input
+                                                            InputName={'Courier Company Phone'}
+                                                            Id={'courier_company_phone'}
+                                                            Name={'courier_company_phone'}
+                                                            Type={'text'}
+                                                            Value={data.courier_company_phone}
+                                                            Error={errors.courier_company_phone}
+                                                            Placeholder={
+                                                                'Enter Courier Company Phone'
+                                                            }
+                                                            Required={true}
+                                                            Action={(e) =>
+                                                                setData(
+                                                                    'courier_company_phone',
+                                                                    e.target.value,
+                                                                )
+                                                            }
+                                                        />
+
+                                                        <Input
+                                                            InputName={
+                                                                'Courier Company Postal Code'
+                                                            }
+                                                            Id={'courier_company_postal_code'}
+                                                            Name={'courier_company_postal_code'}
+                                                            Type={'text'}
+                                                            Value={data.courier_company_postal_code}
+                                                            Error={
+                                                                errors.courier_company_postal_code
+                                                            }
+                                                            Placeholder={
+                                                                'Enter Courier Company Postal Code'
+                                                            }
+                                                            Required={true}
+                                                            Action={(e) =>
+                                                                setData(
+                                                                    'courier_company_postal_code',
+                                                                    e.target.value,
+                                                                )
+                                                            }
+                                                        />
+
+                                                        <div>
+                                                            <label
+                                                                htmlFor="address"
+                                                                className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
+                                                            >
+                                                                Courier Company Address{' '}
+                                                                <span className="font-bold text-black dark:text-white">
+                                                                    *
+                                                                </span>
+                                                            </label>
+                                                            <textarea
+                                                                id="courier_company_address"
+                                                                required
+                                                                rows="3"
+                                                                className="dark:bg-dark-900 shadow-theme-xs focus:ring-3 focus:outline-hidden mb-2 w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-300 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800"
+                                                                placeholder="Enter Courier Company Address here..."
+                                                                value={data.courier_company_address}
+                                                                onChange={(e) =>
+                                                                    setData(
+                                                                        'courier_company_address',
+                                                                        e.target.value,
+                                                                    )
+                                                                }
+                                                            ></textarea>
+                                                            {errors.courier_company_address && (
+                                                                <span className="ml-2 text-red-500 dark:text-white">
+                                                                    {errors.courier_company_address}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        <Input
                                                             InputName={'Tracking No.'}
                                                             Id={'tracking_no'}
                                                             Name={'tracking_no'}
@@ -309,7 +384,7 @@ export default function edit({ order, smartphones, customers }) {
                                             </div>
 
                                             {order.status === 'paid' && (
-                                                <div className="grid col-span-1 my-4">
+                                                <div className="col-span-1 my-4 grid">
                                                     <FileUploaderInput
                                                         InputName={'Courier Invoice'}
                                                         Id={'courier_invoice'}
@@ -341,9 +416,8 @@ export default function edit({ order, smartphones, customers }) {
                                                 </div>
                                             )}
 
-
                                             {order.status === 'arrived_locally' && (
-                                                <div className="grid col-span-1 my-4">
+                                                <div className="col-span-1 my-4 grid">
                                                     <FileUploaderInput
                                                         InputName={'Final Attachments'}
                                                         Id={'final_attachments'}
@@ -366,7 +440,10 @@ export default function edit({ order, smartphones, customers }) {
                                                                     .filter((f) => f.isNew)
                                                                     .map((f) => f.file);
 
-                                                                setData('final_attachments', newFiles);
+                                                                setData(
+                                                                    'final_attachments',
+                                                                    newFiles,
+                                                                );
                                                             } else {
                                                                 setData('final_attachments', null);
                                                             }

@@ -21,11 +21,11 @@ class DistributorRepository implements IDistributorRepository
         $distributors = $this->distributor
             ->when(! empty($request->input('search')), function ($query) use ($request) {
                 $query->where(function ($query) use ($request) {
-                    $query->Where('bank_account_no', 'like', '%'.$request->input('search').'%')
+                    $query->Where('bank_account_no', 'like', '%' . $request->input('search') . '%')
                         ->orWhereHas('user', function ($subQ) use ($request) {
-                            $subQ->where('name', 'like', '%'.$request->input('search').'%')
-                                ->orWhere('email', 'like', '%'.$request->input('search').'%')
-                                ->orWhere('phone', 'like', '%'.$request->input('search').'%');
+                            $subQ->where('name', 'like', '%' . $request->input('search') . '%')
+                                ->orWhere('email', 'like', '%' . $request->input('search') . '%')
+                                ->orWhere('phone', 'like', '%' . $request->input('search') . '%');
                         });
                 });
             })
@@ -55,6 +55,7 @@ class DistributorRepository implements IDistributorRepository
             'phone' => ['required', 'max:50', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:8', 'max:50', 'confirmed'],
             'address' => ['required', 'string', 'max:255'],
+            'postal_code' => ['required', 'string', 'max:50'],
             'bank_account_no' => ['required', 'string', 'max:255'],
             'bank_name' => ['required', 'string', 'max:255'],
             'bank_account_name' => ['required', 'string', 'max:255'],
@@ -87,6 +88,7 @@ class DistributorRepository implements IDistributorRepository
             $distributor = $this->distributor->create([
                 'user_id' => $user->id,
                 'address' => $validated_req['address'],
+                'postal_code' => $validated_req['postal_code'],
                 'bank_account_no' => $validated_req['bank_account_no'],
                 'bank_name' => $validated_req['bank_name'],
                 'bank_account_name' => $validated_req['bank_account_name'],
@@ -106,7 +108,6 @@ class DistributorRepository implements IDistributorRepository
                 'status' => true,
                 'message' => 'Distributor Created Successfully',
             ];
-
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -136,15 +137,15 @@ class DistributorRepository implements IDistributorRepository
                 'status' => false,
                 'message' => 'Something Went Wrong While Fetching Linked User To Distributor',
             ];
-
         }
 
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255'],
-            'phone' => ['required', 'max:50', 'unique:users,phone,'.$user->id],
+            'phone' => ['required', 'max:50', 'unique:users,phone,' . $user->id],
             ...(($request->filled('password') || $request->filled('password_confirmation')) ? ['password' => ['required', 'string', 'min:8', 'confirmed', 'max:50']] : []),
             'address' => ['required', 'string', 'max:255'],
+            'postal_code' => ['required', 'string', 'max:50'],
             'bank_account_no' => ['required', 'string', 'max:255'],
             'bank_name' => ['required', 'string', 'max:255'],
             'bank_account_name' => ['required', 'string', 'max:255'],
@@ -174,6 +175,7 @@ class DistributorRepository implements IDistributorRepository
 
             $distributor_updated = $distributor->update([
                 'address' => $validated_req['address'],
+                'postal_code' => $validated_req['postal_code'],
                 'bank_account_no' => $validated_req['bank_account_no'],
                 'bank_name' => $validated_req['bank_name'],
                 'bank_account_name' => $validated_req['bank_account_name'],
@@ -193,7 +195,6 @@ class DistributorRepository implements IDistributorRepository
                 'status' => true,
                 'message' => 'Distributor Updated Successfully',
             ];
-
         } catch (Exception $e) {
             DB::rollBack();
 

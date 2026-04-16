@@ -1,12 +1,23 @@
 import LinkButton from '@/Components/LinkButton';
 import PrimaryButton from '@/Components/PrimaryButton';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router, usePage } from '@inertiajs/react';
 import html2pdf from 'html2pdf.js';
 import React, { useState } from 'react';
 import QRCode from 'react-qr-code';
 
-export default function CustomerOrderInvoice({ order }) {
+export default function CustomerOrderInvoice({ order, translations }) {
     const { generalSetting, currency, asset, auth } = usePage().props;
+
+    const getInvoiceTranslation = (key) => {
+        if (!translations || translations.length === 0) {
+            return key;
+        }
+
+        const match = translations.find((t) => t.translation_keys?.key === key);
+
+        return match?.value || key;
+    };
 
     const [processing, setProcessing] = useState(false);
     const handleInvoiceDownload = () => {
@@ -35,10 +46,10 @@ export default function CustomerOrderInvoice({ order }) {
     };
 
     return (
-        <>
+        <AuthenticatedLayout allHidden={true}>
             <Head title={`Order - Customer Invoice - ${order.order_no}`} />
 
-            <div className="mx-auto flex lg:flex-nowrap flex-wrap w-auto items-center justify-center gap-4 lg:w-[600px] print:hidden">
+            <div className="mx-auto flex w-auto flex-wrap items-center justify-center gap-4 lg:w-[600px] lg:flex-nowrap print:hidden">
                 <PrimaryButton
                     Text={'Print'}
                     Action={() => window.print()}
@@ -126,10 +137,6 @@ export default function CustomerOrderInvoice({ order }) {
                                 }
                             />
                         )}
-
-
-
-
                     </>
                 ) : (
                     <LinkButton
@@ -153,16 +160,13 @@ export default function CustomerOrderInvoice({ order }) {
                         }
                     />
                 )}
-
-
-
             </div>
             <div id="invoice" className="mx-auto min-h-screen max-w-[1100px] bg-white shadow-lg">
                 {/* Header */}
-                <div className="p-4 text-white bg-gray-800 sm:p-6 lg:p-8">
+                <div className="bg-gray-800 p-4 text-white sm:p-6 lg:p-8">
                     <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between lg:gap-4">
                         <div className="flex-1">
-                            <div className="flex items-center justify-center w-12 h-12 mb-4 rounded-lg sm:h-14 sm:w-14">
+                            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-lg sm:h-14 sm:w-14">
                                 <img
                                     crossOrigin="anonymous"
                                     src={
@@ -177,28 +181,39 @@ export default function CustomerOrderInvoice({ order }) {
                                     style={{ display: 'block' }}
                                 />
                             </div>
-                            <h1 className="text-xl font-bold break-words sm:text-2xl">
+                            <h1 className="break-words text-xl font-bold sm:text-2xl">
                                 {generalSetting.app_name}
                             </h1>
                             <div className="mt-2 space-y-1">
-                                <p className="text-sm text-white break-all sm:text-base">
+                                <p className="break-all text-sm text-white sm:text-base">
                                     {order.customer?.user?.email}
                                 </p>
-                                <p className="text-sm text-white break-words sm:text-base">
+                                <p className="break-words text-sm text-white sm:text-base">
                                     {order.customer?.user?.phone}
                                 </p>
                             </div>
                         </div>
                         <div className="text-left lg:flex-shrink-0 lg:text-right">
-                            <h2 className="text-2xl font-bold sm:text-3xl">INVOICE</h2>
+                            <h2 className="text-2xl font-bold sm:text-3xl">
+                                {getInvoiceTranslation('INVOICE')}
+                            </h2>
                             <div className="text-left lg:flex-shrink-0 lg:text-right">
-                                <div className="mt-4 text-white rounded-lg">
-                                    <p className="text-sm">Invoice No:</p>
+                                <div className="mt-4 rounded-lg text-white">
+                                    <p className="text-sm">
+                                        {getInvoiceTranslation('Invoice No')}:
+                                    </p>
                                     <p className="text-lg font-bold">#{order.order_no}</p>
-                                    <p className="mt-2 text-sm">Date: {order.added_at}</p>
+                                    <p className="mt-2 text-sm">
+                                        {getInvoiceTranslation('Date')}: {order.added_at}
+                                    </p>
                                 </div>
                                 <p className="text-sm">
-                                    Status: <span className="font-medium">{order.status.replace(/_/g, ' ').toUpperCase()}</span>
+                                    {getInvoiceTranslation('Status')}:{' '}
+                                    <span className="font-medium">
+                                        {getInvoiceTranslation(
+                                            order.status.replace(/_/g, ' ').toUpperCase(),
+                                        )}
+                                    </span>
                                 </p>
                             </div>
                         </div>
@@ -206,36 +221,38 @@ export default function CustomerOrderInvoice({ order }) {
                 </div>
 
                 {/* Customer Info */}
-                <div className="p-4 border-b border-gray-200 sm:p-6 lg:p-8">
-                    <h3 className="mb-4 text-lg font-semibold text-gray-700">Shipping Details:</h3>
-                    <div className="p-4 rounded-lg bg-gray-50 sm:p-5">
+                <div className="border-b border-gray-200 p-4 sm:p-6 lg:p-8">
+                    <h3 className="mb-4 text-lg font-semibold text-gray-700">
+                        {getInvoiceTranslation('Shipping Details')}:
+                    </h3>
+                    <div className="rounded-lg bg-gray-50 p-4 sm:p-5">
                         <div className="space-y-1">
-                            <p className="text-sm font-semibold text-gray-900 break-words sm:text-base">
+                            <p className="break-words text-sm font-semibold text-gray-900 sm:text-base">
                                 {order?.shipping_name || ''}
                             </p>
 
-                            <p className="text-sm text-gray-600 break-words sm:text-base">
+                            <p className="break-words text-sm text-gray-600 sm:text-base">
                                 {order?.shipping_address_line1 || ''}
                                 {', '}
                                 {order?.shipping_address_line2 || ''}
                             </p>
-                            <p className="text-sm text-gray-600 break-words sm:text-base">
+                            <p className="break-words text-sm text-gray-600 sm:text-base">
                                 {order?.shipping_city || ''}
                             </p>
 
-                            <p className="text-sm text-gray-600 break-words sm:text-base">
+                            <p className="break-words text-sm text-gray-600 sm:text-base">
                                 {order?.shipping_state || ''}
                             </p>
 
-                            <p className="text-sm text-gray-600 break-words sm:text-base">
+                            <p className="break-words text-sm text-gray-600 sm:text-base">
                                 {order?.shipping_postal_code || ''}
                             </p>
 
-                            <p className="text-sm text-gray-600 break-words sm:text-base">
+                            <p className="break-words text-sm text-gray-600 sm:text-base">
                                 {order?.shipping_country || ''}
                             </p>
 
-                            <p className="mt-2 text-sm text-gray-600 break-all sm:text-base">
+                            <p className="mt-2 break-all text-sm text-gray-600 sm:text-base">
                                 {order?.shipping_phone || ''}
                             </p>
                         </div>
@@ -249,20 +266,20 @@ export default function CustomerOrderInvoice({ order }) {
                         <table className="w-full min-w-[600px]">
                             <thead>
                                 <tr className="border-b-2 border-gray-300">
-                                    <th className="px-2 py-3 text-sm font-semibold text-left text-gray-700 lg:text-base">
-                                        Product
+                                    <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 lg:text-base">
+                                        {getInvoiceTranslation('Product')}
                                     </th>
-                                    <th className="px-2 py-3 text-sm font-semibold text-left text-gray-700 lg:text-base">
-                                        Capacity
+                                    <th className="px-2 py-3 text-left text-sm font-semibold text-gray-700 lg:text-base">
+                                        {getInvoiceTranslation('Capacity')}
                                     </th>
-                                    <th className="px-2 py-3 text-sm font-semibold text-right text-gray-700 lg:text-base">
-                                        Price
+                                    <th className="px-2 py-3 text-right text-sm font-semibold text-gray-700 lg:text-base">
+                                        {getInvoiceTranslation('Price')}
                                     </th>
-                                    <th className="px-2 py-3 text-sm font-semibold text-center text-gray-700 lg:text-base">
-                                        Qty
+                                    <th className="px-2 py-3 text-center text-sm font-semibold text-gray-700 lg:text-base">
+                                        {getInvoiceTranslation('Qty')}
                                     </th>
-                                    <th className="px-2 py-3 text-sm font-semibold text-right text-gray-700 lg:text-base">
-                                        Total
+                                    <th className="px-2 py-3 text-right text-sm font-semibold text-gray-700 lg:text-base">
+                                        {getInvoiceTranslation('Total')}
                                     </th>
                                 </tr>
                             </thead>
@@ -271,14 +288,13 @@ export default function CustomerOrderInvoice({ order }) {
                                     const addonsTotal =
                                         item.smartphone_addons?.reduce(
                                             (sum, addon) => sum + Number(addon.total_price),
-                                            0
+                                            0,
                                         ) || 0;
 
                                     const itemGrandTotal = Number(item.sub_total) + addonsTotal;
 
                                     return (
                                         <React.Fragment key={index}>
-
                                             <tr className="border-b border-gray-200">
                                                 <td className="px-2 py-4 text-sm font-medium text-gray-900">
                                                     {item?.smartphone?.model_name?.name}
@@ -288,79 +304,116 @@ export default function CustomerOrderInvoice({ order }) {
                                                     {item?.smartphone?.capacity?.name}
                                                 </td>
 
-                                                <td className="px-2 py-4 text-sm text-right text-gray-900">
+                                                <td className="px-2 py-4 text-right text-sm text-gray-900">
                                                     {currency?.symbol}
-                                                    {Number(item.unit_price).toLocaleString('en-US')}
+                                                    {Number(item.unit_price).toLocaleString(
+                                                        'en-US',
+                                                    )}
                                                 </td>
 
-                                                <td className="px-2 py-4 text-sm text-center text-gray-900">
+                                                <td className="px-2 py-4 text-center text-sm text-gray-900">
                                                     {item.quantity}
                                                 </td>
 
-                                                <td className="px-2 py-4 text-sm font-bold text-right text-gray-900">
+                                                <td className="px-2 py-4 text-right text-sm font-bold text-gray-900">
                                                     {currency?.symbol}
                                                     {Number(itemGrandTotal).toLocaleString('en-US')}
                                                 </td>
                                             </tr>
 
-
                                             <tr className="bg-gray-50">
-                                                <td colSpan={5} className="px-4 py-3 text-sm text-gray-600">
+                                                <td
+                                                    colSpan={5}
+                                                    className="px-4 py-3 text-sm text-gray-600"
+                                                >
                                                     <div className="space-y-1">
                                                         <div className="flex justify-between">
                                                             <span>
-                                                                Product ({item.unit_price} × {item.quantity})
+                                                                {getInvoiceTranslation('Product')} (
+                                                                {item.unit_price} × {item.quantity})
                                                             </span>
                                                             <span>
                                                                 {currency?.symbol}
-                                                                {(Number(item.unit_price) * Number(item.quantity)).toLocaleString('en-US')}
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="flex justify-between">
-                                                            <span>Shipping</span>
-                                                            <span>
-                                                                {currency?.symbol}
-                                                                {Number(item.shipping_cost || 0).toLocaleString('en-US')}
+                                                                {(
+                                                                    Number(item.unit_price) *
+                                                                    Number(item.quantity)
+                                                                ).toLocaleString('en-US')}
                                                             </span>
                                                         </div>
 
                                                         <div className="flex justify-between">
-                                                            <span>Import Tax</span>
+                                                            <span>
+                                                                {getInvoiceTranslation('Shipping')}
+                                                            </span>
                                                             <span>
                                                                 {currency?.symbol}
-                                                                {Number(item.import_cost || 0).toLocaleString('en-US')}
+                                                                {Number(
+                                                                    item.shipping_cost || 0,
+                                                                ).toLocaleString('en-US')}
+                                                            </span>
+                                                        </div>
+
+                                                        <div className="flex justify-between">
+                                                            <span>
+                                                                {getInvoiceTranslation(
+                                                                    'Import Tax',
+                                                                )}
+                                                            </span>
+                                                            <span>
+                                                                {currency?.symbol}
+                                                                {Number(
+                                                                    item.import_cost || 0,
+                                                                ).toLocaleString('en-US')}
                                                             </span>
                                                         </div>
 
                                                         {/* ADDONS BREAKDOWN */}
                                                         {item.smartphone_addons?.length > 0 && (
                                                             <>
-                                                                <div className="pt-2 mt-2 border-t border-dashed">
+                                                                <div className="mt-2 border-t border-dashed pt-2">
                                                                     <p className="text-xs font-semibold text-gray-700">
-                                                                        Add-ons
+                                                                        {getInvoiceTranslation(
+                                                                            'Add-ons',
+                                                                        )}
                                                                     </p>
 
-                                                                    {item.smartphone_addons.map((addon) => (
-                                                                        <div
-                                                                            key={addon.id}
-                                                                            className="flex justify-between text-sm"
-                                                                        >
-                                                                            <span>
-                                                                                {addon.name} × {addon.quantity}
-                                                                            </span>
-                                                                            <span>
-                                                                                {currency?.symbol}
-                                                                                {Number(addon.total_price).toLocaleString('en-US')}
-                                                                            </span>
-                                                                        </div>
-                                                                    ))}
+                                                                    {item.smartphone_addons.map(
+                                                                        (addon) => (
+                                                                            <div
+                                                                                key={addon.id}
+                                                                                className="flex justify-between text-sm"
+                                                                            >
+                                                                                <span>
+                                                                                    {addon.name} ×{' '}
+                                                                                    {addon.quantity}
+                                                                                </span>
+                                                                                <span>
+                                                                                    {
+                                                                                        currency?.symbol
+                                                                                    }
+                                                                                    {Number(
+                                                                                        addon.total_price,
+                                                                                    ).toLocaleString(
+                                                                                        'en-US',
+                                                                                    )}
+                                                                                </span>
+                                                                            </div>
+                                                                        ),
+                                                                    )}
 
                                                                     <div className="flex justify-between pt-1 font-medium">
-                                                                        <span>Add-ons total</span>
+                                                                        <span>
+                                                                            {getInvoiceTranslation(
+                                                                                'Add-ons Total',
+                                                                            )}
+                                                                        </span>
                                                                         <span>
                                                                             {currency?.symbol}
-                                                                            {Number(addonsTotal).toLocaleString('en-US')}
+                                                                            {Number(
+                                                                                addonsTotal,
+                                                                            ).toLocaleString(
+                                                                                'en-US',
+                                                                            )}
                                                                         </span>
                                                                     </div>
                                                                 </div>
@@ -373,20 +426,19 @@ export default function CustomerOrderInvoice({ order }) {
                                     );
                                 })}
                             </tbody>
-
                         </table>
                     </div>
 
                     {/* Totals Section */}
-                    <div className="flex justify-end mt-6 sm:mt-8">
+                    <div className="mt-6 flex justify-end sm:mt-8">
                         <div className="w-full sm:w-80">
-                            <div className="p-4 rounded-lg sm:p-6">
+                            <div className="rounded-lg p-4 sm:p-6">
                                 <div className="space-y-2">
                                     <div className="flex justify-between py-2">
                                         <span className="text-base font-semibold text-gray-900 sm:text-lg">
-                                            Total:
+                                            {getInvoiceTranslation('Total')}:
                                         </span>
-                                        <span className="text-base font-bold text-blue-600 break-words sm:text-lg">
+                                        <span className="break-words text-base font-bold text-blue-600 sm:text-lg">
                                             {currency?.symbol}
                                             {Number(order.full_amount).toLocaleString('en-US')}
                                         </span>
@@ -398,24 +450,24 @@ export default function CustomerOrderInvoice({ order }) {
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 text-center border-t bg-gray-50 page-break sm:p-6 lg:p-8">
+                <div className="border-t bg-gray-50 p-4 text-center page-break sm:p-6 lg:p-8">
                     {/* QR Code Section */}
-                    <div className="flex justify-center mt-8 mb-6 sm:mb-8 sm:mt-12">
+                    <div className="mb-6 mt-8 flex justify-center sm:mb-8 sm:mt-12">
                         <div className="text-center">
-                            <div className="flex items-center justify-center w-24 h-24 mx-auto mb-3 bg-gray-200 border-2 border-gray-400 border-dashed sm:h-32 sm:w-32">
+                            <div className="mx-auto mb-3 flex h-24 w-24 items-center justify-center border-2 border-dashed border-gray-400 bg-gray-200 sm:h-32 sm:w-32">
                                 <QRCode
-                                    className="w-full h-auto"
+                                    className="h-auto w-full"
                                     value={route('orders.customer-order-invoice', order.order_no)}
                                     viewBox="0 0 256 256"
                                 />
                             </div>
                             <p className="text-xs text-gray-500 sm:text-sm">
-                                Scan To Verify Invoice
+                                {getInvoiceTranslation('Scan To Verify Invoice')}
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
-        </>
+        </AuthenticatedLayout>
     );
 }

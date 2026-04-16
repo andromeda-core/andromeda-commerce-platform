@@ -42,6 +42,9 @@ class Order extends Model
         'previous_status',
         'collaborator_id',
         'courier_company',
+        'courier_company_address',
+        'courier_company_postal_code',
+        'courier_company_phone',
         'shipping_date',
         'tracking_no',
         'courier_invoice',
@@ -188,7 +191,7 @@ class Order extends Model
     public static function booted()
     {
         static::created(function ($order) {
-            $order->order_no = 'ORD-'.str_pad($order->id, 5, '0', STR_PAD_LEFT);
+            $order->order_no = 'ORD-' . str_pad($order->id, 5, '0', STR_PAD_LEFT);
             $currency = Cache::get('currency');
             $user = $order->customer->user;
             $is_eligible = SpecialCountry::where('country_id', $order->customer->country_id)->exists();
@@ -221,7 +224,6 @@ class Order extends Model
                     $reward_point->points += round($total_points);
                     $reward_point->save();
                 }
-
             }
 
             if (Cache::has('smtp_config')) {
@@ -252,7 +254,6 @@ class Order extends Model
                     ]);
 
                     $user->notify(new OrderStatusPaidNotification($order, $currency));
-
                 }
             }
 
@@ -265,14 +266,12 @@ class Order extends Model
                 if ($order->status === 'paid' && $is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
                     dispatch(new OrderStatusPaidNotificationJob($user_meta_contacts, $order, $currency, $meta_setting, $user))->onQueue('meta');
                 }
-
             }
 
             $order->updateQuietly(['expires_at' => now()->addDays(1)]);
 
             // Notify Admin About Order
             dispatch(new NotifyAdminAboutOrderPlaced($order, $currency))->afterCommit();
-
         });
 
         static::updated(function ($order) {
@@ -315,7 +314,6 @@ class Order extends Model
                 if ($is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
                     dispatch(new OrderStatusPaidNotificationJob($user_meta_contacts, $order, $currency, $meta_setting, $user))->onQueue('meta');
                 }
-
             } elseif ($order->status === 'shipped') {
 
                 $user->notify(new OrderStatusShippedNotification($order));
@@ -329,7 +327,6 @@ class Order extends Model
                 if ($is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
                     dispatch(new OrderStatusArrivedLocallyNotificationJob($user_meta_contacts, $order, $meta_setting, $user))->onQueue('meta');
                 }
-
             } elseif ($order->status === 'delivered') {
                 $user->notify(new OrderStatusDeliveredNotification($order));
 
@@ -363,7 +360,6 @@ class Order extends Model
                         ]
                     );
                 }
-
             }
 
             $reward_rate = null;
@@ -398,7 +394,6 @@ class Order extends Model
                 }
                 dispatch(new CollaboratorCommissionSet($order));
             }
-
         });
     }
 

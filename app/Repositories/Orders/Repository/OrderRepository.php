@@ -18,6 +18,7 @@ use App\Models\CartItem;
 use App\Models\Collaborator;
 use App\Models\Customer;
 use App\Models\Inventory;
+use App\Models\Language;
 use App\Models\Order;
 use App\Models\PackageRecording;
 use App\Models\Smartphone;
@@ -28,6 +29,7 @@ use App\Models\StorageLocation;
 use App\Models\Supplier;
 use App\Models\SupplierAssignedOrder;
 use App\Models\SupplierAssignmentLog;
+use App\Models\Translation;
 use App\Models\User;
 use App\Notifications\NotifyCustomerAboutAwaitingPaymentOrderFromCrypto;
 use App\Notifications\NotifyCustomerAboutHisOrderCanceledByAdmin;
@@ -71,7 +73,9 @@ class OrderRepository implements IOrderRepository
         private SupplierAssignedOrder $supplier_assigned_order,
         private IBatchRepository $batch,
         private SupplierAssignmentLog $supplier_assignment_log,
-        private IPResolverService $ip_resolver
+        private IPResolverService $ip_resolver,
+        private Language $language,
+        private Translation $translation
     ) {}
 
     public function getAllOrders(Request $request)
@@ -80,11 +84,11 @@ class OrderRepository implements IOrderRepository
             ->with(['collaborator', 'customer', 'customer.user', 'assignedSupplier.supplier.user'])
             ->when(! empty($request->input('search')), function ($query) use ($request) {
                 $query->WhereHas('customer.user', function ($subQ) use ($request) {
-                    $subQ->where('name', 'like', '%'.$request->input('search').'%')
-                        ->orWhere('email', 'like', '%'.$request->input('search').'%')
-                        ->orWhere('phone', 'like', '%'.$request->input('search').'%');
+                    $subQ->where('name', 'like', '%' . $request->input('search') . '%')
+                        ->orWhere('email', 'like', '%' . $request->input('search') . '%')
+                        ->orWhere('phone', 'like', '%' . $request->input('search') . '%');
                 })
-                    ->orWhere('order_no', 'like', '%'.$request->input('search').'%');
+                    ->orWhere('order_no', 'like', '%' . $request->input('search') . '%');
             })
             ->when(! empty($request->input('status')), function ($query) use ($request) {
                 $query->where('status', $request->input('status'));
@@ -395,6 +399,9 @@ class OrderRepository implements IOrderRepository
             $validated_req = $request->validate([
                 'status' => ['required', Rule::in(['paid', 'shipped'])],
                 'courier_company' => ['required', 'string', 'max:255'],
+                'courier_company_address' => ['required', 'string', 'max:255'],
+                'courier_company_postal_code' => ['required', 'string', 'max:50'],
+                'courier_company_phone' => ['required', 'string', 'max:255'],
                 'tracking_no' => ['required', 'string', 'max:255'],
                 'shipping_date' => ['required', 'date'],
                 'is_cash_collected' => ['required', 'boolean'],
@@ -488,7 +495,7 @@ class OrderRepository implements IOrderRepository
                     }
 
                     $file = $attachment->getClientOriginalExtension();
-                    $new_name = 'final_attachments_'.time().uniqid().'.'.$file;
+                    $new_name = 'final_attachments_' . time() . uniqid() . '.' . $file;
 
                     $temp_path = $attachment->storeAs('temp/uploads', $new_name, 'local');
                     $final_attachments[] = [
@@ -516,7 +523,7 @@ class OrderRepository implements IOrderRepository
 
             if ($request->hasFile('payment_proof') && empty($order->payment_proof) && $oldStatus === 'pending') {
                 $file = $request->file('payment_proof');
-                $new_name = time().uniqid().'.'.$file->getClientOriginalExtension();
+                $new_name = time() . uniqid() . '.' . $file->getClientOriginalExtension();
                 $temp_path = $file->storeAs('temp/uploads', $new_name, 'local');
 
                 dispatch(new PayemntProofStoreOnAWS($temp_path, $order));
@@ -524,7 +531,7 @@ class OrderRepository implements IOrderRepository
 
             if ($request->hasFile('courier_invoice') && empty($order->courier_invoice) && $oldStatus === 'paid') {
                 $file = $request->file('courier_invoice');
-                $new_name = time().uniqid().'.'.$file->getClientOriginalExtension();
+                $new_name = time() . uniqid() . '.' . $file->getClientOriginalExtension();
                 $temp_path = $file->storeAs('temp/uploads', $new_name, 'local');
 
                 dispatch(new CourierInvoiceStoreOnAWS($temp_path, $order));
@@ -590,7 +597,6 @@ class OrderRepository implements IOrderRepository
                 'status' => true,
                 'message' => 'Supplier Assigned Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -665,7 +671,7 @@ class OrderRepository implements IOrderRepository
 
         if (! empty($missing)) {
             throw new Exception(
-                "Order cannot proceed due to missing stock:\n- ".implode("\n- ", $missing)
+                "Order cannot proceed due to missing stock:\n- " . implode("\n- ", $missing)
             );
         }
     }
@@ -710,7 +716,6 @@ class OrderRepository implements IOrderRepository
                                 ]);
                             }
                         }
-
                     }
                 });
             }
@@ -803,7 +808,6 @@ class OrderRepository implements IOrderRepository
                 'status' => true,
                 'message' => 'Order Cash Collected Status Updated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -870,10 +874,14 @@ class OrderRepository implements IOrderRepository
                 throw new Exception('Cannot View Invoice Before Payment');
             }
 
+
+            $translations = $this->getCustomerInvoiceTranslations($order->shipping_country);
+
             return [
                 'status' => true,
                 'message' => 'Invoice Found',
                 'order' => $order,
+                'translations' => $translations,
             ];
         } catch (Exception $e) {
             return [
@@ -881,6 +889,31 @@ class OrderRepository implements IOrderRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    public function getCustomerInvoiceTranslations(string $countryName)
+    {
+        // Find language by country name
+        $language = null;
+
+        if (!empty($countryName)) {
+            $language = $this->language::whereHas('country', function ($query) use ($countryName) {
+                $query->where('name', $countryName);
+            })->first();
+        }
+
+        // Fallback to English (language_id: 1) if no language found
+        if (!$language) {
+            $language = $this->language::where('id', 1)->first();
+        }
+
+        // Get translations for this language
+        $translations = $this->translation::where('language_id', $language->id)
+            ->with('translationKeys')
+            ->get()
+            ->toArray(); // Convert to array for consistency
+
+        return $translations;
     }
 
     public function ShippingOrderInvoice(Request $request, string $order_no)
@@ -965,7 +998,7 @@ class OrderRepository implements IOrderRepository
 
             $buy_now = (bool) $request->has('buy_now');
 
-            $sessionKey = 'single_product_checkout_'.$user->id;
+            $sessionKey = 'single_product_checkout_' . $user->id;
             $sessionData = session()->get($sessionKey);
 
             $cart_items = collect();
@@ -1076,7 +1109,6 @@ class OrderRepository implements IOrderRepository
 
                 $inventoryItems[] = $backend_inventoryItems
                     ->groupBy('smartphone_id')->toArray();
-
             }
 
             $order_data = [
@@ -1113,7 +1145,7 @@ class OrderRepository implements IOrderRepository
                     $this->clearCartExistingItems($customer->id);
                     $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
                 } else {
-                    session()->forget('single_product_checkout_'.$user->id);
+                    session()->forget('single_product_checkout_' . $user->id);
                 }
 
                 DB::commit();
@@ -1125,7 +1157,6 @@ class OrderRepository implements IOrderRepository
                     'type' => 'bank',
                     'redirect_uri' => route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
                 ];
-
             } elseif ($payment_method === 'crypto') {
                 $order = $this->createOrderFromWebsite($order_data, $order_items, 'awaiting_payment', order_item_addons: $smartphone_addon_order_items, user: $user);
 
@@ -1137,13 +1168,12 @@ class OrderRepository implements IOrderRepository
                     if ($response['status'] === false) {
                         throw new Exception($response['message']);
                     }
-
                 }
                 if (blank($sessionData)) {
                     $this->clearCartExistingItems($customer->id);
                     $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
                 } else {
-                    session()->forget('single_product_checkout_'.$user->id);
+                    session()->forget('single_product_checkout_' . $user->id);
                 }
                 DB::commit();
 
@@ -1154,7 +1184,6 @@ class OrderRepository implements IOrderRepository
                     'message' => ! empty($response['message']) ? $response['message'] : $this->trans::get('Order Placed Successfully'),
                     'redirect_uri' => ! empty($response['payment_url']) ? $response['payment_url'] : route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
                 ];
-
             } elseif ($payment_method === 'points') {
 
                 $response = [];
@@ -1173,8 +1202,10 @@ class OrderRepository implements IOrderRepository
 
                 $order = $this->createOrderFromWebsite($order_data, $order_items, $status, order_item_addons: $smartphone_addon_order_items, user: $user);
 
-                if ($order_data['payment_method'] === 'points'
-                && ! empty($order_data['secondary_payment_method']) && $order_data['secondary_payment_method'] === 'crypto') {
+                if (
+                    $order_data['payment_method'] === 'points'
+                    && ! empty($order_data['secondary_payment_method']) && $order_data['secondary_payment_method'] === 'crypto'
+                ) {
                     $response = $this->now_payment_service->createPaymentSession($order);
                     if ($response['status'] === false) {
                         throw new Exception($response['message']);
@@ -1189,7 +1220,7 @@ class OrderRepository implements IOrderRepository
                     $this->clearCartExistingItems($customer->id);
                     $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
                 } else {
-                    session()->forget('single_product_checkout_'.$user->id);
+                    session()->forget('single_product_checkout_' . $user->id);
                 }
                 DB::commit();
 
@@ -1200,7 +1231,6 @@ class OrderRepository implements IOrderRepository
                     'type' => 'points',
                     'redirect_uri' => ! empty($response['payment_url']) ? $response['payment_url'] : route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
                 ];
-
             }
 
             throw new Exception($this->trans::get('Invalid Payment Method'));
@@ -1212,7 +1242,6 @@ class OrderRepository implements IOrderRepository
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     private function createOrderFromWebsite($order_data, $order_items, ?string $status, $order_item_addons, ?User $user = null)
@@ -1254,7 +1283,6 @@ class OrderRepository implements IOrderRepository
                 if ($payload['amount'] == 0) {
                     $payload['status'] = 'paid';
                 }
-
             }
 
             if (
@@ -1276,7 +1304,6 @@ class OrderRepository implements IOrderRepository
                         $payload['status'] = 'pending';
                     }
                 }
-
             }
 
             $order = $this->order->create($payload);
@@ -1309,9 +1336,7 @@ class OrderRepository implements IOrderRepository
                         $this->inventory->whereIn('id', $orderItem->inventory_item_ids)->update([
                             'status' => 'sold',
                         ]);
-
                     }
-
                 }
 
                 $cartItemId = $orderItemIndexMap[$index];
@@ -1474,7 +1499,6 @@ class OrderRepository implements IOrderRepository
         }
 
         return $order;
-
     }
 
     public function uploadPaymentProof(Request $request)
@@ -1518,7 +1542,7 @@ class OrderRepository implements IOrderRepository
 
         if ($request->hasFile('payment_proof') && empty($order->payment_proof) && $order->status === 'pending') {
             $file = $request->file('payment_proof');
-            $new_name = time().uniqid().'.'.$file->getClientOriginalExtension();
+            $new_name = time() . uniqid() . '.' . $file->getClientOriginalExtension();
             $temp_path = $file->storeAs('temp/uploads', $new_name, 'local');
 
             dispatch_sync(new PayemntProofStoreOnAWS($temp_path, $order));
@@ -1543,7 +1567,6 @@ class OrderRepository implements IOrderRepository
             'status' => false,
             'message' => $this->trans::get('Something Went Wrong While Uploading Payment Proof'),
         ];
-
     }
 
     // Not Needed  Becasue Instead Of Using IPN Now I am Using Background Job For Checking Status
@@ -1593,7 +1616,6 @@ class OrderRepository implements IOrderRepository
         return [
             'status' => true,
         ];
-
     }
 
     private function deductPoints(User $user, float $amount): float
@@ -1734,7 +1756,6 @@ class OrderRepository implements IOrderRepository
                 'order' => null,
             ];
         }
-
     }
 
     public function refundRequestStore(Request $request, string $order_no)
@@ -1835,15 +1856,14 @@ class OrderRepository implements IOrderRepository
                 $order->customer->user->notify(new OrderRefundNotification($order_refund, 'requested'));
 
                 return $order_refund;
-
             });
 
             if ($request->hasFile('defect_evidence_video') && $request->hasFile('return_Packaging_video')) {
                 $defect_video = $request->file('defect_evidence_video');
                 $return_packaging_video = $request->file('return_Packaging_video');
 
-                $new_defect_video_name = time().uniqid().'.'.$defect_video->getClientOriginalExtension();
-                $new_return_packaging_video_name = time().uniqid().'.'.$return_packaging_video->getClientOriginalExtension();
+                $new_defect_video_name = time() . uniqid() . '.' . $defect_video->getClientOriginalExtension();
+                $new_return_packaging_video_name = time() . uniqid() . '.' . $return_packaging_video->getClientOriginalExtension();
 
                 $tempPaths = [];
                 $tempPaths['defect_evidence_video'] = $defect_video->storeAs('temp/uploads', $new_defect_video_name, 'local');
@@ -1856,7 +1876,6 @@ class OrderRepository implements IOrderRepository
                 'status' => true,
                 'message' => $this->trans->get('Order Refund Requested Successful'),
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -1900,7 +1919,6 @@ class OrderRepository implements IOrderRepository
             return [
                 'status' => true,
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2030,14 +2048,12 @@ class OrderRepository implements IOrderRepository
 
                 $order_address_change_request->load(['customer.user', 'order']);
                 $order_address_change_request->customer->user->notify(new OrderAddressChangeNotification($order_address_change_request, 'requested'));
-
             });
 
             return [
                 'status' => true,
                 'message' => $this->trans->get('Order Address Change Requested Successful'),
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2097,7 +2113,6 @@ class OrderRepository implements IOrderRepository
                 'message' => $response['message'],
                 'redirect_url' => $response['payment_url'],
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2340,10 +2355,10 @@ class OrderRepository implements IOrderRepository
 
             $query->when(! empty($search_query), function ($query) use ($search_query) {
                 $query->whereHas('order', function ($query) use ($search_query) {
-                    $query->where('order_no', 'like', '%'.$search_query.'%');
+                    $query->where('order_no', 'like', '%' . $search_query . '%');
                 })
                     ->orWhereHas('assignedBy', function ($query) use ($search_query) {
-                        $query->where('name', 'like', '%'.$search_query.'%');
+                        $query->where('name', 'like', '%' . $search_query . '%');
                     });
             });
 
@@ -2402,7 +2417,6 @@ class OrderRepository implements IOrderRepository
                 'status' => true,
                 'orders' => $orders,
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2466,8 +2480,8 @@ class OrderRepository implements IOrderRepository
                 ->values();
 
             $smartphoneIds = ($assignment->status === 'fulfilled')
-            ? $allSmartphoneIds
-            : $allowedIds;
+                ? $allSmartphoneIds
+                : $allowedIds;
 
             $order = $assignment->order;
 
@@ -2482,9 +2496,10 @@ class OrderRepository implements IOrderRepository
                     'vat' => $batch->vat,
                     'base_purchase_unit_price' => $batch->base_purchase_unit_price,
                     'extra_costs' => $batch->extra_costs ?? [],
-                    'invoices' => collect($batch->invoices ?? [])->map(fn ($inv) => is_array($inv) ? $inv['url'] : $inv
+                    'invoices' => collect($batch->invoices ?? [])->map(
+                        fn($inv) => is_array($inv) ? $inv['url'] : $inv
                     )->filter()->values(),
-                    'inventory_items' => $batch->inventory_items->map(fn ($inv) => [
+                    'inventory_items' => $batch->inventory_items->map(fn($inv) => [
                         'id' => $inv->id,
                         'smartphone_id' => $inv->smartphone_id,
                         'storage_location_id' => $inv->storage_location_id,
@@ -2522,7 +2537,6 @@ class OrderRepository implements IOrderRepository
                     ->get(['id', 'model_name_id', 'created_at']),
                 'storage_locations' => StorageLocation::get(['id', 'name']),
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2571,7 +2585,6 @@ class OrderRepository implements IOrderRepository
                         'invoices' => ['array', 'max:1'],
                     ]);
                 }
-
             } elseif ($request->hasFile('invoices')) {
                 $request->validate([
                     'invoices' => ['required', 'array', 'max:1'],
@@ -2579,7 +2592,6 @@ class OrderRepository implements IOrderRepository
                     'invoices.required' => 'Invoice is required',
                     'invoices.max' => 'Only 1 invoice is allowed',
                 ]);
-
             } else {
                 $draft = $assignment->draft_data ?? [];
                 $storedInvoices = $draft['invoices'] ?? [];
@@ -2697,14 +2709,13 @@ class OrderRepository implements IOrderRepository
                         ]);
                     }
                 }
-
             }
 
             $assignment->status = 'fulfilled';
 
             foreach ($assignment->draft_data['invoices'] ?? [] as $old) {
                 $oldPath = is_array($old) ? $old['path'] : $old;
-                $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $oldPath);
+                $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url') . '/', '', $oldPath);
                 if (Storage::disk('s3')->exists($relative_path)) {
                     Storage::disk('s3')->delete($relative_path);
                 }
@@ -2770,7 +2781,7 @@ class OrderRepository implements IOrderRepository
 
                 foreach ($existingDraft['invoices'] ?? [] as $old) {
                     $oldPath = is_array($old) ? $old['path'] : $old;
-                    $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $oldPath);
+                    $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url') . '/', '', $oldPath);
                     if (Storage::disk('s3')->exists($relative_path)) {
                         Storage::disk('s3')->delete($relative_path);
                     }
@@ -2781,8 +2792,8 @@ class OrderRepository implements IOrderRepository
                     $localPath = $file->store('temp/draft_invoices', 'local');
                     $fullLocalPath = Storage::disk('local')->path($localPath);
                     $extension = $file->getClientOriginalExtension();
-                    $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
-                    $s3Path = 'Batch/Invoices/Draft/'.$new_name;
+                    $new_name = time() . uniqid() . '-' . Str::random(10) . '.' . $extension;
+                    $s3Path = 'Batch/Invoices/Draft/' . $new_name;
 
                     Storage::disk('s3')->put($s3Path, file_get_contents($fullLocalPath), [
                         'CacheControl' => 'public, max-age=31536000',
@@ -2802,7 +2813,7 @@ class OrderRepository implements IOrderRepository
                 if ($request->boolean('is_invoice_removed')) {
                     foreach ($existingDraft['invoices'] ?? [] as $old) {
                         $oldPath = is_array($old) ? $old['path'] : $old;
-                        $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url').'/', '', $oldPath);
+                        $relative_path = Str::replaceFirst(config('filesystems.disks.s3.url') . '/', '', $oldPath);
                         if (Storage::disk('s3')->exists($relative_path)) {
                             Storage::disk('s3')->delete($relative_path);
                         }
@@ -2828,7 +2839,6 @@ class OrderRepository implements IOrderRepository
                 'status' => true,
                 'message' => 'Progress saved successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2876,7 +2886,6 @@ class OrderRepository implements IOrderRepository
                 'status' => true,
                 'message' => 'Log added successfully',
             ];
-
         } catch (Exception $e) {
             return ['status' => false, 'message' => $e->getMessage()];
         }
@@ -2935,7 +2944,6 @@ class OrderRepository implements IOrderRepository
                         ]);
                     }
                 }
-
             }
 
             $customer->user->notify(new NotifyCustomerAboutHisOrderCanceledByAdmin($order, $request->input('reason')));
@@ -3039,7 +3047,6 @@ class OrderRepository implements IOrderRepository
                 'status' => true,
                 'message' => $this->trans->get('Code Found Now You Can Submit Refund Request'),
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3118,7 +3125,6 @@ class OrderRepository implements IOrderRepository
                 'status' => true,
                 'message' => $this->trans->get("Verification Successful For CODE $request->code "),
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,

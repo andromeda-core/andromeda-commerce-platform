@@ -206,6 +206,37 @@ export default function show({ order, auth }) {
                                                         </svg>
                                                     }
                                                 />
+
+                                                <LinkButton
+                                                    CustomClass={'w-[250px]'}
+                                                    Text={'Shipping Label'}
+                                                    URL={route(
+                                                        'dashboard.orders.shipping-label',
+                                                        order.id,
+                                                    )}
+                                                    Icon={
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            fill="none"
+                                                            viewBox="0 0 24 24"
+                                                            strokeWidth={1.5}
+                                                            stroke="currentColor"
+                                                            className="size-6"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M9.568 3H5.25A2.25 2.25 0 0 0 3 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581c.699.699 1.78.872 2.607.33a18.095 18.095 0 0 0 5.223-5.223c.542-.827.369-1.908-.33-2.607L11.16 3.66A2.25 2.25 0 0 0 9.568 3Z"
+                                                            />
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                d="M6 6h.008v.008H6V6Z"
+                                                            />
+                                                        </svg>
+                                                    }
+                                                />
+
                                                 <LinkButton
                                                     CustomClass={'w-[250px]'}
                                                     Text={'Shipping Invoice'}
@@ -1610,6 +1641,53 @@ export default function show({ order, auth }) {
                                                     {order?.order_items[0]?.smartphone?.category
                                                         ?.distributor?.user?.phone || 'N/A'}
                                                 </p>
+
+                                                <p className="flex items-center gap-2">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className="size-4"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="m6.115 5.19.319 1.913A6 6 0 0 0 8.11 10.36L9.75 12l-.387.775c-.217.433-.132.956.21 1.298l1.348 1.348c.21.21.329.497.329.795v1.089c0 .426.24.815.622 1.006l.153.076c.433.217.956.132 1.298-.21l.723-.723a8.7 8.7 0 0 0 2.288-4.042 1.087 1.087 0 0 0-.358-1.099l-1.33-1.108c-.251-.21-.582-.299-.905-.245l-1.17.195a1.125 1.125 0 0 1-.98-.314l-.295-.295a1.125 1.125 0 0 1 0-1.591l.13-.132a1.125 1.125 0 0 1 1.3-.21l.603.302a.809.809 0 0 0 1.086-1.086L14.25 7.5l1.256-.837a4.5 4.5 0 0 0 1.528-1.732l.146-.292M6.115 5.19A9 9 0 1 0 17.18 4.64M6.115 5.19A8.965 8.965 0 0 1 12 3c1.929 0 3.716.607 5.18 1.64"
+                                                        />
+                                                    </svg>
+
+                                                    {order?.order_items[0]?.smartphone?.category
+                                                        ?.distributor?.postal_code || 'N/A'}
+                                                </p>
+
+                                                <div className="flex items-center gap-2">
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none"
+                                                        viewBox="0 0 24 24"
+                                                        strokeWidth={1.5}
+                                                        stroke="currentColor"
+                                                        className="size-4"
+                                                    >
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                        />
+                                                        <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                        />
+                                                    </svg>
+
+                                                    <p className={'break-all'}>
+                                                        {order?.order_items[0]?.smartphone?.category
+                                                            ?.distributor?.address || 'N/A'}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
 

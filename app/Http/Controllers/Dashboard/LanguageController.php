@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\Settings\Interface\ISettingRepository;
 use App\Repositories\TranslationSystem\Language\Interface\ILanguageRepository;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -27,7 +28,8 @@ class LanguageController extends Controller implements HasMiddleware
     }
 
     public function __construct(
-        private ILanguageRepository $language
+        private ILanguageRepository $language,
+        private ISettingRepository $setting
     ) {}
 
     public function index()
@@ -39,7 +41,8 @@ class LanguageController extends Controller implements HasMiddleware
 
     public function create()
     {
-        return Inertia::render('Dashboard/TranslationSystem/Languages/create');
+        $countries = $this->setting->getCountries(request());
+        return Inertia::render('Dashboard/TranslationSystem/Languages/create', compact('countries'));
     }
 
     public function store(Request $request)
@@ -56,11 +59,12 @@ class LanguageController extends Controller implements HasMiddleware
     public function edit(string $id)
     {
         $language = $this->language->getSingleLanguageById($id);
+        $countries = $this->setting->getCountries(request());
         if (empty($language)) {
             return to_route('dashboard.translation-system.languages.index')->with('error', 'Language Not Found');
         }
 
-        return Inertia::render('Dashboard/TranslationSystem/Languages/edit', compact('language'));
+        return Inertia::render('Dashboard/TranslationSystem/Languages/edit', compact('language', 'countries'));
     }
 
     public function update(Request $request, string $id)

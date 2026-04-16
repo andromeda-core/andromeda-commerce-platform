@@ -40,7 +40,7 @@ export default function index({ distributors }) {
                     return (
                         <Link
                             href={route('dashboard.distributors.show', item?.id)}
-                            className="text-blue-500 underline cursor-pointer"
+                            className="cursor-pointer text-blue-500 underline"
                         >
                             {item.user.name}
                         </Link>
@@ -50,22 +50,13 @@ export default function index({ distributors }) {
             { key: 'user.email', label: 'Distributor Email' },
             { key: 'user.phone', label: 'Distributor Phone' },
 
-
             {
                 label: 'Can Verify Inventory',
                 render: (item) => {
                     if (item.can_verify_inventory) {
-                        return (
-                            <span className="p-2 text-white bg-green-500 rounded-lg">
-                                Yes
-                            </span>
-                        );
+                        return <span className="rounded-lg bg-green-500 p-2 text-white">Yes</span>;
                     } else {
-                        return (
-                            <span className="p-2 text-white bg-red-500 rounded-lg">
-                                No
-                            </span>
-                        );
+                        return <span className="rounded-lg bg-red-500 p-2 text-white">No</span>;
                     }
                 },
             },
@@ -82,11 +73,16 @@ export default function index({ distributors }) {
             },
 
             {
+                key: 'postal_code',
+                label: 'Distributor Postal Code',
+            },
+
+            {
                 label: 'Commission Rate',
                 render: (item) => {
                     if (item.commission_rate) {
                         return (
-                            <span className="p-2 text-white bg-blue-500 rounded-lg">
+                            <span className="rounded-lg bg-blue-500 p-2 text-white">
                                 {item.commission_rate}%
                             </span>
                         );
@@ -121,7 +117,6 @@ export default function index({ distributors }) {
                 label: 'Distributor Bank SWIFT Code',
             },
 
-
             { key: 'added_at', label: 'Added At' },
         ];
 
@@ -153,7 +148,7 @@ export default function index({ distributors }) {
                     Content={
                         <>
                             {can('Distributors Create') && (
-                                <div className="flex flex-wrap justify-end my-3">
+                                <div className="my-3 flex flex-wrap justify-end">
                                     <LinkButton
                                         Text={'Create Distributor'}
                                         URL={route('dashboard.distributors.create')}

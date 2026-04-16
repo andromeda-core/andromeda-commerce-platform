@@ -164,11 +164,11 @@ namespace App\Models{
  * @property int|null $supplier_id
  * @property array<array-key, mixed>|null $extra_costs
  * @property numeric $total_batch_cost
+ * @property string $vat
+ * @property array<array-key, mixed>|null $invoices
  * @property numeric $final_unit_price
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property string $vat
- * @property array<array-key, mixed>|null $invoices
  * @property-read mixed $added_at
  * @property-read mixed $invoice_urls
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Inventory> $inventory_items
@@ -847,8 +847,10 @@ namespace App\Models{
  * @property int $id
  * @property int $verified_by_id
  * @property int $inventory_id
- * @property string $imei
- * @property string|null $video
+ * @property string|null $screen_recording_video
+ * @property string|null $scene_video
+ * @property string|null $scanned_code
+ * @property string|null $barcode_photo
  * @property string|null $verified_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -857,14 +859,16 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereBarcodePhoto($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereImei($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereInventoryId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereScannedCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereSceneVideo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereScreenRecordingVideo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereVerifiedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereVerifiedById($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|InventoryVerification whereVideo($value)
  */
 	class InventoryVerification extends \Eloquent {}
 }
@@ -876,6 +880,7 @@ namespace App\Models{
  * @property string $code
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property int|null $country_id
  * @property-read mixed $added_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Translation> $translations
  * @property-read int|null $translations_count
@@ -883,6 +888,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Language newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Language query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereCountryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Language whereName($value)
@@ -1261,7 +1267,7 @@ namespace App\Models{
  * @property string $refund_reason
  * @property string|null $defect_evidence_video
  * @property string|null $return_packaging_video
- * @property string|null $scanned_imei
+ * @property string|null $scanned_code
  * @property string|null $refund_reference
  * @property string|null $note
  * @property numeric $refund_amount
@@ -1294,7 +1300,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRejectedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRequestedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereReturnPackagingVideo($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereScannedImei($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereScannedCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereWithdrawnAt($value)
  */
@@ -1305,24 +1311,32 @@ namespace App\Models{
 /**
  * @property int $id
  * @property int $order_id
- * @property string|null $package_video
- * @property string|null $thumbnail_url
+ * @property string|null $barcode_photo
+ * @property string|null $screen_recording_video
+ * @property string|null $scene_video
+ * @property bool $is_visible
  * @property int $is_opened
  * @property \Illuminate\Support\Carbon|null $opened_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property string|null $screen_recording_thumbnail
+ * @property string|null $scene_video_thumbnail
  * @property-read mixed $added_at
  * @property-read \App\Models\Order $order
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereBarcodePhoto($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereIsOpened($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereIsVisible($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereOpenedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereOrderId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording wherePackageVideo($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereThumbnailUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereSceneVideo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereSceneVideoThumbnail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereScreenRecordingThumbnail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereScreenRecordingVideo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereUpdatedAt($value)
  */
 	class PackageRecording extends \Eloquent {}
@@ -2055,6 +2069,7 @@ namespace App\Models{
  * @property int $order_id
  * @property int $supplier_id
  * @property int|null $assigned_by
+ * @property int|null $batch_id
  * @property string|null $assigned_at
  * @property string $status
  * @property string|null $note
@@ -2062,7 +2077,10 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\User|null $assignedBy
+ * @property-read \App\Models\Batch|null $batch
  * @property-read mixed $added_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SupplierAssignmentLog> $logs
+ * @property-read int|null $logs_count
  * @property-read \App\Models\Order $order
  * @property-read \App\Models\Supplier $supplier
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder newModelQuery()
@@ -2070,6 +2088,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereAssignedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereAssignedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereBatchId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereDraftData($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignedOrder whereId($value)
@@ -2095,7 +2114,6 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\SupplierAssignedOrder $assignment
  * @property-read \App\Models\User $author
- * @property-read string|null $file_url
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|SupplierAssignmentLog query()
@@ -2330,10 +2348,6 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $email_verified_at
  * @property int $is_email_verification_sent
  * @property string $password
- * @property string|null $deactivated_at
- * @property string|null $suspended_at
- * @property string|null $under_dispute_at
- * @property string|null $under_investigation_at
  * @property int $is_agreed_to_terms
  * @property string $language_locale
  * @property int $language_id
@@ -2343,6 +2357,10 @@ namespace App\Models{
  * @property int $is_dormant
  * @property string|null $dormant_at
  * @property string $status
+ * @property string|null $deactivated_at
+ * @property string|null $suspended_at
+ * @property string|null $under_dispute_at
+ * @property string|null $under_investigation_at
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ActionLog> $actionLogs

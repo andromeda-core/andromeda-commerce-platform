@@ -203,6 +203,21 @@ export default function edit({ distributor }) {
                                                 />
                                             </div>
 
+                                            {/* POSTAL CODE */}
+                                            <div>
+                                                <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
+                                                    Postal Code
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={distributor?.postal_code ?? 'N/A'}
+                                                    readOnly
+                                                    disabled
+                                                    className="w-full px-4 py-2 text-gray-800 border border-gray-300 rounded-md shadow-sm bg-gray-50 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+                                                />
+                                            </div>
+
+
                                             {/* Categories */}
                                             <div>
                                                 <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
@@ -210,7 +225,7 @@ export default function edit({ distributor }) {
                                                 </label>
                                                 <div className="flex flex-wrap gap-2">
                                                     {distributor?.categories &&
-                                                        distributor?.categories.length > 0 ? (
+                                                    distributor?.categories.length > 0 ? (
                                                         distributor.categories.map(
                                                             (category, index) => (
                                                                 <span
@@ -237,7 +252,7 @@ export default function edit({ distributor }) {
                                                     </label>
                                                     <div className="flex flex-wrap gap-2">
                                                         {distributor?.user?.roles &&
-                                                            distributor?.user?.roles.length > 0 ? (
+                                                        distributor?.user?.roles.length > 0 ? (
                                                             distributor?.user?.roles.map(
                                                                 (role, index) => (
                                                                     <span
@@ -255,8 +270,6 @@ export default function edit({ distributor }) {
                                                         )}
                                                     </div>
                                                 </div>
-
-
 
                                                 {/* Commission Rate */}
                                                 <div>
@@ -276,8 +289,6 @@ export default function edit({ distributor }) {
                                                     </div>
                                                 </div>
 
-
-
                                                 {/* IOnventory Verification */}
                                                 <div>
                                                     <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
@@ -285,7 +296,9 @@ export default function edit({ distributor }) {
                                                     </label>
                                                     <div className="flex flex-wrap gap-2">
                                                         <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-white">
-                                                            {distributor?.can_verify_inventory ? "YES" : "NO"}
+                                                            {distributor?.can_verify_inventory
+                                                                ? 'YES'
+                                                                : 'NO'}
                                                         </span>
                                                     </div>
                                                 </div>

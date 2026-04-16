@@ -31,7 +31,6 @@ class LanguageRepository implements ILanguageRepository
         $language = $this->language->find($id);
 
         return $language;
-
     }
 
     public function storeLanguage(Request $request)
@@ -39,6 +38,10 @@ class LanguageRepository implements ILanguageRepository
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'code' => ['required', 'string', 'max:255', 'unique:languages,code'],
+            'country_id' => ['nullable', 'exists:countries,id', 'unique:languages,country_id'],
+        ], [
+            'country_id.unique' => 'The selected country already has a language assigned. Please select a different country.',
+            'country_id.exists' => 'The selected country does not exist. Please select a valid country.',
         ]);
 
         try {
@@ -58,7 +61,6 @@ class LanguageRepository implements ILanguageRepository
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function updateLanguage(Request $request, string $id)
@@ -72,7 +74,11 @@ class LanguageRepository implements ILanguageRepository
 
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255', 'unique:languages,code,'.$id],
+            'code' => ['required', 'string', 'max:255', 'unique:languages,code,' . $id],
+            'country_id' => ['nullable', 'exists:countries,id', 'unique:languages,country_id,' . $id],
+        ], [
+            'country_id.unique' => 'The selected country already has a language assigned. Please select a different country.',
+            'country_id.exists' => 'The selected country does not exist. Please select a valid country.',
         ]);
 
         try {
@@ -157,7 +163,7 @@ class LanguageRepository implements ILanguageRepository
     public function getAllLanguagesWithTranslationsWithoutPagination(Request $request)
     {
 
-        $languages = $this->language->orderBy('created_at', 'asc')->select('id', 'name', 'code')->get();
+        $languages = $this->language->orderBy('created_at', 'asc')->select('id', 'name', 'code', 'country_id')->with('country')->get();
 
         $translations = $this->translation_repo->getLanguageTranslations($request);
 
@@ -172,7 +178,6 @@ class LanguageRepository implements ILanguageRepository
         $languages = $this->language->latest()->select('id', 'name', 'code')->get();
 
         return $languages;
-
     }
 
     public function setLanguageLocale(Request $request)

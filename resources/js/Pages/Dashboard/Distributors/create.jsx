@@ -21,6 +21,7 @@ export default function create() {
         bank_account_name: '',
         bank_account_no: '',
         iban: '',
+        postal_code: '',
         swift_code: '',
         commission_rate: '',
         can_verify_inventory: 0,
@@ -50,7 +51,7 @@ export default function create() {
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Distributors'}
                                     URL={route('dashboard.distributors.index')}
@@ -281,6 +282,19 @@ export default function create() {
                                                     )}
                                                 </div>
 
+                                                <Input
+                                                    InputName={'Distributor Postal Code'}
+                                                    Error={errors.postal_code}
+                                                    Value={data.postal_code}
+                                                    Action={(e) =>
+                                                        setData('postal_code', e.target.value)
+                                                    }
+                                                    Placeholder={'Enter Distributor Postal Code'}
+                                                    Id={'postal_code'}
+                                                    Name={'postal_code'}
+                                                    Type={'text'}
+                                                    Required={true}
+                                                />
 
                                                 <SelectInput
                                                     InputName={'Can Verify Inventory'}
@@ -295,10 +309,10 @@ export default function create() {
                                                     Value={data.can_verify_inventory}
                                                     Required={false}
                                                     Multiple={false}
-                                                    Action={(value) => setData('can_verify_inventory', value)}
+                                                    Action={(value) =>
+                                                        setData('can_verify_inventory', value)
+                                                    }
                                                 />
-
-
                                             </div>
 
                                             <PrimaryButton
@@ -313,13 +327,14 @@ export default function create() {
                                                     data.password.trim() === '' ||
                                                     data.password_confirmation.trim() === '' ||
                                                     data.password.trim() !==
-                                                    data.password_confirmation.trim() ||
+                                                        data.password_confirmation.trim() ||
                                                     data.address.trim() === '' ||
                                                     data.bank_account_no.trim() === '' ||
                                                     data.bank_name.trim() === '' ||
                                                     data.bank_account_name.trim() === '' ||
                                                     data.iban.trim() === '' ||
-                                                    data.swift_code.trim() === ''
+                                                    data.swift_code.trim() === '' ||
+                                                    data.postal_code.trim() === ''
                                                 }
                                                 Spinner={processing}
                                                 Icon={

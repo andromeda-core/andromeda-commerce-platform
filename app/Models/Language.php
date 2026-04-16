@@ -10,6 +10,7 @@ class Language extends Model
     protected $fillable = [
         'name',
         'code',
+        'country_id',
     ];
 
     // RelationShips
@@ -24,6 +25,13 @@ class Language extends Model
     public function getAddedAtAttribute()
     {
         return ! empty($this->created_at) ? $this->created_at->format('Y-m-d') : null;
+    }
+
+
+    // RelationShips
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id', 'id');
     }
 
     // Static Booting

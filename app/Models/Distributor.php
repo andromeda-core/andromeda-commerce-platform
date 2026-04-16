@@ -11,6 +11,7 @@ class Distributor extends Model
     protected $fillable = [
         'user_id',
         'address',
+        'postal_code',
         'bank_name',
         'bank_account_name',
         'iban',

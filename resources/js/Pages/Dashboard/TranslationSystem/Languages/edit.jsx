@@ -6,14 +6,15 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
+import SelectInput from '@/Components/SelectInput';
 
-export default function edit({ language }) {
-
-
+export default function edit({ language, countries }) {
+    console.log(countries);
     // Edit Data Form Data
     const { data, setData, put, processing, errors } = useForm({
         name: language?.name || '',
         code: language?.code || '',
+        country_id: language?.country_id || '',
     });
 
     // Update Data Form Request
@@ -37,7 +38,7 @@ export default function edit({ language }) {
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Language'}
                                     URL={route('dashboard.translation-system.languages.index')}
@@ -81,9 +82,7 @@ export default function edit({ language }) {
                                                     InputName={'Language Code'}
                                                     Error={errors.code}
                                                     Value={data.code}
-                                                    Action={(e) =>
-                                                        setData('code', e.target.value)
-                                                    }
+                                                    Action={(e) => setData('code', e.target.value)}
                                                     Placeholder={'Enter Language Code'}
                                                     Id={'code'}
                                                     Name={'code'}
@@ -91,7 +90,18 @@ export default function edit({ language }) {
                                                     Required={true}
                                                 />
 
-
+                                                <SelectInput
+                                                    InputName={'Country'}
+                                                    Id={'country_id'}
+                                                    Name={'country_id'}
+                                                    items={countries}
+                                                    Value={data.country_id}
+                                                    itemKey={'name'}
+                                                    Action={(value) => setData('country_id', value)}
+                                                    Error={errors.country_id}
+                                                    Placeholder={'Select Country'}
+                                                    Required={true}
+                                                />
                                             </div>
 
                                             <PrimaryButton
@@ -101,8 +111,8 @@ export default function edit({ language }) {
                                                 Disabled={
                                                     processing ||
                                                     data.name.trim() === '' ||
-                                                    data.code.trim() === ''
-
+                                                    data.code.trim() === '' ||
+                                                    data.country_id === ''
                                                 }
                                                 Spinner={processing}
                                                 Icon={

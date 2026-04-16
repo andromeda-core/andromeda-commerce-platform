@@ -788,6 +788,22 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Defect Evidence Video', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Return Packaging Video', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Are you sure you want to withdraw this Refund Request You wont Be Able to Request Again', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'INVOICE', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Invoice No', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Date', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Status', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Shipping Details', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Product', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Capacity', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Price', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Qty', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Total', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Shipping', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Import Tax', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Add-ons', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Add-ons Total', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Total', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Scan To Verify Invoice', 'created_at' => $now, 'updated_at' => $now],
 
             // Backend
             ['key' => 'Profile Updated Successfully', 'created_at' => $now, 'updated_at' => $now],
@@ -1431,13 +1447,13 @@ class TranslationKeysSeeder extends Seeder
 
         $existingKeys = \DB::table('translation_keys')
             ->pluck('key')
-            ->map(fn ($k) => trim($k))
+            ->map(fn($k) => trim($k))
             ->toArray();
 
         $filteredKeys = collect($keys)
-            ->unique(fn ($item) => trim($item['key']))
-            ->filter(fn ($item) => ! in_array(trim($item['key']), $existingKeys))
-            ->map(fn ($item) => [
+            ->unique(fn($item) => trim($item['key']))
+            ->filter(fn($item) => ! in_array(trim($item['key']), $existingKeys))
+            ->map(fn($item) => [
                 'key' => trim($item['key']),
                 'created_at' => $now,
                 'updated_at' => $now,

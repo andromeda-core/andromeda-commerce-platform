@@ -195,7 +195,6 @@ Route::group(['as' => 'website.'], function () {
 
         // Email Change Verification Route
         Route::get('/profile/email-change/verify/{token?}', 'emailChangeVerify')->name('email-change.verify');
-
     });
 
     // Contact Us Routes
@@ -234,7 +233,6 @@ Route::group(['as' => 'website.'], function () {
     // Shop Routes
     Route::match(['get', 'post'], '/shop', ShopController::class)->name('shop.index');
     Route::get('/shop/loadMore', [ShopController::class, 'loadMore'])->name('shop.loadMore');
-
 });
 
 // Dashboard Routes
@@ -269,7 +267,6 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/floors-update/{id?}', 'update')->name('update');
             Route::delete('/floors-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/floors-delete-by-selection', 'destroyBySelection')->name('destroybyselection');
-
         });
 
         // Bookmark Routes
@@ -278,7 +275,6 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/bookmarks-toggle', 'toggleBookmark')->name('toggle');
             Route::delete('/bookmarks-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/bookmarks-delete-by-selection', 'destroyBySelection')->name('destroybyselection');
-
         });
 
         // User Routes
@@ -369,7 +365,6 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/batches-update/{id?}', 'update')->name('update');
             Route::delete('/batches-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/batches-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
-
         });
 
         // Inventory Routes
@@ -412,6 +407,7 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/orders-assign-supplier', 'assignSupplier')->name('assignsupplier');
             Route::put('/orders-cancel', 'orderCancelation')->name('cancel');
             Route::post('/orders/verify', 'orderSecondaryVerification')->name('verify');
+            Route::get('/orders/shipping-label/{id?}', 'shippingLabelsIndex')->name('shipping-label');
         });
 
         // Supplier Assigned Order Routes
@@ -628,7 +624,6 @@ Route::middleware(['auth'])->group(function () {
                         Route::put('/permissions-update/{id?}', 'permissionUpdate')->name('permissions.update');
                         Route::delete('/permissions-destroy/{id?}', 'permissionDestroy')->name('permissions.destroy');
                         Route::delete('/permissions-destroy-by-selection', 'destroyPermissionBySelection')->name('permissions.destroybyselection');
-
                     }
 
                     Route::get('/permissions-manage/{id?}', 'permissionManage')->name('permissions.manage');
@@ -831,16 +826,12 @@ Route::middleware(['auth'])->group(function () {
                     // Dormancy Setting Routes
                     Route::get('/dormancy-settings', 'dormancySettingIndex')->name('dormancy-setting.index');
                     Route::put('/dormancy-settings-save', 'dormancySettingSave')->name('dormancy-setting.save');
-
                 });
-
             });
-
     });
 
     // Shipping Invoice View Route
     Route::get('/orders-shipping-invoice/{order_no?}', [OrderController::class, 'shippingInvoice'])->name('orders.shipping-invoice');
-
 });
 
 // Dynamic Manifest JSON Route For PWA
@@ -879,7 +870,6 @@ Route::get('/pwa-manifest', function () {
 
     return response($manifest, 200)
         ->header('Content-Type', 'application/manifest+json');
-
 })->name('pwa.manifest');
 
 // Meta Routes
@@ -893,4 +883,4 @@ Route::post('/device-fingerprint', DeviceFingerPrintController::class)->name('de
 Route::post('/scanner/ai-decode', [OpenAiController::class, 'aiDecode'])
     ->name('scanner.ai-decode');
 
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';

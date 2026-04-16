@@ -7,7 +7,9 @@ import { useEffect, useState } from 'react';
 import Toast from '@/Components/Toast';
 import AppStatusManager from '@/Components/AppStatusManager';
 import SuccessToastModal from '@/Components/SuccessToastModal';
-export default function AuthenticatedLayout({ children }) {
+import { useLanguageStore } from '@/Hooks/useLanguageStore';
+import { all } from 'axios';
+export default function AuthenticatedLayout({ children, allHidden = false }) {
     // Global General Setting Prop
     const { auth, generalSetting, asset, flash } = usePage().props;
 
@@ -39,7 +41,6 @@ export default function AuthenticatedLayout({ children }) {
 
     // Global Auth user Prop
     const user = auth?.user;
-
 
     // Managing Loader State
     const [loaded, setLoaded] = useState(true);
@@ -85,37 +86,44 @@ export default function AuthenticatedLayout({ children }) {
         };
     }, [auth?.user?.id]);
 
-
     return (
         <>
             <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-deepcharcoal">
                 <Preloader loaded={loaded} setLoaded={setLoaded} />
                 <AppStatusManager />
-                <Sidebar
-                    sidebarToggle={sidebarToggle}
-                    setSidebarToggle={setSidebarToggle}
-                    ApplicationLogoLight={ApplicationLogoLight}
-                    ApplicationLogoDark={ApplicationLogoDark}
-                    user={auth?.user}
-                />
-
-                <div className="relative flex flex-col flex-1 overflow-x-hidden overflow-y-auto">
-                    <Overlay sidebarToggle={sidebarToggle} setSidebarToggle={setSidebarToggle} />
-
-                    <Header
+                {!allHidden && (
+                    <Sidebar
                         sidebarToggle={sidebarToggle}
                         setSidebarToggle={setSidebarToggle}
-                        darkMode={darkMode}
-                        setDarkMode={setDarkMode}
                         ApplicationLogoLight={ApplicationLogoLight}
                         ApplicationLogoDark={ApplicationLogoDark}
-                        user={user}
+                        user={auth?.user}
                     />
+                )}
 
+                <div className="relative flex flex-1 flex-col overflow-y-auto overflow-x-hidden">
+                    {!allHidden && (
+                        <>
+                            <Overlay
+                                sidebarToggle={sidebarToggle}
+                                setSidebarToggle={setSidebarToggle}
+                            />
+
+                            <Header
+                                sidebarToggle={sidebarToggle}
+                                setSidebarToggle={setSidebarToggle}
+                                darkMode={darkMode}
+                                setDarkMode={setDarkMode}
+                                ApplicationLogoLight={ApplicationLogoLight}
+                                ApplicationLogoDark={ApplicationLogoDark}
+                                user={user}
+                            />
+                        </>
+                    )}
                     <Toast flash={flash} />
 
-                    {realtimeToast && (
-                        <div className="fixed z-[999999] space-y-3 transform -translate-x-1/2 bottom-6 left-1/2">
+                    {!allHidden && realtimeToast && (
+                        <div className="fixed bottom-6 left-1/2 z-[999999] -translate-x-1/2 transform space-y-3">
                             <SuccessToastModal
                                 showSuccess={true}
                                 setShowSuccess={() => setRealtimeToast(null)}

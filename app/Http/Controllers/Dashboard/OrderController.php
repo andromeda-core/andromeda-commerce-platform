@@ -195,8 +195,9 @@ class OrderController extends Controller implements HasMiddleware
         }
 
         $order = $response['order'];
+        $translations = $response['translations'];
 
-        return Inertia::render('Dashboard/Orders/CustomerOrderInvoice', compact('order'));
+        return Inertia::render('Dashboard/Orders/CustomerOrderInvoice', compact('order', 'translations'));
     }
 
     public function shippingInvoice(Request $request, ?string $order_no = null)
@@ -276,7 +277,6 @@ class OrderController extends Controller implements HasMiddleware
         }
 
         return back()->with('success', $canceled['message']);
-
     }
 
     public function orderSecondaryVerification(Request $request)
@@ -284,5 +284,20 @@ class OrderController extends Controller implements HasMiddleware
         $response = $this->order->orderSecondaryVerification($request);
 
         return response()->json($response);
+    }
+
+    public function shippingLabelsIndex(?string $order_id = null)
+    {
+        if (empty($order_id)) {
+            return to_route('dashboard.orders.index')->with('error', 'Order ID not found');
+        }
+
+        $order = $this->order->getSingleOrder($order_id);
+
+        if (empty($order)) {
+            return to_route('dashboard.orders.index')->with('error', 'Order not found');
+        }
+
+        return Inertia::render('Dashboard/Orders/ShippingLabels', compact('order'));
     }
 }

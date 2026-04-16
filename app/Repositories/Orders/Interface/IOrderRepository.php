@@ -30,6 +30,8 @@ interface IOrderRepository
 
     public function customerOrderInvoiceByOrderNo(Request $request, string $order_no);
 
+    public function getCustomerInvoiceTranslations(string $country_name);
+
     public function ShippingOrderInvoice(Request $request, string $order_no);
 
     public function placeOrderFromWebsite(Request $request);
