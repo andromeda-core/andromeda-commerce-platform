@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\OrderCourierCompany\Interface\IOrderCourierCompanyRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Repositories\PackageRecordings\Interface\IPackageRecordingsRepository;
 use App\Repositories\Suppliers\Interface\ISupplierRepository;
@@ -33,7 +34,8 @@ class OrderController extends Controller implements HasMiddleware
     public function __construct(
         private IOrderRepository $order,
         private IPackageRecordingsRepository $package_recording,
-        private ISupplierRepository $supplier
+        private ISupplierRepository $supplier,
+        private IOrderCourierCompanyRepository $orderCourierCompany,
     ) {}
 
     public function index(Request $request)
@@ -51,8 +53,9 @@ class OrderController extends Controller implements HasMiddleware
 
         $smartphones = $this->order->getSmartphones();
         $customers = $this->order->getCustomers();
+        $orderCourierCompanies = $this->orderCourierCompany->getAllWithoutPagination();
 
-        return Inertia::render('Dashboard/Orders/create', compact('smartphones', 'customers'));
+        return Inertia::render('Dashboard/Orders/create', compact('smartphones', 'customers', 'orderCourierCompanies'));
     }
 
     // public function store(Request $request)
@@ -119,10 +122,10 @@ class OrderController extends Controller implements HasMiddleware
             return back()->with('error', 'Expired Payment Orders Cannot Be Edited');
         }
 
-        $smartphones = $this->order->getSmartphones();
-        $customers = $this->order->getCustomers();
+        $orderCourierCompanies = $this->orderCourierCompany->getAllWithoutPagination();
 
-        return Inertia::render('Dashboard/Orders/edit', compact('order', 'smartphones', 'customers'));
+
+        return Inertia::render('Dashboard/Orders/edit', compact('order', 'orderCourierCompanies'));
     }
 
     public function update(Request $request, ?string $id = null)

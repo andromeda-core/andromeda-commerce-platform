@@ -49,28 +49,25 @@ export default function Sidebar({
         }
     }, [sidebarToggle, isLargeScreen]);
 
-
     // Adding Browser History When Sidebar Toggles
     useEffect(() => {
         if (sidebarToggle && width < 1024) {
             const url = new URL(window.location.href);
-            url.searchParams.set("modal", "sidebar");
-            window.history.replaceState({}, "", url.toString());
-            window.history.pushState({}, "", url.toString());
+            url.searchParams.set('modal', 'sidebar');
+            window.history.replaceState({}, '', url.toString());
+            window.history.pushState({}, '', url.toString());
         }
 
         if (!sidebarToggle) {
             const url = new URL(window.location.href);
-            url.searchParams.delete("modal");
-            window.history.replaceState({}, "", url.toString());
+            url.searchParams.delete('modal');
+            window.history.replaceState({}, '', url.toString());
         }
     }, [sidebarToggle, width]);
 
     // POP STATE HANDLING
     const sidebarClickRef = useRef(false);
     useEffect(() => {
-
-
         const sidebar = document.querySelector('.sidebar');
         if (sidebar) {
             sidebar.addEventListener('click', () => {
@@ -79,58 +76,47 @@ export default function Sidebar({
         }
         const handlePopState = (e) => {
             const params = new URLSearchParams(window.location.search);
-            const modal = params.get("modal");
+            const modal = params.get('modal');
 
-
-            if (modal === "sidebar") {
-
+            if (modal === 'sidebar') {
                 if (sidebarClickRef.current) {
                     sidebarClickRef.current = false;
                     return;
                 }
-
-
 
                 e.preventDefault();
                 setSidebarToggle(false);
                 sidebarClickRef.current = false;
 
-                window.history.replaceState({}, "", window.location.pathname);
+                window.history.replaceState({}, '', window.location.pathname);
                 return;
             }
         };
 
-        const inertiaBefore = router.on("before", (event) => {
+        const inertiaBefore = router.on('before', (event) => {
             const params = new URLSearchParams(window.location.search);
-            const modal = params.get("modal");
-            if (modal === "sidebar") {
-
+            const modal = params.get('modal');
+            if (modal === 'sidebar') {
                 if (sidebarClickRef.current) {
                     sidebarClickRef.current = false;
                     return;
                 }
 
-
                 event.preventDefault();
                 setSidebarToggle(false);
 
-
-
-
-                window.history.replaceState({}, "", window.location.pathname);
+                window.history.replaceState({}, '', window.location.pathname);
                 return false;
             }
         });
 
-        window.addEventListener("popstate", handlePopState);
+        window.addEventListener('popstate', handlePopState);
 
         return () => {
-            window.removeEventListener("popstate", handlePopState);
+            window.removeEventListener('popstate', handlePopState);
             inertiaBefore();
         };
     }, []);
-
-
 
     // Auto Selection For Sidebar Menu Behalf Of Current Route
     useEffect(() => {
@@ -141,8 +127,8 @@ export default function Sidebar({
             'dashboard.order-address-change-requests.',
             'dashboard.package-recordings.',
             'dashboard.supplier-assigned-orders.',
-        ].some(prefix => route().current().startsWith(prefix));
-
+            'dashboard.order-courier-companies.index',
+        ].some((prefix) => route().current().startsWith(prefix));
 
         const isProductsRoute = [
             'dashboard.smartphones.',
@@ -157,32 +143,27 @@ export default function Sidebar({
             'dashboard.settings.condition-settings.',
             'dashboard.settings.addon-settings.',
             'dashboard.inventory-verifications.',
-        ].some(prefix => route().current().startsWith(prefix));
+        ].some((prefix) => route().current().startsWith(prefix));
 
-        const isUsersRoute = [
-            'dashboard.customers.',
-            'dashboard.reward-points.',
-        ].some(prefix => route().current().startsWith(prefix));
+        const isUsersRoute = ['dashboard.customers.', 'dashboard.reward-points.'].some((prefix) =>
+            route().current().startsWith(prefix),
+        );
 
-
-        const isFinanceRoute = [
-            'dashboard.commissions.',
-            'dashboard.unsettled-accounts.',
-        ].some(prefix => route().current().startsWith(prefix));
-
+        const isFinanceRoute = ['dashboard.commissions.', 'dashboard.unsettled-accounts.'].some(
+            (prefix) => route().current().startsWith(prefix),
+        );
 
         const isPartnersRoute = [
             'dashboard.suppliers.',
             'dashboard.collaborators.',
-            'dashboard.distributors.'
-        ].some(prefix => route().current().startsWith(prefix));
-
+            'dashboard.distributors.',
+        ].some((prefix) => route().current().startsWith(prefix));
 
         const isContentRoute = [
             'dashboard.posts.',
             'dashboard.bookmarks.',
-            'dashboard.floors.'
-        ].some(prefix => route().current().startsWith(prefix));
+            'dashboard.floors.',
+        ].some((prefix) => route().current().startsWith(prefix));
 
         const isSystemRoute = [
             'dashboard.users.',
@@ -190,8 +171,7 @@ export default function Sidebar({
             'dashboard.risk-signals.',
             'dashboard.system-logs.',
             'dashboard.data-deletion-requests.',
-        ].some(prefix => route().current().startsWith(prefix));
-
+        ].some((prefix) => route().current().startsWith(prefix));
 
         const isSettingRoute = route().current().startsWith('dashboard.settings.');
 
@@ -201,12 +181,12 @@ export default function Sidebar({
             'dashboard.settings.capacities.',
             'dashboard.settings.condition-settings.',
             'dashboard.settings.addon-settings.',
-        ].some(prefix => route().current().startsWith(prefix));
+        ].some((prefix) => route().current().startsWith(prefix));
 
         if (isOrdersRoute) {
-            setSelected("Orders");
+            setSelected('Orders');
         } else if (isProductsRoute) {
-            setSelected("Products");
+            setSelected('Products');
 
             const isSetupRoute = [
                 'dashboard.categories.',
@@ -214,88 +194,82 @@ export default function Sidebar({
                 'dashboard.settings.colors.',
                 'dashboard.settings.capacities.',
                 'dashboard.settings.condition-settings.',
-                'dashboard.settings.addon-settings.'
-            ].some(prefix => route().current().startsWith(prefix));
-
+                'dashboard.settings.addon-settings.',
+            ].some((prefix) => route().current().startsWith(prefix));
 
             if (isSetupRoute) {
-                setSelectedSubMenu("Setup");
+                setSelectedSubMenu('Setup');
             }
         } else if (isUsersRoute) {
-            setSelected("Users");
+            setSelected('Users');
         } else if (isFinanceRoute) {
-            setSelected("Finance");
+            setSelected('Finance');
 
-            const isCommissionsRoute = [
-                'dashboard.commissions.',
-            ].some(prefix => route().current().startsWith(prefix));
+            const isCommissionsRoute = ['dashboard.commissions.'].some((prefix) =>
+                route().current().startsWith(prefix),
+            );
 
             if (isCommissionsRoute) {
-                setSelectedSubMenu("Commissions");
+                setSelectedSubMenu('Commissions');
             }
         } else if (isPartnersRoute) {
-            setSelected("Partners");
+            setSelected('Partners');
         } else if (isContentRoute) {
-            setSelected("Content");
+            setSelected('Content');
         } else if (isSystemRoute) {
-            setSelected("System");
+            setSelected('System');
 
-            const isTranslationSystemRoute = [
-                'dashboard.translation-system.',
-            ].some(prefix => route().current().startsWith(prefix));
-
+            const isTranslationSystemRoute = ['dashboard.translation-system.'].some((prefix) =>
+                route().current().startsWith(prefix),
+            );
 
             if (isTranslationSystemRoute) {
-                setSelectedSubMenu("Translation System");
+                setSelectedSubMenu('Translation System');
             }
         } else if (isSettingRoute && !isExcludedSettingRoute) {
-            setSelected("Settings");
+            setSelected('Settings');
         }
-
-
     }, []);
 
-
     const canSeeProducts = Boolean(
-        can(['Smartphones View', 'Batch View', 'Categories View', 'Inventories View', 'Smartphone For Sales View', 'Colors View', 'Capacity View', 'Conditions View', 'Model Names View', 'Addon Items View', 'Smartphone Country Price View'])
-        || (user?.role === 'Distributor'
-            ? (can('Inventories Verification') && Boolean(user?.distributor?.can_verify_inventory))
-            : can('Inventories Verification'))
+        can([
+            'Smartphones View',
+            'Batch View',
+            'Categories View',
+            'Inventories View',
+            'Smartphone For Sales View',
+            'Colors View',
+            'Capacity View',
+            'Conditions View',
+            'Model Names View',
+            'Addon Items View',
+            'Smartphone Country Price View',
+        ]) ||
+            (user?.role === 'Distributor'
+                ? can('Inventories Verification') &&
+                  Boolean(user?.distributor?.can_verify_inventory)
+                : can('Inventories Verification')),
     );
 
     return (
         <>
             <aside
-                className={`${sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'}
-                sidebar fixed left-0 top-0 ${width <= 1024 ? "z-[10002]" : "z-50"} flex h-screen w-[290px] flex-col
-                overflow-y-hidden border-r border-gray-200 bg-white px-5
-                dark:border-gray-800 dark:bg-deepcharcoal lg:static lg:translate-x-0`}
+                className={`${sidebarToggle ? 'translate-x-0 lg:w-[90px]' : '-translate-x-full'} sidebar fixed left-0 top-0 ${width <= 1024 ? 'z-[10002]' : 'z-50'} flex h-screen w-[290px] flex-col overflow-y-hidden border-r border-gray-200 bg-white px-5 dark:border-gray-800 dark:bg-deepcharcoal lg:static lg:translate-x-0`}
             >
-
-
-
-
-                {width < 1024 && sidebarToggle && (
+                {width < 1024 &&
+                    sidebarToggle &&
                     createPortal(
                         <div
-                            className="fixed inset-0 bg-black/30 backdrop-blur-lg z-[10001]"
+                            className="fixed inset-0 z-[10001] bg-black/30 backdrop-blur-lg"
                             onClick={() => setSidebarToggle(false)}
                         ></div>,
-                        document.getElementById('modal-root') || document.body
-                    )
-                )}
-
-
-
+                        document.getElementById('modal-root') || document.body,
+                    )}
 
                 <div
                     className={`flex items-center ${sidebarToggle ? 'justify-center' : 'justify-between'} sidebar-header gap-2 pb-7 pt-8`}
                 >
-
-
                     <DesktopPwaBackButton __={__} />
-
-
 
                     <Link href={route('home')}>
                         <span className={`logo ${sidebarToggle ? 'hidden' : ''}`}>
@@ -335,7 +309,7 @@ export default function Sidebar({
                     </button>
                 </div>
 
-                <div className="flex flex-col flex-1 overflow-y-auto duration-300 ease-linear no-scrollbar">
+                <div className="no-scrollbar flex flex-1 flex-col overflow-y-auto duration-300 ease-linear">
                     <nav>
                         <div>
                             <h3 className="mb-4 text-xs uppercase leading-[20px] text-gray-400">
@@ -356,13 +330,12 @@ export default function Sidebar({
                                 </svg>
                             </h3>
 
-                            <ul className="flex flex-col gap-4 mb-6">
+                            <ul className="mb-6 flex flex-col gap-4">
                                 <li>
                                     <Link
                                         href={route('dashboard')}
                                         className={`menu-item group ${route().current() === 'dashboard' ? 'menu-item-active' : 'menu-item-inactive'}`}
                                     >
-
                                         <span
                                             className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                         >
@@ -388,9 +361,16 @@ export default function Sidebar({
                                     </Link>
                                 </li>
 
-
                                 {/* Orders */}
-                                {(can(['Orders View', 'Order Refunds View', 'Order Cancelations View', 'Order Address Changes View', 'Package Recordings View']) || user?.role === 'Supplier') && (
+                                {(can([
+                                    'Orders View',
+                                    'Order Refunds View',
+                                    'Order Courier Companies View',
+                                    'Order Cancelations View',
+                                    'Order Address Changes View',
+                                    'Package Recordings View',
+                                ]) ||
+                                    user?.role === 'Supplier') && (
                                     <li>
                                         <a
                                             onClick={() => {
@@ -400,11 +380,8 @@ export default function Sidebar({
                                                     setSelected('Orders');
                                                 }
                                             }}
-                                            className={`menu-item group cursor-pointer
-                                                ${selected === 'Orders' ? 'menu-item-active' : 'menu-item-inactive'} `}
+                                            className={`menu-item group cursor-pointer ${selected === 'Orders' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                         >
-
-
                                             <span
                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                             >
@@ -446,11 +423,13 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
-                                                {(user?.role === 'Supplier' || user?.role === 'Admin') && (
+                                                {(user?.role === 'Supplier' ||
+                                                    user?.role === 'Admin') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.supplier-assigned-orders.index')}
+                                                            href={route(
+                                                                'dashboard.supplier-assigned-orders.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.supplier-assigned-orders.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Supplier Orders List
@@ -458,12 +437,12 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
-
                                                 {can('Order Refunds View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.order-refunds.index')}
+                                                            href={route(
+                                                                'dashboard.order-refunds.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.order-refunds.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Refunds
@@ -471,11 +450,12 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('Order Cancelations View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.order-cancelation-requests.index')}
+                                                            href={route(
+                                                                'dashboard.order-cancelation-requests.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.order-cancelation-requests.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Cancelations
@@ -486,7 +466,9 @@ export default function Sidebar({
                                                 {can('Order Address Changes View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.order-address-change-requests.index')}
+                                                            href={route(
+                                                                'dashboard.order-address-change-requests.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.order-address-change-requests.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Order Address Changes
@@ -494,11 +476,12 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('Package Recordings View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.package-recordings.index')}
+                                                            href={route(
+                                                                'dashboard.package-recordings.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.package-recordings.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Package Records
@@ -506,12 +489,22 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
+                                                {can('Order Courier Companies View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.order-courier-companies.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.order-courier-companies.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Order Courier Companies
+                                                        </Link>
+                                                    </li>
+                                                )}
                                             </ul>
                                         </div>
                                     </li>
                                 )}
-
 
                                 {/* Products */}
                                 {canSeeProducts && (
@@ -526,8 +519,6 @@ export default function Sidebar({
                                             }}
                                             className={`menu-item group cursor-pointer ${selected === 'Products' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                         >
-
-
                                             <span
                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                             >
@@ -561,7 +552,9 @@ export default function Sidebar({
                                                 {can('Smartphones View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.smartphones.index')}
+                                                            href={route(
+                                                                'dashboard.smartphones.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.smartphones.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Models
@@ -569,11 +562,12 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('Smartphone For Sales View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.smartphone-for-sales.index')}
+                                                            href={route(
+                                                                'dashboard.smartphone-for-sales.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.smartphone-for-sales.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Sales
@@ -581,18 +575,18 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('Smartphone Country Price View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.smartphone-country-prices.index')}
+                                                            href={route(
+                                                                'dashboard.smartphone-country-prices.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.smartphone-country-prices.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Country Prices
                                                         </Link>
                                                     </li>
                                                 )}
-
 
                                                 {can('Batch View') && (
                                                     <li>
@@ -608,7 +602,9 @@ export default function Sidebar({
                                                 {can('Inventories View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.inventories.index')}
+                                                            href={route(
+                                                                'dashboard.inventories.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.inventories.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Inventories
@@ -616,11 +612,15 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
-                                                {(user?.role === 'Distributor' ? (can('Inventories Verification') && user?.distributor?.can_verify_inventory) : can('Inventories Verification')) && (
+                                                {(user?.role === 'Distributor'
+                                                    ? can('Inventories Verification') &&
+                                                      user?.distributor?.can_verify_inventory
+                                                    : can('Inventories Verification')) && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.inventory-verifications.index')}
+                                                            href={route(
+                                                                'dashboard.inventory-verifications.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.inventory-verifications.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Inventory Verification
@@ -628,8 +628,14 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
-                                                {can(['Categories View', 'Colors View', 'Capacity View', 'Conditions View', 'Model Names View', 'Addon Items View']) && (
+                                                {can([
+                                                    'Categories View',
+                                                    'Colors View',
+                                                    'Capacity View',
+                                                    'Conditions View',
+                                                    'Model Names View',
+                                                    'Addon Items View',
+                                                ]) && (
                                                     <li>
                                                         <a
                                                             onClick={() => {
@@ -641,8 +647,6 @@ export default function Sidebar({
                                                             }}
                                                             className={`menu-item group cursor-pointer ${selectedSubMenu === 'Setup' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                                         >
-
-
                                                             <span
                                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                                             >
@@ -676,7 +680,9 @@ export default function Sidebar({
                                                                 {can('Categories View') && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.categories.index')}
+                                                                            href={route(
+                                                                                'dashboard.categories.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.categories.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Categories
@@ -684,11 +690,12 @@ export default function Sidebar({
                                                                     </li>
                                                                 )}
 
-
                                                                 {can('Model Names View') && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.settings.model_names.index')}
+                                                                            href={route(
+                                                                                'dashboard.settings.model_names.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.settings.model_names.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Model Names
@@ -696,11 +703,12 @@ export default function Sidebar({
                                                                     </li>
                                                                 )}
 
-
                                                                 {can('Colors View') && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.settings.colors.index')}
+                                                                            href={route(
+                                                                                'dashboard.settings.colors.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.settings.colors.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Colors
@@ -711,7 +719,9 @@ export default function Sidebar({
                                                                 {can('Capacity View') && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.settings.capacities.index')}
+                                                                            href={route(
+                                                                                'dashboard.settings.capacities.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.settings.capacities.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Capacity
@@ -719,11 +729,12 @@ export default function Sidebar({
                                                                     </li>
                                                                 )}
 
-
                                                                 {can('Conditions View') && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.settings.condition-settings.index')}
+                                                                            href={route(
+                                                                                'dashboard.settings.condition-settings.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.settings.condition-settings.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Conditions
@@ -731,25 +742,22 @@ export default function Sidebar({
                                                                     </li>
                                                                 )}
 
-
                                                                 {can('Addon Items View') && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.settings.addon-settings.index')}
+                                                                            href={route(
+                                                                                'dashboard.settings.addon-settings.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.settings.addon-settings.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Add-on Items
                                                                         </Link>
                                                                     </li>
                                                                 )}
-
-
                                                             </ul>
                                                         </div>
                                                     </li>
                                                 )}
-
-
                                             </ul>
                                         </div>
                                     </li>
@@ -768,8 +776,6 @@ export default function Sidebar({
                                             }}
                                             className={`menu-item group cursor-pointer ${selected === 'Users' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                         >
-
-
                                             <span
                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                             >
@@ -803,7 +809,9 @@ export default function Sidebar({
                                                 {can('Customers View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.customers.index')}
+                                                            href={route(
+                                                                'dashboard.customers.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.customers.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Customers
@@ -811,28 +819,29 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('Reward Points View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.reward-points.index')}
+                                                            href={route(
+                                                                'dashboard.reward-points.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.reward-points.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Reward Points
                                                         </Link>
                                                     </li>
                                                 )}
-
-
-
-
                                             </ul>
                                         </div>
                                     </li>
                                 )}
 
                                 {/* Finance */}
-                                {can(['Supplier Commissions View', 'Collaborator Commissions View', 'Distributor Commissions View']) && (
+                                {can([
+                                    'Supplier Commissions View',
+                                    'Collaborator Commissions View',
+                                    'Distributor Commissions View',
+                                ]) && (
                                     <li>
                                         <a
                                             onClick={() => {
@@ -844,8 +853,6 @@ export default function Sidebar({
                                             }}
                                             className={`menu-item group cursor-pointer ${selected === 'Finance' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                         >
-
-
                                             <span
                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                             >
@@ -876,22 +883,28 @@ export default function Sidebar({
                                             <ul
                                                 className={`menu-dropdown mt-2 flex flex-col gap-1 pl-3 ${sidebarToggle ? 'lg:hidden' : 'flex'} `}
                                             >
-
-
-                                                {can(['Supplier Commissions View', 'Collaborator Commissions View', 'Distributor Commissions View', 'Platform Commissions View']) && (
+                                                {can([
+                                                    'Supplier Commissions View',
+                                                    'Collaborator Commissions View',
+                                                    'Distributor Commissions View',
+                                                    'Platform Commissions View',
+                                                ]) && (
                                                     <li>
                                                         <a
                                                             onClick={() => {
-                                                                if (selectedSubMenu === 'Commissions') {
+                                                                if (
+                                                                    selectedSubMenu ===
+                                                                    'Commissions'
+                                                                ) {
                                                                     setSelectedSubMenu(null);
                                                                 } else {
-                                                                    setSelectedSubMenu('Commissions');
+                                                                    setSelectedSubMenu(
+                                                                        'Commissions',
+                                                                    );
                                                                 }
                                                             }}
                                                             className={`menu-item group cursor-pointer ${selectedSubMenu === 'Commissions' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                                         >
-
-
                                                             <span
                                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                                             >
@@ -922,10 +935,14 @@ export default function Sidebar({
                                                             <ul
                                                                 className={`menu-dropdown mt-2 flex flex-col gap-1 pl-3 ${sidebarToggle ? 'lg:hidden' : 'flex'} `}
                                                             >
-                                                                {can('Supplier Commissions View') && (
+                                                                {can(
+                                                                    'Supplier Commissions View',
+                                                                ) && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.commissions.supplier-commissions.index')}
+                                                                            href={route(
+                                                                                'dashboard.commissions.supplier-commissions.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.supplier-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Supplier Commissions
@@ -933,11 +950,14 @@ export default function Sidebar({
                                                                     </li>
                                                                 )}
 
-
-                                                                {can('Collaborator Commissions View') && (
+                                                                {can(
+                                                                    'Collaborator Commissions View',
+                                                                ) && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.commissions.collaborator-commissions.index')}
+                                                                            href={route(
+                                                                                'dashboard.commissions.collaborator-commissions.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.collaborator-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Collaborator Commissions
@@ -945,11 +965,14 @@ export default function Sidebar({
                                                                     </li>
                                                                 )}
 
-
-                                                                {can('Distributor Commissions View') && (
+                                                                {can(
+                                                                    'Distributor Commissions View',
+                                                                ) && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.commissions.distributor-commissions.index')}
+                                                                            href={route(
+                                                                                'dashboard.commissions.distributor-commissions.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.distributor-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Distributor Commissions
@@ -957,34 +980,35 @@ export default function Sidebar({
                                                                     </li>
                                                                 )}
 
-
-                                                                {can('Platform Commissions View') && (
+                                                                {can(
+                                                                    'Platform Commissions View',
+                                                                ) && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.commissions.platform-commissions.index')}
+                                                                            href={route(
+                                                                                'dashboard.commissions.platform-commissions.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.platform-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Platform Commissions
                                                                         </Link>
                                                                     </li>
                                                                 )}
-
-
-
-
                                                             </ul>
                                                         </div>
                                                     </li>
                                                 )}
-
-
                                             </ul>
                                         </div>
                                     </li>
                                 )}
 
                                 {/* Partners */}
-                                {can(['Suppliers View', 'Collaborators View', 'Distributors View']) && (
+                                {can([
+                                    'Suppliers View',
+                                    'Collaborators View',
+                                    'Distributors View',
+                                ]) && (
                                     <li>
                                         <a
                                             onClick={() => {
@@ -996,8 +1020,6 @@ export default function Sidebar({
                                             }}
                                             className={`menu-item group cursor-pointer ${selected === 'Partners' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                         >
-
-
                                             <span
                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                             >
@@ -1031,7 +1053,9 @@ export default function Sidebar({
                                                 {can('Suppliers View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.suppliers.index')}
+                                                            href={route(
+                                                                'dashboard.suppliers.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.suppliers.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Suppliers
@@ -1039,11 +1063,12 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('Collaborators View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.collaborators.index')}
+                                                            href={route(
+                                                                'dashboard.collaborators.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.collaborators.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Collaborators
@@ -1051,21 +1076,18 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('Distributors View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.distributors.index')}
+                                                            href={route(
+                                                                'dashboard.distributors.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.distributors.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Distributors
                                                         </Link>
                                                     </li>
                                                 )}
-
-
-
-
                                             </ul>
                                         </div>
                                     </li>
@@ -1084,8 +1106,6 @@ export default function Sidebar({
                                             }}
                                             className={`menu-item group cursor-pointer ${selected === 'Content' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                         >
-
-
                                             <span
                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                             >
@@ -1127,7 +1147,6 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('Floors View') && (
                                                     <li>
                                                         <Link
@@ -1139,28 +1158,32 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('Bookmarks View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.bookmarks.index')}
+                                                            href={route(
+                                                                'dashboard.bookmarks.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.bookmarks.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Bookmarks
                                                         </Link>
                                                     </li>
                                                 )}
-
-
-
-
                                             </ul>
                                         </div>
                                     </li>
                                 )}
 
                                 {/* System */}
-                                {can(['Admin/Staff View', 'Translation System View', 'SystemLogs View', 'Risk Signals View', 'Data Deletion Requests View', 'Unsettled Accounts View']) && (
+                                {can([
+                                    'Admin/Staff View',
+                                    'Translation System View',
+                                    'SystemLogs View',
+                                    'Risk Signals View',
+                                    'Data Deletion Requests View',
+                                    'Unsettled Accounts View',
+                                ]) && (
                                     <li>
                                         <a
                                             onClick={() => {
@@ -1172,8 +1195,6 @@ export default function Sidebar({
                                             }}
                                             className={`menu-item group cursor-pointer ${selected === 'System' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                         >
-
-
                                             <span
                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                             >
@@ -1204,8 +1225,6 @@ export default function Sidebar({
                                             <ul
                                                 className={`menu-dropdown mt-2 flex flex-col gap-1 pl-3 ${sidebarToggle ? 'lg:hidden' : 'flex'} `}
                                             >
-
-
                                                 {can('Admin/Staff View') && (
                                                     <li>
                                                         <Link
@@ -1217,21 +1236,23 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can(['Translation System View']) && (
                                                     <li>
                                                         <a
                                                             onClick={() => {
-                                                                if (selectedSubMenu === 'Translation System') {
+                                                                if (
+                                                                    selectedSubMenu ===
+                                                                    'Translation System'
+                                                                ) {
                                                                     setSelectedSubMenu(null);
                                                                 } else {
-                                                                    setSelectedSubMenu('Translation System');
+                                                                    setSelectedSubMenu(
+                                                                        'Translation System',
+                                                                    );
                                                                 }
                                                             }}
                                                             className={`menu-item group cursor-pointer ${selectedSubMenu === 'Translation System' ? 'menu-item-active' : 'menu-item-inactive'} `}
                                                         >
-
-
                                                             <span
                                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                                             >
@@ -1265,7 +1286,9 @@ export default function Sidebar({
                                                                 {can('Translation System View') && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.translation-system.languages.index')}
+                                                                            href={route(
+                                                                                'dashboard.translation-system.languages.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.translation-system.languages.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Languages
@@ -1273,31 +1296,29 @@ export default function Sidebar({
                                                                     </li>
                                                                 )}
 
-
                                                                 {can('Translation System View') && (
                                                                     <li>
                                                                         <Link
-                                                                            href={route('dashboard.translation-system.translation-keys.index')}
+                                                                            href={route(
+                                                                                'dashboard.translation-system.translation-keys.index',
+                                                                            )}
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.translation-system.translation-keys.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Translation Keys
                                                                         </Link>
                                                                     </li>
                                                                 )}
-
-
-
-
                                                             </ul>
                                                         </div>
                                                     </li>
                                                 )}
 
-
                                                 {can('Unsettled Accounts View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.unsettled-accounts.index')}
+                                                            href={route(
+                                                                'dashboard.unsettled-accounts.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.unsettled-accounts.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Unsettled Accounts
@@ -1308,7 +1329,9 @@ export default function Sidebar({
                                                 {can('Risk Signals') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.risk-signals.index')}
+                                                            href={route(
+                                                                'dashboard.risk-signals.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.risk-signals.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Risk Signals
@@ -1316,11 +1339,12 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('SystemLogs View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.system-logs.index')}
+                                                            href={route(
+                                                                'dashboard.system-logs.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.system-logs.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             System Logs
@@ -1328,11 +1352,12 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-
                                                 {can('Data Deletion Requests View') && (
                                                     <li>
                                                         <Link
-                                                            href={route('dashboard.data-deletion-requests.index')}
+                                                            href={route(
+                                                                'dashboard.data-deletion-requests.index',
+                                                            )}
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.data-deletion-requests.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Data Deletion Requests
@@ -1344,14 +1369,35 @@ export default function Sidebar({
                                     </li>
                                 )}
 
-                                {can(['Settings View', 'Dormancy', 'AWS', 'Google Maps', 'NOWPayments', 'Courier Companies', 'Commission', 'Reward Rate', 'Return Policy', 'Privacy Policy', 'Countries', 'General', 'Role', 'Meta', 'SMTP', 'Storage Locations', 'Currency', 'Additional Fees', 'Unsettled Account Notifications', 'Shipping Policy', 'Terms of Service', 'Special Countries']) && (
+                                {can([
+                                    'Settings View',
+                                    'Dormancy',
+                                    'AWS',
+                                    'Google Maps',
+                                    'NOWPayments',
+                                    'Courier Companies',
+                                    'Commission',
+                                    'Reward Rate',
+                                    'Return Policy',
+                                    'Privacy Policy',
+                                    'Countries',
+                                    'General',
+                                    'Role',
+                                    'Meta',
+                                    'SMTP',
+                                    'Storage Locations',
+                                    'Currency',
+                                    'Additional Fees',
+                                    'Unsettled Account Notifications',
+                                    'Shipping Policy',
+                                    'Terms of Service',
+                                    'Special Countries',
+                                ]) && (
                                     <li>
                                         <Link
                                             href={route('dashboard.settings.index')}
                                             className={`menu-item group ${selected === 'Settings' ? 'menu-item-active' : 'menu-item-inactive'}`}
                                         >
-
-
                                             <span
                                                 className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
                                             >

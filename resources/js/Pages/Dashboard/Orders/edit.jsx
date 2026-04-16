@@ -5,13 +5,13 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
-export default function edit({ order, smartphones, customers }) {
+export default function edit({ order, orderCourierCompanies }) {
     // Edit Data Form Data
     const { data, setData, post, processing, errors, reset } = useForm({
         _method: 'PUT',
@@ -40,6 +40,8 @@ export default function edit({ order, smartphones, customers }) {
 
     const flatpickerForShippingDate = useRef(null);
 
+    const [selectedCourierId, setSelectedCourierId] = useState('');
+
     // flatpicker init useEffect
     useEffect(() => {
         if (order.status === 'paid') {
@@ -63,6 +65,21 @@ export default function edit({ order, smartphones, customers }) {
     const submit = (e) => {
         e.preventDefault();
         post(route('dashboard.orders.update', order.id));
+    };
+    const handleCourierCompanyChange = (selectedId) => {
+        setSelectedCourierId(selectedId);
+
+        const selectedCompany = orderCourierCompanies.find((c) => c.id == selectedId);
+
+        if (selectedCompany) {
+            setData({
+                ...data,
+                courier_company: selectedCompany.name,
+                courier_company_address: selectedCompany.address,
+                courier_company_postal_code: selectedCompany.postal_code,
+                courier_company_phone: selectedCompany.phone,
+            });
+        }
     };
 
     return (
@@ -179,21 +196,36 @@ export default function edit({ order, smartphones, customers }) {
                                                             itemKey={'name'}
                                                         />
 
+                                                        <SelectInput
+                                                            InputName={'Select Courier Company'}
+                                                            Id={'courier_company_selector'}
+                                                            Name={'courier_company_selector'}
+                                                            Value={selectedCourierId}
+                                                            Action={(value) =>
+                                                                handleCourierCompanyChange(value)
+                                                            }
+                                                            Placeholder={
+                                                                'Select Courier Company to Auto-Fill'
+                                                            }
+                                                            Required={false}
+                                                            items={orderCourierCompanies}
+                                                            itemKey={'name'}
+                                                        />
+
+                                                        {/* ✅ Auto-filled - Read Only */}
                                                         <Input
-                                                            InputName={'Courier Company'}
+                                                            InputName={'Courier Company Name'}
                                                             Id={'courier_company'}
                                                             Name={'courier_company'}
                                                             Type={'text'}
                                                             Value={data.courier_company}
                                                             Error={errors.courier_company}
-                                                            Placeholder={'Enter Courier Company'}
-                                                            Required={true}
-                                                            Action={(e) =>
-                                                                setData(
-                                                                    'courier_company',
-                                                                    e.target.value,
-                                                                )
+                                                            Placeholder={
+                                                                'Auto-filled from selection'
                                                             }
+                                                            Required={true}
+                                                            Disabled={true}
+                                                            Action={() => {}}
                                                         />
 
                                                         <Input
@@ -204,15 +236,11 @@ export default function edit({ order, smartphones, customers }) {
                                                             Value={data.courier_company_phone}
                                                             Error={errors.courier_company_phone}
                                                             Placeholder={
-                                                                'Enter Courier Company Phone'
+                                                                'Auto-filled from selection'
                                                             }
                                                             Required={true}
-                                                            Action={(e) =>
-                                                                setData(
-                                                                    'courier_company_phone',
-                                                                    e.target.value,
-                                                                )
-                                                            }
+                                                            Disabled={true}
+                                                            Action={() => {}}
                                                         />
 
                                                         <Input
@@ -227,20 +255,16 @@ export default function edit({ order, smartphones, customers }) {
                                                                 errors.courier_company_postal_code
                                                             }
                                                             Placeholder={
-                                                                'Enter Courier Company Postal Code'
+                                                                'Auto-filled from selection'
                                                             }
                                                             Required={true}
-                                                            Action={(e) =>
-                                                                setData(
-                                                                    'courier_company_postal_code',
-                                                                    e.target.value,
-                                                                )
-                                                            }
+                                                            Disabled={true}
+                                                            Action={() => {}}
                                                         />
 
                                                         <div>
                                                             <label
-                                                                htmlFor="address"
+                                                                htmlFor="courier_company_address"
                                                                 className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400"
                                                             >
                                                                 Courier Company Address{' '}
@@ -251,16 +275,12 @@ export default function edit({ order, smartphones, customers }) {
                                                             <textarea
                                                                 id="courier_company_address"
                                                                 required
+                                                                disabled
                                                                 rows="3"
-                                                                className="dark:bg-dark-900 shadow-theme-xs focus:ring-3 focus:outline-hidden mb-2 w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-transparent py-2.5 text-sm text-gray-800 placeholder:text-gray-400 focus:border-blue-300 focus:ring-blue-500/10 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-blue-800"
-                                                                placeholder="Enter Courier Company Address here..."
+                                                                className="dark:bg-dark-900 shadow-theme-xs focus:ring-3 focus:outline-hidden mb-2 w-full min-w-0 max-w-full rounded-lg border border-gray-300 bg-gray-100 py-2.5 text-sm text-gray-800 placeholder:text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-white/90"
+                                                                placeholder="Auto-filled from selection"
                                                                 value={data.courier_company_address}
-                                                                onChange={(e) =>
-                                                                    setData(
-                                                                        'courier_company_address',
-                                                                        e.target.value,
-                                                                    )
-                                                                }
+                                                                readOnly
                                                             ></textarea>
                                                             {errors.courier_company_address && (
                                                                 <span className="ml-2 text-red-500 dark:text-white">

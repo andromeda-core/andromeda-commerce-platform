@@ -584,6 +584,7 @@ namespace App\Models{
  * @property int $id
  * @property int $user_id
  * @property string $address
+ * @property string|null $postal_code
  * @property string|null $bank_name
  * @property string|null $bank_account_name
  * @property string|null $iban
@@ -609,6 +610,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereIban($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor wherePostalCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereSwiftCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Distributor whereUserId($value)
@@ -878,9 +880,10 @@ namespace App\Models{
  * @property int $id
  * @property string $name
  * @property string $code
+ * @property int|null $country_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property int|null $country_id
+ * @property-read \App\Models\Country|null $country
  * @property-read mixed $added_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Translation> $translations
  * @property-read int|null $translations_count
@@ -1046,6 +1049,9 @@ namespace App\Models{
  * @property string|null $np_id
  * @property int|null $collaborator_id
  * @property string|null $courier_company
+ * @property string|null $courier_company_address
+ * @property string|null $courier_company_postal_code
+ * @property string|null $courier_company_phone
  * @property \Illuminate\Support\Carbon|null $shipping_date
  * @property string|null $tracking_no
  * @property string|null $courier_invoice
@@ -1091,6 +1097,9 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereAmount($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCollaboratorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCourierCompany($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCourierCompanyAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCourierCompanyPhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCourierCompanyPostalCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCourierInvoice($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCustomerId($value)
@@ -1213,6 +1222,15 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCancelationRequest whereUpdatedAt($value)
  */
 	class OrderCancelationRequest extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany query()
+ */
+	class OrderCourierCompany extends \Eloquent {}
 }
 
 namespace App\Models{

@@ -42,6 +42,8 @@ use App\Repositories\OrderAddressChangeRequest\Interface\IOrderAddressChangeRequ
 use App\Repositories\OrderAddressChangeRequest\Repository\OrderAddressChangeRequestRepository;
 use App\Repositories\OrderCancelationRequest\Interface\IOrderCancelationRequestRepository;
 use App\Repositories\OrderCancelationRequest\Repository\OrderCancelationRequestRepository;
+use App\Repositories\OrderCourierCompany\Interface\IOrderCourierCompanyRepository;
+use App\Repositories\OrderCourierCompany\Repository\OrderCourierCompanyRepository;
 use App\Repositories\OrderRefund\Interface\IOrderRefundRepository;
 use App\Repositories\OrderRefund\Repository\OrderRefundRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
@@ -143,7 +145,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IPlatformCommissionRepository::class, PlatformCommissionRepository::class);
         $this->app->bind(IInventoryVerificationRepository::class, InventoryVerificationRepository::class);
         $this->app->bind(ISmartphoneCountryPriceRepository::class, SmartphoneCountryPriceRepository::class);
-
+        $this->app->bind(IOrderCourierCompanyRepository::class, OrderCourierCompanyRepository::class);
     }
 
     /**

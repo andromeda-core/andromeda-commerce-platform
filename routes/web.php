@@ -19,6 +19,7 @@ use App\Http\Controllers\Dashboard\LanguageController;
 use App\Http\Controllers\Dashboard\OrderAddressChangeRequestController;
 use App\Http\Controllers\Dashboard\OrderCancelationRequestController;
 use App\Http\Controllers\Dashboard\OrderController;
+use App\Http\Controllers\Dashboard\OrderCourierCompanyController;
 use App\Http\Controllers\Dashboard\OrderRefundController;
 use App\Http\Controllers\Dashboard\PackageRecordingController;
 use App\Http\Controllers\Dashboard\PostController;
@@ -409,6 +410,15 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/orders/verify', 'orderSecondaryVerification')->name('verify');
             Route::get('/orders/shipping-label/{id?}', 'shippingLabelsIndex')->name('shipping-label');
         });
+
+
+        // Order Courier Company Routes
+        Route::resource('order-courier-companies', OrderCourierCompanyController::class)
+            ->except(['show']);
+        Route::put('order-courier-companies/{id}/toggle-status', [OrderCourierCompanyController::class, 'toggleStatus'])
+            ->name('order-courier-companies.toggle-status');
+        Route::delete('order-courier-companies-destroy-by-selection', [OrderCourierCompanyController::class, 'destroyBySelection'])
+            ->name('order-courier-companies.destroyBySelection');
 
         // Supplier Assigned Order Routes
         Route::controller(SupplierAssignedOrderController::class)->name('supplier-assigned-orders.')->group(function () {
