@@ -1,3 +1,5 @@
+// resources/js/Pages/Orders/ShippingLabels.jsx - COMPLETE REPLACEMENT
+
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
@@ -12,34 +14,41 @@ export default function ShippingLabels({ order }) {
     const handlePrintLabels = () => {
         window.print();
     };
-
-    const handleDownloadPDF = () => {
+    const handleDownloadPDF = async () => {
         setProcessing(true);
 
-        const opt = {
-            margin: 0.2,
-            filename: `shipping-labels-${order.order_no}.pdf`,
-            image: { type: 'jpeg', quality: 1 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: {
-                unit: 'in',
-                format: [3.5, 12],
-                orientation: 'portrait',
-            },
-        };
+        try {
+            const jsPDF = (await import('jspdf')).default;
+            const html2canvas = (await import('html2canvas')).default;
 
-        const element = document.getElementById('shipping-labels');
-        html2pdf()
-            .set(opt)
-            .from(element)
-            .save()
-            .then(() => {
-                setProcessing(false);
-            })
-            .catch((err) => {
-                console.error('PDF generation failed:', err);
-                setProcessing(false);
+            const pdf = new jsPDF({
+                unit: 'mm',
+                format: [80, 60],
+                orientation: 'landscape',
             });
+
+            // Get both labels
+            const label1 = document.querySelectorAll('.label-page')[0];
+            const label2 = document.querySelectorAll('.label-page')[1];
+
+            // Convert first label to canvas
+            const canvas1 = await html2canvas(label1, { scale: 2, useCORS: true });
+            const imgData1 = canvas1.toDataURL('image/jpeg', 1.0);
+            pdf.addImage(imgData1, 'JPEG', 0, 0, 80, 60);
+
+            // Add new page for second label
+            pdf.addPage();
+            const canvas2 = await html2canvas(label2, { scale: 2, useCORS: true });
+            const imgData2 = canvas2.toDataURL('image/jpeg', 1.0);
+            pdf.addImage(imgData2, 'JPEG', 0, 0, 80, 60);
+
+            // Save PDF
+            pdf.save(`shipping-labels-${order.order_no}.pdf`);
+            setProcessing(false);
+        } catch (err) {
+            console.error('PDF generation failed:', err);
+            setProcessing(false);
+        }
     };
 
     return (
@@ -114,20 +123,20 @@ export default function ShippingLabels({ order }) {
 
             {/* Labels Container */}
             <div id="shipping-labels" className="mx-auto w-full max-w-[3.5in] bg-white">
-                {/* LABEL 1 */}
-                <div className="label-container w-full px-3 py-3">
-                    <div className="mb-3 rounded border-2 border-black bg-gray-100 p-2 text-center">
-                        <div className="text-sm font-bold">Order #{order.order_no}</div>
-                        <div className="text-xs text-gray-600">
+                {/* PAGE 1 - FROM ONLY (Distributor) */}
+                <div className="label-page label-container w-full px-3 py-3">
+                    <div className="mb-4 rounded border-2 border-black bg-gray-100 p-3 text-center">
+                        <div className="text-base font-bold">Order #{order.order_no}</div>
+                        <div className="text-sm text-gray-600">
                             {new Date(order.created_at).toLocaleDateString()}
                         </div>
                     </div>
 
-                    <div className="mb-3 rounded border-2 border-black p-2.5">
-                        <h3 className="mb-2 border-b-2 border-black pb-1 text-xs font-bold">
+                    <div className="rounded border-2 border-black p-4">
+                        <h3 className="mb-3 border-b-2 border-black pb-2 text-sm font-bold">
                             FROM
                         </h3>
-                        <div className="space-y-1 text-xs">
+                        <div className="space-y-2 text-sm">
                             <div>
                                 <span className="font-semibold">Name: </span>
                                 <span className="break-words">
@@ -147,79 +156,25 @@ export default function ShippingLabels({ order }) {
                             <div>
                                 <span className="font-semibold">Phone: </span>
                                 <span>{distributor?.user?.phone || 'N/A'}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="mb-2 rounded border-2 border-black p-2.5">
-                        <h3 className="mb-2 border-b-2 border-black pb-1 text-xs font-bold">TO</h3>
-                        <div className="space-y-1 text-xs">
-                            <div>
-                                <span className="font-semibold">Name: </span>
-                                <span className="break-words">
-                                    {order?.courier_company || 'N/A'}
-                                </span>
-                            </div>
-                            <div>
-                                <span className="font-semibold">Address:</span>
-                                <div className="mt-0.5 break-words">
-                                    {order?.courier_company_address || 'N/A'}
-                                </div>
-                            </div>
-                            <div>
-                                <span className="font-semibold">Postal Code: </span>
-                                <span>{order?.courier_company_postal_code || 'N/A'}</span>
-                            </div>
-                            <div>
-                                <span className="font-semibold">Phone: </span>
-                                <span>{order?.courier_company_phone || 'N/A'}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <div className="my-5 border-t-2 border-dashed border-gray-400"></div>
+                <div className="my-5 border-t-2 border-dashed border-gray-400 print:hidden"></div>
 
-                {/* LABEL 2 */}
-                <div className="label-container w-full px-3 py-3">
-                    <div className="mb-3 rounded border-2 border-black bg-gray-100 p-2 text-center">
-                        <div className="text-sm font-bold">Order #{order.order_no}</div>
-                        <div className="text-xs text-gray-600">
+                {/* PAGE 2 - TO ONLY (Courier) */}
+                <div className="label-page label-container w-full px-3 py-3">
+                    <div className="mb-4 rounded border-2 border-black bg-gray-100 p-3 text-center">
+                        <div className="text-base font-bold">Order #{order.order_no}</div>
+                        <div className="text-sm text-gray-600">
                             {new Date(order.created_at).toLocaleDateString()}
                         </div>
                     </div>
 
-                    <div className="mb-3 rounded border-2 border-black p-2.5">
-                        <h3 className="mb-2 border-b-2 border-black pb-1 text-xs font-bold">
-                            FROM
-                        </h3>
-                        <div className="space-y-1 text-xs">
-                            <div>
-                                <span className="font-semibold">Name: </span>
-                                <span className="break-words">
-                                    {distributor?.user?.name || 'N/A'}
-                                </span>
-                            </div>
-                            <div>
-                                <span className="font-semibold">Address:</span>
-                                <div className="mt-0.5 break-words">
-                                    {distributor?.address || 'N/A'}
-                                </div>
-                            </div>
-                            <div>
-                                <span className="font-semibold">Postal Code: </span>
-                                <span>{distributor?.postal_code || 'N/A'}</span>
-                            </div>
-                            <div>
-                                <span className="font-semibold">Phone: </span>
-                                <span>{distributor?.user?.phone || 'N/A'}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="mb-2 rounded border-2 border-black p-2.5">
-                        <h3 className="mb-2 border-b-2 border-black pb-1 text-xs font-bold">TO</h3>
-                        <div className="space-y-1 text-xs">
+                    <div className="rounded border-2 border-black p-4">
+                        <h3 className="mb-3 border-b-2 border-black pb-2 text-sm font-bold">TO</h3>
+                        <div className="space-y-2 text-sm">
                             <div>
                                 <span className="font-semibold">Name: </span>
                                 <span className="break-words">
@@ -244,37 +199,83 @@ export default function ShippingLabels({ order }) {
                     </div>
                 </div>
             </div>
-
             <style jsx global>{`
+                * {
+                    margin: 0;
+                    padding: 0;
+                    box-sizing: border-box;
+                }
+
+                @page {
+                    size: 80mm 60mm;
+                    margin: 0mm;
+                }
+
                 @media print {
-                    * {
-                        -webkit-print-color-adjust: exact !important;
-                        print-color-adjust: exact !important;
-                    }
-
-                    @page {
-                        size: 4in auto;
-                        margin: 0.25in; /*  Equal margins all sides */
-                    }
-
                     html,
                     body {
-                        width: 100%;
+                        width: 80mm;
                         margin: 0;
                         padding: 0;
                     }
 
                     #shipping-labels {
-                        width: 3.5in !important;
-                        max-width: 3.5in !important;
-                        margin: 0 auto !important; /* ✅ Auto margins = centered */
-                        padding: 0 !important;
+                        width: 80mm;
                     }
 
-                    .label-container {
-                        width: 100% !important;
-                        padding: 0.2in 0.15in !important;
-                        page-break-inside: avoid;
+                    .label-page {
+                        width: 80mm !important;
+                        height: 60mm !important;
+                        padding: 3mm !important;
+                        margin: 0 !important;
+                        page-break-after: always !important;
+                        page-break-inside: avoid !important;
+                        box-sizing: border-box !important;
+                    }
+
+                    .label-page:last-child {
+                        page-break-after: auto !important;
+                    }
+
+                    /* Reduce font sizes for 60mm height */
+                    .label-page .text-base {
+                        font-size: 9px !important;
+                    }
+
+                    .label-page .text-sm {
+                        font-size: 7px !important;
+                    }
+
+                    .label-page .text-xs {
+                        font-size: 6px !important;
+                    }
+
+                    .label-page .mb-4 {
+                        margin-bottom: 1.5mm !important;
+                    }
+
+                    .label-page .mb-3 {
+                        margin-bottom: 1mm !important;
+                    }
+
+                    .label-page .mb-2 {
+                        margin-bottom: 0.8mm !important;
+                    }
+
+                    .label-page .p-3 {
+                        padding: 1.5mm !important;
+                    }
+
+                    .label-page .p-2\.5 {
+                        padding: 1.2mm !important;
+                    }
+
+                    .label-page .p-2 {
+                        padding: 1mm !important;
+                    }
+
+                    .label-page .space-y-1 > * + * {
+                        margin-top: 0.8mm !important;
                     }
                 }
             `}</style>
