@@ -66,6 +66,9 @@ class Order extends Model
         'expired_at',
         'event_id',
         'msap_uri',
+        'attribution_link_id',
+        'attributed_to_user_id',
+        'attributed_smartphone_id',
     ];
 
     //    Attributes
@@ -195,6 +198,26 @@ class Order extends Model
         return $this->hasOne(Payment::class);
     }
 
+
+    public function attributionLink()
+    {
+        return $this->belongsTo(ProductLink::class, 'attribution_link_id');
+    }
+
+    public function attributedToUser()
+    {
+        return $this->belongsTo(User::class, 'attributed_to_user_id');
+    }
+
+    public function attributedSmartphone()
+    {
+        return $this->belongsTo(Smartphone::class, 'attributed_smartphone_id');
+    }
+
+    // public function attributionReward()
+    // {
+    //     return $this->hasOne(AttributionReward::class);
+    // }
 
 
     // Static Booting
