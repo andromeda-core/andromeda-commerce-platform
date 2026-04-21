@@ -14,6 +14,7 @@ use App\Notifications\OrderStatusDeliveredNotification;
 use App\Notifications\OrderStatusPaidNotification;
 use App\Notifications\OrderStatusPendingNotification;
 use App\Notifications\OrderStatusShippedNotification;
+use App\Services\AttributionRewardService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -195,29 +196,29 @@ class Order extends Model
 
     public function payment()
     {
-        return $this->hasOne(Payment::class);
+        return $this->hasOne(Payment::class, 'order_id', 'id');
     }
 
 
     public function attributionLink()
     {
-        return $this->belongsTo(ProductLink::class, 'attribution_link_id');
+        return $this->belongsTo(ProductLink::class, 'attribution_link_id', 'id');
     }
 
     public function attributedToUser()
     {
-        return $this->belongsTo(User::class, 'attributed_to_user_id');
+        return $this->belongsTo(User::class, 'attributed_to_user_id', 'id');
     }
 
     public function attributedSmartphone()
     {
-        return $this->belongsTo(Smartphone::class, 'attributed_smartphone_id');
+        return $this->belongsTo(Smartphone::class, 'attributed_smartphone_id', 'id');
     }
 
-    // public function attributionReward()
-    // {
-    //     return $this->hasOne(AttributionReward::class);
-    // }
+    public function attributionReward()
+    {
+        return $this->hasOne(AttributionReward::class);
+    }
 
 
     // Static Booting
@@ -299,6 +300,11 @@ class Order extends Model
                 if ($order->status === 'paid' && $is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
                     dispatch(new OrderStatusPaidNotificationJob($user_meta_contacts, $order, $currency, $meta_setting, $user))->onQueue('meta');
                 }
+            }
+
+
+            if ($order->status === 'paid' && $order->attribution_link_id) {
+                app(AttributionRewardService::class)->createReward($order);
             }
 
             $order->updateQuietly(['expires_at' => now()->addDays(1)]);
@@ -394,6 +400,15 @@ class Order extends Model
                     );
                 }
             }
+
+
+            if (
+                $order->status === 'paid' &&
+                $order->attribution_link_id
+            ) {
+                app(AttributionRewardService::class)->createReward($order);
+            }
+
 
             $reward_rate = null;
             $total_points = null;

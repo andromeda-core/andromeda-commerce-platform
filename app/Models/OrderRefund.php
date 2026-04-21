@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Notifications\OrderRefundNotification;
+use App\Services\AttributionRewardService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
@@ -105,6 +106,8 @@ class OrderRefund extends Model
                         'status' => 'reversed',
                         'reversed_at' => now(),
                     ]);
+
+                    app(AttributionRewardService::class)->reverseReward($order);
 
                     foreach ($order->orderItems as $item) {
 

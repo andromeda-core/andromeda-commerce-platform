@@ -130,6 +130,47 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property int $order_id
+ * @property int $product_link_id
+ * @property int $rewarded_to_user_id
+ * @property int $smartphone_id
+ * @property string $calculation_type
+ * @property numeric $calculation_value
+ * @property numeric $order_amount
+ * @property numeric $reward_amount
+ * @property string $status
+ * @property \Illuminate\Support\Carbon|null $released_at
+ * @property \Illuminate\Support\Carbon|null $reversed_at
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Order $order
+ * @property-read \App\Models\ProductLink $productLink
+ * @property-read \App\Models\User $rewardedTo
+ * @property-read \App\Models\Smartphone $smartphone
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereCalculationType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereCalculationValue($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereOrderAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereProductLinkId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereReleasedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereReversedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereRewardAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereRewardedToUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereSmartphoneId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionReward whereUpdatedAt($value)
+ */
+	class AttributionReward extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string $calculation_type
  * @property numeric $value
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -1046,6 +1087,8 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string|null $event_id
+ * @property string|null $msap_uri
  * @property string|null $order_no
  * @property int|null $customer_id
  * @property string|null $shipping_name
@@ -1067,6 +1110,9 @@ namespace App\Models{
  * @property string|null $secondary_payment_method
  * @property string|null $np_id
  * @property int|null $collaborator_id
+ * @property int|null $attribution_link_id
+ * @property int|null $attributed_to_user_id
+ * @property int|null $attributed_smartphone_id
  * @property string|null $courier_company
  * @property string|null $courier_company_address
  * @property string|null $courier_company_postal_code
@@ -1090,6 +1136,9 @@ namespace App\Models{
  * @property numeric $addons_sub_total
  * @property-read \App\Models\OrderAddressChangeRequest|null $addressChangeRequest
  * @property-read \App\Models\SupplierAssignedOrder|null $assignedSupplier
+ * @property-read \App\Models\Smartphone|null $attributedSmartphone
+ * @property-read \App\Models\User|null $attributedToUser
+ * @property-read \App\Models\ProductLink|null $attributionLink
  * @property-read \App\Models\OrderCancelationRequest|null $cancelationRequest
  * @property-read \App\Models\Collaborator|null $collaborator
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CollaboratorCommission> $collaboratorCommissions
@@ -1115,6 +1164,9 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereAddonsSubTotal($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereAttributedSmartphoneId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereAttributedToUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereAttributionLinkId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCollaboratorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCourierCompany($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCourierCompanyAddress($value)
@@ -1125,6 +1177,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereCustomerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereDeliveredAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereDeliveryConfirmedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereEventId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereExpiredAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereExpiresAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereFinalAttachments($value)
@@ -1134,6 +1187,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereIsCashCollected($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereIsDeliveryConfirmed($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereIsPurchaseConfirmed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereMsapUri($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereNpId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order whereOrderNo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Order wherePaymentMethod($value)
@@ -1518,6 +1572,8 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string|null $event_id
+ * @property string|null $msap_uri
  * @property string|null $public_id
  * @property int|null $user_id
  * @property int|null $floor_id
@@ -1548,12 +1604,14 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereContent($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereEventId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereFloorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereImages($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereLatitude($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereLocationName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereLongitude($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereMsapUri($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post wherePostType($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post wherePublicId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereSlug($value)
@@ -1893,6 +1951,8 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string|null $event_id
+ * @property string|null $msap_uri
  * @property string|null $public_id
  * @property array<array-key, mixed> $color_ids
  * @property int|null $model_name_id
@@ -1955,6 +2015,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereCourierCompanyId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereDeliveryDays($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereEventId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereFloorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereImages($value)
@@ -1963,6 +2024,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereLongitude($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelNameId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelSearchableName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereMsapUri($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereProductDetails($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone wherePublicId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereReturnPolicyId($value)
