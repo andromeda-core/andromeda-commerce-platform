@@ -23,23 +23,26 @@ export default function ErrorToastModal({ showError, setShowError, message }) {
 
             {/* Modal */}
 
-            <div className="relative z-10 w-full max-w-sm px-8 py-4 border rounded-md bg-backgroundLight animate-scale-in dark:bg-surface-1-dark border-surface-3-light dark:border-surface-3-dark">
+            <div className="relative z-10 w-full max-w-sm animate-scale-in rounded-md border border-surface-3-light bg-backgroundLight px-8 py-4 dark:border-surface-3-dark dark:bg-surface-1-dark">
                 <div className="flex flex-col items-center text-center">
                     {/* Error Icon */}
-                    <div className="flex items-center justify-center mb-3 rounded-full">
+                    <div className="mb-3 flex items-center justify-center rounded-full">
                         <svg
-                            className="w-8 h-8 text-main-text-light dark:text-main-text-dark"
+                            className="h-8 w-8 text-main-text-light dark:text-main-text-dark"
                             fill="currentColor"
                             viewBox="0 0 20 20"
                         >
                             <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z" />
                         </svg>
                     </div>
+
                     {/* Message */}
-                    <p className="text-sm break-words text-main-text-light dark:text-main-text-dark">
-                        {message?.includes('<a')
-                            ? <span dangerouslySetInnerHTML={{ __html: message }} />
-                            : message}
+                    <p className="break-words text-sm text-main-text-light dark:text-main-text-dark">
+                        {typeof message === 'string' && message.includes('<a') ? (
+                            <span dangerouslySetInnerHTML={{ __html: message }} />
+                        ) : (
+                            message
+                        )}
                     </p>
                 </div>
             </div>

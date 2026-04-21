@@ -22,6 +22,7 @@ use App\Models\Language;
 use App\Models\Order;
 use App\Models\PackageRecording;
 use App\Models\Payment;
+use App\Models\ProductLink;
 use App\Models\Smartphone;
 use App\Models\SmartphoneCartAddon;
 use App\Models\SmartphoneOrderItemAddon;
@@ -41,6 +42,7 @@ use App\Notifications\OrderRefundNotification;
 use App\Notifications\OrderRefundRequestWithdrawnNotification;
 use App\Repositories\Batches\Interface\IBatchRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
+use App\Services\AttributionRewardService;
 use App\Services\CartPriceCalculator;
 use App\Services\IPResolverService;
 use App\Services\NOWPaymentPaymentService;
@@ -77,6 +79,7 @@ class OrderRepository implements IOrderRepository
         private IPResolverService $ip_resolver,
         private Language $language,
         private Translation $translation,
+        private ProductLink $productLink,
     ) {}
 
     public function getAllOrders(Request $request)
@@ -1139,6 +1142,35 @@ class OrderRepository implements IOrderRepository
                 'points_to_use' => $points_to_use,
             ];
 
+
+            $attributionCookie = $request->cookie('attribution_context');
+            if (!empty($attributionCookie)) {
+                $attribution = json_decode($attributionCookie, true);
+                if (
+                    !empty($attribution['link_public_id']) &&
+                    !empty($attribution['clicked_at'])
+                ) {
+                    $clickedAt = \Carbon\Carbon::parse($attribution['clicked_at']);
+                    if ($clickedAt->diffInDays(now()) <= 30) {
+                        $link = $this->productLink::where('link_public_id', $attribution['link_public_id'])
+                            ->where('status', 'active')
+                            ->first();
+
+                        if ($link) {
+                            $attributedInCart = collect($order_items)
+                                ->where('smartphone_id', $link->smartphone_id)
+                                ->isNotEmpty();
+
+                            if ($attributedInCart) {
+                                $order_data['attribution_link_id']      = $link->id;
+                                $order_data['attributed_to_user_id']    = $link->user_id;
+                                $order_data['attributed_smartphone_id'] = $link->smartphone_id;
+                            }
+                        }
+                    }
+                }
+            }
+
             if ($payment_method === 'bank_transfer') {
                 $order = $this->createOrderFromWebsite($order_data, $order_items, null, $smartphone_addon_order_items, user: $user);
 
@@ -1279,6 +1311,9 @@ class OrderRepository implements IOrderRepository
                 ...(isset($order_data['points_used']) ? ['points_used' => $order_data['points_used']] : []),
                 'payment_method' => $order_data['payment_method'],
                 'secondary_payment_method' => $order_data['secondary_payment_method'],
+                ...(!empty($order_data['attribution_link_id']) ? ['attribution_link_id' => $order_data['attribution_link_id']] : []),
+                ...(!empty($order_data['attributed_to_user_id']) ? ['attributed_to_user_id' => $order_data['attributed_to_user_id']] : []),
+                ...(!empty($order_data['attributed_smartphone_id']) ? ['attributed_smartphone_id' => $order_data['attributed_smartphone_id']] : []),
             ];
 
             if (
@@ -1337,6 +1372,14 @@ class OrderRepository implements IOrderRepository
                 $orderItemsForDb[] = $item;
             }
             $order->orderItems()->createMany($orderItemsForDb);
+
+
+            if ($order->status === 'paid' && $order->attribution_link_id) {
+                $order->load(['orderItems']);
+                app(AttributionRewardService::class)->createReward($order);
+            }
+
+
 
             $orderItems = $order->orderItems()->get()->values();
 
@@ -2957,6 +3000,10 @@ class OrderRepository implements IOrderRepository
 
             if (in_array($order->status, ['expired', 'refund_requested', 'refund_approved', 'refund_completed', 'refund_rejected', 'delivered', 'failed'])) {
                 throw new Exception('Order Cannot Be Canceled');
+            }
+
+            if ($order->status === 'paid') {
+                app(AttributionRewardService::class)->reverseReward($order);
             }
 
             $order->status = 'canceled';

@@ -183,9 +183,10 @@ export default function Sidebar({
             'dashboard.settings.addon-settings.',
         ].some((prefix) => route().current().startsWith(prefix));
 
-        const isAttributionRoute = ['dashboard.attribution-links.'].some((prefix) =>
-            route().current().startsWith(prefix),
-        );
+        const isAttributionRoute = [
+            'dashboard.attribution-links.',
+            'dashboard.attribution-rewards.',
+        ].some((prefix) => route().current().startsWith(prefix));
 
         if (isOrdersRoute) {
             setSelected('Orders');
@@ -1151,6 +1152,19 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.attribution-links.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Attribution Links
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can('Attribution Rewards View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.attribution-rewards.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.attribution-rewards.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Attribution Rewards
                                                         </Link>
                                                     </li>
                                                 )}

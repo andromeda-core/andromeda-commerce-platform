@@ -27,8 +27,8 @@ class AttributionReward extends Model
         'calculation_value' => 'decimal:2',
         'order_amount'      => 'decimal:2',
         'reward_amount'     => 'decimal:2',
-        'released_at'       => 'datetime',
-        'reversed_at'       => 'datetime',
+        'released_at'       => 'datetime:Y-m-d H:i:s',
+        'reversed_at'       => 'datetime:Y-m-d H:i:s',
     ];
 
     public function order()

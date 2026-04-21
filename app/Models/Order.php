@@ -259,7 +259,6 @@ class Order extends Model
                     $reward_point->save();
                 }
             }
-
             if (Cache::has('smtp_config')) {
                 if ($order->status === 'pending') {
                     $user->notify(new OrderStatusPendingNotification($order, $currency));
@@ -303,9 +302,7 @@ class Order extends Model
             }
 
 
-            if ($order->status === 'paid' && $order->attribution_link_id) {
-                app(AttributionRewardService::class)->createReward($order);
-            }
+
 
             $order->updateQuietly(['expires_at' => now()->addDays(1)]);
 

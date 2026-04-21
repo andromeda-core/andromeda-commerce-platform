@@ -843,6 +843,8 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Order Cancelation Requested So You Can Not Upload Payment Proof', 'created_at' => $now, 'updated_at' => $now],
 
             ['key' => 'Account Deletion Successful', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'You are not a customer to use this feature.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Invalid Link Provided', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Post Removed Successfully from bookmarks', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Post Added Successfully to bookmarks', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Please Verify Your Email Before Placing An Order', 'created_at' => $now, 'updated_at' => $now],

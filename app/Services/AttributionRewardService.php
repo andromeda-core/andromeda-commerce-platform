@@ -28,13 +28,16 @@ class AttributionRewardService
         }
 
 
+
         $attributedItem = $order->orderItems()
             ->where('smartphone_id', $order->attributed_smartphone_id)
             ->first();
 
+
         if (empty($attributedItem)) {
             return null;
         }
+
 
         $smartphone = $order->attributedSmartphone()
             ->with('selling_info')
@@ -43,6 +46,7 @@ class AttributionRewardService
         if (empty($smartphone) || empty($smartphone->selling_info)) {
             return null;
         }
+
 
         $rewardBase = $smartphone->selling_info->selling_price;
 
@@ -55,6 +59,8 @@ class AttributionRewardService
         if ($rewardAmount <= 0) {
             return null;
         }
+
+
 
         return AttributionReward::create([
             'order_id'            => $order->id,

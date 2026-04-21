@@ -17,6 +17,7 @@ use App\Notifications\OrderCanceledRequestApprovedAndOrderCanceled;
 use App\Notifications\OrderCanceledRequestRejected;
 use App\Notifications\OrderCancellationRequestSubmitted;
 use App\Repositories\OrderCancelationRequest\Interface\IOrderCancelationRequestRepository;
+use App\Services\AttributionRewardService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -152,17 +153,17 @@ class OrderCancelationRequestRepository implements IOrderCancelationRequestRepos
 
             $order = $this->order->with(['cancelationRequest', 'orderItems'])->where('order_no', $request->order_no)->first();
 
-            if (empty($order)) {
-                throw new Exception('Order Not Found');
-            }
+            // if (empty($order)) {
+            //     throw new Exception('Order Not Found');
+            // }
 
-            if (in_array($cancelation_request->status, ['approved', 'rejected'])) {
-                throw new Exception('This request is already finalized and cannot be updated.');
-            }
+            // if (in_array($cancelation_request->status, ['approved', 'rejected'])) {
+            //     throw new Exception('This request is already finalized and cannot be updated.');
+            // }
 
-            if (! in_array($order->status, ['pending', 'awaiting_payment'])) {
-                throw new Exception('The Order Is Not In Pending Or Awaiting Payment Status So You Are Not Allowed To Cancel It');
-            }
+            // if (! in_array($order->status, ['pending', 'awaiting_payment'])) {
+            //     throw new Exception('The Order Is Not In Pending Or Awaiting Payment Status So You Are Not Allowed To Cancel It');
+            // }
 
             $meta_setting = Cache::get('meta_setting');
             $user_meta_contacts = $order->customer->user->metaContacts;
@@ -171,6 +172,14 @@ class OrderCancelationRequestRepository implements IOrderCancelationRequestRepos
 
             if ($validated_req['status'] === 'approved') {
                 $validated_req['approved_at'] = now();
+
+
+                if (! empty($order->points_used)) {
+                    $customer->user->reward_points()->create([
+                        'points' => $order->points_used,
+                        'expires_at' => now()->addYears(5),
+                    ]);
+                }
 
                 $order->update([
                     'status' => 'canceled',
@@ -181,12 +190,13 @@ class OrderCancelationRequestRepository implements IOrderCancelationRequestRepos
                     'canceled_at' => now(),
                 ]);
 
-                if (! empty($order->points_used)) {
-                    $customer->user->reward_points()->create([
-                        'points' => $order->points_used,
-                        'expires_at' => now()->addYears(5),
-                    ]);
+
+                if ($order->attributionReward) {
+                    app(AttributionRewardService::class)->reverseReward($order);
                 }
+
+
+
 
                 foreach ($order->orderItems as $item) {
 

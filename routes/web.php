@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Dashboard\AttributionRewardController;
 use App\Http\Controllers\Dashboard\BatchController;
 use App\Http\Controllers\Dashboard\BookmarkController;
 use App\Http\Controllers\Dashboard\CategoryController;
@@ -42,6 +43,7 @@ use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DeviceFingerPrintController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\OpenAiController;
+use App\Http\Controllers\Website\AttributionController;
 use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
 use App\Http\Controllers\Website\CartController;
 use App\Http\Controllers\Website\CheckoutController;
@@ -235,6 +237,11 @@ Route::group(['as' => 'website.'], function () {
     // Shop Routes
     Route::match(['get', 'post'], '/shop', ShopController::class)->name('shop.index');
     Route::get('/shop/loadMore', [ShopController::class, 'loadMore'])->name('shop.loadMore');
+
+
+
+    // Link Route
+    Route::get('/link/{public_id?}', [AttributionController::class, 'entry'])->name('link.index');
 });
 
 // Dashboard Routes
@@ -603,6 +610,15 @@ Route::middleware(['auth'])->group(function () {
         // Product Link Routes
         Route::resource('/attribution-links', ProductLinkController::class)->except(['show']);
         Route::delete('/attribution-links-deleteBySelection', [ProductLinkController::class, 'destroyBySelection'])->name('attribution-links.destroyBySelection');
+
+
+        // Attribution Reward Routes
+        Route::prefix('attribution-rewards')->name('attribution-rewards.')->group(function () {
+            Route::get('/', [AttributionRewardController::class, 'index'])
+                ->name('index');
+            Route::put('/{id}', [AttributionRewardController::class, 'update'])
+                ->name('update');
+        });
 
         // Setting Routes
         Route::controller(SettingController::class)->as('settings.')

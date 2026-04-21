@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Repositories\AttributionReward\Interface\IAttributionRewardRepository;
+use App\Repositories\AttributionReward\Repository\AttributionRewardRepository;
 use App\Repositories\Batches\Interface\IBatchRepository;
 use App\Repositories\Batches\Repository\BatchRepository;
 use App\Repositories\Bookmarks\Interface\IBookmarkRepository;
@@ -149,6 +151,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(ISmartphoneCountryPriceRepository::class, SmartphoneCountryPriceRepository::class);
         $this->app->bind(IOrderCourierCompanyRepository::class, OrderCourierCompanyRepository::class);
         $this->app->bind(IProductLinkRepository::class, ProductLinkRepository::class);
+        $this->app->bind(IAttributionRewardRepository::class, AttributionRewardRepository::class);
     }
 
     /**

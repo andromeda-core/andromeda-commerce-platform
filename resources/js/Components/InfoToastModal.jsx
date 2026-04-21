@@ -22,12 +22,12 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
             />
 
             {/* Modal */}
-            <div className="relative z-10 w-full max-w-sm px-8 py-4 border rounded-md bg-backgroundLight animate-scale-in dark:bg-surface-1-dark border-surface-3-light dark:border-surface-3-dark">
+            <div className="relative z-10 w-full max-w-sm animate-scale-in rounded-md border border-surface-3-light bg-backgroundLight px-8 py-4 dark:border-surface-3-dark dark:bg-surface-1-dark">
                 <div className="flex flex-col items-center text-center">
                     {/* Info Icon */}
-                    <div className="flex items-center justify-center mb-3 rounded-full">
+                    <div className="mb-3 flex items-center justify-center rounded-full">
                         <svg
-                            className="w-8 h-8 text-main-text-light dark:text-main-text-dark"
+                            className="h-8 w-8 text-main-text-light dark:text-main-text-dark"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -42,10 +42,12 @@ export default function InfoToastModal({ showInfo, setShowInfo, message }) {
                     </div>
 
                     {/* Message */}
-                    <p className="text-sm break-words text-main-text-light dark:text-main-text-dark">
-                        {message?.includes('<a')
-                            ? <span dangerouslySetInnerHTML={{ __html: message }} />
-                            : message}
+                    <p className="break-words text-sm text-main-text-light dark:text-main-text-dark">
+                        {typeof message === 'string' && message.includes('<a') ? (
+                            <span dangerouslySetInnerHTML={{ __html: message }} />
+                        ) : (
+                            message
+                        )}
                     </p>
                 </div>
             </div>
