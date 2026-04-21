@@ -187,6 +187,14 @@ class Order extends Model
         return $this->hasOne(SupplierAssignedOrder::class, 'order_id', 'id');
     }
 
+
+    public function payment()
+    {
+        return $this->hasOne(Payment::class);
+    }
+
+
+
     // Static Booting
     public static function booted()
     {

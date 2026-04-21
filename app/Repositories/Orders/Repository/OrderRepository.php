@@ -21,6 +21,7 @@ use App\Models\Inventory;
 use App\Models\Language;
 use App\Models\Order;
 use App\Models\PackageRecording;
+use App\Models\Payment;
 use App\Models\Smartphone;
 use App\Models\SmartphoneCartAddon;
 use App\Models\SmartphoneOrderItemAddon;
@@ -75,7 +76,7 @@ class OrderRepository implements IOrderRepository
         private SupplierAssignmentLog $supplier_assignment_log,
         private IPResolverService $ip_resolver,
         private Language $language,
-        private Translation $translation
+        private Translation $translation,
     ) {}
 
     public function getAllOrders(Request $request)
@@ -393,6 +394,10 @@ class OrderRepository implements IOrderRepository
                 'payment_proof.max' => 'Payment Proof Image Size Must be less than 5MB',
             ]);
             unset($validated_req['payment_proof']);
+            $order->payment()->update([
+                'status' => 'confirmed',
+                'confirmed_at' => now(),
+            ]);
         }
 
         if ($order->status === 'paid') {
@@ -1222,6 +1227,10 @@ class OrderRepository implements IOrderRepository
                 } else {
                     session()->forget('single_product_checkout_' . $user->id);
                 }
+
+
+
+
                 DB::commit();
 
                 return [
@@ -1232,6 +1241,7 @@ class OrderRepository implements IOrderRepository
                     'redirect_uri' => ! empty($response['payment_url']) ? $response['payment_url'] : route('website.orders.order-view', ['order_no' => $order['order']->order_no]),
                 ];
             }
+
 
             throw new Exception($this->trans::get('Invalid Payment Method'));
         } catch (Exception $e) {
@@ -1312,6 +1322,9 @@ class OrderRepository implements IOrderRepository
 
                 throw new Exception($this->trans::get('Something Went Wrong While Placing An Order'));
             }
+
+
+            $this->createPaymentRecord($order, $payload);
 
             $orderItemsForDb = [];
             $orderItemIndexMap = [];
@@ -1423,6 +1436,29 @@ class OrderRepository implements IOrderRepository
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
+        }
+    }
+    private function createPaymentRecord(Order $order, array $payload): void
+    {
+        $payment_method = $payload['payment_method'];
+        $orderIsPaid    = ($payload['status'] ?? null) === 'paid';
+
+
+        if ($orderIsPaid) {
+            Payment::create([
+                'order_id'     => $order->id,
+                'status'       => 'confirmed', // points instant hain
+                'method_type'  => $payment_method,
+                'amount'       => $payload['full_amount'] ?? 0,
+                'confirmed_at' => now(),
+            ]);
+        } else {
+            Payment::create([
+                'order_id'     => $order->id,
+                'status'       => 'created',
+                'method_type'  => $payment_method,
+                'amount'       => $payload['full_amount'] ?? 0,
+            ]);
         }
     }
 
@@ -1597,6 +1633,12 @@ class OrderRepository implements IOrderRepository
             $order->status = 'blockchain_confirmation_pending';
             $order->np_id = $request->NP_id;
             $order->save();
+
+            $order->payment()->update([
+                'external_ref' => $request->NP_id,
+            ]);
+
+
 
             $currency = Cache::get('currency');
 
@@ -2919,6 +2961,11 @@ class OrderRepository implements IOrderRepository
 
             $order->status = 'canceled';
             $order->save();
+
+            $order->payment()->update([
+                'status' => 'canceled',
+                'canceled_at' => now(),
+            ]);
 
             $customer = $this->customer->with(['user'])->find($order->customer_id);
 

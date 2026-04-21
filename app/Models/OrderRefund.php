@@ -87,7 +87,6 @@ class OrderRefund extends Model
 
                     ]
                 );
-
             }
 
             if ($refund->refund_status === 'approved') {
@@ -101,6 +100,11 @@ class OrderRefund extends Model
             if ($refund->refund_status === 'completed') {
 
                 DB::transaction(function () use ($order) {
+
+                    $order->payment()->update([
+                        'status' => 'reversed',
+                        'reversed_at' => now(),
+                    ]);
 
                     foreach ($order->orderItems as $item) {
 
@@ -117,7 +121,6 @@ class OrderRefund extends Model
                                 ]);
                             }
                         }
-
                     }
                 });
 

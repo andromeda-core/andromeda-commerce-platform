@@ -37,6 +37,10 @@ class NOWPaymentInvoiceStatusCheck extends Command
                     if (empty($np_id)) {
                         DB::transaction(function () use ($order, $user) {
                             $order->update(['status' => 'failed']);
+                            $order->payment()->update([
+                                'status' => 'failed',
+                                'failed_at' => now(),
+                            ]);
 
                             if (! empty($order->points_used)) {
                                 $user->reward_points()->create([
@@ -60,7 +64,6 @@ class NOWPaymentInvoiceStatusCheck extends Command
                                         ]);
                                     }
                                 }
-
                             }
                         });
 
@@ -69,7 +72,7 @@ class NOWPaymentInvoiceStatusCheck extends Command
 
                     $response = Http::withHeaders([
                         'x-api-key' => $now_payment_api_key,
-                    ])->get($base_url."/payment/{$np_id}");
+                    ])->get($base_url . "/payment/{$np_id}");
 
                     $data = $response->json();
 
@@ -83,6 +86,10 @@ class NOWPaymentInvoiceStatusCheck extends Command
                         case 'finished':
                             DB::transaction(function () use ($order) {
                                 $order->update(['status' => 'paid', 'amount' => 0]);
+                                $order->payment()->update([
+                                    'status' => 'confirmed',
+                                    'confirmed_at' => now(),
+                                ]);
 
                                 foreach ($order->orderItems as $item) {
 
@@ -99,7 +106,6 @@ class NOWPaymentInvoiceStatusCheck extends Command
                                             ]);
                                         }
                                     }
-
                                 }
                             });
 
@@ -117,6 +123,10 @@ class NOWPaymentInvoiceStatusCheck extends Command
                         case 'expired':
                             DB::transaction(function () use ($order, $user) {
                                 $order->update(['status' => 'failed']);
+                                $order->payment()->update([
+                                    'status' => 'failed',
+                                    'failed_at' => now(),
+                                ]);
 
                                 if (! empty($order->points_used)) {
                                     $user->reward_points()->create([
@@ -140,7 +150,6 @@ class NOWPaymentInvoiceStatusCheck extends Command
                                             ]);
                                         }
                                     }
-
                                 }
                             });
 
@@ -156,6 +165,5 @@ class NOWPaymentInvoiceStatusCheck extends Command
                     }
                 }
             });
-
     }
 }

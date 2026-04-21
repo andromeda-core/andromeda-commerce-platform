@@ -1226,9 +1226,26 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * @property int $id
+ * @property string $name
+ * @property string $address
+ * @property string $postal_code
+ * @property string $phone
+ * @property int $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $added_at
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany whereAddress($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany wherePhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany wherePostalCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCourierCompany whereUpdatedAt($value)
  */
 	class OrderCourierCompany extends \Eloquent {}
 }
@@ -1358,6 +1375,44 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PackageRecording whereUpdatedAt($value)
  */
 	class PackageRecording extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $order_id
+ * @property string $status
+ * @property string|null $method_type
+ * @property string|null $external_ref
+ * @property string|null $tx_hash
+ * @property numeric|null $amount
+ * @property \Illuminate\Support\Carbon|null $confirmed_at
+ * @property \Illuminate\Support\Carbon|null $finalized_at
+ * @property \Illuminate\Support\Carbon|null $reversed_at
+ * @property string|null $event_id
+ * @property string|null $msap_uri
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Order $order
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereConfirmedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereEventId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereExternalRef($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereFinalizedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereMethodType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereMsapUri($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereReversedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereTxHash($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereUpdatedAt($value)
+ */
+	class Payment extends \Eloquent {}
 }
 
 namespace App\Models{

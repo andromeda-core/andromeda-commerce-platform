@@ -176,6 +176,11 @@ class OrderCancelationRequestRepository implements IOrderCancelationRequestRepos
                     'status' => 'canceled',
                 ]);
 
+                $order->payment()->update([
+                    'status' => 'canceled',
+                    'canceled_at' => now(),
+                ]);
+
                 if (! empty($order->points_used)) {
                     $customer->user->reward_points()->create([
                         'points' => $order->points_used,
@@ -198,7 +203,6 @@ class OrderCancelationRequestRepository implements IOrderCancelationRequestRepos
                             ]);
                         }
                     }
-
                 }
 
                 $customer->user->notify(new OrderCanceledRequestApprovedAndOrderCanceled($order));
@@ -206,7 +210,6 @@ class OrderCancelationRequestRepository implements IOrderCancelationRequestRepos
                 if ($is_eligible && $user_meta_contacts->isNotEmpty() && ! empty($meta_setting)) {
                     dispatch(new OrderCanceledRequestApprovedAndOrderCanceledJob($user_meta_contacts, $order, $meta_setting, $order_user))->onQueue('meta');
                 }
-
             }
 
             if ($validated_req['status'] === 'rejected') {
@@ -230,7 +233,6 @@ class OrderCancelationRequestRepository implements IOrderCancelationRequestRepos
                 'status' => true,
                 'message' => 'Request Updated Successfully',
             ];
-
         } catch (Exception $th) {
             DB::rollBack();
 
