@@ -12,6 +12,7 @@ use Str;
 class Post extends Model
 {
     protected $fillable = [
+        'public_id',
         'user_id',
         'title',
         'content',
@@ -69,8 +70,8 @@ class Post extends Model
     public function getAddedAtAttribute()
     {
         return $this->created_at
-    ? Carbon::parse($this->created_at)->format('F, d, Y')
-    : null;
+            ? Carbon::parse($this->created_at)->format('F, d, Y')
+            : null;
     }
 
     public function getCreatedAtTimeAttribute()
@@ -119,8 +120,10 @@ class Post extends Model
             $cleanTitle = preg_replace('/\s+/u', '-', trim($cleanTitle));
 
             $post->slug = strtolower(
-                $cleanTitle.'-'.time().'-'.$post->id.'-'.Str::uuid()
+                $cleanTitle . '-' . time() . '-' . $post->id . '-' . Str::uuid()
             );
+
+            $post->public_id = 'pst_' . Str::uuid();
 
             $post->save();
 
@@ -134,7 +137,6 @@ class Post extends Model
         static::deleted(function ($post) {
             Cache::tags(['feed'])->flush();
         });
-
     }
 
     // Scout Searching method

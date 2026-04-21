@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Cache;
+use Str;
 
 class Smartphone extends Model
 {
     protected $fillable = [
+        'public_id',
         'model_name_id',
         'model_searchable_name',
         'capacity_id',
@@ -51,8 +53,8 @@ class Smartphone extends Model
     public function getAddedAtAttribute()
     {
         return $this->created_at
-    ? Carbon::parse($this->created_at)->format('F, d, Y')
-    : null;
+            ? Carbon::parse($this->created_at)->format('F, d, Y')
+            : null;
     }
 
     public function getCreatedAtTimeAttribute()
@@ -169,6 +171,12 @@ class Smartphone extends Model
     // Static Booting
     protected static function booted()
     {
+
+        static::created(function ($smartphone) {
+            $smartphone->public_id = 'prd_' . Str::uuid();
+            $smartphone->saveQuietly();
+        });
+
         static::saving(function ($smartphone) {
             Cache::tags(['feed'])->flush();
 
