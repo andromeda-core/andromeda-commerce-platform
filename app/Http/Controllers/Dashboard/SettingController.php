@@ -218,6 +218,9 @@ class SettingController extends Controller implements HasMiddleware
 
             new Middleware('permission:Unsettled Account Notifications', ['only' => 'unsettledAccountsNotificationSetting']),
             new Middleware('permission:Unsettled Account Notifications', ['only' => 'saveUnsettledAccountsNotificationSetting']),
+
+            new Middleware('permission:Attribution Reward Rate', ['only' => 'attributionRewardSettingIndex']),
+            new Middleware('permission:Attribution Reward Rate', ['only' => 'attributionRewardSettingSave']),
         ];
     }
 
@@ -365,7 +368,6 @@ class SettingController extends Controller implements HasMiddleware
         $search = $request->input('search');
 
         return Inertia::render('Dashboard/Settings/Permissions/index', compact('permissions', 'search'));
-
     }
 
     public function permissionCreate()
@@ -1092,7 +1094,6 @@ class SettingController extends Controller implements HasMiddleware
         }
 
         return back()->with('success', $deleted['message']);
-
     }
 
     // Countries
@@ -1182,7 +1183,6 @@ class SettingController extends Controller implements HasMiddleware
         $search = $request->input('search');
 
         return Inertia::render('Dashboard/Settings/SpecialCountries/index', compact('special_countries', 'search'));
-
     }
 
     public function specialCountryCreate()
@@ -1226,7 +1226,6 @@ class SettingController extends Controller implements HasMiddleware
         }
 
         return back()->with('success', $deleted['message']);
-
     }
 
     // AWS Settings
@@ -1408,7 +1407,6 @@ class SettingController extends Controller implements HasMiddleware
         }
 
         return back()->with('success', $updated['message']);
-
     }
 
     // Meta Setting
@@ -1504,7 +1502,6 @@ class SettingController extends Controller implements HasMiddleware
         }
 
         return back()->with('success', $updated['message']);
-
     }
 
     // NOWPayments
@@ -1590,7 +1587,6 @@ class SettingController extends Controller implements HasMiddleware
         }
 
         return back()->with('success', $deleted['message']);
-
     }
 
     public function NOWPaymentSettingsDestroyBySelection(Request $request)
@@ -1601,7 +1597,6 @@ class SettingController extends Controller implements HasMiddleware
         }
 
         return back()->with('success', $deleted['message']);
-
     }
 
     // Return Policy Methods
@@ -1610,7 +1605,6 @@ class SettingController extends Controller implements HasMiddleware
         $return_policies = $this->setting->getAllReturnPolicies();
 
         return Inertia::render('Dashboard/Settings/ReturnPolicy/index', compact('return_policies'));
-
     }
 
     public function returnPolicyCreate()
@@ -1709,7 +1703,6 @@ class SettingController extends Controller implements HasMiddleware
         $shipping_policies = $this->setting->getAllShippingPolicies();
 
         return Inertia::render('Dashboard/Settings/ShippingPolicy/index', compact('shipping_policies'));
-
     }
 
     public function shippingPolicyCreate()
@@ -1808,7 +1801,6 @@ class SettingController extends Controller implements HasMiddleware
         $terms_of_services = $this->setting->getAllTermsOfServices();
 
         return Inertia::render('Dashboard/Settings/TermsOfService/index', compact('terms_of_services'));
-
     }
 
     public function termsOfServiceCreate()
@@ -1907,7 +1899,6 @@ class SettingController extends Controller implements HasMiddleware
         $privacy_policies = $this->setting->getAllPrivacyPolicy();
 
         return Inertia::render('Dashboard/Settings/PrivacyPolicy/index', compact('privacy_policies'));
-
     }
 
     public function privacyPolicyCreate()
@@ -2006,7 +1997,6 @@ class SettingController extends Controller implements HasMiddleware
         $courier_companies = $this->setting->getAllCourierCompanies();
 
         return Inertia::render('Dashboard/Settings/CourierCompany/index', compact('courier_companies'));
-
     }
 
     public function courierCompanyCreate()
@@ -2101,7 +2091,6 @@ class SettingController extends Controller implements HasMiddleware
         $conditions = $this->setting->getAllConditions();
 
         return Inertia::render('Dashboard/Settings/Conditions/index', compact('conditions'));
-
     }
 
     public function conditionCreate()
@@ -2196,7 +2185,6 @@ class SettingController extends Controller implements HasMiddleware
         $addons = $this->setting->getAllAddons();
 
         return Inertia::render('Dashboard/Settings/Addons/index', compact('addons'));
-
     }
 
     public function addonCreate()
@@ -2320,5 +2308,22 @@ class SettingController extends Controller implements HasMiddleware
         }
 
         return back()->with('success', $saved['message']);
+    }
+
+    public function attributionRewardSettingIndex()
+    {
+        $setting = $this->setting->getAttributionRewardSetting();
+        return Inertia::render("Dashboard/Settings/AttributionRewardSetting/index", compact('setting'));
+    }
+
+    public function attributionRewardSettingSave(Request $request)
+    {
+        $saved = $this->setting->saveAttributionRewardSetting($request);
+
+        if ($saved['status'] === false) {
+            return back()->with('error', $saved['message']);
+        }
+
+        return to_route('dashboard.settings.attribution-reward-setting.index')->with('success', $saved['message']);
     }
 }

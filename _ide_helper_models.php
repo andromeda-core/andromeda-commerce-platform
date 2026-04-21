@@ -130,6 +130,25 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $calculation_type
+ * @property numeric $value
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionRewardSetting newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionRewardSetting newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionRewardSetting query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionRewardSetting whereCalculationType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionRewardSetting whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionRewardSetting whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionRewardSetting whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|AttributionRewardSetting whereValue($value)
+ */
+	class AttributionRewardSetting extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string $aws_access_key_id
  * @property string $aws_secret_access_key
  * @property string $aws_region
@@ -1592,13 +1611,34 @@ namespace App\Models{
 
 namespace App\Models{
 /**
+ * @property int $id
+ * @property string $link_public_id
+ * @property int $smartphone_id
+ * @property int $user_id
+ * @property int|null $post_id
+ * @property string $status
+ * @property string|null $event_id
+ * @property string|null $msap_uri
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read string $added_at
  * @property-read string $shareable_url
  * @property-read \App\Models\Post|null $post
- * @property-read \App\Models\Smartphone|null $smartphone
- * @property-read \App\Models\User|null $user
+ * @property-read \App\Models\Smartphone $smartphone
+ * @property-read \App\Models\User $user
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink whereEventId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink whereLinkPublicId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink whereMsapUri($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink wherePostId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink whereSmartphoneId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink whereUserId($value)
  */
 	class ProductLink extends \Eloquent {}
 }

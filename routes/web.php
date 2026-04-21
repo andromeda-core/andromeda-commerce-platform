@@ -842,6 +842,11 @@ Route::middleware(['auth'])->group(function () {
                     // Dormancy Setting Routes
                     Route::get('/dormancy-settings', 'dormancySettingIndex')->name('dormancy-setting.index');
                     Route::put('/dormancy-settings-save', 'dormancySettingSave')->name('dormancy-setting.save');
+
+
+                    // Attribution Reward Setting Routes
+                    Route::get('/attribution-reward-settings', 'attributionRewardSettingIndex')->name('attribution-reward-setting.index');
+                    Route::put('/attribution-reward-settings-save', 'attributionRewardSettingSave')->name('attribution-reward-setting.save');
                 });
             });
     });

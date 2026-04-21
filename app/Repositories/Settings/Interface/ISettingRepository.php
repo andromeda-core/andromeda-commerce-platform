@@ -348,4 +348,9 @@ interface ISettingRepository
     public function getUnsettledAccountsNotificationSettings();
 
     public function saveUnsettledAccountsNotificationSettings(Request $request);
+
+
+    // Attribution Reward Setting
+    public function getAttributionRewardSetting();
+    public function saveAttributionRewardSetting(Request $request);
 }

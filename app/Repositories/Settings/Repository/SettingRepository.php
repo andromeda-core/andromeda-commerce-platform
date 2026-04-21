@@ -12,6 +12,7 @@ use App\Jobs\AppPWALogoDestroyOnAWS;
 use App\Jobs\AppPWALogoStoreOnAWS;
 use App\Models\AdditionalFeeList;
 use App\Models\Addon;
+use App\Models\AttributionRewardSetting;
 use App\Models\AwsSetting;
 use App\Models\Capacity;
 use App\Models\Color;
@@ -76,6 +77,7 @@ class SettingRepository implements ISettingRepository
         private PrivacyPolicy $privacy_policy,
         private DormancySetting $dormancy_setting,
         private UnsettledAccountNotificationSetting $unsettled_account_notification_setting,
+        private AttributionRewardSetting $attribution_reward_setting
 
     ) {}
 
@@ -141,7 +143,7 @@ class SettingRepository implements ISettingRepository
                 }
 
                 $favicon = $request->file('app_favicon');
-                $new_favicon_name = time().uniqid().'.'.$favicon->getClientOriginalExtension();
+                $new_favicon_name = time() . uniqid() . '.' . $favicon->getClientOriginalExtension();
 
                 $resizedImage = ImageManager::imagick()
                     ->read($favicon)
@@ -149,12 +151,11 @@ class SettingRepository implements ISettingRepository
                     ->contain(512, 512)
                     ->encodeByExtension('png', quality: 80);
 
-                $tempPath = 'temp/uploads/'.$new_favicon_name;
+                $tempPath = 'temp/uploads/' . $new_favicon_name;
                 Storage::disk('local')->put($tempPath, (string) $resizedImage);
                 $validated_req['app_favicon'] = null;
 
                 dispatch(new AppFaviconStoreOnAWS($tempPath, $general_setting));
-
             }
 
             if ($request->hasFile('app_pwa_logo')) {
@@ -164,7 +165,7 @@ class SettingRepository implements ISettingRepository
                 }
 
                 $logo = $request->file('app_pwa_logo');
-                $new_logo_name = time().uniqid().'.'.$logo->getClientOriginalExtension();
+                $new_logo_name = time() . uniqid() . '.' . $logo->getClientOriginalExtension();
 
                 $resizedImage = ImageManager::imagick()
                     ->read($logo)
@@ -172,12 +173,11 @@ class SettingRepository implements ISettingRepository
                     ->contain(512, 512)
                     ->encodeByExtension('png', quality: 80);
 
-                $tempPath = 'temp/uploads/'.$new_logo_name;
+                $tempPath = 'temp/uploads/' . $new_logo_name;
                 Storage::disk('local')->put($tempPath, (string) $resizedImage);
                 $validated_req['app_pwa_logo'] = null;
 
                 dispatch(new AppPWALogoStoreOnAWS($tempPath, $general_setting));
-
             }
 
             if ($request->hasFile('app_main_logo_dark')) {
@@ -188,7 +188,7 @@ class SettingRepository implements ISettingRepository
 
                 $app_main_logo_dark = $request->file('app_main_logo_dark');
 
-                $new_app_main_logo_dark_name = time().uniqid().'.'.$app_main_logo_dark->getClientOriginalExtension();
+                $new_app_main_logo_dark_name = time() . uniqid() . '.' . $app_main_logo_dark->getClientOriginalExtension();
 
                 $resizedImage = ImageManager::imagick()
                     ->read($app_main_logo_dark)
@@ -196,7 +196,7 @@ class SettingRepository implements ISettingRepository
                     ->contain(512, 512)
                     ->encodeByExtension($app_main_logo_dark->getClientOriginalExtension(), quality: 80);
 
-                $tempPath = 'temp/uploads/'.$new_app_main_logo_dark_name;
+                $tempPath = 'temp/uploads/' . $new_app_main_logo_dark_name;
                 Storage::disk('local')->put($tempPath, (string) $resizedImage);
                 $validated_req['app_main_logo_dark'] = null;
 
@@ -214,7 +214,7 @@ class SettingRepository implements ISettingRepository
                 }
 
                 $app_main_logo_light = $request->file('app_main_logo_light');
-                $new_app_main_logo_light_name = time().uniqid().'.'.$app_main_logo_light->getClientOriginalExtension();
+                $new_app_main_logo_light_name = time() . uniqid() . '.' . $app_main_logo_light->getClientOriginalExtension();
 
                 $resizedImage = ImageManager::imagick()
                     ->read($app_main_logo_light)
@@ -222,7 +222,7 @@ class SettingRepository implements ISettingRepository
                     ->contain(512, 512)
                     ->encodeByExtension($app_main_logo_light->getClientOriginalExtension(), quality: 80);
 
-                $tempPath = 'temp/uploads/'.$new_app_main_logo_light_name;
+                $tempPath = 'temp/uploads/' . $new_app_main_logo_light_name;
                 Storage::disk('local')->put($tempPath, (string) $resizedImage);
                 $validated_req['app_main_logo_light'] = null;
 
@@ -248,7 +248,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'General Setting Created Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -344,7 +343,7 @@ class SettingRepository implements ISettingRepository
     public function updateRole(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'name' => 'required|unique:roles,name,'.$id,
+            'name' => 'required|unique:roles,name,' . $id,
             'description' => 'nullable',
         ]);
 
@@ -437,7 +436,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Role Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -451,7 +449,7 @@ class SettingRepository implements ISettingRepository
     {
         $permissions = $this->permission
             ->when(! empty($request->input('search')), function ($query) use ($request) {
-                $query->where('name', 'like', '%'.$request->input('search').'%');
+                $query->where('name', 'like', '%' . $request->input('search') . '%');
             })
             ->latest()
             ->paginate(10);
@@ -497,7 +495,7 @@ class SettingRepository implements ISettingRepository
     public function updatePermission(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'name' => ['required', 'max:255', 'unique:permissions,name,'.$id],
+            'name' => ['required', 'max:255', 'unique:permissions,name,' . $id],
             'icon' => ['required', 'max:100'],
             'alias' => ['nullable', 'max:100'],
             'parent_name' => ['required', 'max:255'],
@@ -634,7 +632,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Permissions Synced Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -700,8 +697,8 @@ class SettingRepository implements ISettingRepository
     public function updateColor(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'name' => ['required', 'max:255', 'unique:colors,name,'.$id],
-            'code' => ['required', 'max:255', 'starts_with:#', 'unique:colors,code,'.$id],
+            'name' => ['required', 'max:255', 'unique:colors,name,' . $id],
+            'code' => ['required', 'max:255', 'starts_with:#', 'unique:colors,code,' . $id],
             'is_active' => ['required', 'boolean'],
         ], [
             'name.required' => 'Color Name Is Required',
@@ -844,7 +841,7 @@ class SettingRepository implements ISettingRepository
     public function updateModelName(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'name' => ['required', 'max:255', 'unique:model_names,name,'.$id],
+            'name' => ['required', 'max:255', 'unique:model_names,name,' . $id],
             'is_active' => ['required', 'boolean'],
 
         ], [
@@ -878,7 +875,6 @@ class SettingRepository implements ISettingRepository
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function destroyModelName(string $id)
@@ -985,7 +981,7 @@ class SettingRepository implements ISettingRepository
     public function updateCapacity(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'name' => ['required', 'max:255', 'unique:capacities,name,'.$id],
+            'name' => ['required', 'max:255', 'unique:capacities,name,' . $id],
             'is_active' => ['required', 'boolean'],
         ], [
             'name.required' => 'Capacity Is Required',
@@ -1129,8 +1125,8 @@ class SettingRepository implements ISettingRepository
     public function updateStorageLocation(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'name' => ['required', 'max:255', 'string', 'unique:storage_locations,name,'.$id],
-            'address' => ['nullable', 'unique:storage_locations,address,'.$id],
+            'name' => ['required', 'max:255', 'string', 'unique:storage_locations,name,' . $id],
+            'address' => ['nullable', 'unique:storage_locations,address,' . $id],
             'is_active' => ['required', 'boolean'],
         ], [
             'name.required' => 'Storage Location Name Is Required',
@@ -1286,8 +1282,8 @@ class SettingRepository implements ISettingRepository
     public function updateCurrency(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'name' => ['required', 'max:100', 'string', 'unique:currencies,name,'.$id],
-            'symbol' => ['required', 'max:10', 'string', 'unique:currencies,symbol,'.$id],
+            'name' => ['required', 'max:100', 'string', 'unique:currencies,name,' . $id],
+            'symbol' => ['required', 'max:10', 'string', 'unique:currencies,symbol,' . $id],
         ], [
             'name.required' => 'Currency Name Is Required',
             'name.max' => 'Currency Name Must Not Exceed 100 Characters',
@@ -1387,7 +1383,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Currencies Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -1425,7 +1420,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Currency Activated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -1482,7 +1476,7 @@ class SettingRepository implements ISettingRepository
     public function updateAdditionalFeeList(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'name' => ['required', 'unique:additional_fee_lists,name,'.$id],
+            'name' => ['required', 'unique:additional_fee_lists,name,' . $id],
             'category' => ['required', 'string', 'in:shipping_fee,import_tax', 'max:255'],
             'value_type' => ['required', 'string', 'in:fixed,percentage'],
             'default_value' => ['required', 'numeric', 'min:0'],
@@ -1637,19 +1631,18 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Commission Setting Created Successfully',
             ];
-        } catch (Exception$e) {
+        } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function updateCommissionSetting(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'type' => ['required', 'in:collaborator,distributor,supplier,platform', 'unique:commission_settings,type,'.$id],
+            'type' => ['required', 'in:collaborator,distributor,supplier,platform', 'unique:commission_settings,type,' . $id],
             'commission_rate' => ['required', 'numeric', 'min:1', 'max:100'],
         ], [
             'type.unique' => 'This Type Already Exists',
@@ -1673,8 +1666,7 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Commission Setting Updated Successfully',
             ];
-
-        } catch (Exception$e) {
+        } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -1701,7 +1693,7 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Commission Setting Deleted Successfully',
             ];
-        } catch (Exception$e) {
+        } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -1728,7 +1720,7 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Commission Settings Deleted Successfully',
             ];
-        } catch (Exception$e) {
+        } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
@@ -1742,8 +1734,8 @@ class SettingRepository implements ISettingRepository
         $countries = $this->country
             ->when(! empty($request->input('search')), function ($query) use ($request) {
                 $query->where(function ($subQuery) use ($request) {
-                    $subQuery->where('name', 'like', '%'.$request->input('search').'%')
-                        ->orWhere('iso_code', 'like', '%'.$request->input('search').'%');
+                    $subQuery->where('name', 'like', '%' . $request->input('search') . '%')
+                        ->orWhere('iso_code', 'like', '%' . $request->input('search') . '%');
                 });
             })
             ->latest()
@@ -1790,8 +1782,8 @@ class SettingRepository implements ISettingRepository
     public function updateCountry(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'name' => ['required', 'max:100', 'unique:countries,name,'.$id],
-            'iso_code' => ['required', 'max:2', 'unique:countries,iso_code,'.$id],
+            'name' => ['required', 'max:100', 'unique:countries,name,' . $id],
+            'iso_code' => ['required', 'max:2', 'unique:countries,iso_code,' . $id],
             'is_active' => ['required', 'boolean'],
         ]);
 
@@ -1881,8 +1873,8 @@ class SettingRepository implements ISettingRepository
         $special_countries = $this->special_country
             ->when(! empty($request->input('search')), function ($query) use ($request) {
                 $query->whereHas('country', function ($subQuery) use ($request) {
-                    $subQuery->where('name', 'like', '%'.$request->input('search').'%')
-                        ->orWhere('iso_code', 'like', '%'.$request->input('search').'%');
+                    $subQuery->where('name', 'like', '%' . $request->input('search') . '%')
+                        ->orWhere('iso_code', 'like', '%' . $request->input('search') . '%');
                 });
             })
             ->with('country')
@@ -1921,7 +1913,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Special Country created successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -1976,7 +1967,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Special Countries deleted successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2034,7 +2024,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Aws Setting created successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2046,10 +2035,10 @@ class SettingRepository implements ISettingRepository
     public function updateAwsSetting(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'aws_access_key_id' => ['required', 'string', 'max:255', 'unique:aws_settings,aws_access_key_id,'.$id],
-            'aws_secret_access_key' => ['required', 'string', 'max:255', 'unique:aws_settings,aws_secret_access_key,'.$id],
+            'aws_access_key_id' => ['required', 'string', 'max:255', 'unique:aws_settings,aws_access_key_id,' . $id],
+            'aws_secret_access_key' => ['required', 'string', 'max:255', 'unique:aws_settings,aws_secret_access_key,' . $id],
             'aws_region' => ['required', 'string', 'max:50'],
-            'aws_bucket' => ['required', 'string', 'min:3', 'max:63', 'unique:aws_settings,aws_bucket,'.$id],
+            'aws_bucket' => ['required', 'string', 'min:3', 'max:63', 'unique:aws_settings,aws_bucket,' . $id],
             'aws_url' => ['nullable', 'string', 'starts_with:https://', 'url'],
         ]);
 
@@ -2169,7 +2158,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Aws Setting Activated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2226,8 +2214,8 @@ class SettingRepository implements ISettingRepository
     public function updateGoogleMapSetting(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'google_map_api_key' => ['required', 'string', 'max:255', 'unique:google_map_settings,google_map_api_key,'.$id],
-            'google_map_id' => ['required', 'string', 'max:255', 'unique:google_map_settings,google_map_id,'.$id],
+            'google_map_api_key' => ['required', 'string', 'max:255', 'unique:google_map_settings,google_map_api_key,' . $id],
+            'google_map_id' => ['required', 'string', 'max:255', 'unique:google_map_settings,google_map_id,' . $id],
         ]);
 
         try {
@@ -2346,7 +2334,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Google Map Setting Activated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2401,7 +2388,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Meta Setting Created Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2413,17 +2399,17 @@ class SettingRepository implements ISettingRepository
     public function updateMetaSetting(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'meta_fb_app_name' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_name,'.$id],
-            'meta_fb_app_id' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_id,'.$id],
-            'meta_fb_app_secret' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_secret,'.$id],
-            'meta_fb_page_access_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_page_access_token,'.$id],
-            'meta_verify_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_verify_token,'.$id],
-            'meta_fb_page_username' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_page_username,'.$id],
-            'meta_ig_app_name' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_name,'.$id],
-            'meta_ig_app_id' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_id,'.$id],
-            'meta_ig_app_secret' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_secret,'.$id],
-            'meta_ig_username' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_username,'.$id],
-            'meta_ig_access_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_access_token,'.$id],
+            'meta_fb_app_name' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_name,' . $id],
+            'meta_fb_app_id' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_id,' . $id],
+            'meta_fb_app_secret' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_app_secret,' . $id],
+            'meta_fb_page_access_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_page_access_token,' . $id],
+            'meta_verify_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_verify_token,' . $id],
+            'meta_fb_page_username' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_fb_page_username,' . $id],
+            'meta_ig_app_name' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_name,' . $id],
+            'meta_ig_app_id' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_id,' . $id],
+            'meta_ig_app_secret' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_app_secret,' . $id],
+            'meta_ig_username' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_username,' . $id],
+            'meta_ig_access_token' => ['required', 'string', 'max:255', 'unique:meta_settings,meta_ig_access_token,' . $id],
         ]);
 
         try {
@@ -2443,7 +2429,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Meta Setting Updated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2542,7 +2527,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Meta Setting Activated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2589,7 +2573,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'NOWPayment Created Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2601,8 +2584,8 @@ class SettingRepository implements ISettingRepository
     public function updateNOWPaymentSetting(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'now_payment_api_key' => ['required', 'string', 'max:255', 'unique:now_payments,now_payment_api_key,'.$id],
-            'now_payment_public_key' => ['required', 'string', 'max:255', 'unique:now_payments,now_payment_public_key,'.$id],
+            'now_payment_api_key' => ['required', 'string', 'max:255', 'unique:now_payments,now_payment_api_key,' . $id],
+            'now_payment_public_key' => ['required', 'string', 'max:255', 'unique:now_payments,now_payment_public_key,' . $id],
             'now_payment_baseurl' => ['required', 'string', 'max:255'],
         ]);
 
@@ -2623,7 +2606,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'NOWPayment Setting Updated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2722,7 +2704,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'NOWPayment Setting Activated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2771,17 +2752,16 @@ class SettingRepository implements ISettingRepository
 
             if (empty($section['title'])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                    "content.{$index}.title" => 'Section ' . ($index + 1) . ' title is required',
                 ]);
             }
 
             $cleanContent = trim($section['content']);
             if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                    "content.{$index}.content" => 'Section ' . ($index + 1) . ' content is required',
                 ]);
             }
-
         }
 
         try {
@@ -2794,7 +2774,7 @@ class SettingRepository implements ISettingRepository
                 $slug = Str::slug($validated_req['name']);
 
                 if (empty($slug)) {
-                    $slug = 'return-policy-'.Str::random(8);
+                    $slug = 'return-policy-' . Str::random(8);
                 }
 
                 $validated_req['slug'] = $slug;
@@ -2810,7 +2790,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Return Policy Created Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2845,17 +2824,16 @@ class SettingRepository implements ISettingRepository
 
             if (empty($section['title'])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                    "content.{$index}.title" => 'Section ' . ($index + 1) . ' title is required',
                 ]);
             }
 
             $cleanContent = trim($section['content']);
             if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                    "content.{$index}.content" => 'Section ' . ($index + 1) . ' content is required',
                 ]);
             }
-
         }
 
         try {
@@ -2877,7 +2855,7 @@ class SettingRepository implements ISettingRepository
                     $slug = Str::slug($validated_req['name']);
 
                     if (empty($slug)) {
-                        $slug = 'return-policy-'.Str::random(8);
+                        $slug = 'return-policy-' . Str::random(8);
                     }
 
                     $validated_req['slug'] = $slug;
@@ -2894,14 +2872,12 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Return Policy Updated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function toggleReturnPolicyStatus(string $id)
@@ -2918,7 +2894,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Return Policy Status Toggled Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2945,7 +2920,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Return Policy Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -2974,7 +2948,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Return Policy Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3023,17 +2996,16 @@ class SettingRepository implements ISettingRepository
 
             if (empty($section['title'])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                    "content.{$index}.title" => 'Section ' . ($index + 1) . ' title is required',
                 ]);
             }
 
             $cleanContent = trim($section['content']);
             if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                    "content.{$index}.content" => 'Section ' . ($index + 1) . ' content is required',
                 ]);
             }
-
         }
 
         try {
@@ -3046,7 +3018,7 @@ class SettingRepository implements ISettingRepository
                 $slug = Str::slug($validated_req['name']);
 
                 if (empty($slug)) {
-                    $slug = 'shipping-policy-'.Str::random(8);
+                    $slug = 'shipping-policy-' . Str::random(8);
                 }
 
                 $validated_req['slug'] = $slug;
@@ -3062,7 +3034,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Shipping Policy Created Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3097,17 +3068,16 @@ class SettingRepository implements ISettingRepository
 
             if (empty($section['title'])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                    "content.{$index}.title" => 'Section ' . ($index + 1) . ' title is required',
                 ]);
             }
 
             $cleanContent = trim($section['content']);
             if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                    "content.{$index}.content" => 'Section ' . ($index + 1) . ' content is required',
                 ]);
             }
-
         }
 
         try {
@@ -3129,7 +3099,7 @@ class SettingRepository implements ISettingRepository
                     $slug = Str::slug($validated_req['name']);
 
                     if (empty($slug)) {
-                        $slug = 'shipping-policy-'.Str::random(8);
+                        $slug = 'shipping-policy-' . Str::random(8);
                     }
 
                     $validated_req['slug'] = $slug;
@@ -3146,14 +3116,12 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Shipping Policy Updated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function toggleShippingPolicyStatus(string $id)
@@ -3170,7 +3138,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Shipping Policy Status Toggled Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3197,7 +3164,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Shipping Policy Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3226,7 +3192,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Shipping Policy Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3276,17 +3241,16 @@ class SettingRepository implements ISettingRepository
 
             if (empty($section['title'])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                    "content.{$index}.title" => 'Section ' . ($index + 1) . ' title is required',
                 ]);
             }
 
             $cleanContent = trim($section['content']);
             if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                    "content.{$index}.content" => 'Section ' . ($index + 1) . ' content is required',
                 ]);
             }
-
         }
 
         try {
@@ -3299,7 +3263,7 @@ class SettingRepository implements ISettingRepository
                 $slug = Str::slug($validated_req['name']);
 
                 if (empty($slug)) {
-                    $slug = 'terms_of_service-'.Str::random(8);
+                    $slug = 'terms_of_service-' . Str::random(8);
                 }
 
                 $validated_req['slug'] = $slug;
@@ -3315,14 +3279,12 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Terms Of Service Created Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function updateTermsOfService(Request $request, string $id)
@@ -3351,17 +3313,16 @@ class SettingRepository implements ISettingRepository
 
             if (empty($section['title'])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                    "content.{$index}.title" => 'Section ' . ($index + 1) . ' title is required',
                 ]);
             }
 
             $cleanContent = trim($section['content']);
             if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                    "content.{$index}.content" => 'Section ' . ($index + 1) . ' content is required',
                 ]);
             }
-
         }
 
         try {
@@ -3383,7 +3344,7 @@ class SettingRepository implements ISettingRepository
                     $slug = Str::slug($validated_req['name']);
 
                     if (empty($slug)) {
-                        $slug = 'terms_of_service-'.Str::random(8);
+                        $slug = 'terms_of_service-' . Str::random(8);
                     }
 
                     $validated_req['slug'] = $slug;
@@ -3400,14 +3361,12 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Terms Of Service Updated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function toggleTermsOfServiceStatus(string $id)
@@ -3424,7 +3383,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Terms Of Service Status Toggled Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3451,7 +3409,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Terms Of Service Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3480,7 +3437,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Terms Of Service Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3530,17 +3486,16 @@ class SettingRepository implements ISettingRepository
 
             if (empty($section['title'])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                    "content.{$index}.title" => 'Section ' . ($index + 1) . ' title is required',
                 ]);
             }
 
             $cleanContent = trim($section['content']);
             if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                    "content.{$index}.content" => 'Section ' . ($index + 1) . ' content is required',
                 ]);
             }
-
         }
 
         try {
@@ -3553,7 +3508,7 @@ class SettingRepository implements ISettingRepository
                 $slug = Str::slug($validated_req['name']);
 
                 if (empty($slug)) {
-                    $slug = 'privacy_policy-'.Str::random(8);
+                    $slug = 'privacy_policy-' . Str::random(8);
                 }
 
                 $validated_req['slug'] = $slug;
@@ -3569,14 +3524,12 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Privacy Policy Created Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function updatePrivacyPolicy(Request $request, string $id)
@@ -3605,17 +3558,16 @@ class SettingRepository implements ISettingRepository
 
             if (empty($section['title'])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.title" => 'Section '.($index + 1).' title is required',
+                    "content.{$index}.title" => 'Section ' . ($index + 1) . ' title is required',
                 ]);
             }
 
             $cleanContent = trim($section['content']);
             if (in_array($cleanContent, ['<p><br></p>', '<p></p>', ''])) {
                 throw ValidationException::withMessages([
-                    "content.{$index}.content" => 'Section '.($index + 1).' content is required',
+                    "content.{$index}.content" => 'Section ' . ($index + 1) . ' content is required',
                 ]);
             }
-
         }
 
         try {
@@ -3637,7 +3589,7 @@ class SettingRepository implements ISettingRepository
                     $slug = Str::slug($validated_req['name']);
 
                     if (empty($slug)) {
-                        $slug = 'privacy_policy-'.Str::random(8);
+                        $slug = 'privacy_policy-' . Str::random(8);
                     }
 
                     $validated_req['slug'] = $slug;
@@ -3654,14 +3606,12 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Privacy Policy Updated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function togglePrivacyPolicyStatus(string $id)
@@ -3678,7 +3628,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Privacy Policy Status Toggled Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3705,7 +3654,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Privacy Policy Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3734,7 +3682,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Privacy Policy Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3778,7 +3725,6 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Courier Company Created Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -3812,14 +3758,12 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Courier Company Updated Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function toggleCourierCompanyStatus(string $id)
@@ -3971,7 +3915,6 @@ class SettingRepository implements ISettingRepository
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function toggleConditionStatus(string $id)
@@ -4312,10 +4255,44 @@ class SettingRepository implements ISettingRepository
                 'status' => true,
                 'message' => 'Unsettled account notification settings saved successfully',
             ];
-
         } catch (Exception $e) {
             DB::rollBack();
 
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+
+
+    // Attribution Reward Setting
+    public function getAttributionRewardSetting()
+    {
+        return $this->attribution_reward_setting->first();
+    }
+    public function saveAttributionRewardSetting(Request $request)
+    {
+        try {
+            $validated_req = $request->validate([
+                'calculation_type' => ['required', 'in:percentage,fixed'],
+                'value' => ['required', 'numeric', 'min:0'],
+            ]);
+
+            $attribution_reward_setting = $this->getAttributionRewardSetting();
+
+            if (empty($attribution_reward_setting)) {
+                $attribution_reward_setting = $this->attribution_reward_setting->create($validated_req);
+            } else {
+                $attribution_reward_setting->update($validated_req);
+            }
+
+            return [
+                'status' => true,
+                'message' => 'Attribution Reward Setting Saved Successfully',
+            ];
+        } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),

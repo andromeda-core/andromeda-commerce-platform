@@ -109,6 +109,13 @@ export default function index() {
                 button: 'View Notifications',
                 url: route('dashboard.settings.unsettled-accounts-notification-settings.index'),
             },
+
+            {
+                title: 'Attribution Reward Rate',
+                desc: 'Set and manage attribution reward conversion rates to maintain an effective and balanced loyalty system.',
+                button: 'Manage Attribution Reward Rate',
+                url: route('dashboard.settings.attribution-reward-setting.index'),
+            },
         ],
         Policies: [
             {
@@ -153,12 +160,12 @@ export default function index() {
     };
     const visibleTabContent = Object.fromEntries(
         Object.entries(allTabContent).map(([tabName, items]) => {
-            const allowedItems = items.filter(item => can(item.title));
+            const allowedItems = items.filter((item) => can(item.title));
             return [tabName, allowedItems];
-        })
+        }),
     );
 
-    const visibleTabs = tabs.filter(tab => (visibleTabContent[tab]?.length ?? 0) > 0);
+    const visibleTabs = tabs.filter((tab) => (visibleTabContent[tab]?.length ?? 0) > 0);
 
     function SubCard({ title, desc, button, url }) {
         return (
@@ -170,7 +177,7 @@ export default function index() {
                     <p className="mt-3 leading-relaxed text-gray-600 dark:text-white/80">{desc}</p>
                 </div>
 
-                <div className="flex justify-end mt-6">
+                <div className="mt-6 flex justify-end">
                     <LinkButton
                         Text={button}
                         URL={url}
@@ -198,7 +205,7 @@ export default function index() {
                         {/* Top bar */}
                         <div className="flex flex-wrap items-center justify-between">
                             {/* Tabs */}
-                            <div className="flex gap-8 py-2 overflow-auto lg:py-0">
+                            <div className="flex gap-8 overflow-auto py-2 lg:py-0">
                                 {visibleTabs.map((t) => {
                                     const isActive = activeTab === t;
                                     return (
@@ -206,10 +213,11 @@ export default function index() {
                                             key={t}
                                             onClick={() => setActiveTab(t)}
                                             aria-current={isActive ? 'page' : undefined}
-                                            className={`relative border-b-2 border-transparent pb-3 text-sm font-semibold transition-colors duration-200 ${isActive
-                                                ? 'border-black text-black dark:border-white dark:text-white'
-                                                : 'text-gray-600 hover:border-black hover:text-black dark:text-white/60 dark:hover:border-white dark:hover:text-white'
-                                                } `}
+                                            className={`relative border-b-2 border-transparent pb-3 text-sm font-semibold transition-colors duration-200 ${
+                                                isActive
+                                                    ? 'border-black text-black dark:border-white dark:text-white'
+                                                    : 'text-gray-600 hover:border-black hover:text-black dark:text-white/60 dark:hover:border-white dark:hover:text-white'
+                                            } `}
                                         >
                                             {t}
                                         </button>
@@ -242,7 +250,7 @@ export default function index() {
                         </div>
 
                         {/* Cards grid */}
-                        <div className="grid grid-cols-1 gap-8 mt-10 md:grid-cols-3">
+                        <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-3">
                             {(visibleTabContent[activeTab] || []).map((c, idx) => (
                                 <SubCard key={idx} {...c} />
                             ))}
