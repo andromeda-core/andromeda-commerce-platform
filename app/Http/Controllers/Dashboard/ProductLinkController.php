@@ -40,7 +40,7 @@ class ProductLinkController extends Controller implements HasMiddleware
     public function index(Request $request)
     {
         $productLinks = $this->productLink->getAllProductLinks($request);
-        return Inertia::render("Dashboard/ProductLinks/index", [
+        return Inertia::render("Dashboard/Attributions/index", [
             'productLinks' => $productLinks,
         ]);
     }
@@ -51,7 +51,7 @@ class ProductLinkController extends Controller implements HasMiddleware
         $posts = $this->post->getPosts();
         $users =  $this->user->getUsers();
 
-        return Inertia::render("Dashboard/ProductLinks/create", [
+        return Inertia::render("Dashboard/Attributions/create", [
             'smartphones' => $smartphones,
             'posts' => $posts,
             'users' => $users,
@@ -89,7 +89,7 @@ class ProductLinkController extends Controller implements HasMiddleware
         $posts = $this->post->getPosts();
         $users =  $this->user->getUsers();
 
-        return Inertia::render("Dashboard/ProductLinks/edit", [
+        return Inertia::render("Dashboard/Attributions/edit", [
             'smartphones' => $smartphones,
             'posts' => $posts,
             'users' => $users,

@@ -279,7 +279,7 @@ export default function Index({ productLinks }) {
                             resetSingleSelectedId={resetSingleSelectedId}
                             BulkDeleteMethod={BulkDelete}
                             SingleDeleteMethod={SingleDelete}
-                            BulkDeleteRoute="dashboard.attribution-links.destroybyselection"
+                            BulkDeleteRoute="dashboard.attribution-links.destroyBySelection"
                             SingleDeleteRoute="dashboard.attribution-links.destroy"
                             DeleteAction={canDelete}
                             canSelect={canDelete}

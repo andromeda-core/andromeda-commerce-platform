@@ -30,6 +30,17 @@ class ProductLinkRepository implements IProductLinkRepository
             'post_id' => 'nullable|exists:posts,id',
         ]);
 
+
+        $existing = $this->productLink
+            ->where('smartphone_id', $validated_req['smartphone_id'])
+            ->where('user_id', $validated_req['user_id'])
+            ->where('status', 'active')
+            ->first();
+
+        if ($existing) {
+            $existing->update(['status' => 'paused']);
+        }
+
         try {
             $created = $this->productLink->create($validated_req);
 
@@ -58,11 +69,28 @@ class ProductLinkRepository implements IProductLinkRepository
         ]);
 
         try {
+
+            $existing = $this->productLink
+                ->where('smartphone_id', $validated_req['smartphone_id'])
+                ->where('user_id', $validated_req['user_id'])
+                ->where('status', 'active')
+                ->where('id', '!=', $id)
+                ->first();
+
+            if ($existing) {
+                $existing->update(['status' => 'paused']);
+            }
+
             $product_link = $this->productLink->find($id);
 
             if (empty($product_link)) {
                 throw new Exception('Product link not found');
             }
+
+
+
+
+            $product_link->update($validated_req);
 
             $updated = $product_link->update($validated_req);
 
