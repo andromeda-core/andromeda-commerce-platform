@@ -64,6 +64,8 @@ class Order extends Model
         'shipping_country',
         'expires_at',
         'expired_at',
+        'event_id',
+        'msap_uri',
     ];
 
     //    Attributes

@@ -37,6 +37,8 @@ class Smartphone extends Model
         'latitude',
         'longitude',
         'location_name',
+        'event_id',
+        'msap_uri',
 
     ];
 
