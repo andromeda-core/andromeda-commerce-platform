@@ -23,6 +23,7 @@ use App\Http\Controllers\Dashboard\OrderCourierCompanyController;
 use App\Http\Controllers\Dashboard\OrderRefundController;
 use App\Http\Controllers\Dashboard\PackageRecordingController;
 use App\Http\Controllers\Dashboard\PostController;
+use App\Http\Controllers\Dashboard\ProductLinkController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\RewardPointController;
 use App\Http\Controllers\Dashboard\RiskSignalController;
@@ -597,6 +598,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/order-cancelations/edit/{id?}', 'edit')->name('edit');
             Route::put('/order-cancelations/update/{id?}', 'update')->name('update');
         });
+
+
+        // Product Link Routes
+        Route::resource('/attribution-links', ProductLinkController::class)->except(['show']);
+        Route::delete('/attribution-links-deleteBySelection', [ProductLinkController::class, 'destroyBySelection'])->name('attribution-links.destroyBySelection');
 
         // Setting Routes
         Route::controller(SettingController::class)->as('settings.')

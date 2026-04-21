@@ -52,10 +52,10 @@ class SmartphoneRepository implements ISmartphoneRepository
         $smartphones = $this->smartphone
             ->when(! empty($request->input('search')), function ($query) use ($request) {
                 $query->where(function ($subQ) use ($request) {
-                    $subQ->whereHas('model_name', fn ($query) => $query->where('name', 'like', '%'.$request->input('search').'%'))
-                        ->orWhere('upc', 'like', '%'.$request->input('search').'%')
+                    $subQ->whereHas('model_name', fn($query) => $query->where('name', 'like', '%' . $request->input('search') . '%'))
+                        ->orWhere('upc', 'like', '%' . $request->input('search') . '%')
                         ->orWhereHas('category', function ($subsubQ) use ($request) {
-                            $subsubQ->where('name', 'like', '%'.$request->input('search').'%');
+                            $subsubQ->where('name', 'like', '%' . $request->input('search') . '%');
                         });
                 });
             })
@@ -180,14 +180,14 @@ class SmartphoneRepository implements ISmartphoneRepository
 
             if (! empty($validated_req['tag']) && ! str_starts_with($validated_req['tag'], '#')) {
                 $tag = $validated_req['tag'];
-                $concatinated_tag = '#'.$tag;
+                $concatinated_tag = '#' . $tag;
                 $validated_req['tag'] = $concatinated_tag;
             }
 
             $model_name = $this->model_name->find($validated_req['model_name_id'])?->name ?? 'Smartphone';
             $capacity = $this->capacity->find($validated_req['capacity_id'])?->name ?? '';
 
-            $rawSlug = "{$model_name}-{$capacity}-{$validated_req['upc']}-".Str::uuid();
+            $rawSlug = "{$model_name}-{$capacity}-{$validated_req['upc']}-" . Str::uuid();
             $cleanSlug = str_replace(['/', '\\'], '-', $rawSlug);
             $cleanSlug = preg_replace('/[^A-Za-z0-9\- ]/', '', $cleanSlug);
             $cleanSlug = preg_replace('/\s+/u', '-', trim($cleanSlug));
@@ -225,14 +225,14 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $paths = [];
 
                 foreach ($request->file('images') as $image) {
-                    $new_name = time().uniqid().'-'.Str::random(10).'.webp';
+                    $new_name = time() . uniqid() . '-' . Str::random(10) . '.webp';
 
                     $resizedImage = ImageManager::imagick()
                         ->read($image)
                         ->scaleDown(1800)
                         ->encode(new WebpEncoder(quality: 70));
 
-                    $tempPath = 'temp/uploads/'.$new_name;
+                    $tempPath = 'temp/uploads/' . $new_name;
                     Storage::disk('local')->put($tempPath, (string) $resizedImage);
 
                     $paths[] = $tempPath;
@@ -245,7 +245,7 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $tempPaths = [];
 
                 foreach ($request->file('videos') as $video) {
-                    $originalName = time().uniqid().'-'.Str::random(8).'.'.$video->getClientOriginalExtension();
+                    $originalName = time() . uniqid() . '-' . Str::random(8) . '.' . $video->getClientOriginalExtension();
                     $tempPaths[] = $video->storeAs('temp/uploads', $originalName, 'local');
                 }
 
@@ -264,7 +264,6 @@ class SmartphoneRepository implements ISmartphoneRepository
                 'status' => true,
                 'message' => $message,
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -290,7 +289,7 @@ class SmartphoneRepository implements ISmartphoneRepository
             'courier_company_id' => ['required', 'exists:courier_companies,id'],
             'return_policy_id' => ['required', 'exists:return_policies,id'],
             'shipping_policy_id' => ['required', 'exists:shipping_policies,id'],
-            'upc' => ['required', 'max:255', 'unique:smartphones,upc,'.$id],
+            'upc' => ['required', 'max:255', 'unique:smartphones,upc,' . $id],
             'floor_id' => ['nullable', 'exists:floors,id'],
             'latitude' => ['nullable', 'numeric'],
             'longitude' => ['nullable', 'numeric'],
@@ -369,7 +368,7 @@ class SmartphoneRepository implements ISmartphoneRepository
 
             if (! empty($validated_req['tag']) && ! str_starts_with($validated_req['tag'], '#')) {
                 $tag = $validated_req['tag'];
-                $concatinated_tag = '#'.$tag;
+                $concatinated_tag = '#' . $tag;
                 $validated_req['tag'] = $concatinated_tag;
             }
 
@@ -497,14 +496,14 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $paths = [];
 
                 foreach ($request->file('new_images') as $image) {
-                    $new_name = time().uniqid().'-'.Str::random(10).'.webp';
+                    $new_name = time() . uniqid() . '-' . Str::random(10) . '.webp';
 
                     $resizedImage = ImageManager::imagick()
                         ->read($image)
                         ->scaleDown(1800)
                         ->encode(new WebpEncoder(quality: 70));
 
-                    $tempPath = 'temp/uploads/'.$new_name;
+                    $tempPath = 'temp/uploads/' . $new_name;
                     Storage::disk('local')->put($tempPath, (string) $resizedImage);
 
                     $paths[] = $tempPath;
@@ -517,7 +516,7 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $tempPaths = [];
 
                 foreach ($request->file('new_videos') as $video) {
-                    $originalName = time().uniqid().'-'.Str::random(8).'.'.$video->getClientOriginalExtension();
+                    $originalName = time() . uniqid() . '-' . Str::random(8) . '.' . $video->getClientOriginalExtension();
                     $tempPaths[] = $video->storeAs('temp/uploads', $originalName, 'local');
                 }
 
@@ -570,7 +569,6 @@ class SmartphoneRepository implements ISmartphoneRepository
                 'status' => true,
                 'message' => 'Smartphone Deleted Successfully',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -674,7 +672,7 @@ class SmartphoneRepository implements ISmartphoneRepository
             ->map(function ($return_policy) {
                 return [
                     'id' => $return_policy->id,
-                    'name' => $return_policy->name.' ('.$return_policy->language->name.')',
+                    'name' => $return_policy->name . ' (' . $return_policy->language->name . ')',
                 ];
             });
     }
@@ -688,7 +686,7 @@ class SmartphoneRepository implements ISmartphoneRepository
             ->map(function ($shipping_policy) {
                 return [
                     'id' => $shipping_policy->id,
-                    'name' => $shipping_policy->name.' ('.$shipping_policy->language->name.')',
+                    'name' => $shipping_policy->name . ' (' . $shipping_policy->language->name . ')',
                 ];
             });
     }
@@ -696,5 +694,16 @@ class SmartphoneRepository implements ISmartphoneRepository
     public function getAddons()
     {
         return $this->addon->where('is_active', true)->get();
+    }
+
+    public function getSmartphoneWithoutPagination()
+    {
+        return $this->smartphone->with(['model_name'])->whereHas('selling_info')->get()
+            ->map(function ($smartphone) {
+                return [
+                    'id' => $smartphone->id,
+                    'name' => $smartphone->model_name->name
+                ];
+            });
     }
 }

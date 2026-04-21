@@ -39,17 +39,17 @@ class UserRepository implements IUserRepository
     {
         $validated_req = $request->validate([
             'name' => 'required|max:255',
-            'email' => 'required|email|max:255|unique:users,email,'.$request->user()->id,
-            'phone' => 'required|max:50|unique:users,phone,'.$request->user()->id,
+            'email' => 'required|email|max:255|unique:users,email,' . $request->user()->id,
+            'phone' => 'required|max:50|unique:users,phone,' . $request->user()->id,
         ]);
 
         try {
 
-            $throttleKey = 'profile_update_'.$request->user()->id;
+            $throttleKey = 'profile_update_' . $request->user()->id;
             if (RateLimiter::tooManyAttempts($throttleKey, 3)) {
                 $seconds = RateLimiter::availableIn($throttleKey);
 
-                throw new Exception('Too many attempts. Try again After '.ceil($seconds / 60).' minutes.');
+                throw new Exception('Too many attempts. Try again After ' . ceil($seconds / 60) . ' minutes.');
             }
 
             RateLimiter::hit($throttleKey, 900);
@@ -91,11 +91,11 @@ class UserRepository implements IUserRepository
 
         try {
 
-            $throttleKey = 'password_update_'.$request->user()->id;
+            $throttleKey = 'password_update_' . $request->user()->id;
             if (RateLimiter::tooManyAttempts($throttleKey, 1)) {
                 $seconds = RateLimiter::availableIn($throttleKey);
 
-                throw new Exception('Too many attempts. Try again After '.ceil($seconds / 60).' minutes.');
+                throw new Exception('Too many attempts. Try again After ' . ceil($seconds / 60) . ' minutes.');
             }
 
             RateLimiter::hit($throttleKey, 900);
@@ -151,7 +151,6 @@ class UserRepository implements IUserRepository
                 'message' => $e->getMessage(),
             ];
         }
-
     }
 
     public function getAllUsers(Request $request)
@@ -163,11 +162,11 @@ class UserRepository implements IUserRepository
             })
             ->when(! empty($request->input('search')), function ($query) use ($request) {
                 $query->where(function ($query) use ($request) {
-                    $query->where('name', 'like', '%'.$request->input('search').'%')
-                        ->orWhere('email', 'like', '%'.$request->input('search').'%')
-                        ->orWhere('phone', 'like', '%'.$request->input('search').'%')
+                    $query->where('name', 'like', '%' . $request->input('search') . '%')
+                        ->orWhere('email', 'like', '%' . $request->input('search') . '%')
+                        ->orWhere('phone', 'like', '%' . $request->input('search') . '%')
                         ->orWhereHas('roles', function ($query) use ($request) {
-                            $query->where('name', 'like', '%'.$request->input('search').'%');
+                            $query->where('name', 'like', '%' . $request->input('search') . '%');
                         });
                 });
             })
@@ -214,7 +213,6 @@ class UserRepository implements IUserRepository
                 'status' => true,
                 'message' => 'User Created Successfully',
             ];
-
         } catch (Exception $e) {
 
             DB::rollBack();
@@ -231,8 +229,8 @@ class UserRepository implements IUserRepository
 
         $validated_req = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$id],
-            'phone' => ['required', 'max:50', 'unique:users,phone,'.$id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $id],
+            'phone' => ['required', 'max:50', 'unique:users,phone,' . $id],
             ...(
                 $request->filled('password')
                 ||
@@ -304,9 +302,8 @@ class UserRepository implements IUserRepository
 
                 $yearsPassed = (int) $createdAt->diffInYears(now());
                 if ($yearsPassed < 5) {
-                    throw new Exception('Supplier Can Not Be Deleted Before 5 Years And Currently '.$yearsPassed.' Years Passed');
+                    throw new Exception('Supplier Can Not Be Deleted Before 5 Years And Currently ' . $yearsPassed . ' Years Passed');
                 }
-
             }
             if (! empty($user->profile)) {
                 dispatch(new DestroyUserProfileOnAWS($user->profile));
@@ -355,9 +352,8 @@ class UserRepository implements IUserRepository
 
                     $yearsPassed = (int) $createdAt->diffInYears(now());
                     if ($yearsPassed < 5) {
-                        throw new Exception('Suppliers Can Not Be Deleted Before 5 Years And Currently '.$yearsPassed.' Years Passed');
+                        throw new Exception('Suppliers Can Not Be Deleted Before 5 Years And Currently ' . $yearsPassed . ' Years Passed');
                     }
-
                 }
 
                 if (! empty($user->profile)) {
@@ -434,7 +430,6 @@ class UserRepository implements IUserRepository
         }
 
         return false;
-
     }
 
     public function uploadProfilePicture(Request $request)
@@ -447,14 +442,14 @@ class UserRepository implements IUserRepository
             $user = $request->user();
 
             $profile = $request->file('profile');
-            $new_name = time().uniqid().'-'.Str::random(10).'.webp';
+            $new_name = time() . uniqid() . '-' . Str::random(10) . '.webp';
 
             $resizedImage = ImageManager::imagick()
                 ->read($profile)
                 ->scaleDown(1200)
                 ->encode(new WebpEncoder(quality: 70));
 
-            $tempPath = 'temp/uploads/'.$new_name;
+            $tempPath = 'temp/uploads/' . $new_name;
             Storage::disk('local')->put($tempPath, (string) $resizedImage);
 
             $dir = 'Users/Profile';
@@ -465,7 +460,6 @@ class UserRepository implements IUserRepository
                 $user->update([
                     'profile' => $url,
                 ]);
-
             } else {
                 dispatch(new DestroyUserProfileOnAWS($user->profile));
                 $url = $this->storeUserProfileOnAWS($tempPath, $dir);
@@ -500,17 +494,17 @@ class UserRepository implements IUserRepository
 
         $fullLocalPath = Storage::disk('local')->path($path);
         $extension = pathinfo($path, PATHINFO_EXTENSION);
-        $new_name = time().uniqid().'-'.Str::random(10).'.'.$extension;
+        $new_name = time() . uniqid() . '-' . Str::random(10) . '.' . $extension;
 
         Storage::disk('s3')
-            ->put($dir.$new_name, file_get_contents($fullLocalPath), [
+            ->put($dir . $new_name, file_get_contents($fullLocalPath), [
                 'CacheControl' => 'public, max-age=31536000',
                 'ContentType' => mime_content_type($fullLocalPath),
             ]);
 
         Storage::disk('local')->delete($path);
 
-        $url = Storage::disk('s3')->url($dir.$new_name);
+        $url = Storage::disk('s3')->url($dir . $new_name);
 
         return $url;
     }
@@ -529,7 +523,6 @@ class UserRepository implements IUserRepository
                 'message' => 'User Found',
                 'hasVerifiedEmail' => $user->hasVerifiedEmail(),
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -559,7 +552,6 @@ class UserRepository implements IUserRepository
                 'status' => true,
                 'message' => $this->trans->get('Account Activated Successfully'),
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
@@ -589,12 +581,18 @@ class UserRepository implements IUserRepository
                 'status' => true,
                 'message' => $this->trans->get('Account Activated Successfully'),
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    public function getUsers()
+    {
+        return $this->user->where('status', 'active')->where('is_dormant', false)->whereHas('roles', function ($query) {
+            $query->where('name', "!=", 'Customer');
+        })->latest()->get(['id', 'name']);
     }
 }

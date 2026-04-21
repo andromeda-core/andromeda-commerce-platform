@@ -1087,6 +1087,7 @@ namespace App\Models{
  * @property-read int|null $order_items_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageRecording> $orderPackageRecordings
  * @property-read int|null $order_package_recordings_count
+ * @property-read \App\Models\Payment|null $payment
  * @property-read \App\Models\OrderRefund|null $refund
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SupplierCommission> $supplierCommissions
  * @property-read int|null $supplier_commissions_count
@@ -1389,19 +1390,24 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $confirmed_at
  * @property \Illuminate\Support\Carbon|null $finalized_at
  * @property \Illuminate\Support\Carbon|null $reversed_at
+ * @property \Illuminate\Support\Carbon|null $failed_at
+ * @property \Illuminate\Support\Carbon|null $canceled_at
  * @property string|null $event_id
  * @property string|null $msap_uri
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $added_at
  * @property-read \App\Models\Order $order
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereCanceledAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereConfirmedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereEventId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereExternalRef($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereFailedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereFinalizedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Payment whereMethodType($value)
@@ -1493,6 +1499,7 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string|null $public_id
  * @property int|null $user_id
  * @property int|null $floor_id
  * @property string $title
@@ -1529,6 +1536,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereLocationName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereLongitude($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post wherePostType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Post wherePublicId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereSlug($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereTag($value)
@@ -1580,6 +1588,19 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PrivacyPolicy whereUpdatedAt($value)
  */
 	class PrivacyPolicy extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property-read string $shareable_url
+ * @property-read \App\Models\Post|null $post
+ * @property-read \App\Models\Smartphone|null $smartphone
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ProductLink query()
+ */
+	class ProductLink extends \Eloquent {}
 }
 
 namespace App\Models{
@@ -1832,6 +1853,7 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string|null $public_id
  * @property array<array-key, mixed> $color_ids
  * @property int|null $model_name_id
  * @property string|null $model_searchable_name
@@ -1902,6 +1924,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelNameId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereModelSearchableName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereProductDetails($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone wherePublicId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereReturnPolicyId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereShippingPolicyId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereSlug($value)

@@ -54,6 +54,8 @@ use App\Repositories\Posts\Interface\IPostRepository;
 use App\Repositories\Posts\Repository\PostRepository;
 use App\Repositories\PrivacyPolicy\Interface\IPrivacyPolicyRepository;
 use App\Repositories\PrivacyPolicy\Repository\PrivacyPolicyRepository;
+use App\Repositories\ProductLink\Interface\IProductLinkRepository;
+use App\Repositories\ProductLink\Repository\ProductLinkRepository;
 use App\Repositories\Products\Interface\IProductsRepository;
 use App\Repositories\Products\Repository\ProductsRepository;
 use App\Repositories\ReturnPolicy\Interface\IReturnPolicyRepository;
@@ -146,6 +148,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IInventoryVerificationRepository::class, InventoryVerificationRepository::class);
         $this->app->bind(ISmartphoneCountryPriceRepository::class, SmartphoneCountryPriceRepository::class);
         $this->app->bind(IOrderCourierCompanyRepository::class, OrderCourierCompanyRepository::class);
+        $this->app->bind(IProductLinkRepository::class, ProductLinkRepository::class);
     }
 
     /**

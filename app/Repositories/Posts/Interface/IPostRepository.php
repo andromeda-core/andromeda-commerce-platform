@@ -36,4 +36,6 @@ interface IPostRepository
     public function getRelated(Request $request, ?string $slug);
 
     public function hashtagResults(Request $request, ?string $hashtag, array $preferences = []);
+
+    public function getPosts();
 }

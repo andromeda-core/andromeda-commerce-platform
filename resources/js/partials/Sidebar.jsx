@@ -183,6 +183,10 @@ export default function Sidebar({
             'dashboard.settings.addon-settings.',
         ].some((prefix) => route().current().startsWith(prefix));
 
+        const isAttributionRoute = ['dashboard.attribution-links.'].some((prefix) =>
+            route().current().startsWith(prefix),
+        );
+
         if (isOrdersRoute) {
             setSelected('Orders');
         } else if (isProductsRoute) {
@@ -214,6 +218,8 @@ export default function Sidebar({
             }
         } else if (isPartnersRoute) {
             setSelected('Partners');
+        } else if (isAttributionRoute) {
+            setSelected('Attribution');
         } else if (isContentRoute) {
             setSelected('Content');
         } else if (isSystemRoute) {
@@ -1085,6 +1091,66 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.distributors.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Distributors
+                                                        </Link>
+                                                    </li>
+                                                )}
+                                            </ul>
+                                        </div>
+                                    </li>
+                                )}
+
+                                {/* Attribution */}
+                                {can(['Attribution Links View', 'Attribution Rewards View']) && (
+                                    <li>
+                                        <a
+                                            onClick={() => {
+                                                if (selected === 'Attribution') {
+                                                    setSelected(null);
+                                                } else {
+                                                    setSelected('Attribution');
+                                                }
+                                            }}
+                                            className={`menu-item group cursor-pointer ${selected === 'Attribution' ? 'menu-item-active' : 'menu-item-inactive'}`}
+                                        >
+                                            <span
+                                                className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                            >
+                                                Attribution
+                                            </span>
+
+                                            <svg
+                                                className={`menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current ${selected === 'Attribution' && 'menu-item-arrow-active'} ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
+                                                    stroke=""
+                                                    strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                        </a>
+
+                                        <div
+                                            className={`translate transform overflow-hidden ${selected === 'Attribution' ? 'block' : 'hidden'}`}
+                                        >
+                                            <ul
+                                                className={`menu-dropdown mt-2 flex flex-col gap-1 pl-3 ${sidebarToggle ? 'lg:hidden' : 'flex'}`}
+                                            >
+                                                {can('Attribution Links View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.attribution-links.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.attribution-links.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Attribution Links
                                                         </Link>
                                                     </li>
                                                 )}

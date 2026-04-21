@@ -39,4 +39,6 @@ interface ISmartphoneRepository
     public function getShippingPolicies();
 
     public function getAddons();
+
+    public function getSmartphoneWithoutPagination();
 }

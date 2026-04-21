@@ -39,4 +39,6 @@ interface IUserRepository
     public function activateDormantAccount(Request $request);
 
     public function activateDeactiveAccount(Request $request);
+
+    public function getUsers();
 }

@@ -299,7 +299,7 @@ class PostRepository implements IPostRepository
 
             if (! empty($validated_req['tag']) && ! str_starts_with($validated_req['tag'], '#')) {
                 $tag = $validated_req['tag'];
-                $concatinated_tag = '#'.$tag;
+                $concatinated_tag = '#' . $tag;
                 $validated_req['tag'] = $concatinated_tag;
             }
 
@@ -322,7 +322,7 @@ class PostRepository implements IPostRepository
                 $paths = [];
 
                 foreach ($request->file('images') as $image) {
-                    $new_name = time().uniqid().'-'.Str::random(10).'.webp';
+                    $new_name = time() . uniqid() . '-' . Str::random(10) . '.webp';
 
                     $resizedImage = ImageManager::imagick()
                         ->read($image)
@@ -331,7 +331,7 @@ class PostRepository implements IPostRepository
 
                     // $tempPath = $image->storeAs('temp/uploads', $new_name, 'local');
 
-                    $tempPath = 'temp/uploads/'.$new_name;
+                    $tempPath = 'temp/uploads/' . $new_name;
                     Storage::disk('local')->put($tempPath, (string) $resizedImage);
 
                     $paths[] = $tempPath;
@@ -344,7 +344,7 @@ class PostRepository implements IPostRepository
                 $tempPaths = [];
 
                 foreach ($request->file('videos') as $video) {
-                    $originalName = time().uniqid().'-'.Str::random(8).'.'.$video->getClientOriginalExtension();
+                    $originalName = time() . uniqid() . '-' . Str::random(8) . '.' . $video->getClientOriginalExtension();
                     $tempPaths[] = $video->storeAs('temp/uploads', $originalName, 'local');
                 }
 
@@ -451,7 +451,7 @@ class PostRepository implements IPostRepository
 
             if (! empty($validated_req['tag']) && ! str_starts_with($validated_req['tag'], '#')) {
                 $tag = $validated_req['tag'];
-                $concatinated_tag = '#'.$tag;
+                $concatinated_tag = '#' . $tag;
                 $validated_req['tag'] = $concatinated_tag;
             }
 
@@ -570,14 +570,14 @@ class PostRepository implements IPostRepository
                 $paths = [];
 
                 foreach ($request->file('new_images') as $image) {
-                    $new_name = time().uniqid().'-'.Str::random(10).'.webp';
+                    $new_name = time() . uniqid() . '-' . Str::random(10) . '.webp';
 
                     $resizedImage = ImageManager::imagick()
                         ->read($image)
                         ->scaleDown(1800)
                         ->encode(new WebpEncoder(quality: 70));
 
-                    $tempPath = 'temp/uploads/'.$new_name;
+                    $tempPath = 'temp/uploads/' . $new_name;
                     Storage::disk('local')->put($tempPath, (string) $resizedImage);
 
                     $paths[] = $tempPath;
@@ -591,11 +591,10 @@ class PostRepository implements IPostRepository
                 $tempPaths = [];
 
                 foreach ($request->file('new_videos') as $video) {
-                    $originalName = time().uniqid().'-'.Str::random(8).'.'.$video->getClientOriginalExtension();
+                    $originalName = time() . uniqid() . '-' . Str::random(8) . '.' . $video->getClientOriginalExtension();
                     $tempPaths[] = $video->storeAs('temp/uploads', $originalName, 'local');
                 }
                 dispatch(new CompressPostVideoWithFFMPEG($tempPaths, $post, 'update'))->onQueue('video');
-
             }
 
             $post->refresh();
@@ -784,11 +783,11 @@ class PostRepository implements IPostRepository
         $perPage = 10;
 
         $cacheTags = [
-            'images:'.(int) $images,
-            'text:'.(int) $text,
-            'videos:'.(int) $videos,
-            'products:'.(int) $show_products,
-            'posts:'.(int) $show_posts,
+            'images:' . (int) $images,
+            'text:' . (int) $text,
+            'videos:' . (int) $videos,
+            'products:' . (int) $show_products,
+            'posts:' . (int) $show_posts,
             "page:{$page}",
         ];
 
@@ -855,10 +854,10 @@ class PostRepository implements IPostRepository
                     $relatedPosts = $this->post->where('status', true)
                         ->whereIn('tag', $allHashtags)
                         // its For restricting The Text Only Posts -> Not needed Now
-                    // ->where(function ($sub) {
-                    //     $sub->whereRaw('JSON_LENGTH(images) > 0')
-                    //         ->orWhereRaw('JSON_LENGTH(videos) > 0');
-                    // })
+                        // ->where(function ($sub) {
+                        //     $sub->whereRaw('JSON_LENGTH(images) > 0')
+                        //         ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                        // })
                         ->where(function ($q) use ($images, $videos, $text) {
                             if ($text) {
 
@@ -937,7 +936,7 @@ class PostRepository implements IPostRepository
                         ->map(function ($smartphone) {
 
                             return (object) [
-                                '_key' => 'sp_'.$smartphone->id,
+                                '_key' => 'sp_' . $smartphone->id,
                                 'id' => $smartphone->id,
                                 'name' => $smartphone->model_searchable_name,
                                 'capacity' => $smartphone->capacity->name,
@@ -968,7 +967,6 @@ class PostRepository implements IPostRepository
                                 'created_at_time' => $smartphone->created_at_time,
                                 'product_details' => $smartphone->product_details,
                             ];
-
                         });
                 }
 
@@ -976,16 +974,18 @@ class PostRepository implements IPostRepository
                     $postHashtag = $post->tag;
 
                     $postRelatedPosts = $relatedPosts
-                        ->filter(fn ($rp) => $rp->id !== $post->id &&
-                        ! empty($rp->tag) &&
-                        $rp->tag === $postHashtag
+                        ->filter(
+                            fn($rp) => $rp->id !== $post->id &&
+                                ! empty($rp->tag) &&
+                                $rp->tag === $postHashtag
                         )
                         ->take(5)
                         ->values();
 
                     $postRelatedSmartphones = $relatedSmartphones
-                        ->filter(fn ($sp) => ! empty($sp->tag) &&
-                            $sp->tag === $postHashtag
+                        ->filter(
+                            fn($sp) => ! empty($sp->tag) &&
+                                $sp->tag === $postHashtag
                         )
                         ->take(5)
                         ->values();
@@ -1000,7 +1000,6 @@ class PostRepository implements IPostRepository
                 }
 
                 $hasMore = $hasMore || ($posts->count() === $perPage);
-
             }
 
             if ($show_products) {
@@ -1032,8 +1031,13 @@ class PostRepository implements IPostRepository
                         'model_name:id,name',
                         'capacity:id,name',
                         'selling_info',
-                        'selling_info.shipping_fee', 'selling_info.import_tax', 'floor',
-                        'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug',
+                        'selling_info.shipping_fee',
+                        'selling_info.import_tax',
+                        'floor',
+                        'country:id,name',
+                        'condition:id,name',
+                        'courier_company:id,courier_name',
+                        'return_policy:id,slug',
                         'shipping_policy:id,slug',
                     ])
                     ->withCount([
@@ -1099,7 +1103,7 @@ class PostRepository implements IPostRepository
                         ->get()
                         ->map(function ($smartphone) {
                             return (object) [
-                                '_key' => 'sp_'.$smartphone->id,
+                                '_key' => 'sp_' . $smartphone->id,
                                 'id' => $smartphone->id,
                                 'name' => $smartphone->model_searchable_name,
                                 'capacity' => $smartphone->capacity->name,
@@ -1140,10 +1144,10 @@ class PostRepository implements IPostRepository
                         ->where('status', true)
                         ->whereIn('tag', $allHashtags)
                         // its For restricting The Text Only Posts -> Not needed Now
-                    // ->where(function ($sub) {
-                    //     $sub->whereRaw('JSON_LENGTH(images) > 0')
-                    //         ->orWhereRaw('JSON_LENGTH(videos) > 0');
-                    // })
+                        // ->where(function ($sub) {
+                        //     $sub->whereRaw('JSON_LENGTH(images) > 0')
+                        //         ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                        // })
                         ->where(function ($q) use ($images, $videos, $text) {
                             if ($text) {
 
@@ -1182,23 +1186,25 @@ class PostRepository implements IPostRepository
                     $spHashtag = $sp->tag;
 
                     $spRelatedSmartphones = $relatedSmartphones
-                        ->filter(fn ($rs) => $rs->id !== $sp->id &&
-                            ! empty($rs->tag) &&
-                            $rs->tag === $spHashtag
+                        ->filter(
+                            fn($rs) => $rs->id !== $sp->id &&
+                                ! empty($rs->tag) &&
+                                $rs->tag === $spHashtag
                         )
                         ->take(5)
                         ->values();
 
                     // Filter related posts with same hashtag
                     $spRelatedPosts = $relatedPosts
-                        ->filter(fn ($rp) => ! empty($rp->tag) &&
-                            $rp->tag === $spHashtag
+                        ->filter(
+                            fn($rp) => ! empty($rp->tag) &&
+                                $rp->tag === $spHashtag
                         )
                         ->take(5)
                         ->values();
 
                     $sp->structured = [
-                        '_key' => 'sp_'.$sp->id,
+                        '_key' => 'sp_' . $sp->id,
                         'id' => $sp->id,
                         'name' => $sp->model_searchable_name,
                         'capacity' => $sp->capacity->name,
@@ -1235,9 +1241,8 @@ class PostRepository implements IPostRepository
                             ->values(),
                     ];
                 }
-                $smartphones = $smartphones->map(fn ($sp) => $sp->structured);
+                $smartphones = $smartphones->map(fn($sp) => $sp->structured);
                 $hasMore = $hasMore || ($smartphones->count() === $perPage);
-
             }
 
             $results = $results->merge([
@@ -1271,13 +1276,12 @@ class PostRepository implements IPostRepository
                     'has_more_pages' => $hasMore,
                     'next_page' => $hasMore ? $page + 1 : null,
                     'total' => (count($results['posts']) ?? 0) + (count($results['products']['smartphones']) ?? 0),
-                    'next_page_url' => $hasMore ? route('website.posts.index').'?'.http_build_query($nextParams) : null,
-                    'prev_page_url' => $page > 1 ? route('website.posts.index').'?'.http_build_query($prevParams) : null,
+                    'next_page_url' => $hasMore ? route('website.posts.index') . '?' . http_build_query($nextParams) : null,
+                    'prev_page_url' => $page > 1 ? route('website.posts.index') . '?' . http_build_query($prevParams) : null,
                 ],
 
             ];
         });
-
     }
 
     public function getGoogleMapSettings()
@@ -1523,8 +1527,8 @@ class PostRepository implements IPostRepository
                     'has_more_pages' => $hasMore,
                     'next_page' => $hasMore ? $page + 1 : null,
                     'total' => (count($results) ?? 0),
-                    'next_page_url' => $hasMore ? route('website.posts.getrelated').'?'.http_build_query($nextParams) : null,
-                    'prev_page_url' => $page > 1 ? route('website.posts.getrelated').'?'.http_build_query($prevParams) : null,
+                    'next_page_url' => $hasMore ? route('website.posts.getrelated') . '?' . http_build_query($nextParams) : null,
+                    'prev_page_url' => $page > 1 ? route('website.posts.getrelated') . '?' . http_build_query($prevParams) : null,
                 ],
 
             ];
@@ -1561,11 +1565,11 @@ class PostRepository implements IPostRepository
             $posts = $this->post
                 ->where('tag', $hashtag)
                 ->where('status', true)
-                   // its For restricting The Text Only Posts -> Not needed Now
-                   // ->where(function ($sub) {
-                   //     $sub->whereRaw('JSON_LENGTH(images) > 0')
-                   //         ->orWhereRaw('JSON_LENGTH(videos) > 0');
-                   // })
+                // its For restricting The Text Only Posts -> Not needed Now
+                // ->where(function ($sub) {
+                //     $sub->whereRaw('JSON_LENGTH(images) > 0')
+                //         ->orWhereRaw('JSON_LENGTH(videos) > 0');
+                // })
                 // ->where(function ($q) use ($images, $videos, $text) {
                 //     if ($text) {
 
@@ -1720,8 +1724,8 @@ class PostRepository implements IPostRepository
                     'has_more_pages' => $hasMore,
                     'next_page' => $hasMore ? $page + 1 : null,
                     'total' => (count($data['posts']) ?? 0) + (count($data['products']['smartphones']) ?? 0),
-                    'next_page_url' => $hasMore ? route('website.posts.hashtag-results').'?'.http_build_query($nextParams) : null,
-                    'prev_page_url' => $page > 1 ? route('website.posts.hashtag-results').'?'.http_build_query($prevParams) : null,
+                    'next_page_url' => $hasMore ? route('website.posts.hashtag-results') . '?' . http_build_query($nextParams) : null,
+                    'prev_page_url' => $page > 1 ? route('website.posts.hashtag-results') . '?' . http_build_query($prevParams) : null,
                 ],
 
             ];
@@ -1815,4 +1819,9 @@ class PostRepository implements IPostRepository
 
     //     return false;
     // }
+
+    public function getPosts()
+    {
+        return $this->post->where('status', true)->latest()->get(['id', 'title', 'content', 'tag']);
+    }
 }
