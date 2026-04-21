@@ -125,12 +125,12 @@ export default function ShippingLabels({ order }) {
             <div id="shipping-labels" className="mx-auto w-full max-w-[3.5in] bg-white">
                 {/* PAGE 1 - FROM ONLY (Distributor) */}
                 <div className="label-page label-container w-full px-3 py-3">
-                    <div className="mb-4 rounded border-2 border-black bg-gray-100 p-3 text-center">
+                    {/* <div className="p-3 mb-4 text-center bg-gray-100 border-2 border-black rounded">
                         <div className="text-base font-bold">Order #{order.order_no}</div>
                         <div className="text-sm text-gray-600">
                             {new Date(order.created_at).toLocaleDateString()}
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="rounded border-2 border-black p-4">
                         <h3 className="mb-3 border-b-2 border-black pb-2 text-sm font-bold">
@@ -165,12 +165,12 @@ export default function ShippingLabels({ order }) {
 
                 {/* PAGE 2 - TO ONLY (Courier) */}
                 <div className="label-page label-container w-full px-3 py-3">
-                    <div className="mb-4 rounded border-2 border-black bg-gray-100 p-3 text-center">
+                    {/* <div className="p-3 mb-4 text-center bg-gray-100 border-2 border-black rounded">
                         <div className="text-base font-bold">Order #{order.order_no}</div>
                         <div className="text-sm text-gray-600">
                             {new Date(order.created_at).toLocaleDateString()}
                         </div>
-                    </div>
+                    </div> */}
 
                     <div className="rounded border-2 border-black p-4">
                         <h3 className="mb-3 border-b-2 border-black pb-2 text-sm font-bold">TO</h3>
