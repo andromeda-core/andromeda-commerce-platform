@@ -48,7 +48,7 @@ class AttributionRewardService
         }
 
 
-        $rewardBase = $smartphone->selling_info->selling_price;
+        $rewardBase = (float) $attributedItem->unit_price * (int) $attributedItem->quantity;
 
         $rewardAmount = match ($setting->calculation_type) {
             'percentage' => round(($rewardBase * $setting->value) / 100, 2),
