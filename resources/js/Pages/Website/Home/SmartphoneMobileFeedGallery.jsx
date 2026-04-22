@@ -507,30 +507,30 @@ const SmartphoneMobileGalleryModal = ({
                 route('website.carts.add-item'),
                 { ...data },
                 {
-                    onSuccess: (page) => {
-                        setCartProcessing(false);
-                        const flash = page.props.flash;
-                        if (flash?.success) {
-                            setInfoMessage(flash.success);
-                            setShowInfoMessage(true);
-                        } else {
-                            // Backend se direct message lo jo HTML link bhi contain karta hai
-                            setInfoMessage(
-                                __('Added Succesfully To Cart') +
-                                    ' <a href="' +
-                                    route('website.carts.index') +
-                                    '" class="font-semibold underline">' +
-                                    __('Go To Cart') +
-                                    '</a>',
-                            );
-                            setShowInfoMessage(true);
-                        }
-                    },
-                    onError: (errors) => {
-                        setCartProcessing(false);
-                        setErrorMessage(Object.values(errors)[0] || 'Something went wrong');
-                        setShowErrorMessage(true);
-                    },
+                    // onSuccess: (page) => {
+                    //     setCartProcessing(false);
+                    //     const flash = page.props.flash;
+                    //     if (flash?.success) {
+                    //         setInfoMessage(flash.success);
+                    //         setShowInfoMessage(true);
+                    //     } else {
+                    //         // Backend se direct message lo jo HTML link bhi contain karta hai
+                    //         setInfoMessage(
+                    //             __('Added Succesfully To Cart') +
+                    //                 ' <a href="' +
+                    //                 route('website.carts.index') +
+                    //                 '" class="font-semibold underline">' +
+                    //                 __('Go To Cart') +
+                    //                 '</a>',
+                    //         );
+                    //         setShowInfoMessage(true);
+                    //     }
+                    // },
+                    // onError: (errors) => {
+                    //     setCartProcessing(false);
+                    //     setErrorMessage(Object.values(errors)[0] || 'Something went wrong');
+                    //     setShowErrorMessage(true);
+                    // },
                     onFinish: () => {
                         setCartProcessing(false);
                     },
@@ -722,7 +722,7 @@ const SmartphoneMobileGalleryModal = ({
                     </div>
 
                     <div
-                        className="flex-1 overflow-y-auto px-8 scrollbar-none"
+                        className="flex-1 px-8 overflow-y-auto scrollbar-none"
                         ref={scrollContainerRef}
                     >
                         {mediaItems?.length > 0 && (
@@ -731,7 +731,7 @@ const SmartphoneMobileGalleryModal = ({
                                 <div
                                     ref={ThumbScrollContainerRef}
                                     onScroll={handleScroll}
-                                    className="flex snap-x snap-mandatory overflow-x-auto scrollbar-none"
+                                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none"
                                     style={{
                                         scrollbarWidth: 'none',
                                         msOverflowStyle: 'none',
@@ -743,13 +743,13 @@ const SmartphoneMobileGalleryModal = ({
                                     {mediaItems.map((item, index) => (
                                         <div
                                             key={index}
-                                            className="flex h-full w-full shrink-0 snap-center snap-always items-center justify-center"
+                                            className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
                                         >
                                             {item.type === 'image' ? (
                                                 <img
                                                     src={item.url || placeholderImage}
                                                     alt={`Media ${index}`}
-                                                    className="h-full max-h-full w-full max-w-full rounded-md object-cover"
+                                                    className="object-cover w-full h-full max-w-full max-h-full rounded-md"
                                                     loading="eager"
                                                     fetchpriority="high"
                                                     decoding="async"
@@ -758,12 +758,12 @@ const SmartphoneMobileGalleryModal = ({
                                                     }
                                                 />
                                             ) : (
-                                                <div className="flex h-full w-full items-center justify-center">
+                                                <div className="flex items-center justify-center w-full h-full">
                                                     <InstagramStyledVideoPlayer
                                                         thumbnail={
                                                             item?.thumbnail_url || placeholderImage
                                                         }
-                                                        className="h-full w-full object-cover"
+                                                        className="object-cover w-full h-full"
                                                         videoUrl={item.url}
                                                         Preload="metadata"
                                                         slug={item?.slug}
@@ -802,7 +802,7 @@ const SmartphoneMobileGalleryModal = ({
                                                     <img
                                                         src={mediaItem?.url || placeholderImage}
                                                         alt={`Thumbnail ${index + 1}`}
-                                                        className="h-full w-full object-cover"
+                                                        className="object-cover w-full h-full"
                                                         loading={
                                                             currentMediaIndex === index
                                                                 ? 'eager'
@@ -825,7 +825,7 @@ const SmartphoneMobileGalleryModal = ({
                                                             placeholderImage
                                                         }
                                                         alt={`Thumbnail ${index + 1}`}
-                                                        className="h-full w-full object-cover"
+                                                        className="object-cover w-full h-full"
                                                         loading={
                                                             currentMediaIndex === index
                                                                 ? 'eager'
@@ -850,7 +850,7 @@ const SmartphoneMobileGalleryModal = ({
                         </div>
 
                         {/* Full Content - Scrollable, No Truncation */}
-                        <div className="mb-10 mt-2">
+                        <div className="mt-2 mb-10">
                             {mediaItems?.length === 0 && (
                                 <div className="mb-4">
                                     {smartphone?.content && (
@@ -864,7 +864,7 @@ const SmartphoneMobileGalleryModal = ({
                                 </div>
                             )}
 
-                            <div className="mb-4 flex items-center justify-end">
+                            <div className="flex items-center justify-end mb-4">
                                 <div className="relative" ref={actionDropdownRef}>
                                     <button
                                         className="text-main-text-light dark:text-main-text-dark"
@@ -891,14 +891,14 @@ const SmartphoneMobileGalleryModal = ({
                                     </button>
 
                                     {actionDropdownOpen && (
-                                        <div className="absolute right-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                        <div className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
                                             <div className="py-1">
                                                 <button
                                                     onClick={() => {
                                                         setShowQrCode(true);
                                                         setActionDropdownOpen(null);
                                                     }}
-                                                    className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -906,7 +906,7 @@ const SmartphoneMobileGalleryModal = ({
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className="h-5 w-5"
+                                                        className="w-5 h-5"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -935,7 +935,7 @@ const SmartphoneMobileGalleryModal = ({
                                                         setLinkCopied(true);
                                                         setActionDropdownOpen(null);
                                                     }}
-                                                    className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                 >
                                                     <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -943,7 +943,7 @@ const SmartphoneMobileGalleryModal = ({
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className="h-5 w-5"
+                                                        className="w-5 h-5"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -962,7 +962,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                 setSpatiotemporalInfoModal(true);
                                                                 setActionDropdownOpen(null);
                                                             }}
-                                                            className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -970,7 +970,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={1.5}
                                                                 stroke="currentColor"
-                                                                className="h-5 w-5"
+                                                                className="w-5 h-5"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -990,7 +990,7 @@ const SmartphoneMobileGalleryModal = ({
                                                         </button>
                                                     )}
 
-                                                <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
+                                                <span className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark">
                                                     <span>
                                                         {__('Post Created')}:
                                                         <p>
@@ -1045,14 +1045,14 @@ const SmartphoneMobileGalleryModal = ({
                                     {cartItemSmartphones?.length > 0 &&
                                         cartItemSmartphones?.map((smartphone, index) => (
                                             <div
-                                                className="w-full rounded-sm bg-surface-1-light p-4 dark:bg-surface-2-dark"
+                                                className="w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
                                                 key={index}
                                             >
                                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                                     <div className="flex flex-col items-start gap-3">
                                                         {/* Product Name */}
-                                                        <div className="min-w-0 flex-1">
-                                                            <p className="truncate text-sm text-main-text-light dark:text-main-text-dark">
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
                                                                 {smartphone?.name} /{' '}
                                                                 {smartphone?.capacity} /{' '}
                                                                 {smartphone?.color_name}
@@ -1061,7 +1061,7 @@ const SmartphoneMobileGalleryModal = ({
 
                                                         {/* Price */}
                                                         <div className="flex-shrink-0">
-                                                            <p className="text-md font-medium text-main-text-light dark:text-main-text-dark">
+                                                            <p className="font-medium text-md text-main-text-light dark:text-main-text-dark">
                                                                 {currency?.name} {currency?.symbol}
                                                                 {''}
                                                                 {Number(
@@ -1080,7 +1080,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                     smartphone?.color_id,
                                                                 )
                                                             }
-                                                            className="flex h-6 w-6 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                            className="flex items-center justify-center w-6 h-6 transition-colors bg-white text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1088,7 +1088,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 strokeWidth={1.5}
-                                                                className="h-3 w-3"
+                                                                className="w-3 h-3"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1110,7 +1110,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                     smartphone?.color_id,
                                                                 )
                                                             }
-                                                            className="flex h-6 w-6 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                            className="flex items-center justify-center w-6 h-6 transition-colors bg-white text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1118,7 +1118,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 strokeWidth={1.5}
-                                                                className="h-3 w-3"
+                                                                className="w-3 h-3"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1136,7 +1136,7 @@ const SmartphoneMobileGalleryModal = ({
                                     {cartItemAddons?.length > 0 &&
                                         cartItemAddons?.map((addon, index) => (
                                             <div
-                                                className="relative w-full rounded-sm bg-surface-1-light p-4 dark:bg-surface-2-dark"
+                                                className="relative w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
                                                 key={index}
                                             >
                                                 {/* Remove Addon */}
@@ -1153,7 +1153,7 @@ const SmartphoneMobileGalleryModal = ({
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={2}
                                                         stroke="currentColor"
-                                                        className="h-6 w-6"
+                                                        className="w-6 h-6"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -1166,15 +1166,15 @@ const SmartphoneMobileGalleryModal = ({
                                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                                                     <div className="flex flex-col items-start gap-3">
                                                         {/* Product Name */}
-                                                        <div className="min-w-0 flex-1">
-                                                            <p className="truncate text-sm text-main-text-light dark:text-main-text-dark">
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
                                                                 {addon?.name}
                                                             </p>
                                                         </div>
 
                                                         {/* Price */}
                                                         <div className="flex-shrink-0">
-                                                            <p className="text-md font-medium text-main-text-light dark:text-main-text-dark">
+                                                            <p className="font-medium text-md text-main-text-light dark:text-main-text-dark">
                                                                 {currency?.name} {currency?.symbol}
                                                                 {''}
                                                                 {Number(
@@ -1191,7 +1191,7 @@ const SmartphoneMobileGalleryModal = ({
                                                             onClick={() =>
                                                                 handleAddonDecrease(addon?.id)
                                                             }
-                                                            className="flex h-6 w-6 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                            className="flex items-center justify-center w-6 h-6 transition-colors bg-white text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1199,7 +1199,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 strokeWidth={1.5}
-                                                                className="h-3 w-3"
+                                                                className="w-3 h-3"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1219,7 +1219,7 @@ const SmartphoneMobileGalleryModal = ({
                                                             onClick={() =>
                                                                 handleAddonIncrease(addon?.id)
                                                             }
-                                                            className="flex h-6 w-6 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                            className="flex items-center justify-center w-6 h-6 transition-colors bg-white text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1227,7 +1227,7 @@ const SmartphoneMobileGalleryModal = ({
                                                                 fill="none"
                                                                 stroke="currentColor"
                                                                 strokeWidth={1.5}
-                                                                className="h-3 w-3"
+                                                                className="w-3 h-3"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -1245,8 +1245,8 @@ const SmartphoneMobileGalleryModal = ({
                                     <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
 
                                     {/* Product Price */}
-                                    <div className="flex w-full items-center">
-                                        <span className="text-left font-medium text-main-text-light dark:text-main-text-dark">
+                                    <div className="flex items-center w-full">
+                                        <span className="font-medium text-left text-main-text-light dark:text-main-text-dark">
                                             {__('Total Price')}
                                         </span>
                                         <span className="ml-auto text-right text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
@@ -1315,7 +1315,7 @@ const SmartphoneMobileGalleryModal = ({
                                                             redirect: redirectUrl,
                                                         });
                                                     }}
-                                                    className="h-12 flex-1 rounded-md border border-main-text-light bg-white text-sm font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
+                                                    className="flex-1 h-12 text-sm font-semibold transition bg-white border rounded-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
                                                 >
                                                     {__('Login')}
                                                 </button>
@@ -1331,7 +1331,7 @@ const SmartphoneMobileGalleryModal = ({
                                                             redirect: redirectUrl,
                                                         });
                                                     }}
-                                                    className="h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-sm font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
+                                                    className="flex-1 h-12 text-sm font-semibold transition border rounded-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
                                                 >
                                                     {__('Register')}
                                                 </button>

@@ -98,6 +98,15 @@ Route::group(['as' => 'website.'], function () {
 
         $url = url('/') . '?' . http_build_query($query);
 
+        $previous_url = null;
+        return Inertia::render('Website/Home/index', [
+            'previous_url' => $previous_url,
+            'direct_post' => [
+                'public_id' => $public_id,
+                'slug'      => $slug,
+            ],
+        ]);
+
         return redirect()->to($url, 301);
     })->name('post.findByPublicId');
 
@@ -112,6 +121,15 @@ Route::group(['as' => 'website.'], function () {
         $query['single_page'] = 'true';
 
         $url = url('/') . '?' . http_build_query($query);
+
+        $previous_url = null;
+        return Inertia::render('Website/Home/index', [
+            'previous_url' => $previous_url,
+            'direct_smartphone' => [
+                'public_id' => $public_id,
+                'slug'      => $slug,
+            ],
+        ]);
 
         return redirect()->to($url, 301);
     })->name('product.findByPublicId');

@@ -20,7 +20,7 @@ import MobileFeedSinglePage from './MobileFeedSinglePage';
 import DesktopFeedSkeleton from '@/Components/DesktopFeedSkeleton';
 import MobileFeedSkeleton from '@/Components/MobileFeedSkeleton';
 
-const index = ({ previous_url }) => {
+const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
     // Translation Hook
     const { __, loading: translationLoading } = useTranslation();
     const t = (key) => (translationLoading ? key : __(key));
@@ -29,7 +29,9 @@ const index = ({ previous_url }) => {
     const [showFeedSkeleton, setShowFeedSkeleton] = useState(() => {
         if (typeof window === 'undefined') return false;
 
+        const pathname = window.location.pathname;
         const params = new URLSearchParams(window.location.search);
+        const isCanonicalPath = pathname.startsWith('/post/') || pathname.startsWith('/product/');
         const isDirect =
             params.get('direct') === 'true' &&
             (params.has('slug') ||
@@ -38,6 +40,8 @@ const index = ({ previous_url }) => {
                 params.has('m-public_id'));
 
         if (isDirect) {
+            return true;
+        } else if (isCanonicalPath) {
             return true;
         }
         return false;
@@ -277,11 +281,23 @@ const index = ({ previous_url }) => {
 
         const params = new URLSearchParams(window.location.search);
 
-        const post_slug = params.get('slug');
-        const post_public_id = params.get('public_id');
-        const smartphone_slug = params.get('m-slug');
-        const smartphone_public_id = params.get('m-public_id');
-        const isSinglePage = params.get('single_page') === 'true';
+        let post_slug = params.get('slug');
+        let post_public_id = params.get('public_id');
+        let smartphone_slug = params.get('m-slug');
+        let smartphone_public_id = params.get('m-public_id');
+        let isSinglePage = params.get('single_page') === 'true';
+
+        if (direct_post?.public_id) {
+            post_public_id = direct_post.public_id;
+            post_slug = direct_post.slug;
+            isSinglePage = true;
+        }
+
+        if (direct_smartphone?.public_id) {
+            smartphone_public_id = direct_smartphone.public_id;
+            smartphone_slug = direct_smartphone.slug;
+            isSinglePage = true;
+        }
 
         if (
             !post_slug &&
@@ -335,7 +351,7 @@ const index = ({ previous_url }) => {
 
             window.history.replaceState({}, '', window.location.href);
         }
-    }, [isFeedLoaded, feed, windowSize.width]);
+    }, [isFeedLoaded, feed, windowSize.width, direct_post, direct_smartphone]);
 
     // Fetch Single Post Method
     const fetchSinglePost = async (slug, public_id = null) => {
@@ -1182,13 +1198,13 @@ const index = ({ previous_url }) => {
                             </div>
 
                             {isFeedLoaded && feed.length === 0 && (
-                                <div className="flex items-center justify-center rounded-md bg-backgroundLight px-6 py-12 dark:bg-backgroundDark">
+                                <div className="flex items-center justify-center px-6 py-12 rounded-md bg-backgroundLight dark:bg-backgroundDark">
                                     <div className="flex flex-col items-center gap-4">
                                         {/* Custom No Content SVG */}
-                                        <div className="flex h-20 w-20 items-center justify-center">
+                                        <div className="flex items-center justify-center w-20 h-20">
                                             <svg
                                                 viewBox="0 0 120 120"
-                                                className="h-full w-full text-gray-400 dark:text-gray-500"
+                                                className="w-full h-full text-gray-400 dark:text-gray-500"
                                                 fill="none"
                                                 xmlns="http://www.w3.org/2000/svg"
                                             >
@@ -1486,7 +1502,7 @@ const index = ({ previous_url }) => {
                                         {/* QR + Copy Wrapper (KEY PART) */}
                                         <div className="mx-auto my-5 w-fit">
                                             {/* QR */}
-                                            <div className="rounded-md bg-main-text-dark p-3 dark:bg-surface-1-dark dark:text-main-text-light sm:p-2">
+                                            <div className="p-3 rounded-md bg-main-text-dark dark:bg-surface-1-dark dark:text-main-text-light sm:p-2">
                                                 <QRCode
                                                     id="qr-code-canvas"
                                                     className="size-40 sm:size-44 lg:size-60"
@@ -1541,7 +1557,7 @@ const index = ({ previous_url }) => {
                                             </button>
 
                                             {/* Download Button */}
-                                            <div className="mt-4 w-full">
+                                            <div className="w-full mt-4">
                                                 <button
                                                     onClick={handleDownloadQRCode}
                                                     disabled={isQrDownloading}
@@ -1553,7 +1569,7 @@ const index = ({ previous_url }) => {
                                                         <>
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
-                                                                className="h-6 w-6"
+                                                                className="w-6 h-6"
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
                                                                 stroke="currentColor"
