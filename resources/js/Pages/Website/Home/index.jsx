@@ -217,13 +217,7 @@ const index = ({ previous_url }) => {
 
     // POST UNIQUE URL GENERATION
     const generateURL = (post, isDirect = false, isSinglePage = false) => {
-        return (
-            `/post/${encodeURIComponent(post?.public_id)}/${encodeURIComponent(post?.slug)}?planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
-            `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
-            `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
-            `&timestamp=${encodeURIComponent(post?.created_at)}` +
-            `${post?.floor_id != null ? '&floor=' + encodeURIComponent(post?.floor?.name) : ''}`
-        );
+        return `/post/${encodeURIComponent(post?.public_id)}/${encodeURIComponent(post?.slug)}`;
     };
 
     // Smartphone URL Generation

@@ -85,12 +85,12 @@ Route::group(['as' => 'website.'], function () {
             'slug'          =>  $slug,
             'direct'      => 'true',
             'single_page' => 'true',
-            'planet'        => request('planet'),
-            'lat'           => request('lat'),
-            'lng'           => request('lng'),
-            'location_name' => request('location_name'),
-            'timestamp'     => request('timestamp'),
-            'floor'         => request('floor'),
+            // 'planet'        => request('planet'),
+            // 'lat'           => request('lat'),
+            // 'lng'           => request('lng'),
+            // 'location_name' => request('location_name'),
+            // 'timestamp'     => request('timestamp'),
+            // 'floor'         => request('floor'),
         ]);
 
 
