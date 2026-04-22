@@ -21,6 +21,7 @@ class AttributionController extends Controller
             }
         }
 
+
         $link = ProductLink::where('link_public_id', $link_public_id)
             ->where('status', 'active')
             ->with('smartphone')
@@ -35,11 +36,12 @@ class AttributionController extends Controller
             'clicked_at'     => now()->toISOString(),
         ]);
 
-
         return redirect()
             ->to(
-                route('home')
-                    . "?m-slug={$link->smartphone->slug}&direct=true&single_page=true"
+                route('website.product.findByPublicId', [
+                    'public_id' => $link->smartphone->public_id,
+                    'slug'      => $link->smartphone->slug
+                ])
             )
             ->withCookie(
                 cookie('attribution_context', $attribution, 60 * 24 * 30)

@@ -67,6 +67,7 @@ use App\Http\Controllers\Website\TermsOfServiceController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 // Home
 Route::get('/', [WebsiteHomeController::class, 'index'])->name('home');
@@ -94,22 +95,25 @@ Route::group(['as' => 'website.'], function () {
 
 
 
-        return redirect()->to(url('/') . '?' . http_build_query($query));
-    })->name('post.findByPublicID');
+        $url = url('/') . '?' . http_build_query($query);
+
+        return redirect()->to($url);
+    })->name('post.findByPublicId');
+
 
 
     Route::get('/product/{public_id}/{slug?}', function ($public_id, $slug = null) {
         $query = array_filter([
             'm-public_id' => $public_id,
             'm-slug'      => $slug,
-            'direct'      => 'true',
-            'single_page' => 'true',
         ]);
+        $query['direct'] = 'true';
+        $query['single_page'] = 'true';
 
-        // dd($query);
-        return redirect()->to(url('/') . '?' . http_build_query($query));
-    })->name('smartphone.findByPublicID');
+        $url = url('/') . '?' . http_build_query($query);
 
+        return redirect()->to($url);
+    })->name('product.findByPublicId');
 
 
     // Posts

@@ -51,7 +51,6 @@ const DesktopFeed = ({
 
     const [currentFeedIndex, setCurrentFeedIndex] = useState(feedIndex || 0);
 
-
     const mediaThumbRefs = useRef([]);
     const loadedCache = useRef(new Set());
     const currentFeedIndexRef = useRef(feedIndex || 0);
@@ -62,13 +61,10 @@ const DesktopFeed = ({
     const productRightPanelScrollRef = useRef(null);
     const shouldCleanupBrowserHistoryRef = useRef(true);
 
-
-
     // Zutsand Video AutoPlay State
     const videoAutoplay = useVideoStore((state) => state.autoplay);
     const initAutoplay = useVideoStore((state) => state.initAutoplay);
     const setActiveVideo = useVideoStore((state) => state.setActiveVideo);
-
 
     useEffect(() => {
         // only trigger after feedGallery is stable
@@ -90,12 +86,9 @@ const DesktopFeed = ({
         return () => clearTimeout(timeoutId);
     }, [feedGallery, setActiveVideo]);
 
-
     useEffect(() => {
         initAutoplay();
     }, []);
-
-
 
     const [isText, setIsText] = useState(false);
 
@@ -229,10 +222,6 @@ const DesktopFeed = ({
         }
         updateArrowStates();
     };
-
-
-
-
 
     // Syncing Related Feeds When Related Feed Changes
     useEffect(() => {
@@ -442,14 +431,12 @@ const DesktopFeed = ({
         };
     }, [mediaItems.length, isText]);
 
-
     //  (--------------------------------------------------------------------------------------)
     // Smartphone Logic
     const [selectedColor, setSelectedColor] = useState('');
     const [selectedAddon, setSelectedAddon] = useState('');
     const [toggleAccordion, setToggleAccordion] = useState(false);
     const [smartphoneTotalPrice, setSmartphoneTotalPrice] = useState({});
-
 
     // Its Just For Initial Check When Smartphone Feed Loads
     const smartphoneCartItemsRef = useRef([]);
@@ -466,7 +453,6 @@ const DesktopFeed = ({
 
     // Checking Stock (Not Needed RN)
     // const [isInStock, setIsInStock] = useState(feedGallery?.inventory_items_count > 0);
-
 
     useEffect(() => {
         if (!feedGallery || feedGallery.type !== 'smartphones') return;
@@ -508,17 +494,19 @@ const DesktopFeed = ({
     useEffect(() => {
         if (!feedGallery || feedGallery.type !== 'smartphones') return;
         const timer = setTimeout(() => {
-
-            if ((smartphoneCartItemsRef.current.filter((a) => a.smartphone_id === feedGallery.id).length === 0) && cartItemSmartphones.filter((a) => a.smartphone_id === feedGallery.id).length === 0) {
+            if (
+                smartphoneCartItemsRef.current.filter((a) => a.smartphone_id === feedGallery.id)
+                    .length === 0 &&
+                cartItemSmartphones.filter((a) => a.smartphone_id === feedGallery.id).length === 0
+            ) {
                 setSelectedColor(feedGallery.colors[0].id);
             }
         }, 0);
 
         return () => {
             clearTimeout(timer);
-        }
+        };
     }, [feedGallery]);
-
 
     // Smartphone Handling
     useEffect(() => {
@@ -590,7 +578,6 @@ const DesktopFeed = ({
             return;
         }
 
-
         const addon = feedGallery.addons.find((a) => a.id === selectedAddon);
 
         if (!addon) return;
@@ -641,21 +628,19 @@ const DesktopFeed = ({
 
     const smartphoneSubtotal = useMemo(() => {
         return cartItemSmartphones
-            .filter(item => item.smartphone_id === feedGallery?.id)
+            .filter((item) => item.smartphone_id === feedGallery?.id)
             .reduce((sum, item) => sum + Number(item.price || 0), 0);
     }, [cartItemSmartphones, feedGallery?.id]);
 
     const addonSubtotal = useMemo(() => {
         return cartItemAddons
-            .filter(item => item.smartphone_id === feedGallery?.id)
+            .filter((item) => item.smartphone_id === feedGallery?.id)
             .reduce((sum, item) => sum + Number(item.price || 0), 0);
     }, [cartItemAddons, feedGallery?.id]);
-
 
     const baseTotal = smartphoneSubtotal + addonSubtotal;
 
     const feeAppliedRef = useRef({});
-
 
     // Calculating Smartphone Total Price (With Manual Tax Calculation)
     useEffect(() => {
@@ -679,7 +664,8 @@ const DesktopFeed = ({
 
             if (import_tax) {
                 const smartphoneUnitPrice =
-                    cartItemSmartphones.find(s => s.smartphone_id === feedGallery?.id)?.unit_price || 0;
+                    cartItemSmartphones.find((s) => s.smartphone_id === feedGallery?.id)
+                        ?.unit_price || 0;
 
                 taxAmount =
                     import_tax.value_type === 'percentage'
@@ -694,11 +680,10 @@ const DesktopFeed = ({
 
         // Adding Shipping Fee With Each Product
 
-
         const shipping_fee = feedGallery.selling_info?.shipping_fee;
         if (shipping_fee) {
             const qty =
-                cartItemSmartphones.find(s => s.smartphone_id === smartphoneId)?.quantity || 0;
+                cartItemSmartphones.find((s) => s.smartphone_id === smartphoneId)?.quantity || 0;
 
             shippingAmount =
                 shipping_fee.value_type === 'percentage'
@@ -713,8 +698,6 @@ const DesktopFeed = ({
             [smartphoneId]: total,
         }));
     }, [smartphoneSubtotal, addonSubtotal, feedGallery?.id]);
-
-
 
     // Addon Quantity Increase Handling
     const handleAddonIncrease = (id) => {
@@ -739,35 +722,32 @@ const DesktopFeed = ({
     // Addon Quantity Decrease Handling
     const handleAddonDecrease = (id) => {
         setCartItemAddons((prev) => {
-            return prev
-                .map((a) => {
-                    if (a.id === id) {
-                        const addon = feedGallery.addons.find((addon) => addon.id === id);
+            return prev.map((a) => {
+                if (a.id === id) {
+                    const addon = feedGallery.addons.find((addon) => addon.id === id);
 
-                        const unitPrice = Number(addon.price || 0);
+                    const unitPrice = Number(addon.price || 0);
 
-                        if (a.quantity === 1) {
-                            return a;
-                        }
-
-                        const newQty = a.quantity - 1;
-
-                        return {
-                            ...a,
-                            quantity: newQty,
-                            price: parseFloat(Number(a.price) - unitPrice).toFixed(2),
-                        };
+                    if (a.quantity === 1) {
+                        return a;
                     }
-                    return a;
-                });
+
+                    const newQty = a.quantity - 1;
+
+                    return {
+                        ...a,
+                        quantity: newQty,
+                        price: parseFloat(Number(a.price) - unitPrice).toFixed(2),
+                    };
+                }
+                return a;
+            });
         });
     };
-
 
     const handleAddonRemove = (addonId) => {
         setCartItemAddons((prev) => {
             return prev.filter((a) => {
-
                 if (a.id === addonId && a.smartphone_id === feedGallery?.id) {
                     return false;
                 }
@@ -920,12 +900,32 @@ const DesktopFeed = ({
                 route('website.carts.add-item'),
                 { ...data },
                 {
-
+                    onSuccess: (page) => {
+                        setCartProcessing(false);
+                        const flash = page.props.flash;
+                        if (flash?.success) {
+                            setInfoMessage(flash.success);
+                            setShowInfoMessage(true);
+                        } else {
+                            // Backend se direct message lo jo HTML link bhi contain karta hai
+                            setInfoMessage(
+                                __('Added Succesfully To Cart') +
+                                    ' <a href="' +
+                                    route('website.carts.index') +
+                                    '" class="font-semibold underline">' +
+                                    __('Go To Cart') +
+                                    '</a>',
+                            );
+                            setShowInfoMessage(true);
+                        }
+                    },
+                    onError: (errors) => {
+                        setCartProcessing(false);
+                        setErrorMessage(Object.values(errors)[0] || 'Something went wrong');
+                        setShowErrorMessage(true);
+                    },
                     onFinish: () => {
                         setCartProcessing(false);
-
-
-
                     },
                     preserveScroll: true,
                     preserveUrl: true,
@@ -960,7 +960,6 @@ const DesktopFeed = ({
             //     return;
             // }
 
-
             // let quantity = 0;
             // smartphones.forEach((smartphone) => {
             //     quantity += smartphone.quantity;
@@ -976,23 +975,19 @@ const DesktopFeed = ({
             //     return;
             // }
 
-            const smartphoneFragments = smartphones.filter(
-                s => s.smartphone_id === item_id
-            );
+            const smartphoneFragments = smartphones.filter((s) => s.smartphone_id === item_id);
 
-            const addonFragments = addons.filter(
-                s => s.smartphone_id === item_id
-            );
+            const addonFragments = addons.filter((s) => s.smartphone_id === item_id);
 
             const smartphone = smartphoneFragments.reduce(
                 (acc, curr) => ({
                     ...acc,
                     ...curr,
                 }),
-                {}
+                {},
             );
 
-            const structuredAddons = addonFragments.map(addon => ({
+            const structuredAddons = addonFragments.map((addon) => ({
                 id: addon.id,
                 name: addon.name,
                 quantity: addon.quantity,
@@ -1008,18 +1003,18 @@ const DesktopFeed = ({
                 buy_now: true,
             };
 
-
-            const res = await axios.post(route('website.checkout.single-product-checkout-session_store'), { ...payload });
+            const res = await axios.post(
+                route('website.checkout.single-product-checkout-session_store'),
+                { ...payload },
+            );
             if (res.data.status === true) {
                 shouldCleanupBrowserHistoryRef.current = false;
-                router.get(route('website.checkout.index', { buy_now: true }))
+                router.get(route('website.checkout.index', { buy_now: true }));
             } else {
                 setBuyNowProcessing(false);
                 setErrorMessage(res.data.message);
                 setShowErrorMessage(true);
             }
-
-
         } catch (error) {
             setBuyNowProcessing(false);
             setShowErrorMessage(true);
@@ -1027,12 +1022,11 @@ const DesktopFeed = ({
         }
     };
 
-
     // Watching The Smartphone Cart Item If Smarpthone added Than enable Action Buttons
     useEffect(() => {
         if (
             cartItemSmartphones?.filter((item) => item.smartphone_id === feedGallery?.id).length >
-            0 &&
+                0 &&
             cartItemSmartphones.filter((item) => item.smartphone_id === feedGallery?.id)
         ) {
             setCanActionOnSmartphone(true);
@@ -1041,11 +1035,9 @@ const DesktopFeed = ({
         }
     }, [cartItemSmartphones, feedGallery?.id]);
 
-
     // CleanUp
     useEffect(() => {
         return () => {
-
             if (shouldCleanupBrowserHistoryRef.current) {
                 window.history.replaceState({}, '', window.location.pathname);
             }
@@ -1074,26 +1066,14 @@ const DesktopFeed = ({
     // Arrows Destructuring From Arrow State
     const { isLeftDisabled, isRightDisabled, isTopDisabled, isBottomDisabled } = arrowStates;
 
-
     // TEXT ONLY POSTS
     if (feedGallery !== null && feedGallery?.type === 'posts' && isText) {
         return (
             <>
-
-                <div
-                    className="
-    absolute
-    inset-y-0
-    left-[var(--sidebar-w)]
-    right-0
-    z-[60]
-    bg-backgroundLight
-    dark:bg-backgroundDark
-  "
-                >
+                <div className="absolute inset-y-0 left-[var(--sidebar-w)] right-0 z-[60] bg-backgroundLight dark:bg-backgroundDark">
                     {/* Modal Container */}
 
-                    <div className="flex items-center justify-center w-full h-full overflow-hidden">
+                    <div className="flex h-full w-full items-center justify-center overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
                             {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
@@ -1108,7 +1088,7 @@ const DesktopFeed = ({
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -1129,11 +1109,14 @@ const DesktopFeed = ({
                                         setFeedOpen(false);
                                         setMediaItems([]);
                                         mediaThumbRefs.current = {};
-                                        window.history.replaceState({}, '', window.location.pathname);
-
+                                        window.history.replaceState(
+                                            {},
+                                            '',
+                                            window.location.pathname,
+                                        );
                                     }
                                 }}
-                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-surface-1-light  transition-all duration-200  dark:hover:bg-surface-2-dark "
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full transition-all duration-200 hover:bg-surface-1-light dark:hover:bg-surface-2-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -1142,7 +1125,7 @@ const DesktopFeed = ({
                                     viewBox="0 0 24 24"
                                     strokeWidth={2}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -1165,7 +1148,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1188,7 +1171,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1212,7 +1195,7 @@ const DesktopFeed = ({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1229,27 +1212,16 @@ const DesktopFeed = ({
                             >
                                 {/* Scrollable Content */}
                                 <div className="h-full">
-                                    <div className="flex flex-col gap-[40px] bg-backgroundLight h-[83vh] min-h-0 dark:bg-backgroundDark lg:flex-row lg:items-start">
+                                    <div className="flex h-[83vh] min-h-0 flex-col gap-[40px] bg-backgroundLight dark:bg-backgroundDark lg:flex-row lg:items-start">
                                         {/* Content Area - Matches Media Feed Structure */}
-                                        <div className="flex flex-col w-full h-full min-h-0">
+                                        <div className="flex h-full min-h-0 w-full flex-col">
                                             {/* Tag and Actions Header */}
-                                            <div className="flex items-center justify-between mb-2">
-
+                                            <div className="mb-2 flex items-center justify-between">
                                                 {/* Three Dot Menu */}
                                                 <div className="relative flex-1">
                                                     <button
                                                         data-post-actions-button
-
-
-                                                        className="
-    flex items-center justify-center
-    w-[36px] h-[36px]
-    rounded-full
-    hover:bg-surface-1-light
-    transition-all duration-200
-    dark:hover:bg-surface-2-dark
-
-  "
+                                                        className="flex h-[36px] w-[36px] items-center justify-center rounded-full transition-all duration-200 hover:bg-surface-1-light dark:hover:bg-surface-2-dark"
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -1257,7 +1229,7 @@ const DesktopFeed = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2.5}
                                                             stroke="currentColor"
-                                                            className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                                            className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1271,11 +1243,10 @@ const DesktopFeed = ({
                                                         </svg>
                                                     </button>
 
-
                                                     {showPostDesktopActionsDropdown && (
                                                         <div
                                                             data-post-actions-dropdown
-                                                            className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                            className="absolute left-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                         >
                                                             <div className="py-2">
                                                                 {/* QR Code */}
@@ -1286,7 +1257,7 @@ const DesktopFeed = ({
                                                                             false,
                                                                         );
                                                                     }}
-                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                    className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1294,7 +1265,7 @@ const DesktopFeed = ({
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={1.5}
                                                                         stroke="currentColor"
-                                                                        className="w-5 h-5"
+                                                                        className="h-5 w-5"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
@@ -1340,21 +1311,20 @@ const DesktopFeed = ({
                                                                                                 true,
                                                                                             );
                                                                                         },
-                                                                                    onError:
-                                                                                        (
-                                                                                            e,
-                                                                                        ) => {
-                                                                                            setShowErrorMessage(
-                                                                                                true,
-                                                                                            );
-                                                                                            setErrorMessage(
-                                                                                                e.message,
-                                                                                            );
-                                                                                        },
+                                                                                    onError: (
+                                                                                        e,
+                                                                                    ) => {
+                                                                                        setShowErrorMessage(
+                                                                                            true,
+                                                                                        );
+                                                                                        setErrorMessage(
+                                                                                            e.message,
+                                                                                        );
+                                                                                    },
                                                                                 },
                                                                             );
                                                                         }}
-                                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                     >
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
@@ -1372,11 +1342,9 @@ const DesktopFeed = ({
                                                                                         : '#222'
                                                                                     : 'currentColor'
                                                                             }
-                                                                            strokeWidth={
-                                                                                1.5
-                                                                            }
+                                                                            strokeWidth={1.5}
                                                                             viewBox="0 0 24 24"
-                                                                            className="w-5 h-5"
+                                                                            className="h-5 w-5"
                                                                         >
                                                                             <path
                                                                                 strokeLinecap="round"
@@ -1387,11 +1355,9 @@ const DesktopFeed = ({
                                                                         <span className="font-normal">
                                                                             {feedGallery?.is_bookmarked
                                                                                 ? __(
-                                                                                    'Remove Bookmarker',
-                                                                                )
-                                                                                : __(
-                                                                                    'Bookmarker',
-                                                                                )}
+                                                                                      'Remove Bookmarker',
+                                                                                  )
+                                                                                : __('Bookmarker')}
                                                                         </span>
                                                                     </button>
                                                                 )}
@@ -1404,7 +1370,7 @@ const DesktopFeed = ({
                                                                             generateURL(
                                                                                 feedGallery,
                                                                                 true,
-                                                                                true
+                                                                                true,
                                                                             );
                                                                         navigator.clipboard.writeText(
                                                                             url.trim(),
@@ -1414,7 +1380,7 @@ const DesktopFeed = ({
                                                                             false,
                                                                         );
                                                                     }}
-                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                    className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1422,7 +1388,7 @@ const DesktopFeed = ({
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={1.5}
                                                                         stroke="currentColor"
-                                                                        className="w-5 h-5"
+                                                                        className="h-5 w-5"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
@@ -1436,38 +1402,56 @@ const DesktopFeed = ({
                                                                 </button>
 
                                                                 {/* Spatiotemporal Information */}
-                                                                {(feedGallery?.latitude != null && feedGallery?.longitude != null) && (
-                                                                    <button
-                                                                        onClick={(e) => {
-                                                                            setSpatiotemporalInfoModal(true);
-                                                                            setShowPostDesktopActionsDropdown(
-                                                                                false,
-                                                                            );
-                                                                        }}
-                                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                    >
+                                                                {feedGallery?.latitude != null &&
+                                                                    feedGallery?.longitude !=
+                                                                        null && (
+                                                                        <button
+                                                                            onClick={(e) => {
+                                                                                setSpatiotemporalInfoModal(
+                                                                                    true,
+                                                                                );
+                                                                                setShowPostDesktopActionsDropdown(
+                                                                                    false,
+                                                                                );
+                                                                            }}
+                                                                            className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                        >
+                                                                            <svg
+                                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                                fill="none"
+                                                                                viewBox="0 0 24 24"
+                                                                                strokeWidth={1.5}
+                                                                                stroke="currentColor"
+                                                                                className="h-5 w-5"
+                                                                            >
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                                                />
+                                                                                <path
+                                                                                    strokeLinecap="round"
+                                                                                    strokeLinejoin="round"
+                                                                                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                                                />
+                                                                            </svg>
 
+                                                                            <span className="font-normal">
+                                                                                {__(
+                                                                                    'Spatiotemporal Info',
+                                                                                )}
+                                                                            </span>
+                                                                        </button>
+                                                                    )}
 
-                                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                                                        </svg>
-
-
-                                                                        <span className="font-normal">
-                                                                            {__('Spatiotemporal Info')}
-                                                                        </span>
-                                                                    </button>
-                                                                )}
-
-                                                                <span
-
-                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                                >
-
-                                                                    <span>{__('Post Created')}:
+                                                                <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
+                                                                    <span>
+                                                                        {__('Post Created')}:
                                                                         <p>
-                                                                            {feedGallery?.added_at} {feedGallery?.created_at_time}
+                                                                            {feedGallery?.added_at}{' '}
+                                                                            {
+                                                                                feedGallery?.created_at_time
+                                                                            }
                                                                         </p>
                                                                     </span>
                                                                 </span>
@@ -1480,24 +1464,20 @@ const DesktopFeed = ({
                                                     {feedGallery?.tag && (
                                                         <button
                                                             onClick={() =>
-                                                                navigateToHashtag(
-                                                                    feedGallery?.tag,
-                                                                )
+                                                                navigateToHashtag(feedGallery?.tag)
                                                             }
-
-                                                            className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full hover:bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200  dark:hover:bg-surface-2-dark "
+                                                            className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                         >
                                                             {feedGallery?.tag}
                                                         </button>
                                                     )}
                                                 </div>
-
                                             </div>
 
                                             {/* Post Content - Scrollable */}
-                                            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
+                                            <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin scrollbar-none">
                                                 <div
-                                                    className="prose prose-sm max-w-none break-words whitespace-pre-line pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
+                                                    className="prose prose-sm max-w-none whitespace-pre-line break-words pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                     dangerouslySetInnerHTML={{
                                                         __html: feedGallery?.content,
                                                     }}
@@ -1511,39 +1491,24 @@ const DesktopFeed = ({
                     </div>
                 </div>
 
-                {
-                    spatiotemporalInfoModal && (
-                        <SpatiotemporalInfoModal
-                            onClose={() => {
-                                setSpatiotemporalInfoModal(false);
-                            }}
-                            post={feedGallery}
-                        />
-                    )
-                }
-
+                {spatiotemporalInfoModal && (
+                    <SpatiotemporalInfoModal
+                        onClose={() => {
+                            setSpatiotemporalInfoModal(false);
+                        }}
+                        post={feedGallery}
+                    />
+                )}
             </>
         );
     }
 
     // TEXT ONLY Smartphones
     if (feedGallery !== null && feedGallery?.type === 'smartphones' && isText) {
-
         return (
             <>
-                <div
-                    className="
-    absolute
-    inset-y-0
-    left-[var(--sidebar-w)]
-    right-0
-    z-[60]
-    bg-backgroundLight
-    dark:bg-backgroundDark
-  "
-                >
-
-                    <div className="flex items-center justify-center w-full h-full overflow-hidden">
+                <div className="absolute inset-y-0 left-[var(--sidebar-w)] right-0 z-[60] bg-backgroundLight dark:bg-backgroundDark">
+                    <div className="flex h-full w-full items-center justify-center overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
                             {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
@@ -1558,7 +1523,7 @@ const DesktopFeed = ({
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -1579,11 +1544,14 @@ const DesktopFeed = ({
                                         setFeedOpen(false);
                                         setMediaItems([]);
                                         mediaThumbRefs.current = {};
-                                        window.history.replaceState({}, '', window.location.pathname);
-
+                                        window.history.replaceState(
+                                            {},
+                                            '',
+                                            window.location.pathname,
+                                        );
                                     }
                                 }}
-                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-surface-1-light  transition-all duration-200 dark:hover:bg-surface-2-dark "
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full transition-all duration-200 hover:bg-surface-1-light dark:hover:bg-surface-2-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -1592,7 +1560,7 @@ const DesktopFeed = ({
                                     viewBox="0 0 24 24"
                                     strokeWidth={2}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -1615,7 +1583,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1638,7 +1606,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1662,7 +1630,7 @@ const DesktopFeed = ({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1679,15 +1647,14 @@ const DesktopFeed = ({
                             >
                                 {/* Scrollable Content */}
                                 <div className="h-full">
-                                    <div className="flex flex-col gap-[40px] bg-backgroundLight h-[83vh] min-h-0 dark:bg-backgroundDark lg:flex-row lg:items-start">
+                                    <div className="flex h-[83vh] min-h-0 flex-col gap-[40px] bg-backgroundLight dark:bg-backgroundDark lg:flex-row lg:items-start">
                                         {feedGallery && (
                                             <>
-
-                                                <div className="relative flex w-full h-full justify-center lg:w-[50%] xl:w-[50%]">
-                                                    <div className="flex w-full h-full max-w-[520px] flex-col">
-                                                        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
+                                                <div className="relative flex h-full w-full justify-center lg:w-[50%] xl:w-[50%]">
+                                                    <div className="flex h-full w-full max-w-[520px] flex-col">
+                                                        <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin scrollbar-none">
                                                             <div
-                                                                className="prose prose-sm max-w-none break-words whitespace-pre-line pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
+                                                                className="prose prose-sm max-w-none whitespace-pre-line break-words pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                                 dangerouslySetInnerHTML={{
                                                                     __html: feedGallery?.content,
                                                                 }}
@@ -1696,7 +1663,7 @@ const DesktopFeed = ({
                                                     </div>
                                                 </div>
                                                 {/* Right Side - Content & Details */}
-                                                <div className="flex flex-col  w-full h-full lg:w-[40%] xl:w-[45%]">
+                                                <div className="flex h-full w-full flex-col lg:w-[40%] xl:w-[45%]">
                                                     {/* Image Thumbnails Strip */}
                                                     <div className={`flex items-center gap-0`}>
                                                         {/* Prev indicator */}
@@ -1709,7 +1676,9 @@ const DesktopFeed = ({
                                                                         newPage * MAX_THUMBS;
 
                                                                     setThumbPage(newPage);
-                                                                    setSelectedMediaIndex(firstIndex);
+                                                                    setSelectedMediaIndex(
+                                                                        firstIndex,
+                                                                    );
                                                                 }}
                                                             >
                                                                 <svg
@@ -1730,102 +1699,107 @@ const DesktopFeed = ({
                                                         {((Array.isArray(
                                                             feedGallery?.smartphone_video_urls,
                                                         ) &&
-                                                            feedGallery.smartphone_video_urls.length > 1) ||
+                                                            feedGallery.smartphone_video_urls
+                                                                .length > 1) ||
                                                             (Array.isArray(
                                                                 feedGallery?.smartphone_image_urls,
                                                             ) &&
-                                                                feedGallery.smartphone_image_urls.length >
-                                                                1)) && (
-                                                                <div
-                                                                    ref={MediaThumbRef}
-                                                                    className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
-                                                                >
-                                                                    {/* Render thumbnails */}
-                                                                    {visibleThumbs.map(
-                                                                        (mediaItem, index) => {
-                                                                            const realIndex =
-                                                                                startIndex + index;
-                                                                            return (
-                                                                                <button
-                                                                                    key={realIndex}
-                                                                                    ref={(el) => {
-                                                                                        mediaThumbRefs.current[
-                                                                                            realIndex
-                                                                                        ] = el;
-                                                                                    }}
-                                                                                    onClick={() =>
-                                                                                        setSelectedMediaIndex(
-                                                                                            realIndex,
-                                                                                        )
-                                                                                    }
-                                                                                    // className={`aspect-square w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${selectedMediaIndex ===
-                                                                                    //     realIndex
-                                                                                    //     ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
-                                                                                    //     : 'border-gray-300 hover:border-gray-400 dark:border-gray-700'
-                                                                                    //     }`}
+                                                                feedGallery.smartphone_image_urls
+                                                                    .length > 1)) && (
+                                                            <div
+                                                                ref={MediaThumbRef}
+                                                                className="mb-3 flex items-center gap-2 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                                                            >
+                                                                {/* Render thumbnails */}
+                                                                {visibleThumbs.map(
+                                                                    (mediaItem, index) => {
+                                                                        const realIndex =
+                                                                            startIndex + index;
+                                                                        return (
+                                                                            <button
+                                                                                key={realIndex}
+                                                                                ref={(el) => {
+                                                                                    mediaThumbRefs.current[
+                                                                                        realIndex
+                                                                                    ] = el;
+                                                                                }}
+                                                                                onClick={() =>
+                                                                                    setSelectedMediaIndex(
+                                                                                        realIndex,
+                                                                                    )
+                                                                                }
+                                                                                // className={`aspect-square w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${selectedMediaIndex ===
+                                                                                //     realIndex
+                                                                                //     ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
+                                                                                //     : 'border-gray-300 hover:border-gray-400 dark:border-gray-700'
+                                                                                //     }`}
 
-                                                                                    className={`aspect-square ${selectedMediaIndex === realIndex ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-md transition-all`}
-                                                                                >
-                                                                                    {mediaItem?.type ===
-                                                                                        'image' ? (
-                                                                                        <img
-                                                                                            src={
-                                                                                                mediaItem?.url ||
-                                                                                                Placeholder
-                                                                                            }
-                                                                                            alt={`Thumbnail ${realIndex + 1}`}
-                                                                                            className="object-cover w-full h-full"
-                                                                                            loading={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'eager'
-                                                                                                    : 'lazy'
-                                                                                            }
-                                                                                            decoding="async"
-                                                                                            fetchpriority={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'high'
-                                                                                                    : 'low'
-                                                                                            }
-                                                                                            onError={(e) =>
+                                                                                className={`aspect-square ${selectedMediaIndex === realIndex ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-md transition-all`}
+                                                                            >
+                                                                                {mediaItem?.type ===
+                                                                                'image' ? (
+                                                                                    <img
+                                                                                        src={
+                                                                                            mediaItem?.url ||
+                                                                                            Placeholder
+                                                                                        }
+                                                                                        alt={`Thumbnail ${realIndex + 1}`}
+                                                                                        className="h-full w-full object-cover"
+                                                                                        loading={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'eager'
+                                                                                                : 'lazy'
+                                                                                        }
+                                                                                        decoding="async"
+                                                                                        fetchpriority={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'high'
+                                                                                                : 'low'
+                                                                                        }
+                                                                                        onError={(
+                                                                                            e,
+                                                                                        ) =>
                                                                                             (e.target.src =
                                                                                                 Placeholder)
-                                                                                            }
-                                                                                        />
-                                                                                    ) : (
-                                                                                        <img
-                                                                                            src={
-                                                                                                mediaItem?.thumbnail_url ||
-                                                                                                Placeholder
-                                                                                            }
-                                                                                            alt={`Thumbnail ${index + 1}`}
-                                                                                            className="object-cover w-full h-full"
-                                                                                            loading={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'eager'
-                                                                                                    : 'lazy'
-                                                                                            }
-                                                                                            decoding="async"
-                                                                                            fetchpriority={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'high'
-                                                                                                    : 'low'
-                                                                                            }
-                                                                                            onError={(e) =>
+                                                                                        }
+                                                                                    />
+                                                                                ) : (
+                                                                                    <img
+                                                                                        src={
+                                                                                            mediaItem?.thumbnail_url ||
+                                                                                            Placeholder
+                                                                                        }
+                                                                                        alt={`Thumbnail ${index + 1}`}
+                                                                                        className="h-full w-full object-cover"
+                                                                                        loading={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'eager'
+                                                                                                : 'lazy'
+                                                                                        }
+                                                                                        decoding="async"
+                                                                                        fetchpriority={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'high'
+                                                                                                : 'low'
+                                                                                        }
+                                                                                        onError={(
+                                                                                            e,
+                                                                                        ) =>
                                                                                             (e.target.src =
                                                                                                 Placeholder)
-                                                                                            }
-                                                                                        />
-                                                                                    )}
-                                                                                </button>
-                                                                            );
-                                                                        },
-                                                                    )}
-                                                                </div>
-                                                            )}
+                                                                                        }
+                                                                                    />
+                                                                                )}
+                                                                            </button>
+                                                                        );
+                                                                    },
+                                                                )}
+                                                            </div>
+                                                        )}
 
                                                         {/* Next indicator */}
                                                         {canGoNext && (
@@ -1837,7 +1811,9 @@ const DesktopFeed = ({
                                                                         newPage * MAX_THUMBS;
 
                                                                     setThumbPage(newPage);
-                                                                    setSelectedMediaIndex(firstIndex);
+                                                                    setSelectedMediaIndex(
+                                                                        firstIndex,
+                                                                    );
                                                                 }}
                                                             >
                                                                 <svg
@@ -1858,15 +1834,12 @@ const DesktopFeed = ({
 
                                                     {/* Content Area */}
 
-
-                                                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none"
+                                                    <div
+                                                        className="min-h-0 flex-1 overflow-y-auto scrollbar-none"
                                                         ref={productRightPanelScrollRef}
                                                     >
                                                         {/* Tag and Actions Header */}
-                                                        <div className="flex justify-between mb-2 align-start">
-
-
-
+                                                        <div className="align-start mb-2 flex justify-between">
                                                             {/* Three Dot Menu */}
                                                             <div
                                                                 className="relative flex-1"
@@ -1874,20 +1847,9 @@ const DesktopFeed = ({
                                                                     smartphoneDesktopViewerActionDropdownRef
                                                                 }
                                                             >
-
-
                                                                 <button
                                                                     data-smartphone-actions-button
-
-
-                                                                    className="
-    flex items-center justify-center
-    w-[36px] h-[36px]
-    rounded-full
-    hover:bg-surface-1-light
-    transition-all duration-200
-    dark:hover:bg-surface-2-dark
-  "
+                                                                    className="flex h-[36px] w-[36px] items-center justify-center rounded-full transition-all duration-200 hover:bg-surface-1-light dark:hover:bg-surface-2-dark"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1895,7 +1857,7 @@ const DesktopFeed = ({
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={2.5}
                                                                         stroke="currentColor"
-                                                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
@@ -1912,26 +1874,30 @@ const DesktopFeed = ({
                                                                 {showSmartphoneDesktopActionsDropdown && (
                                                                     <div
                                                                         data-smartphone-actions-dropdown
-                                                                        className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                                        className="absolute left-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                                     >
                                                                         <div className="py-2">
                                                                             {/* QR Code */}
                                                                             <button
                                                                                 onClick={() => {
-                                                                                    setShowQrCode(true);
+                                                                                    setShowQrCode(
+                                                                                        true,
+                                                                                    );
                                                                                     setShowSmartphoneDesktopActionsDropdown(
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     fill="none"
                                                                                     viewBox="0 0 24 24"
-                                                                                    strokeWidth={1.5}
+                                                                                    strokeWidth={
+                                                                                        1.5
+                                                                                    }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -1953,29 +1919,35 @@ const DesktopFeed = ({
                                                                             <button
                                                                                 onClick={(e) => {
                                                                                     const url =
-                                                                                        route('home') +
+                                                                                        route(
+                                                                                            'home',
+                                                                                        ) +
                                                                                         generateSmartphoneURL(
                                                                                             feedGallery,
                                                                                             true,
                                                                                             true,
-                                                                                        )
+                                                                                        );
                                                                                     navigator.clipboard.writeText(
                                                                                         url.trim(),
                                                                                     );
-                                                                                    setLinkCopied(true);
+                                                                                    setLinkCopied(
+                                                                                        true,
+                                                                                    );
                                                                                     setShowSmartphoneDesktopActionsDropdown(
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     fill="none"
                                                                                     viewBox="0 0 24 24"
-                                                                                    strokeWidth={1.5}
+                                                                                    strokeWidth={
+                                                                                        1.5
+                                                                                    }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -1984,44 +1956,73 @@ const DesktopFeed = ({
                                                                                     />
                                                                                 </svg>
                                                                                 <span className="font-normal">
-                                                                                    {__('Copy Link')}
+                                                                                    {__(
+                                                                                        'Copy Link',
+                                                                                    )}
                                                                                 </span>
                                                                             </button>
 
-
                                                                             {/* Spatiotemporal Information */}
-                                                                            {(feedGallery?.latitude != null && feedGallery?.longitude != null) && (
-                                                                                <button
-                                                                                    onClick={(e) => {
-                                                                                        setSpatiotemporalInfoModal(true);
-                                                                                        setShowPostDesktopActionsDropdown(
-                                                                                            false,
-                                                                                        );
-                                                                                    }}
-                                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                                >
+                                                                            {feedGallery?.latitude !=
+                                                                                null &&
+                                                                                feedGallery?.longitude !=
+                                                                                    null && (
+                                                                                    <button
+                                                                                        onClick={(
+                                                                                            e,
+                                                                                        ) => {
+                                                                                            setSpatiotemporalInfoModal(
+                                                                                                true,
+                                                                                            );
+                                                                                            setShowPostDesktopActionsDropdown(
+                                                                                                false,
+                                                                                            );
+                                                                                        }}
+                                                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                    >
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            fill="none"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            strokeWidth={
+                                                                                                1.5
+                                                                                            }
+                                                                                            stroke="currentColor"
+                                                                                            className="h-5 w-5"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                                                            />
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                                                            />
+                                                                                        </svg>
 
+                                                                                        <span className="font-normal">
+                                                                                            {__(
+                                                                                                'Spatiotemporal Info',
+                                                                                            )}
+                                                                                        </span>
+                                                                                    </button>
+                                                                                )}
 
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                                                                    </svg>
-
-
-                                                                                    <span className="font-normal">
-                                                                                        {__('Spatiotemporal Info')}
-                                                                                    </span>
-                                                                                </button>
-                                                                            )}
-
-                                                                            <span
-
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                                            >
-
-                                                                                <span>{__('Post Created')}:
+                                                                            <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
+                                                                                <span>
+                                                                                    {__(
+                                                                                        'Post Created',
+                                                                                    )}
+                                                                                    :
                                                                                     <p>
-                                                                                        {feedGallery?.added_at} {feedGallery?.created_at_time}
+                                                                                        {
+                                                                                            feedGallery?.added_at
+                                                                                        }{' '}
+                                                                                        {
+                                                                                            feedGallery?.created_at_time
+                                                                                        }
                                                                                     </p>
                                                                                 </span>
                                                                             </span>
@@ -2030,8 +2031,7 @@ const DesktopFeed = ({
                                                                 )}
                                                             </div>
 
-
-                                                            <div >
+                                                            <div>
                                                                 {feedGallery?.tag && (
                                                                     <button
                                                                         onClick={() =>
@@ -2039,7 +2039,7 @@ const DesktopFeed = ({
                                                                                 feedGallery?.tag,
                                                                             )
                                                                         }
-                                                                        className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full hover:bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200  dark:hover:bg-surface-2-dark"
+                                                                        className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
                                                                         {feedGallery?.tag}
                                                                     </button>
@@ -2063,12 +2063,13 @@ const DesktopFeed = ({
                                                                 />
 
                                                                 {/* Divider */}
-                                                                {feedGallery?.addons?.length > 0 &&
+                                                                {feedGallery?.addons?.length >
+                                                                    0 && (
                                                                     <div className="mt-1 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
-                                                                }
+                                                                )}
 
-
-                                                                {feedGallery?.addons?.length > 0 && (
+                                                                {feedGallery?.addons?.length >
+                                                                    0 && (
                                                                     <ProductSelectInput
                                                                         InputName={__('Add-ons')}
                                                                         Name={'addons'}
@@ -2095,8 +2096,8 @@ const DesktopFeed = ({
                                                                             smartphone.smartphone_id ===
                                                                             feedGallery?.id,
                                                                     )?.length > 0) && (
-                                                                        <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
-                                                                    )}
+                                                                    <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                                                )}
 
                                                                 {/* Smartphone Items */}
                                                                 {cartItemSmartphones?.length > 0 &&
@@ -2106,112 +2107,117 @@ const DesktopFeed = ({
                                                                                 smartphone.smartphone_id ===
                                                                                 feedGallery?.id,
                                                                         )
-                                                                        .map((smartphone, index) => (
-                                                                            <div
-                                                                                className="w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
-                                                                                key={index}
-                                                                            >
-                                                                                <div className="flex flex-wrap items-center justify-between gap-4">
-                                                                                    <div className="flex flex-col items-start gap-3">
-                                                                                        {/* Product Name */}
-                                                                                        <div className="flex-1 min-w-0">
-                                                                                            <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
+                                                                        .map(
+                                                                            (smartphone, index) => (
+                                                                                <div
+                                                                                    className="w-full rounded-sm bg-surface-1-light p-4 dark:bg-surface-2-dark"
+                                                                                    key={index}
+                                                                                >
+                                                                                    <div className="flex flex-wrap items-center justify-between gap-4">
+                                                                                        <div className="flex flex-col items-start gap-3">
+                                                                                            {/* Product Name */}
+                                                                                            <div className="min-w-0 flex-1">
+                                                                                                <p className="truncate text-sm text-main-text-light dark:text-main-text-dark">
+                                                                                                    {
+                                                                                                        smartphone?.name
+                                                                                                    }{' '}
+                                                                                                    /{' '}
+                                                                                                    {
+                                                                                                        smartphone?.capacity
+                                                                                                    }{' '}
+                                                                                                    /{' '}
+                                                                                                    {
+                                                                                                        smartphone?.color_name
+                                                                                                    }
+                                                                                                </p>
+                                                                                            </div>
+
+                                                                                            {/* Quantity Selector */}
+                                                                                            <div className="inline-flex items-center overflow-hidden rounded-md border border-[#c8c8c8] dark:border-surface-3-dark">
+                                                                                                {/* DECREASE */}
+                                                                                                <button
+                                                                                                    onClick={() =>
+                                                                                                        handleSmartphoneDecrease(
+                                                                                                            smartphone?.color_id,
+                                                                                                        )
+                                                                                                    }
+                                                                                                    className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                >
+                                                                                                    <svg
+                                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                                        viewBox="0 0 24 24"
+                                                                                                        fill="none"
+                                                                                                        stroke="currentColor"
+                                                                                                        strokeWidth={
+                                                                                                            1.5
+                                                                                                        }
+                                                                                                        className="h-4 w-4"
+                                                                                                    >
+                                                                                                        <path
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                            d="M19.5 12h-15"
+                                                                                                        />
+                                                                                                    </svg>
+                                                                                                </button>
+
+                                                                                                {/* QUANTITY */}
+                                                                                                <span className="flex h-9 min-w-[3rem] items-center justify-center border-l border-r border-[#c8c8c8] bg-white text-sm font-semibold text-sub-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-sub-text-dark">
+                                                                                                    {
+                                                                                                        smartphone?.quantity
+                                                                                                    }
+                                                                                                </span>
+
+                                                                                                {/* INCREASE */}
+                                                                                                <button
+                                                                                                    onClick={() =>
+                                                                                                        handleSmartphoneIncrease(
+                                                                                                            smartphone?.color_id,
+                                                                                                        )
+                                                                                                    }
+                                                                                                    className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                >
+                                                                                                    <svg
+                                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                                        viewBox="0 0 24 24"
+                                                                                                        fill="none"
+                                                                                                        stroke="currentColor"
+                                                                                                        strokeWidth={
+                                                                                                            1.5
+                                                                                                        }
+                                                                                                        className="h-4 w-4"
+                                                                                                    >
+                                                                                                        <path
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                            d="M12 4.5v15m7.5-7.5h-15"
+                                                                                                        />
+                                                                                                    </svg>
+                                                                                                </button>
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        {/* Price */}
+                                                                                        <div className="flex-shrink-0">
+                                                                                            <p className="text-xl font-medium text-main-text-light dark:text-main-text-dark">
                                                                                                 {
-                                                                                                    smartphone?.name
+                                                                                                    currency?.name
                                                                                                 }{' '}
-                                                                                                /{' '}
                                                                                                 {
-                                                                                                    smartphone?.capacity
-                                                                                                }{' '}
-                                                                                                /{' '}
-                                                                                                {
-                                                                                                    smartphone?.color_name
+                                                                                                    currency?.symbol
                                                                                                 }
+                                                                                                {''}
+                                                                                                {Number(
+                                                                                                    smartphone?.price,
+                                                                                                ).toLocaleString(
+                                                                                                    'en-US',
+                                                                                                )}
                                                                                             </p>
                                                                                         </div>
-
-                                                                                        {/* Quantity Selector */}
-                                                                                        <div className="inline-flex items-center overflow-hidden rounded-md border border-[#c8c8c8] dark:border-surface-3-dark">
-                                                                                            {/* DECREASE */}
-                                                                                            <button
-                                                                                                onClick={() =>
-                                                                                                    handleSmartphoneDecrease(
-                                                                                                        smartphone?.color_id,
-                                                                                                    )
-                                                                                                }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                                            >
-                                                                                                <svg
-                                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    strokeWidth={
-                                                                                                        1.5
-                                                                                                    }
-                                                                                                    className="w-4 h-4"
-                                                                                                >
-                                                                                                    <path
-                                                                                                        strokeLinecap="round"
-                                                                                                        strokeLinejoin="round"
-                                                                                                        d="M19.5 12h-15"
-                                                                                                    />
-                                                                                                </svg>
-                                                                                            </button>
-
-                                                                                            {/* QUANTITY */}
-                                                                                            <span className="flex h-9 min-w-[3rem] items-center justify-center border-l border-r border-[#c8c8c8] bg-white text-sm font-semibold text-sub-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-sub-text-dark">
-                                                                                                {
-                                                                                                    smartphone?.quantity
-                                                                                                }
-                                                                                            </span>
-
-                                                                                            {/* INCREASE */}
-                                                                                            <button
-                                                                                                onClick={() =>
-                                                                                                    handleSmartphoneIncrease(
-                                                                                                        smartphone?.color_id,
-                                                                                                    )
-                                                                                                }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                                            >
-                                                                                                <svg
-                                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    strokeWidth={
-                                                                                                        1.5
-                                                                                                    }
-                                                                                                    className="w-4 h-4"
-                                                                                                >
-                                                                                                    <path
-                                                                                                        strokeLinecap="round"
-                                                                                                        strokeLinejoin="round"
-                                                                                                        d="M12 4.5v15m7.5-7.5h-15"
-                                                                                                    />
-                                                                                                </svg>
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                    {/* Price */}
-                                                                                    <div className="flex-shrink-0">
-                                                                                        <p className="text-xl font-medium text-main-text-light dark:text-main-text-dark">
-                                                                                            {
-                                                                                                currency?.name
-                                                                                            }{' '}
-                                                                                            {
-                                                                                                currency?.symbol
-                                                                                            }{''}
-                                                                                            {
-                                                                                                Number(smartphone?.price).toLocaleString('en-US')
-                                                                                            }
-                                                                                        </p>
                                                                                     </div>
                                                                                 </div>
-                                                                            </div>
-                                                                        ))}
+                                                                            ),
+                                                                        )}
 
                                                                 {/* Addon Items */}
                                                                 {cartItemAddons?.length > 0 &&
@@ -2223,13 +2229,15 @@ const DesktopFeed = ({
                                                                         )
                                                                         .map((addon, index) => (
                                                                             <div
-                                                                                className="relative w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                                                className="relative w-full rounded-sm bg-surface-1-light p-4 dark:bg-surface-2-dark"
                                                                                 key={index}
                                                                             >
                                                                                 {/* Remove Addon */}
                                                                                 <button
                                                                                     onClick={() => {
-                                                                                        handleAddonRemove(addon?.id);
+                                                                                        handleAddonRemove(
+                                                                                            addon?.id,
+                                                                                        );
                                                                                     }}
                                                                                     className="absolute right-2 top-0 z-[90] rounded-full p-2 text-main-text-light transition dark:text-main-text-dark"
                                                                                     aria-label="Close modal"
@@ -2238,9 +2246,11 @@ const DesktopFeed = ({
                                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                                         fill="none"
                                                                                         viewBox="0 0 24 24"
-                                                                                        strokeWidth={2}
+                                                                                        strokeWidth={
+                                                                                            2
+                                                                                        }
                                                                                         stroke="currentColor"
-                                                                                        className="w-4 h-4"
+                                                                                        className="h-4 w-4"
                                                                                     >
                                                                                         <path
                                                                                             strokeLinecap="round"
@@ -2253,8 +2263,8 @@ const DesktopFeed = ({
                                                                                 <div className="flex flex-wrap items-center justify-between gap-4">
                                                                                     <div className="flex flex-col items-start gap-3">
                                                                                         {/* Addon Name */}
-                                                                                        <div className="flex-1 min-w-0">
-                                                                                            <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
+                                                                                        <div className="min-w-0 flex-1">
+                                                                                            <p className="truncate text-sm text-main-text-light dark:text-main-text-dark">
                                                                                                 {
                                                                                                     addon?.name
                                                                                                 }
@@ -2270,7 +2280,7 @@ const DesktopFeed = ({
                                                                                                         addon?.id,
                                                                                                     )
                                                                                                 }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                             >
                                                                                                 <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -2280,7 +2290,7 @@ const DesktopFeed = ({
                                                                                                     strokeWidth={
                                                                                                         1.5
                                                                                                     }
-                                                                                                    className="w-4 h-4"
+                                                                                                    className="h-4 w-4"
                                                                                                 >
                                                                                                     <path
                                                                                                         strokeLinecap="round"
@@ -2304,7 +2314,7 @@ const DesktopFeed = ({
                                                                                                         addon?.id,
                                                                                                     )
                                                                                                 }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                             >
                                                                                                 <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -2314,7 +2324,7 @@ const DesktopFeed = ({
                                                                                                     strokeWidth={
                                                                                                         1.5
                                                                                                     }
-                                                                                                    className="w-4 h-4"
+                                                                                                    className="h-4 w-4"
                                                                                                 >
                                                                                                     <path
                                                                                                         strokeLinecap="round"
@@ -2334,10 +2344,13 @@ const DesktopFeed = ({
                                                                                             }{' '}
                                                                                             {
                                                                                                 currency?.symbol
-                                                                                            }{''}
-                                                                                            {
-                                                                                                Number(addon?.price).toLocaleString('en-US')
                                                                                             }
+                                                                                            {''}
+                                                                                            {Number(
+                                                                                                addon?.price,
+                                                                                            ).toLocaleString(
+                                                                                                'en-US',
+                                                                                            )}
                                                                                         </p>
                                                                                     </div>
                                                                                 </div>
@@ -2348,15 +2361,18 @@ const DesktopFeed = ({
                                                                 <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
 
                                                                 {/* Product Price */}
-                                                                <div className="flex items-center w-full">
-                                                                    <span className="font-medium text-left text-main-text-light dark:text-main-text-dark">
+                                                                <div className="flex w-full items-center">
+                                                                    <span className="text-left font-medium text-main-text-light dark:text-main-text-dark">
                                                                         {__('Total Price')}
                                                                     </span>
-                                                                    <span className="ml-auto text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark">
+                                                                    <span className="ml-auto text-right text-3xl font-semibold text-main-text-light dark:text-main-text-dark">
                                                                         {currency?.symbol}
-                                                                        {Number(smartphoneTotalPrice[
-                                                                            feedGallery?.id
-                                                                        ]).toLocaleString('en-US') || 0}
+                                                                        {Number(
+                                                                            smartphoneTotalPrice[
+                                                                                feedGallery?.id
+                                                                            ],
+                                                                        ).toLocaleString('en-US') ||
+                                                                            0}
                                                                     </span>
                                                                 </div>
 
@@ -2388,7 +2404,7 @@ const DesktopFeed = ({
                                                                                 disabled={
                                                                                     !canActionOnSmartphone
                                                                                 }
-                                                                                className={`h-12 flex-1 rounded-md border border-main-text-light bg-white text-center text-md font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-light bg-white text-center font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
                                                                             >
                                                                                 <div className="flex items-center justify-center">
                                                                                     {cartProcessing && (
@@ -2396,7 +2412,9 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {__('Add to cart')}
+                                                                                        {__(
+                                                                                            'Add to cart',
+                                                                                        )}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
@@ -2426,7 +2444,7 @@ const DesktopFeed = ({
                                                                                 disabled={
                                                                                     !canActionOnSmartphone
                                                                                 }
-                                                                                className={`h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-md font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
                                                                             >
                                                                                 <div className="flex items-center justify-center">
                                                                                     {buyNowProcessing && (
@@ -2434,12 +2452,12 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {__('Buy now')}
+                                                                                        {__(
+                                                                                            'Buy now',
+                                                                                        )}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
-
-
                                                                         </>
                                                                     )}
 
@@ -2450,9 +2468,10 @@ const DesktopFeed = ({
                                                                                 onClick={() => {
                                                                                     shouldCleanupBrowserHistoryRef.current = false;
                                                                                     router.get(
-                                                                                        route('login'),
+                                                                                        route(
+                                                                                            'login',
+                                                                                        ),
                                                                                         {
-
                                                                                             redirect:
                                                                                                 window
                                                                                                     .location
@@ -2460,12 +2479,10 @@ const DesktopFeed = ({
                                                                                                 window
                                                                                                     .location
                                                                                                     .search,
-
                                                                                         },
-                                                                                    )
-                                                                                }
-                                                                                }
-                                                                                className="flex-1 h-12 font-semibold transition bg-white border rounded-md text-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
+                                                                                    );
+                                                                                }}
+                                                                                className="text-md h-12 flex-1 rounded-md border border-main-text-light bg-white font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
                                                                             >
                                                                                 {__('Login')}
                                                                             </button>
@@ -2487,10 +2504,9 @@ const DesktopFeed = ({
                                                                                                     .location
                                                                                                     .search,
                                                                                         },
-                                                                                    )
-                                                                                }
-                                                                                }
-                                                                                className="flex-1 h-12 font-semibold transition border rounded-md text-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
+                                                                                    );
+                                                                                }}
+                                                                                className="text-md h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
                                                                             >
                                                                                 {__('Register')}
                                                                             </button>
@@ -2498,18 +2514,25 @@ const DesktopFeed = ({
                                                                     )}
                                                                 </div>
 
-
-
-
                                                                 {feedGallery?.product_details && (
                                                                     <>
                                                                         {/* Product Details */}
                                                                         <SmartphoneDetailsAccordion
-                                                                            productDetails={feedGallery?.product_details}
-                                                                            label={__('Product Details')}
-                                                                            onToggle={setToggleAccordion}
-                                                                            defaultOpen={toggleAccordion}
-                                                                            scrollContainerRef={productRightPanelScrollRef}
+                                                                            productDetails={
+                                                                                feedGallery?.product_details
+                                                                            }
+                                                                            label={__(
+                                                                                'Product Details',
+                                                                            )}
+                                                                            onToggle={
+                                                                                setToggleAccordion
+                                                                            }
+                                                                            defaultOpen={
+                                                                                toggleAccordion
+                                                                            }
+                                                                            scrollContainerRef={
+                                                                                productRightPanelScrollRef
+                                                                            }
                                                                         />
                                                                     </>
                                                                 )}
@@ -2526,16 +2549,14 @@ const DesktopFeed = ({
                     </div>
                 </div>
 
-                {
-                    spatiotemporalInfoModal && (
-                        <SpatiotemporalInfoModal
-                            onClose={() => {
-                                setSpatiotemporalInfoModal(false);
-                            }}
-                            post={feedGallery}
-                        />
-                    )
-                }
+                {spatiotemporalInfoModal && (
+                    <SpatiotemporalInfoModal
+                        onClose={() => {
+                            setSpatiotemporalInfoModal(false);
+                        }}
+                        post={feedGallery}
+                    />
+                )}
             </>
         );
     }
@@ -2544,21 +2565,10 @@ const DesktopFeed = ({
     if (feedGallery !== null && feedGallery?.type === 'posts') {
         return (
             <>
-
-                <div
-                    className="
-    absolute
-    inset-y-0
-    left-[var(--sidebar-w)]
-    right-0
-    z-[60]
-    bg-backgroundLight
-    dark:bg-backgroundDark
-  "
-                >
+                <div className="absolute inset-y-0 left-[var(--sidebar-w)] right-0 z-[60] bg-backgroundLight dark:bg-backgroundDark">
                     {/* Modal Container */}
 
-                    <div className="flex items-center justify-center w-full h-full overflow-hidden">
+                    <div className="flex h-full w-full items-center justify-center overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
                             {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
@@ -2573,7 +2583,7 @@ const DesktopFeed = ({
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -2594,11 +2604,14 @@ const DesktopFeed = ({
                                         setFeedOpen(false);
                                         setMediaItems([]);
                                         mediaThumbRefs.current = {};
-                                        window.history.replaceState({}, '', window.location.pathname);
-
+                                        window.history.replaceState(
+                                            {},
+                                            '',
+                                            window.location.pathname,
+                                        );
                                     }
                                 }}
-                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-surface-1-light  transition-all duration-200  dark:hover:bg-surface-2-dark "
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full transition-all duration-200 hover:bg-surface-1-light dark:hover:bg-surface-2-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -2607,7 +2620,7 @@ const DesktopFeed = ({
                                     viewBox="0 0 24 24"
                                     strokeWidth={2}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -2630,7 +2643,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -2653,7 +2666,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -2677,7 +2690,7 @@ const DesktopFeed = ({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -2694,125 +2707,132 @@ const DesktopFeed = ({
                             >
                                 {/* Scrollable Content */}
                                 <div className="h-full">
-                                    <div className="flex flex-col gap-[40px] bg-backgroundLight h-[83vh] min-h-0 dark:bg-backgroundDark lg:flex-row lg:items-start">
+                                    <div className="flex h-[83vh] min-h-0 flex-col gap-[40px] bg-backgroundLight dark:bg-backgroundDark lg:flex-row lg:items-start">
                                         {feedGallery && (
                                             <>
                                                 {/* Left Side - Image Viewer */}
                                                 {((Array.isArray(feedGallery?.post_video_urls) &&
                                                     feedGallery.post_video_urls.length > 0) ||
                                                     (Array.isArray(feedGallery?.post_image_urls) &&
-                                                        feedGallery.post_image_urls.length > 0)) && (
-                                                        <div
-                                                            className="relative flex w-full h-full justify-center lg:w-[50%] xl:w-[50%]"
-                                                            ref={MediaRef}
-                                                        >
-                                                            <div className="aspect-[3/2] w-full h-full max-w-[520px] lg:aspect-[2/4]">
+                                                        feedGallery.post_image_urls.length >
+                                                            0)) && (
+                                                    <div
+                                                        className="relative flex h-full w-full justify-center lg:w-[50%] xl:w-[50%]"
+                                                        ref={MediaRef}
+                                                    >
+                                                        <div className="aspect-[3/2] h-full w-full max-w-[520px] lg:aspect-[2/4]">
+                                                            {/* Animated layers */}
+                                                            <AnimatePresence
+                                                                initial={false}
+                                                                custom={direction}
+                                                            >
+                                                                <div className="absolute inset-0 flex h-full w-full items-center justify-center">
+                                                                    {mediaItems.map((item, idx) => {
+                                                                        const isCurrent =
+                                                                            idx ===
+                                                                            selectedMediaIndex;
 
-                                                                {/* Animated layers */}
-                                                                <AnimatePresence
-                                                                    initial={false}
-                                                                    custom={direction}
-                                                                >
-                                                                    <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                                                                        {mediaItems.map((item, idx) => {
-                                                                            const isCurrent =
-                                                                                idx === selectedMediaIndex;
-
-                                                                            return (
-                                                                                <motion.div
-                                                                                    key={`${idx}-${item.url}`}
-                                                                                    initial={false}
-                                                                                    animate={{
-                                                                                        opacity: isCurrent
+                                                                        return (
+                                                                            <motion.div
+                                                                                key={`${idx}-${item.url}`}
+                                                                                initial={false}
+                                                                                animate={{
+                                                                                    opacity:
+                                                                                        isCurrent
                                                                                             ? 1
                                                                                             : 0,
-                                                                                        zIndex: isCurrent
-                                                                                            ? 1
-                                                                                            : 0,
-                                                                                    }}
-                                                                                    transition={{
-                                                                                        duration: 0.4,
-                                                                                        ease: 'easeInOut',
-                                                                                    }}
-                                                                                    className="absolute inset-0 flex items-center justify-center w-full h-full"
-                                                                                >
-                                                                                    {item.type ===
-                                                                                        'image' ? (
-                                                                                        <img
-                                                                                            src={
-                                                                                                item.url ||
-                                                                                                Placeholder
-                                                                                            }
-                                                                                            alt={`Media ${idx}`}
-                                                                                            className="object-cover object-center w-full h-full rounded-md"
-                                                                                            loading={
-                                                                                                isCurrent
-                                                                                                    ? 'eager'
-                                                                                                    : 'lazy'
-                                                                                            }
-                                                                                            decoding="async"
-                                                                                            fetchpriority={
-                                                                                                isCurrent
-                                                                                                    ? 'high'
-                                                                                                    : 'low'
-                                                                                            }
-                                                                                            onLoad={() =>
-                                                                                                loadedCache.current.add(
-                                                                                                    item.url,
-                                                                                                )
-                                                                                            }
-                                                                                            onError={(e) =>
+                                                                                    zIndex: isCurrent
+                                                                                        ? 1
+                                                                                        : 0,
+                                                                                }}
+                                                                                transition={{
+                                                                                    duration: 0.4,
+                                                                                    ease: 'easeInOut',
+                                                                                }}
+                                                                                className="absolute inset-0 flex h-full w-full items-center justify-center"
+                                                                            >
+                                                                                {item.type ===
+                                                                                'image' ? (
+                                                                                    <img
+                                                                                        src={
+                                                                                            item.url ||
+                                                                                            Placeholder
+                                                                                        }
+                                                                                        alt={`Media ${idx}`}
+                                                                                        className="h-full w-full rounded-md object-cover object-center"
+                                                                                        loading={
+                                                                                            isCurrent
+                                                                                                ? 'eager'
+                                                                                                : 'lazy'
+                                                                                        }
+                                                                                        decoding="async"
+                                                                                        fetchpriority={
+                                                                                            isCurrent
+                                                                                                ? 'high'
+                                                                                                : 'low'
+                                                                                        }
+                                                                                        onLoad={() =>
+                                                                                            loadedCache.current.add(
+                                                                                                item.url,
+                                                                                            )
+                                                                                        }
+                                                                                        onError={(
+                                                                                            e,
+                                                                                        ) =>
                                                                                             (e.target.src =
                                                                                                 Placeholder)
-                                                                                            }
-                                                                                        />
-                                                                                    ) : (
-                                                                                        <CustomizedVideoPlayer
-                                                                                            autoPlay={videoAutoplay}
-                                                                                            className="object-cover object-center w-full h-full rounded-md"
-                                                                                            videoUrl={
-                                                                                                item.url
-                                                                                            }
-                                                                                            Preload="metadata"
-                                                                                            thumbnail={
-                                                                                                item?.thumbnail_url ||
-                                                                                                Placeholder
-                                                                                            }
-                                                                                            OnLoadedMetaData={() =>
-                                                                                                loadedCache.current.add(
-                                                                                                    item.url,
-                                                                                                )
-                                                                                            }
-
-
-                                                                                            slug={feedGallery?.slug}
-                                                                                        />
-                                                                                    )}
-                                                                                </motion.div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                </AnimatePresence>
-                                                            </div>
+                                                                                        }
+                                                                                    />
+                                                                                ) : (
+                                                                                    <CustomizedVideoPlayer
+                                                                                        autoPlay={
+                                                                                            videoAutoplay
+                                                                                        }
+                                                                                        className="h-full w-full rounded-md object-cover object-center"
+                                                                                        videoUrl={
+                                                                                            item.url
+                                                                                        }
+                                                                                        Preload="metadata"
+                                                                                        thumbnail={
+                                                                                            item?.thumbnail_url ||
+                                                                                            Placeholder
+                                                                                        }
+                                                                                        OnLoadedMetaData={() =>
+                                                                                            loadedCache.current.add(
+                                                                                                item.url,
+                                                                                            )
+                                                                                        }
+                                                                                        slug={
+                                                                                            feedGallery?.slug
+                                                                                        }
+                                                                                    />
+                                                                                )}
+                                                                            </motion.div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </AnimatePresence>
                                                         </div>
-                                                    )}
+                                                    </div>
+                                                )}
 
                                                 {/* Right Side - Content & Details */}
-                                                <div className="flex flex-col  w-full h-full lg:w-[40%] xl:w-[45%]">
+                                                <div className="flex h-full w-full flex-col lg:w-[40%] xl:w-[45%]">
                                                     {/* Image Thumbnails Strip */}
                                                     <div className={`flex items-center gap-0`}>
-
                                                         {/* Prev indicator */}
                                                         {canGoPrev && (
                                                             <button
-                                                                className="mr-2 mb-2 flex h-[clamp(66px,5.2vw,66px)] w-[clamp(40px,2.5vw,40px)] flex-shrink-0 items-center justify-center rounded-md bg-surface-2-light dark:bg-surface-2-dark"
+                                                                className="mb-2 mr-2 flex h-[clamp(66px,5.2vw,66px)] w-[clamp(40px,2.5vw,40px)] flex-shrink-0 items-center justify-center rounded-md bg-surface-2-light dark:bg-surface-2-dark"
                                                                 onClick={() => {
                                                                     const newPage = thumbPage - 1;
                                                                     const firstIndex =
                                                                         newPage * MAX_THUMBS;
 
                                                                     setThumbPage(newPage);
-                                                                    setSelectedMediaIndex(firstIndex);
+                                                                    setSelectedMediaIndex(
+                                                                        firstIndex,
+                                                                    );
                                                                 }}
                                                             >
                                                                 <svg
@@ -2834,102 +2854,107 @@ const DesktopFeed = ({
                                                         {((Array.isArray(
                                                             feedGallery?.post_video_urls,
                                                         ) &&
-                                                            feedGallery.post_video_urls.length > 1) ||
+                                                            feedGallery.post_video_urls.length >
+                                                                1) ||
                                                             (Array.isArray(
                                                                 feedGallery?.post_image_urls,
                                                             ) &&
                                                                 feedGallery.post_image_urls.length >
-                                                                1)) && (
-                                                                <div
-                                                                    ref={MediaThumbRef}
-                                                                    className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
-                                                                >
-                                                                    {/* Render thumbnails */}
-                                                                    {visibleThumbs.map(
-                                                                        (mediaItem, index) => {
-                                                                            const realIndex =
-                                                                                startIndex + index;
-                                                                            return (
-                                                                                <button
-                                                                                    key={realIndex}
-                                                                                    ref={(el) => {
-                                                                                        mediaThumbRefs.current[
-                                                                                            realIndex
-                                                                                        ] = el;
-                                                                                    }}
-                                                                                    onClick={() =>
-                                                                                        setSelectedMediaIndex(
-                                                                                            realIndex,
-                                                                                        )
-                                                                                    }
-                                                                                    // className={`aspect-square w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${selectedMediaIndex ===
-                                                                                    //     realIndex
-                                                                                    //     ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
-                                                                                    //     : 'border-gray-300 hover:border-gray-400 dark:border-gray-700'
-                                                                                    //     }`}
+                                                                    1)) && (
+                                                            <div
+                                                                ref={MediaThumbRef}
+                                                                className="mb-3 flex items-center gap-2 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                                                            >
+                                                                {/* Render thumbnails */}
+                                                                {visibleThumbs.map(
+                                                                    (mediaItem, index) => {
+                                                                        const realIndex =
+                                                                            startIndex + index;
+                                                                        return (
+                                                                            <button
+                                                                                key={realIndex}
+                                                                                ref={(el) => {
+                                                                                    mediaThumbRefs.current[
+                                                                                        realIndex
+                                                                                    ] = el;
+                                                                                }}
+                                                                                onClick={() =>
+                                                                                    setSelectedMediaIndex(
+                                                                                        realIndex,
+                                                                                    )
+                                                                                }
+                                                                                // className={`aspect-square w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${selectedMediaIndex ===
+                                                                                //     realIndex
+                                                                                //     ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
+                                                                                //     : 'border-gray-300 hover:border-gray-400 dark:border-gray-700'
+                                                                                //     }`}
 
-                                                                                    className={`aspect-square ${selectedMediaIndex === realIndex ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-md transition-all`}
-                                                                                >
-                                                                                    {mediaItem?.type ===
-                                                                                        'image' ? (
-                                                                                        <img
-                                                                                            src={
-                                                                                                mediaItem?.url ||
-                                                                                                Placeholder
-                                                                                            }
-                                                                                            alt={`Thumbnail ${realIndex + 1}`}
-                                                                                            className="object-cover w-full h-full"
-                                                                                            loading={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'eager'
-                                                                                                    : 'lazy'
-                                                                                            }
-                                                                                            decoding="async"
-                                                                                            fetchpriority={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'high'
-                                                                                                    : 'low'
-                                                                                            }
-                                                                                            onError={(e) =>
+                                                                                className={`aspect-square ${selectedMediaIndex === realIndex ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-md transition-all`}
+                                                                            >
+                                                                                {mediaItem?.type ===
+                                                                                'image' ? (
+                                                                                    <img
+                                                                                        src={
+                                                                                            mediaItem?.url ||
+                                                                                            Placeholder
+                                                                                        }
+                                                                                        alt={`Thumbnail ${realIndex + 1}`}
+                                                                                        className="h-full w-full object-cover"
+                                                                                        loading={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'eager'
+                                                                                                : 'lazy'
+                                                                                        }
+                                                                                        decoding="async"
+                                                                                        fetchpriority={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'high'
+                                                                                                : 'low'
+                                                                                        }
+                                                                                        onError={(
+                                                                                            e,
+                                                                                        ) =>
                                                                                             (e.target.src =
                                                                                                 Placeholder)
-                                                                                            }
-                                                                                        />
-                                                                                    ) : (
-                                                                                        <img
-                                                                                            src={
-                                                                                                mediaItem?.thumbnail_url ||
-                                                                                                Placeholder
-                                                                                            }
-                                                                                            alt={`Thumbnail ${index + 1}`}
-                                                                                            className="object-cover w-full h-full"
-                                                                                            loading={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'eager'
-                                                                                                    : 'lazy'
-                                                                                            }
-                                                                                            decoding="async"
-                                                                                            fetchpriority={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'high'
-                                                                                                    : 'low'
-                                                                                            }
-                                                                                            onError={(e) =>
+                                                                                        }
+                                                                                    />
+                                                                                ) : (
+                                                                                    <img
+                                                                                        src={
+                                                                                            mediaItem?.thumbnail_url ||
+                                                                                            Placeholder
+                                                                                        }
+                                                                                        alt={`Thumbnail ${index + 1}`}
+                                                                                        className="h-full w-full object-cover"
+                                                                                        loading={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'eager'
+                                                                                                : 'lazy'
+                                                                                        }
+                                                                                        decoding="async"
+                                                                                        fetchpriority={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'high'
+                                                                                                : 'low'
+                                                                                        }
+                                                                                        onError={(
+                                                                                            e,
+                                                                                        ) =>
                                                                                             (e.target.src =
                                                                                                 Placeholder)
-                                                                                            }
-                                                                                        />
-                                                                                    )}
-                                                                                </button>
-                                                                            );
-                                                                        },
-                                                                    )}
-                                                                </div>
-                                                            )}
+                                                                                        }
+                                                                                    />
+                                                                                )}
+                                                                            </button>
+                                                                        );
+                                                                    },
+                                                                )}
+                                                            </div>
+                                                        )}
 
                                                         {/* Next indicator */}
                                                         {canGoNext && (
@@ -2941,7 +2966,9 @@ const DesktopFeed = ({
                                                                         newPage * MAX_THUMBS;
 
                                                                     setThumbPage(newPage);
-                                                                    setSelectedMediaIndex(firstIndex);
+                                                                    setSelectedMediaIndex(
+                                                                        firstIndex,
+                                                                    );
                                                                 }}
                                                             >
                                                                 <svg
@@ -2961,24 +2988,14 @@ const DesktopFeed = ({
                                                     </div>
 
                                                     {/* Content Area */}
-                                                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none" >
+                                                    <div className="min-h-0 flex-1 overflow-y-auto scrollbar-none">
                                                         {/* Tag and Actions Header */}
-                                                        <div className="flex justify-between mb-2 align-start">
-
+                                                        <div className="align-start mb-2 flex justify-between">
                                                             {/* Three Dot Menu */}
                                                             <div className="relative flex-1">
                                                                 <button
                                                                     data-post-actions-button
-
-
-                                                                    className="
-    flex items-center justify-center
-    w-[36px] h-[36px]
-    rounded-full
-    hover:bg-surface-1-light
-    transition-all duration-200
-    dark:hover:bg-surface-2-dark
-  "
+                                                                    className="flex h-[36px] w-[36px] items-center justify-center rounded-full transition-all duration-200 hover:bg-surface-1-light dark:hover:bg-surface-2-dark"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -2986,7 +3003,7 @@ const DesktopFeed = ({
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={2.5}
                                                                         stroke="currentColor"
-                                                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
@@ -3000,30 +3017,33 @@ const DesktopFeed = ({
                                                                     </svg>
                                                                 </button>
 
-
                                                                 {showPostDesktopActionsDropdown && (
                                                                     <div
                                                                         data-post-actions-dropdown
-                                                                        className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                                        className="absolute left-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                                     >
                                                                         <div className="py-2">
                                                                             {/* QR Code */}
                                                                             <button
                                                                                 onClick={() => {
-                                                                                    setShowQrCode(true);
+                                                                                    setShowQrCode(
+                                                                                        true,
+                                                                                    );
                                                                                     setShowPostDesktopActionsDropdown(
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     fill="none"
                                                                                     viewBox="0 0 24 24"
-                                                                                    strokeWidth={1.5}
+                                                                                    strokeWidth={
+                                                                                        1.5
+                                                                                    }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -3044,7 +3064,9 @@ const DesktopFeed = ({
                                                                             {/* Bookmark */}
                                                                             {auth?.user && (
                                                                                 <button
-                                                                                    onClick={(e) => {
+                                                                                    onClick={(
+                                                                                        e,
+                                                                                    ) => {
                                                                                         e.stopPropagation();
                                                                                         router.put(
                                                                                             route(
@@ -3083,7 +3105,7 @@ const DesktopFeed = ({
                                                                                             },
                                                                                         );
                                                                                     }}
-                                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                    className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                 >
                                                                                     <svg
                                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -3105,7 +3127,7 @@ const DesktopFeed = ({
                                                                                             1.5
                                                                                         }
                                                                                         viewBox="0 0 24 24"
-                                                                                        className="w-5 h-5"
+                                                                                        className="h-5 w-5"
                                                                                     >
                                                                                         <path
                                                                                             strokeLinecap="round"
@@ -3116,11 +3138,11 @@ const DesktopFeed = ({
                                                                                     <span className="font-normal">
                                                                                         {feedGallery?.is_bookmarked
                                                                                             ? __(
-                                                                                                'Remove Bookmarker',
-                                                                                            )
+                                                                                                  'Remove Bookmarker',
+                                                                                              )
                                                                                             : __(
-                                                                                                'Bookmarker',
-                                                                                            )}
+                                                                                                  'Bookmarker',
+                                                                                              )}
                                                                                     </span>
                                                                                 </button>
                                                                             )}
@@ -3129,29 +3151,35 @@ const DesktopFeed = ({
                                                                             <button
                                                                                 onClick={(e) => {
                                                                                     const url =
-                                                                                        route('home') +
+                                                                                        route(
+                                                                                            'home',
+                                                                                        ) +
                                                                                         generateURL(
                                                                                             feedGallery,
                                                                                             true,
-                                                                                            true
+                                                                                            true,
                                                                                         );
                                                                                     navigator.clipboard.writeText(
                                                                                         url.trim(),
                                                                                     );
-                                                                                    setLinkCopied(true);
+                                                                                    setLinkCopied(
+                                                                                        true,
+                                                                                    );
                                                                                     setShowPostDesktopActionsDropdown(
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     fill="none"
                                                                                     viewBox="0 0 24 24"
-                                                                                    strokeWidth={1.5}
+                                                                                    strokeWidth={
+                                                                                        1.5
+                                                                                    }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -3160,43 +3188,73 @@ const DesktopFeed = ({
                                                                                     />
                                                                                 </svg>
                                                                                 <span className="font-normal">
-                                                                                    {__('Copy Link')}
+                                                                                    {__(
+                                                                                        'Copy Link',
+                                                                                    )}
                                                                                 </span>
                                                                             </button>
 
                                                                             {/* Spatiotemporal Information */}
-                                                                            {(feedGallery?.latitude != null && feedGallery?.longitude != null) && (
-                                                                                <button
-                                                                                    onClick={(e) => {
-                                                                                        setSpatiotemporalInfoModal(true);
-                                                                                        setShowPostDesktopActionsDropdown(
-                                                                                            false,
-                                                                                        );
-                                                                                    }}
-                                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                                >
+                                                                            {feedGallery?.latitude !=
+                                                                                null &&
+                                                                                feedGallery?.longitude !=
+                                                                                    null && (
+                                                                                    <button
+                                                                                        onClick={(
+                                                                                            e,
+                                                                                        ) => {
+                                                                                            setSpatiotemporalInfoModal(
+                                                                                                true,
+                                                                                            );
+                                                                                            setShowPostDesktopActionsDropdown(
+                                                                                                false,
+                                                                                            );
+                                                                                        }}
+                                                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                    >
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            fill="none"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            strokeWidth={
+                                                                                                1.5
+                                                                                            }
+                                                                                            stroke="currentColor"
+                                                                                            className="h-5 w-5"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                                                            />
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                                                            />
+                                                                                        </svg>
 
+                                                                                        <span className="font-normal">
+                                                                                            {__(
+                                                                                                'Spatiotemporal Info',
+                                                                                            )}
+                                                                                        </span>
+                                                                                    </button>
+                                                                                )}
 
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                                                                    </svg>
-
-
-                                                                                    <span className="font-normal">
-                                                                                        {__('Spatiotemporal Info')}
-                                                                                    </span>
-                                                                                </button>
-                                                                            )}
-
-                                                                            <span
-
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                                            >
-
-                                                                                <span>{__('Post Created')}:
+                                                                            <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
+                                                                                <span>
+                                                                                    {__(
+                                                                                        'Post Created',
+                                                                                    )}
+                                                                                    :
                                                                                     <p>
-                                                                                        {feedGallery?.added_at} {feedGallery?.created_at_time}
+                                                                                        {
+                                                                                            feedGallery?.added_at
+                                                                                        }{' '}
+                                                                                        {
+                                                                                            feedGallery?.created_at_time
+                                                                                        }
                                                                                     </p>
                                                                                 </span>
                                                                             </span>
@@ -3213,47 +3271,44 @@ const DesktopFeed = ({
                                                                                 feedGallery?.tag,
                                                                             )
                                                                         }
-
-                                                                        className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full hover:bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200  dark:hover:bg-surface-2-dark"
+                                                                        className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
                                                                         {feedGallery?.tag}
                                                                     </button>
                                                                 )}
                                                             </div>
-
                                                         </div>
 
                                                         {/* Post Content */}
                                                         <div
-                                                            className="flex-1 pr-2 overflow-y-auto prose-sm text-[14px] font-normal prose break-all whitespace-pre-line max-w-none text-main-text-light dark:prose-invert dark:text-main-text-dark"
+                                                            className="prose prose-sm max-w-none flex-1 overflow-y-auto whitespace-pre-line break-all pr-2 text-[14px] font-normal text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                             dangerouslySetInnerHTML={{
                                                                 __html: feedGallery?.content,
                                                             }}
                                                         />
 
-
-                                                        <div
-                                                            className=" z-[90] flex items-center justify-start my-4"
-                                                        >
-
-                                                            <div className="transition-all duration-200 rounded-full bg-[#efefef] text-[#595959] dark:text-main-text-dark hover:bg-[#e6e6e6] hover:scale-[1.02] dark:bg-surface-2-dark dark:hover:bg-surface-3-dark">
+                                                        <div className="z-[90] my-4 flex items-center justify-start">
+                                                            <div className="rounded-full bg-[#efefef] text-[#595959] transition-all duration-200 hover:scale-[1.02] hover:bg-[#e6e6e6] dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark">
                                                                 <div className="flex items-center gap-2 p-2">
-
-                                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4 text-[#595959] dark:text-main-text-dark">
-                                                                        <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clipRule="evenodd" />
+                                                                    <svg
+                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                        viewBox="0 0 24 24"
+                                                                        fill="currentColor"
+                                                                        className="size-4 text-[#595959] dark:text-main-text-dark"
+                                                                    >
+                                                                        <path
+                                                                            fillRule="evenodd"
+                                                                            d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                                                                            clipRule="evenodd"
+                                                                        />
                                                                     </svg>
 
-                                                                    <span className='text-[13px] font-medium truncate line-clamp-1'>
+                                                                    <span className="line-clamp-1 truncate text-[13px] font-medium">
                                                                         {feedGallery?.user?.name}
                                                                     </span>
                                                                 </div>
-
                                                             </div>
-
-
                                                         </div>
-
-
                                                     </div>
                                                 </div>
                                             </>
@@ -3265,17 +3320,14 @@ const DesktopFeed = ({
                     </div>
                 </div>
 
-                {
-                    spatiotemporalInfoModal && (
-                        <SpatiotemporalInfoModal
-                            onClose={() => {
-                                setSpatiotemporalInfoModal(false);
-                            }}
-                            post={feedGallery}
-                        />
-                    )
-                }
-
+                {spatiotemporalInfoModal && (
+                    <SpatiotemporalInfoModal
+                        onClose={() => {
+                            setSpatiotemporalInfoModal(false);
+                        }}
+                        post={feedGallery}
+                    />
+                )}
             </>
         );
     }
@@ -3284,19 +3336,8 @@ const DesktopFeed = ({
     if (feedGallery !== null && feedGallery?.type === 'smartphones') {
         return (
             <>
-                <div
-                    className="
-    absolute
-    inset-y-0
-    left-[var(--sidebar-w)]
-    right-0
-    z-[60]
-    bg-backgroundLight
-    dark:bg-backgroundDark
-  "
-                >
-
-                    <div className="flex items-center justify-center w-full h-full overflow-hidden">
+                <div className="absolute inset-y-0 left-[var(--sidebar-w)] right-0 z-[60] bg-backgroundLight dark:bg-backgroundDark">
+                    <div className="flex h-full w-full items-center justify-center overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
                             {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
@@ -3311,7 +3352,7 @@ const DesktopFeed = ({
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -3332,11 +3373,14 @@ const DesktopFeed = ({
                                         setFeedOpen(false);
                                         setMediaItems([]);
                                         mediaThumbRefs.current = {};
-                                        window.history.replaceState({}, '', window.location.pathname);
-
+                                        window.history.replaceState(
+                                            {},
+                                            '',
+                                            window.location.pathname,
+                                        );
                                     }
                                 }}
-                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full hover:bg-surface-1-light  transition-all duration-200  dark:hover:bg-surface-2-dark "
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full transition-all duration-200 hover:bg-surface-1-light dark:hover:bg-surface-2-dark"
                                 aria-label="Close modal"
                             >
                                 <svg
@@ -3345,7 +3389,7 @@ const DesktopFeed = ({
                                     viewBox="0 0 24 24"
                                     strokeWidth={2}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -3368,7 +3412,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -3391,7 +3435,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -3415,7 +3459,7 @@ const DesktopFeed = ({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -3432,110 +3476,120 @@ const DesktopFeed = ({
                             >
                                 {/* Scrollable Content */}
                                 <div className="h-full">
-                                    <div className="flex flex-col gap-[40px] bg-backgroundLight h-[83vh] min-h-0 dark:bg-backgroundDark lg:flex-row lg:items-start">
+                                    <div className="flex h-[83vh] min-h-0 flex-col gap-[40px] bg-backgroundLight dark:bg-backgroundDark lg:flex-row lg:items-start">
                                         {feedGallery && (
                                             <>
                                                 {/* Left Side - Image Viewer */}
-                                                {((Array.isArray(feedGallery?.smartphone_video_urls) &&
+                                                {((Array.isArray(
+                                                    feedGallery?.smartphone_video_urls,
+                                                ) &&
                                                     feedGallery.smartphone_video_urls.length > 0) ||
-                                                    (Array.isArray(feedGallery?.smartphone_image_urls) &&
-                                                        feedGallery.smartphone_image_urls.length > 0)) && (
-                                                        <div
-                                                            className="relative flex w-full h-full justify-center lg:w-[50%] xl:w-[50%]"
-                                                            ref={MediaRef}
-                                                        >
-                                                            <div className="aspect-[3/2] w-full h-full max-w-[520px] lg:aspect-[2/4]">
+                                                    (Array.isArray(
+                                                        feedGallery?.smartphone_image_urls,
+                                                    ) &&
+                                                        feedGallery.smartphone_image_urls.length >
+                                                            0)) && (
+                                                    <div
+                                                        className="relative flex h-full w-full justify-center lg:w-[50%] xl:w-[50%]"
+                                                        ref={MediaRef}
+                                                    >
+                                                        <div className="aspect-[3/2] h-full w-full max-w-[520px] lg:aspect-[2/4]">
+                                                            {/* Animated layers */}
+                                                            <AnimatePresence
+                                                                initial={false}
+                                                                custom={direction}
+                                                            >
+                                                                <div className="absolute inset-0 flex h-full w-full items-center justify-center">
+                                                                    {mediaItems.map((item, idx) => {
+                                                                        const isCurrent =
+                                                                            idx ===
+                                                                            selectedMediaIndex;
 
-                                                                {/* Animated layers */}
-                                                                <AnimatePresence
-                                                                    initial={false}
-                                                                    custom={direction}
-                                                                >
-                                                                    <div className="absolute inset-0 flex items-center justify-center w-full h-full">
-                                                                        {mediaItems.map((item, idx) => {
-                                                                            const isCurrent =
-                                                                                idx === selectedMediaIndex;
-
-                                                                            return (
-                                                                                <motion.div
-                                                                                    key={`${idx}-${item.url}`}
-                                                                                    initial={false}
-                                                                                    animate={{
-                                                                                        opacity: isCurrent
+                                                                        return (
+                                                                            <motion.div
+                                                                                key={`${idx}-${item.url}`}
+                                                                                initial={false}
+                                                                                animate={{
+                                                                                    opacity:
+                                                                                        isCurrent
                                                                                             ? 1
                                                                                             : 0,
-                                                                                        zIndex: isCurrent
-                                                                                            ? 1
-                                                                                            : 0,
-                                                                                    }}
-                                                                                    transition={{
-                                                                                        duration: 0.4,
-                                                                                        ease: 'easeInOut',
-                                                                                    }}
-                                                                                    className="absolute inset-0 flex items-center justify-center w-full h-full"
-                                                                                >
-                                                                                    {item.type ===
-                                                                                        'image' ? (
-                                                                                        <img
-                                                                                            src={
-                                                                                                item.url ||
-                                                                                                Placeholder
-                                                                                            }
-                                                                                            alt={`Media ${idx}`}
-                                                                                            className="object-cover object-center w-full h-full rounded-md"
-                                                                                            loading={
-                                                                                                isCurrent
-                                                                                                    ? 'eager'
-                                                                                                    : 'lazy'
-                                                                                            }
-                                                                                            decoding="async"
-                                                                                            fetchpriority={
-                                                                                                isCurrent
-                                                                                                    ? 'high'
-                                                                                                    : 'low'
-                                                                                            }
-                                                                                            onLoad={() =>
-                                                                                                loadedCache.current.add(
-                                                                                                    item.url,
-                                                                                                )
-                                                                                            }
-                                                                                            onError={(e) =>
+                                                                                    zIndex: isCurrent
+                                                                                        ? 1
+                                                                                        : 0,
+                                                                                }}
+                                                                                transition={{
+                                                                                    duration: 0.4,
+                                                                                    ease: 'easeInOut',
+                                                                                }}
+                                                                                className="absolute inset-0 flex h-full w-full items-center justify-center"
+                                                                            >
+                                                                                {item.type ===
+                                                                                'image' ? (
+                                                                                    <img
+                                                                                        src={
+                                                                                            item.url ||
+                                                                                            Placeholder
+                                                                                        }
+                                                                                        alt={`Media ${idx}`}
+                                                                                        className="h-full w-full rounded-md object-cover object-center"
+                                                                                        loading={
+                                                                                            isCurrent
+                                                                                                ? 'eager'
+                                                                                                : 'lazy'
+                                                                                        }
+                                                                                        decoding="async"
+                                                                                        fetchpriority={
+                                                                                            isCurrent
+                                                                                                ? 'high'
+                                                                                                : 'low'
+                                                                                        }
+                                                                                        onLoad={() =>
+                                                                                            loadedCache.current.add(
+                                                                                                item.url,
+                                                                                            )
+                                                                                        }
+                                                                                        onError={(
+                                                                                            e,
+                                                                                        ) =>
                                                                                             (e.target.src =
                                                                                                 Placeholder)
-                                                                                            }
-                                                                                        />
-                                                                                    ) : (
-                                                                                        <CustomizedVideoPlayer
-                                                                                            autoPlay={videoAutoplay}
-                                                                                            className="object-cover object-center w-full h-full rounded-md"
-                                                                                            videoUrl={
-                                                                                                item.url
-                                                                                            }
-                                                                                            Preload="metadata"
-                                                                                            thumbnail={
-                                                                                                item?.thumbnail_url ||
-                                                                                                Placeholder
-                                                                                            }
-                                                                                            OnLoadedMetaData={() =>
-                                                                                                loadedCache.current.add(
-                                                                                                    item.url,
-                                                                                                )
-                                                                                            }
-
-
-                                                                                            slug={feedGallery?.slug}
-                                                                                        />
-                                                                                    )}
-                                                                                </motion.div>
-                                                                            );
-                                                                        })}
-                                                                    </div>
-                                                                </AnimatePresence>
-                                                            </div>
+                                                                                        }
+                                                                                    />
+                                                                                ) : (
+                                                                                    <CustomizedVideoPlayer
+                                                                                        autoPlay={
+                                                                                            videoAutoplay
+                                                                                        }
+                                                                                        className="h-full w-full rounded-md object-cover object-center"
+                                                                                        videoUrl={
+                                                                                            item.url
+                                                                                        }
+                                                                                        Preload="metadata"
+                                                                                        thumbnail={
+                                                                                            item?.thumbnail_url ||
+                                                                                            Placeholder
+                                                                                        }
+                                                                                        OnLoadedMetaData={() =>
+                                                                                            loadedCache.current.add(
+                                                                                                item.url,
+                                                                                            )
+                                                                                        }
+                                                                                        slug={
+                                                                                            feedGallery?.slug
+                                                                                        }
+                                                                                    />
+                                                                                )}
+                                                                            </motion.div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                            </AnimatePresence>
                                                         </div>
-                                                    )}
+                                                    </div>
+                                                )}
                                                 {/* Right Side - Content & Details */}
-                                                <div className="flex flex-col  w-full h-full lg:w-[40%] xl:w-[45%]">
+                                                <div className="flex h-full w-full flex-col lg:w-[40%] xl:w-[45%]">
                                                     {/* Image Thumbnails Strip */}
                                                     <div className={`flex items-center gap-0`}>
                                                         {/* Prev indicator */}
@@ -3548,7 +3602,9 @@ const DesktopFeed = ({
                                                                         newPage * MAX_THUMBS;
 
                                                                     setThumbPage(newPage);
-                                                                    setSelectedMediaIndex(firstIndex);
+                                                                    setSelectedMediaIndex(
+                                                                        firstIndex,
+                                                                    );
                                                                 }}
                                                             >
                                                                 <svg
@@ -3569,102 +3625,107 @@ const DesktopFeed = ({
                                                         {((Array.isArray(
                                                             feedGallery?.smartphone_video_urls,
                                                         ) &&
-                                                            feedGallery.smartphone_video_urls.length > 1) ||
+                                                            feedGallery.smartphone_video_urls
+                                                                .length > 1) ||
                                                             (Array.isArray(
                                                                 feedGallery?.smartphone_image_urls,
                                                             ) &&
-                                                                feedGallery.smartphone_image_urls.length >
-                                                                1)) && (
-                                                                <div
-                                                                    ref={MediaThumbRef}
-                                                                    className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
-                                                                >
-                                                                    {/* Render thumbnails */}
-                                                                    {visibleThumbs.map(
-                                                                        (mediaItem, index) => {
-                                                                            const realIndex =
-                                                                                startIndex + index;
-                                                                            return (
-                                                                                <button
-                                                                                    key={realIndex}
-                                                                                    ref={(el) => {
-                                                                                        mediaThumbRefs.current[
-                                                                                            realIndex
-                                                                                        ] = el;
-                                                                                    }}
-                                                                                    onClick={() =>
-                                                                                        setSelectedMediaIndex(
-                                                                                            realIndex,
-                                                                                        )
-                                                                                    }
-                                                                                    // className={`aspect-square w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${selectedMediaIndex ===
-                                                                                    //     realIndex
-                                                                                    //     ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
-                                                                                    //     : 'border-gray-300 hover:border-gray-400 dark:border-gray-700'
-                                                                                    //     }`}
+                                                                feedGallery.smartphone_image_urls
+                                                                    .length > 1)) && (
+                                                            <div
+                                                                ref={MediaThumbRef}
+                                                                className="mb-3 flex items-center gap-2 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                                                            >
+                                                                {/* Render thumbnails */}
+                                                                {visibleThumbs.map(
+                                                                    (mediaItem, index) => {
+                                                                        const realIndex =
+                                                                            startIndex + index;
+                                                                        return (
+                                                                            <button
+                                                                                key={realIndex}
+                                                                                ref={(el) => {
+                                                                                    mediaThumbRefs.current[
+                                                                                        realIndex
+                                                                                    ] = el;
+                                                                                }}
+                                                                                onClick={() =>
+                                                                                    setSelectedMediaIndex(
+                                                                                        realIndex,
+                                                                                    )
+                                                                                }
+                                                                                // className={`aspect-square w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${selectedMediaIndex ===
+                                                                                //     realIndex
+                                                                                //     ? 'border-blue-500 ring-2 ring-blue-200 dark:ring-blue-800'
+                                                                                //     : 'border-gray-300 hover:border-gray-400 dark:border-gray-700'
+                                                                                //     }`}
 
-                                                                                    className={`aspect-square ${selectedMediaIndex === realIndex ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-md transition-all`}
-                                                                                >
-                                                                                    {mediaItem?.type ===
-                                                                                        'image' ? (
-                                                                                        <img
-                                                                                            src={
-                                                                                                mediaItem?.url ||
-                                                                                                Placeholder
-                                                                                            }
-                                                                                            alt={`Thumbnail ${realIndex + 1}`}
-                                                                                            className="object-cover w-full h-full"
-                                                                                            loading={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'eager'
-                                                                                                    : 'lazy'
-                                                                                            }
-                                                                                            decoding="async"
-                                                                                            fetchpriority={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'high'
-                                                                                                    : 'low'
-                                                                                            }
-                                                                                            onError={(e) =>
+                                                                                className={`aspect-square ${selectedMediaIndex === realIndex ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-md transition-all`}
+                                                                            >
+                                                                                {mediaItem?.type ===
+                                                                                'image' ? (
+                                                                                    <img
+                                                                                        src={
+                                                                                            mediaItem?.url ||
+                                                                                            Placeholder
+                                                                                        }
+                                                                                        alt={`Thumbnail ${realIndex + 1}`}
+                                                                                        className="h-full w-full object-cover"
+                                                                                        loading={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'eager'
+                                                                                                : 'lazy'
+                                                                                        }
+                                                                                        decoding="async"
+                                                                                        fetchpriority={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'high'
+                                                                                                : 'low'
+                                                                                        }
+                                                                                        onError={(
+                                                                                            e,
+                                                                                        ) =>
                                                                                             (e.target.src =
                                                                                                 Placeholder)
-                                                                                            }
-                                                                                        />
-                                                                                    ) : (
-                                                                                        <img
-                                                                                            src={
-                                                                                                mediaItem?.thumbnail_url ||
-                                                                                                Placeholder
-                                                                                            }
-                                                                                            alt={`Thumbnail ${index + 1}`}
-                                                                                            className="object-cover w-full h-full"
-                                                                                            loading={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'eager'
-                                                                                                    : 'lazy'
-                                                                                            }
-                                                                                            decoding="async"
-                                                                                            fetchpriority={
-                                                                                                selectedMediaIndex ===
-                                                                                                    realIndex
-                                                                                                    ? 'high'
-                                                                                                    : 'low'
-                                                                                            }
-                                                                                            onError={(e) =>
+                                                                                        }
+                                                                                    />
+                                                                                ) : (
+                                                                                    <img
+                                                                                        src={
+                                                                                            mediaItem?.thumbnail_url ||
+                                                                                            Placeholder
+                                                                                        }
+                                                                                        alt={`Thumbnail ${index + 1}`}
+                                                                                        className="h-full w-full object-cover"
+                                                                                        loading={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'eager'
+                                                                                                : 'lazy'
+                                                                                        }
+                                                                                        decoding="async"
+                                                                                        fetchpriority={
+                                                                                            selectedMediaIndex ===
+                                                                                            realIndex
+                                                                                                ? 'high'
+                                                                                                : 'low'
+                                                                                        }
+                                                                                        onError={(
+                                                                                            e,
+                                                                                        ) =>
                                                                                             (e.target.src =
                                                                                                 Placeholder)
-                                                                                            }
-                                                                                        />
-                                                                                    )}
-                                                                                </button>
-                                                                            );
-                                                                        },
-                                                                    )}
-                                                                </div>
-                                                            )}
+                                                                                        }
+                                                                                    />
+                                                                                )}
+                                                                            </button>
+                                                                        );
+                                                                    },
+                                                                )}
+                                                            </div>
+                                                        )}
 
                                                         {/* Next indicator */}
                                                         {canGoNext && (
@@ -3676,7 +3737,9 @@ const DesktopFeed = ({
                                                                         newPage * MAX_THUMBS;
 
                                                                     setThumbPage(newPage);
-                                                                    setSelectedMediaIndex(firstIndex);
+                                                                    setSelectedMediaIndex(
+                                                                        firstIndex,
+                                                                    );
                                                                 }}
                                                             >
                                                                 <svg
@@ -3697,15 +3760,12 @@ const DesktopFeed = ({
 
                                                     {/* Content Area */}
 
-
-                                                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none"
+                                                    <div
+                                                        className="min-h-0 flex-1 overflow-y-auto scrollbar-none"
                                                         ref={productRightPanelScrollRef}
                                                     >
                                                         {/* Tag and Actions Header */}
-                                                        <div className="flex justify-between mb-2 align-start">
-
-
-
+                                                        <div className="align-start mb-2 flex justify-between">
                                                             {/* Three Dot Menu */}
                                                             <div
                                                                 className="relative flex-1"
@@ -3713,20 +3773,9 @@ const DesktopFeed = ({
                                                                     smartphoneDesktopViewerActionDropdownRef
                                                                 }
                                                             >
-
-
                                                                 <button
                                                                     data-smartphone-actions-button
-
-
-                                                                    className="
-    flex items-center justify-center
-    w-[36px] h-[36px]
-    rounded-full
-    hover:bg-surface-1-light
-    transition-all duration-200
-    dark:hover:bg-surface-2-dark
-  "
+                                                                    className="flex h-[36px] w-[36px] items-center justify-center rounded-full transition-all duration-200 hover:bg-surface-1-light dark:hover:bg-surface-2-dark"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -3734,7 +3783,7 @@ const DesktopFeed = ({
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={2.5}
                                                                         stroke="currentColor"
-                                                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
@@ -3751,26 +3800,30 @@ const DesktopFeed = ({
                                                                 {showSmartphoneDesktopActionsDropdown && (
                                                                     <div
                                                                         data-smartphone-actions-dropdown
-                                                                        className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                                        className="absolute left-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                                     >
                                                                         <div className="py-2">
                                                                             {/* QR Code */}
                                                                             <button
                                                                                 onClick={() => {
-                                                                                    setShowQrCode(true);
+                                                                                    setShowQrCode(
+                                                                                        true,
+                                                                                    );
                                                                                     setShowSmartphoneDesktopActionsDropdown(
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     fill="none"
                                                                                     viewBox="0 0 24 24"
-                                                                                    strokeWidth={1.5}
+                                                                                    strokeWidth={
+                                                                                        1.5
+                                                                                    }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -3792,29 +3845,35 @@ const DesktopFeed = ({
                                                                             <button
                                                                                 onClick={(e) => {
                                                                                     const url =
-                                                                                        route('home') +
+                                                                                        route(
+                                                                                            'home',
+                                                                                        ) +
                                                                                         generateSmartphoneURL(
                                                                                             feedGallery,
                                                                                             true,
                                                                                             true,
-                                                                                        )
+                                                                                        );
                                                                                     navigator.clipboard.writeText(
                                                                                         url.trim(),
                                                                                     );
-                                                                                    setLinkCopied(true);
+                                                                                    setLinkCopied(
+                                                                                        true,
+                                                                                    );
                                                                                     setShowSmartphoneDesktopActionsDropdown(
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
                                                                                     fill="none"
                                                                                     viewBox="0 0 24 24"
-                                                                                    strokeWidth={1.5}
+                                                                                    strokeWidth={
+                                                                                        1.5
+                                                                                    }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -3823,44 +3882,73 @@ const DesktopFeed = ({
                                                                                     />
                                                                                 </svg>
                                                                                 <span className="font-normal">
-                                                                                    {__('Copy Link')}
+                                                                                    {__(
+                                                                                        'Copy Link',
+                                                                                    )}
                                                                                 </span>
                                                                             </button>
 
-
                                                                             {/* Spatiotemporal Information */}
-                                                                            {(feedGallery?.latitude != null && feedGallery?.longitude != null) && (
-                                                                                <button
-                                                                                    onClick={(e) => {
-                                                                                        setSpatiotemporalInfoModal(true);
-                                                                                        setShowPostDesktopActionsDropdown(
-                                                                                            false,
-                                                                                        );
-                                                                                    }}
-                                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                                >
+                                                                            {feedGallery?.latitude !=
+                                                                                null &&
+                                                                                feedGallery?.longitude !=
+                                                                                    null && (
+                                                                                    <button
+                                                                                        onClick={(
+                                                                                            e,
+                                                                                        ) => {
+                                                                                            setSpatiotemporalInfoModal(
+                                                                                                true,
+                                                                                            );
+                                                                                            setShowPostDesktopActionsDropdown(
+                                                                                                false,
+                                                                                            );
+                                                                                        }}
+                                                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                    >
+                                                                                        <svg
+                                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                                            fill="none"
+                                                                                            viewBox="0 0 24 24"
+                                                                                            strokeWidth={
+                                                                                                1.5
+                                                                                            }
+                                                                                            stroke="currentColor"
+                                                                                            className="h-5 w-5"
+                                                                                        >
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                                                            />
+                                                                                            <path
+                                                                                                strokeLinecap="round"
+                                                                                                strokeLinejoin="round"
+                                                                                                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                                                            />
+                                                                                        </svg>
 
+                                                                                        <span className="font-normal">
+                                                                                            {__(
+                                                                                                'Spatiotemporal Info',
+                                                                                            )}
+                                                                                        </span>
+                                                                                    </button>
+                                                                                )}
 
-                                                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                                                                    </svg>
-
-
-                                                                                    <span className="font-normal">
-                                                                                        {__('Spatiotemporal Info')}
-                                                                                    </span>
-                                                                                </button>
-                                                                            )}
-
-                                                                            <span
-
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                                            >
-
-                                                                                <span>{__('Post Created')}:
+                                                                            <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
+                                                                                <span>
+                                                                                    {__(
+                                                                                        'Post Created',
+                                                                                    )}
+                                                                                    :
                                                                                     <p>
-                                                                                        {feedGallery?.added_at} {feedGallery?.created_at_time}
+                                                                                        {
+                                                                                            feedGallery?.added_at
+                                                                                        }{' '}
+                                                                                        {
+                                                                                            feedGallery?.created_at_time
+                                                                                        }
                                                                                     </p>
                                                                                 </span>
                                                                             </span>
@@ -3869,8 +3957,7 @@ const DesktopFeed = ({
                                                                 )}
                                                             </div>
 
-
-                                                            <div >
+                                                            <div>
                                                                 {feedGallery?.tag && (
                                                                     <button
                                                                         onClick={() =>
@@ -3878,7 +3965,7 @@ const DesktopFeed = ({
                                                                                 feedGallery?.tag,
                                                                             )
                                                                         }
-                                                                        className=" text-[14px] font-medium z-[90] flex  items-center justify-center rounded-full hover:bg-surface-1-light text-main-text-light dark:text-main-text-dark p-2  transition-all duration-200 dark:hover:bg-surface-2-dark"
+                                                                        className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
                                                                         {feedGallery?.tag}
                                                                     </button>
@@ -3902,12 +3989,13 @@ const DesktopFeed = ({
                                                                 />
 
                                                                 {/* Divider */}
-                                                                {feedGallery?.addons?.length > 0 &&
+                                                                {feedGallery?.addons?.length >
+                                                                    0 && (
                                                                     <div className="mt-1 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
-                                                                }
+                                                                )}
 
-
-                                                                {feedGallery?.addons?.length > 0 && (
+                                                                {feedGallery?.addons?.length >
+                                                                    0 && (
                                                                     <ProductSelectInput
                                                                         InputName={__('Add-ons')}
                                                                         Name={'addons'}
@@ -3934,8 +4022,8 @@ const DesktopFeed = ({
                                                                             smartphone.smartphone_id ===
                                                                             feedGallery?.id,
                                                                     )?.length > 0) && (
-                                                                        <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
-                                                                    )}
+                                                                    <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                                                )}
 
                                                                 {/* Smartphone Items */}
                                                                 {cartItemSmartphones?.length > 0 &&
@@ -3945,112 +4033,117 @@ const DesktopFeed = ({
                                                                                 smartphone.smartphone_id ===
                                                                                 feedGallery?.id,
                                                                         )
-                                                                        .map((smartphone, index) => (
-                                                                            <div
-                                                                                className="w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
-                                                                                key={index}
-                                                                            >
-                                                                                <div className="flex flex-wrap items-center justify-between gap-4">
-                                                                                    <div className="flex flex-col items-start gap-3">
-                                                                                        {/* Product Name */}
-                                                                                        <div className="flex-1 min-w-0">
-                                                                                            <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
+                                                                        .map(
+                                                                            (smartphone, index) => (
+                                                                                <div
+                                                                                    className="w-full rounded-sm bg-surface-1-light p-4 dark:bg-surface-2-dark"
+                                                                                    key={index}
+                                                                                >
+                                                                                    <div className="flex flex-wrap items-center justify-between gap-4">
+                                                                                        <div className="flex flex-col items-start gap-3">
+                                                                                            {/* Product Name */}
+                                                                                            <div className="min-w-0 flex-1">
+                                                                                                <p className="truncate text-sm text-main-text-light dark:text-main-text-dark">
+                                                                                                    {
+                                                                                                        smartphone?.name
+                                                                                                    }{' '}
+                                                                                                    /{' '}
+                                                                                                    {
+                                                                                                        smartphone?.capacity
+                                                                                                    }{' '}
+                                                                                                    /{' '}
+                                                                                                    {
+                                                                                                        smartphone?.color_name
+                                                                                                    }
+                                                                                                </p>
+                                                                                            </div>
+
+                                                                                            {/* Quantity Selector */}
+                                                                                            <div className="inline-flex items-center overflow-hidden rounded-md border border-[#c8c8c8] dark:border-surface-3-dark">
+                                                                                                {/* DECREASE */}
+                                                                                                <button
+                                                                                                    onClick={() =>
+                                                                                                        handleSmartphoneDecrease(
+                                                                                                            smartphone?.color_id,
+                                                                                                        )
+                                                                                                    }
+                                                                                                    className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                >
+                                                                                                    <svg
+                                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                                        viewBox="0 0 24 24"
+                                                                                                        fill="none"
+                                                                                                        stroke="currentColor"
+                                                                                                        strokeWidth={
+                                                                                                            1.5
+                                                                                                        }
+                                                                                                        className="h-4 w-4"
+                                                                                                    >
+                                                                                                        <path
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                            d="M19.5 12h-15"
+                                                                                                        />
+                                                                                                    </svg>
+                                                                                                </button>
+
+                                                                                                {/* QUANTITY */}
+                                                                                                <span className="flex h-9 min-w-[3rem] items-center justify-center border-l border-r border-[#c8c8c8] bg-white text-sm font-semibold text-sub-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-sub-text-dark">
+                                                                                                    {
+                                                                                                        smartphone?.quantity
+                                                                                                    }
+                                                                                                </span>
+
+                                                                                                {/* INCREASE */}
+                                                                                                <button
+                                                                                                    onClick={() =>
+                                                                                                        handleSmartphoneIncrease(
+                                                                                                            smartphone?.color_id,
+                                                                                                        )
+                                                                                                    }
+                                                                                                    className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                >
+                                                                                                    <svg
+                                                                                                        xmlns="http://www.w3.org/2000/svg"
+                                                                                                        viewBox="0 0 24 24"
+                                                                                                        fill="none"
+                                                                                                        stroke="currentColor"
+                                                                                                        strokeWidth={
+                                                                                                            1.5
+                                                                                                        }
+                                                                                                        className="h-4 w-4"
+                                                                                                    >
+                                                                                                        <path
+                                                                                                            strokeLinecap="round"
+                                                                                                            strokeLinejoin="round"
+                                                                                                            d="M12 4.5v15m7.5-7.5h-15"
+                                                                                                        />
+                                                                                                    </svg>
+                                                                                                </button>
+                                                                                            </div>
+                                                                                        </div>
+
+                                                                                        {/* Price */}
+                                                                                        <div className="flex-shrink-0">
+                                                                                            <p className="text-xl font-medium text-main-text-light dark:text-main-text-dark">
                                                                                                 {
-                                                                                                    smartphone?.name
+                                                                                                    currency?.name
                                                                                                 }{' '}
-                                                                                                /{' '}
                                                                                                 {
-                                                                                                    smartphone?.capacity
-                                                                                                }{' '}
-                                                                                                /{' '}
-                                                                                                {
-                                                                                                    smartphone?.color_name
+                                                                                                    currency?.symbol
                                                                                                 }
+                                                                                                {''}
+                                                                                                {Number(
+                                                                                                    smartphone?.price,
+                                                                                                ).toLocaleString(
+                                                                                                    'en-US',
+                                                                                                )}
                                                                                             </p>
                                                                                         </div>
-
-                                                                                        {/* Quantity Selector */}
-                                                                                        <div className="inline-flex items-center overflow-hidden rounded-md border border-[#c8c8c8] dark:border-surface-3-dark">
-                                                                                            {/* DECREASE */}
-                                                                                            <button
-                                                                                                onClick={() =>
-                                                                                                    handleSmartphoneDecrease(
-                                                                                                        smartphone?.color_id,
-                                                                                                    )
-                                                                                                }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                                            >
-                                                                                                <svg
-                                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    strokeWidth={
-                                                                                                        1.5
-                                                                                                    }
-                                                                                                    className="w-4 h-4"
-                                                                                                >
-                                                                                                    <path
-                                                                                                        strokeLinecap="round"
-                                                                                                        strokeLinejoin="round"
-                                                                                                        d="M19.5 12h-15"
-                                                                                                    />
-                                                                                                </svg>
-                                                                                            </button>
-
-                                                                                            {/* QUANTITY */}
-                                                                                            <span className="flex h-9 min-w-[3rem] items-center justify-center border-l border-r border-[#c8c8c8] bg-white text-sm font-semibold text-sub-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-sub-text-dark">
-                                                                                                {
-                                                                                                    smartphone?.quantity
-                                                                                                }
-                                                                                            </span>
-
-                                                                                            {/* INCREASE */}
-                                                                                            <button
-                                                                                                onClick={() =>
-                                                                                                    handleSmartphoneIncrease(
-                                                                                                        smartphone?.color_id,
-                                                                                                    )
-                                                                                                }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
-                                                                                            >
-                                                                                                <svg
-                                                                                                    xmlns="http://www.w3.org/2000/svg"
-                                                                                                    viewBox="0 0 24 24"
-                                                                                                    fill="none"
-                                                                                                    stroke="currentColor"
-                                                                                                    strokeWidth={
-                                                                                                        1.5
-                                                                                                    }
-                                                                                                    className="w-4 h-4"
-                                                                                                >
-                                                                                                    <path
-                                                                                                        strokeLinecap="round"
-                                                                                                        strokeLinejoin="round"
-                                                                                                        d="M12 4.5v15m7.5-7.5h-15"
-                                                                                                    />
-                                                                                                </svg>
-                                                                                            </button>
-                                                                                        </div>
-                                                                                    </div>
-
-                                                                                    {/* Price */}
-                                                                                    <div className="flex-shrink-0">
-                                                                                        <p className="text-xl font-medium text-main-text-light dark:text-main-text-dark">
-                                                                                            {
-                                                                                                currency?.name
-                                                                                            }{' '}
-                                                                                            {
-                                                                                                currency?.symbol
-                                                                                            }{''}
-                                                                                            {
-                                                                                                Number(smartphone?.price).toLocaleString('en-US')
-                                                                                            }
-                                                                                        </p>
                                                                                     </div>
                                                                                 </div>
-                                                                            </div>
-                                                                        ))}
+                                                                            ),
+                                                                        )}
 
                                                                 {/* Addon Items */}
                                                                 {cartItemAddons?.length > 0 &&
@@ -4062,13 +4155,15 @@ const DesktopFeed = ({
                                                                         )
                                                                         .map((addon, index) => (
                                                                             <div
-                                                                                className="relative w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                                                className="relative w-full rounded-sm bg-surface-1-light p-4 dark:bg-surface-2-dark"
                                                                                 key={index}
                                                                             >
                                                                                 {/* Remove Addon */}
                                                                                 <button
                                                                                     onClick={() => {
-                                                                                        handleAddonRemove(addon?.id);
+                                                                                        handleAddonRemove(
+                                                                                            addon?.id,
+                                                                                        );
                                                                                     }}
                                                                                     className="absolute right-2 top-0 z-[90] rounded-full p-2 text-main-text-light transition dark:text-main-text-dark"
                                                                                     aria-label="Close modal"
@@ -4077,9 +4172,11 @@ const DesktopFeed = ({
                                                                                         xmlns="http://www.w3.org/2000/svg"
                                                                                         fill="none"
                                                                                         viewBox="0 0 24 24"
-                                                                                        strokeWidth={2}
+                                                                                        strokeWidth={
+                                                                                            2
+                                                                                        }
                                                                                         stroke="currentColor"
-                                                                                        className="w-4 h-4"
+                                                                                        className="h-4 w-4"
                                                                                     >
                                                                                         <path
                                                                                             strokeLinecap="round"
@@ -4092,8 +4189,8 @@ const DesktopFeed = ({
                                                                                 <div className="flex flex-wrap items-center justify-between gap-4">
                                                                                     <div className="flex flex-col items-start gap-3">
                                                                                         {/* Addon Name */}
-                                                                                        <div className="flex-1 min-w-0">
-                                                                                            <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
+                                                                                        <div className="min-w-0 flex-1">
+                                                                                            <p className="truncate text-sm text-main-text-light dark:text-main-text-dark">
                                                                                                 {
                                                                                                     addon?.name
                                                                                                 }
@@ -4109,7 +4206,7 @@ const DesktopFeed = ({
                                                                                                         addon?.id,
                                                                                                     )
                                                                                                 }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                             >
                                                                                                 <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -4119,7 +4216,7 @@ const DesktopFeed = ({
                                                                                                     strokeWidth={
                                                                                                         1.5
                                                                                                     }
-                                                                                                    className="w-4 h-4"
+                                                                                                    className="h-4 w-4"
                                                                                                 >
                                                                                                     <path
                                                                                                         strokeLinecap="round"
@@ -4143,7 +4240,7 @@ const DesktopFeed = ({
                                                                                                         addon?.id,
                                                                                                     )
                                                                                                 }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                             >
                                                                                                 <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -4153,7 +4250,7 @@ const DesktopFeed = ({
                                                                                                     strokeWidth={
                                                                                                         1.5
                                                                                                     }
-                                                                                                    className="w-4 h-4"
+                                                                                                    className="h-4 w-4"
                                                                                                 >
                                                                                                     <path
                                                                                                         strokeLinecap="round"
@@ -4173,10 +4270,13 @@ const DesktopFeed = ({
                                                                                             }{' '}
                                                                                             {
                                                                                                 currency?.symbol
-                                                                                            }{''}
-                                                                                            {
-                                                                                                Number(addon?.price).toLocaleString('en-US')
                                                                                             }
+                                                                                            {''}
+                                                                                            {Number(
+                                                                                                addon?.price,
+                                                                                            ).toLocaleString(
+                                                                                                'en-US',
+                                                                                            )}
                                                                                         </p>
                                                                                     </div>
                                                                                 </div>
@@ -4187,15 +4287,18 @@ const DesktopFeed = ({
                                                                 <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
 
                                                                 {/* Product Price */}
-                                                                <div className="flex items-center w-full">
-                                                                    <span className="font-medium text-left text-main-text-light dark:text-main-text-dark">
+                                                                <div className="flex w-full items-center">
+                                                                    <span className="text-left font-medium text-main-text-light dark:text-main-text-dark">
                                                                         {__('Total Price')}
                                                                     </span>
-                                                                    <span className="ml-auto text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark">
+                                                                    <span className="ml-auto text-right text-3xl font-semibold text-main-text-light dark:text-main-text-dark">
                                                                         {currency?.symbol}
-                                                                        {Number(smartphoneTotalPrice[
-                                                                            feedGallery?.id
-                                                                        ]).toLocaleString('en-US') || 0}
+                                                                        {Number(
+                                                                            smartphoneTotalPrice[
+                                                                                feedGallery?.id
+                                                                            ],
+                                                                        ).toLocaleString('en-US') ||
+                                                                            0}
                                                                     </span>
                                                                 </div>
 
@@ -4227,7 +4330,7 @@ const DesktopFeed = ({
                                                                                 disabled={
                                                                                     !canActionOnSmartphone
                                                                                 }
-                                                                                className={`h-12 flex-1 rounded-md border border-main-text-light bg-white text-center text-md font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-light bg-white text-center font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
                                                                             >
                                                                                 <div className="flex items-center justify-center">
                                                                                     {cartProcessing && (
@@ -4235,7 +4338,9 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {__('Add to cart')}
+                                                                                        {__(
+                                                                                            'Add to cart',
+                                                                                        )}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
@@ -4265,7 +4370,7 @@ const DesktopFeed = ({
                                                                                 disabled={
                                                                                     !canActionOnSmartphone
                                                                                 }
-                                                                                className={`h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light text-md font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
                                                                             >
                                                                                 <div className="flex items-center justify-center">
                                                                                     {buyNowProcessing && (
@@ -4273,12 +4378,12 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {__('Buy now')}
+                                                                                        {__(
+                                                                                            'Buy now',
+                                                                                        )}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
-
-
                                                                         </>
                                                                     )}
 
@@ -4289,9 +4394,10 @@ const DesktopFeed = ({
                                                                                 onClick={() => {
                                                                                     shouldCleanupBrowserHistoryRef.current = false;
                                                                                     router.get(
-                                                                                        route('login'),
+                                                                                        route(
+                                                                                            'login',
+                                                                                        ),
                                                                                         {
-
                                                                                             redirect:
                                                                                                 window
                                                                                                     .location
@@ -4299,12 +4405,10 @@ const DesktopFeed = ({
                                                                                                 window
                                                                                                     .location
                                                                                                     .search,
-
                                                                                         },
-                                                                                    )
-                                                                                }
-                                                                                }
-                                                                                className="flex-1 h-12 font-semibold transition bg-white border rounded-md text-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
+                                                                                    );
+                                                                                }}
+                                                                                className="text-md h-12 flex-1 rounded-md border border-main-text-light bg-white font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
                                                                             >
                                                                                 {__('Login')}
                                                                             </button>
@@ -4326,10 +4430,9 @@ const DesktopFeed = ({
                                                                                                     .location
                                                                                                     .search,
                                                                                         },
-                                                                                    )
-                                                                                }
-                                                                                }
-                                                                                className="flex-1 h-12 font-semibold transition border rounded-md text-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
+                                                                                    );
+                                                                                }}
+                                                                                className="text-md h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
                                                                             >
                                                                                 {__('Register')}
                                                                             </button>
@@ -4345,19 +4448,30 @@ const DesktopFeed = ({
                                                                     isHtml={true}
                                                                     onToggle={setToggleAccordion}
                                                                     defaultOpen={toggleAccordion}
-                                                                    scrollContainerRef={productRightPanelScrollRef}
+                                                                    scrollContainerRef={
+                                                                        productRightPanelScrollRef
+                                                                    }
                                                                 />
-
 
                                                                 {feedGallery?.product_details && (
                                                                     <>
                                                                         {/* Product Details */}
                                                                         <SmartphoneDetailsAccordion
-                                                                            productDetails={feedGallery?.product_details}
-                                                                            label={__('Product Details')}
-                                                                            onToggle={setToggleAccordion}
-                                                                            defaultOpen={toggleAccordion}
-                                                                            scrollContainerRef={productRightPanelScrollRef}
+                                                                            productDetails={
+                                                                                feedGallery?.product_details
+                                                                            }
+                                                                            label={__(
+                                                                                'Product Details',
+                                                                            )}
+                                                                            onToggle={
+                                                                                setToggleAccordion
+                                                                            }
+                                                                            defaultOpen={
+                                                                                toggleAccordion
+                                                                            }
+                                                                            scrollContainerRef={
+                                                                                productRightPanelScrollRef
+                                                                            }
                                                                         />
                                                                     </>
                                                                 )}
@@ -4374,16 +4488,14 @@ const DesktopFeed = ({
                     </div>
                 </div>
 
-                {
-                    spatiotemporalInfoModal && (
-                        <SpatiotemporalInfoModal
-                            onClose={() => {
-                                setSpatiotemporalInfoModal(false);
-                            }}
-                            post={feedGallery}
-                        />
-                    )
-                }
+                {spatiotemporalInfoModal && (
+                    <SpatiotemporalInfoModal
+                        onClose={() => {
+                            setSpatiotemporalInfoModal(false);
+                        }}
+                        post={feedGallery}
+                    />
+                )}
             </>
         );
     }
