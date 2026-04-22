@@ -30,7 +30,6 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
         }
     }, [isOpen]);
 
-
     // State for filters
     const [filters, setFilters] = useState(() => {
         const cookieValue = getCookie('post_preferences');
@@ -68,14 +67,13 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                         ? parsed.show_products
                         : defaults.show_products,
 
-
                 video_autoplay:
                     typeof parsed.video_autoplay === 'boolean'
                         ? parsed.video_autoplay
                         : defaults.video_autoplay,
             };
         } catch (error) {
-            console.warn("⚠️" + __('Invalid post_preferences cookie. Using defaults.'), error);
+            console.warn('⚠️' + __('Invalid post_preferences cookie. Using defaults.'), error);
             return defaults;
         }
     });
@@ -129,8 +127,7 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
         router.reload({
             onFinish: () => {
                 setFilterSaving(false);
-
-                router.visit(route('website.global-filters.index'));
+                window.location.reload();
             },
         });
     };
@@ -225,11 +222,11 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
             <>
                 <div className="fixed inset-0 z-[50] flex flex-col bg-backgroundLight dark:bg-backgroundDark">
                     {/* Mobile Header */}
-                    <div className="relative z-10 flex flex-col w-full overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-backgroundDark dark:text-main-text-dark">
+                    <div className="relative z-10 flex w-full flex-col overflow-y-auto bg-backgroundLight text-main-text-light dark:bg-backgroundDark dark:text-main-text-dark">
                         <div className="flex items-center justify-center px-4 py-3">
                             <button
                                 onClick={close}
-                                className="absolute p-1 rounded-full left-4 text-main-text-light dark:text-main-text-dark"
+                                className="absolute left-4 rounded-full p-1 text-main-text-light dark:text-main-text-dark"
                             >
                                 <ChevronLeft />
                             </button>
@@ -241,9 +238,9 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                     </div>
 
                     {/* Mobile Content */}
-                    <div className="flex-1 pb-32 overflow-y-auto scrollbar-none">
+                    <div className="flex-1 overflow-y-auto pb-32 scrollbar-none">
                         {/* POST TYPE FILTERS Section */}
-                        <div className="px-5 py-6 border-b border-surface-1-light bg-backgroundLight dark:border-surface-3-dark dark:bg-backgroundDark">
+                        <div className="border-b border-surface-1-light bg-backgroundLight px-5 py-6 dark:border-surface-3-dark dark:bg-backgroundDark">
                             <h2 className="mb-5 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
                                 {__('Post Type Filters')}
                             </h2>
@@ -254,10 +251,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                         {__('Text')}
                                     </span>
-                                    <label className="relative inline-flex items-center cursor-pointer">
+                                    <label className="relative inline-flex cursor-pointer items-center">
                                         <input
                                             type="checkbox"
-                                            className="sr-only peer"
+                                            className="peer sr-only"
                                             checked={filters.text}
                                             onChange={(e) =>
                                                 handleFilterChange('text', e.target.checked)
@@ -272,10 +269,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                         {__('Images')}
                                     </span>
-                                    <label className="relative inline-flex items-center cursor-pointer">
+                                    <label className="relative inline-flex cursor-pointer items-center">
                                         <input
                                             type="checkbox"
-                                            className="sr-only peer"
+                                            className="peer sr-only"
                                             checked={filters.images}
                                             onChange={(e) =>
                                                 handleFilterChange('images', e.target.checked)
@@ -290,10 +287,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                         {__('Videos')}
                                     </span>
-                                    <label className="relative inline-flex items-center cursor-pointer">
+                                    <label className="relative inline-flex cursor-pointer items-center">
                                         <input
                                             type="checkbox"
-                                            className="sr-only peer"
+                                            className="peer sr-only"
                                             checked={filters.videos}
                                             onChange={(e) =>
                                                 handleFilterChange('videos', e.target.checked)
@@ -306,7 +303,7 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                         </div>
 
                         {/* VISIBILITY FILTER Section */}
-                        <div className="px-5 py-6 border-b border-surface-1-light bg-backgroundLight dark:border-surface-3-dark dark:bg-backgroundDark">
+                        <div className="border-b border-surface-1-light bg-backgroundLight px-5 py-6 dark:border-surface-3-dark dark:bg-backgroundDark">
                             <h2 className="mb-5 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
                                 {__('Visibility Filters')}
                             </h2>
@@ -317,10 +314,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                         {__('Posts')}
                                     </span>
-                                    <label className="relative inline-flex items-center cursor-pointer">
+                                    <label className="relative inline-flex cursor-pointer items-center">
                                         <input
                                             type="checkbox"
-                                            className="sr-only peer"
+                                            className="peer sr-only"
                                             checked={filters.show_posts}
                                             onChange={(e) =>
                                                 handleFilterChange('show_posts', e.target.checked)
@@ -335,10 +332,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                         {__('Products')}
                                     </span>
-                                    <label className="relative inline-flex items-center cursor-pointer">
+                                    <label className="relative inline-flex cursor-pointer items-center">
                                         <input
                                             type="checkbox"
-                                            className="sr-only peer"
+                                            className="peer sr-only"
                                             checked={filters.show_products}
                                             onChange={(e) =>
                                                 handleFilterChange(
@@ -353,7 +350,6 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                             </div>
                         </div>
 
-
                         {/* Video Auto Play FILTER Section */}
                         <div className="px-5 py-6">
                             <h2 className="mb-6 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
@@ -366,10 +362,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                     <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                         {__('Autoplay')}
                                     </span>
-                                    <label className="relative inline-flex items-center cursor-pointer">
+                                    <label className="relative inline-flex cursor-pointer items-center">
                                         <input
                                             type="checkbox"
-                                            className="sr-only peer"
+                                            className="peer sr-only"
                                             checked={filters.video_autoplay}
                                             onChange={(e) =>
                                                 handleFilterChange(
@@ -381,15 +377,13 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                         <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                     </label>
                                 </div>
-
-
                             </div>
                         </div>
                         {/* Apply Button - Mobile */}
-                        <div className="w-1/2 m-auto my-6">
+                        <div className="m-auto my-6 w-1/2">
                             <button
                                 onClick={() => handleSaveFilters()}
-                                className="w-full px-4 py-3 text-base font-semibold transition-colors rounded-md bg-main-text-light text-main-text-dark hover:bg-black/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                                className="w-full rounded-md bg-main-text-light px-4 py-3 text-base font-semibold text-main-text-dark transition-colors hover:bg-black/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                             >
                                 <div className="flex items-center justify-center gap-3">
                                     {filterSaving && (
@@ -415,11 +409,8 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
     return createPortal(
         <>
             <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                <div
-                    className="fixed inset-0 bg-black/30"
-                    onClick={close}
-                />
-                <div className="relative w-full max-w-3xl border rounded-md border-surface-1-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
+                <div className="fixed inset-0 bg-black/30" onClick={close} />
+                <div className="relative w-full max-w-3xl rounded-md border border-surface-1-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
                     <div className="pt-8">
                         {/* Desktop Title - Centered */}
                         <div className="px-8 pb-4 text-start">
@@ -431,7 +422,7 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                         {/* Desktop Card */}
                         <div className="overflow-hidden rounded-md">
                             {/* POST TYPE FILTERS Section */}
-                            <div className="px-8 py-6 pb-4 border-b border-surface-3-light dark:border-surface-3-dark">
+                            <div className="border-b border-surface-3-light px-8 py-6 pb-4 dark:border-surface-3-dark">
                                 <h2 className="mb-6 text-xs font-semibold text-sub-text-light dark:text-white">
                                     {__('Post Type Filters')}
                                 </h2>
@@ -442,10 +433,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                         <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                             {__('Text')}
                                         </span>
-                                        <label className="relative inline-flex items-center cursor-pointer">
+                                        <label className="relative inline-flex cursor-pointer items-center">
                                             <input
                                                 type="checkbox"
-                                                className="sr-only peer"
+                                                className="peer sr-only"
                                                 checked={filters.text}
                                                 onChange={(e) =>
                                                     handleFilterChange('text', e.target.checked)
@@ -460,10 +451,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                         <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                             {__('Images')}
                                         </span>
-                                        <label className="relative inline-flex items-center cursor-pointer">
+                                        <label className="relative inline-flex cursor-pointer items-center">
                                             <input
                                                 type="checkbox"
-                                                className="sr-only peer"
+                                                className="peer sr-only"
                                                 checked={filters.images}
                                                 onChange={(e) =>
                                                     handleFilterChange('images', e.target.checked)
@@ -478,10 +469,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                         <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                             {__('Videos')}
                                         </span>
-                                        <label className="relative inline-flex items-center cursor-pointer">
+                                        <label className="relative inline-flex cursor-pointer items-center">
                                             <input
                                                 type="checkbox"
-                                                className="sr-only peer"
+                                                className="peer sr-only"
                                                 checked={filters.videos}
                                                 onChange={(e) =>
                                                     handleFilterChange('videos', e.target.checked)
@@ -494,7 +485,7 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                             </div>
 
                             {/* VISIBILITY FILTER Section */}
-                            <div className="px-8 py-6 pb-4 border-b border-surface-3-light dark:border-surface-3-dark">
+                            <div className="border-b border-surface-3-light px-8 py-6 pb-4 dark:border-surface-3-dark">
                                 <h2 className="mb-6 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
                                     {__('Visibility Filters')}
                                 </h2>
@@ -505,10 +496,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                         <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                             {__('Posts')}
                                         </span>
-                                        <label className="relative inline-flex items-center cursor-pointer">
+                                        <label className="relative inline-flex cursor-pointer items-center">
                                             <input
                                                 type="checkbox"
-                                                className="sr-only peer"
+                                                className="peer sr-only"
                                                 checked={filters.show_posts}
                                                 onChange={(e) =>
                                                     handleFilterChange(
@@ -526,10 +517,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                         <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                             {__('Products')}
                                         </span>
-                                        <label className="relative inline-flex items-center cursor-pointer">
+                                        <label className="relative inline-flex cursor-pointer items-center">
                                             <input
                                                 type="checkbox"
-                                                className="sr-only peer"
+                                                className="peer sr-only"
                                                 checked={filters.show_products}
                                                 onChange={(e) =>
                                                     handleFilterChange(
@@ -544,8 +535,6 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                 </div>
                             </div>
 
-
-
                             {/* Video Auto Play FILTER Section */}
                             <div className="px-8 py-6">
                                 <h2 className="mb-6 text-xs font-semibold text-sub-text-light dark:text-sub-text-dark">
@@ -558,10 +547,10 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                         <span className="text-base font-medium text-sub-text-light dark:text-sub-text-dark">
                                             {__('Autoplay')}
                                         </span>
-                                        <label className="relative inline-flex items-center cursor-pointer">
+                                        <label className="relative inline-flex cursor-pointer items-center">
                                             <input
                                                 type="checkbox"
-                                                className="sr-only peer"
+                                                className="peer sr-only"
                                                 checked={filters.video_autoplay}
                                                 onChange={(e) =>
                                                     handleFilterChange(
@@ -573,17 +562,15 @@ const GlobalFilterModal = ({ isOpen, close, previousUrlRef }) => {
                                             <div className="h-5 w-9 rounded-full bg-gray-300 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all after:content-[''] peer-checked:bg-black peer-checked:after:translate-x-4 dark:bg-[#646464] dark:after:bg-[#1e1e1e] dark:peer-checked:bg-[#e1e1e1]" />
                                         </label>
                                     </div>
-
-
                                 </div>
                             </div>
                         </div>
 
                         {/* Apply Button - Desktop */}
-                        <div className="w-1/2 m-auto my-6">
+                        <div className="m-auto my-6 w-1/2">
                             <button
                                 onClick={() => handleSaveFilters()}
-                                className="w-full px-4 py-3 text-base font-semibold text-white transition-colors bg-black rounded-md hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80"
+                                className="w-full rounded-md bg-black px-4 py-3 text-base font-semibold text-white transition-colors hover:bg-black/80 dark:bg-white dark:text-black dark:hover:bg-white/80"
                             >
                                 <div className="flex items-center justify-center gap-3">
                                     {filterSaving && (

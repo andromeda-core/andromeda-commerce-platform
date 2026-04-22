@@ -21,6 +21,10 @@ import DesktopFeedSkeleton from '@/Components/DesktopFeedSkeleton';
 import MobileFeedSkeleton from '@/Components/MobileFeedSkeleton';
 
 const index = ({ previous_url }) => {
+    // Translation Hook
+    const { __, loading: translationLoading } = useTranslation();
+    const t = (key) => (translationLoading ? key : __(key));
+
     // show Skeleton when directly opening Any Feed
     const [showFeedSkeleton, setShowFeedSkeleton] = useState(() => {
         if (typeof window === 'undefined') return false;
@@ -42,9 +46,6 @@ const index = ({ previous_url }) => {
     const { currency, auth, smartphone_addon_items } = usePage().props;
 
     const redirectedPreviousUrl = useRef(previous_url || null);
-
-    // Translation Hook
-    const { __ } = useTranslation();
 
     useLayoutEffect(() => {
         if (!showFeedSkeleton) return;
@@ -217,7 +218,7 @@ const index = ({ previous_url }) => {
     // POST UNIQUE URL GENERATION
     const generateURL = (post, isDirect = false, isSinglePage = false) => {
         return (
-            `?public_id=${encodeURIComponent(post?.public_id)}&slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `/post/${encodeURIComponent(post?.public_id)}/${encodeURIComponent(post?.slug)}?planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.created_at)}` +
@@ -227,7 +228,7 @@ const index = ({ previous_url }) => {
 
     // Smartphone URL Generation
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
-        return `?m-public_id=${encodeURIComponent(smartphone?.public_id)}&m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
+        return `/product/${encodeURIComponent(smartphone?.public_id)}/${smartphone?.slug}`; //${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
     };
 
     // NAVIGATING TO HASHTAG PAGE AFTER RECEIVING HASHTAG
@@ -356,7 +357,7 @@ const index = ({ previous_url }) => {
                     parsed = JSON.parse(decodeURIComponent(cookieValue));
                 } catch (error) {
                     console.warn(
-                        '⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'),
+                        '⚠️ ' + t('Invalid post_preferences cookie. Using defaults.'),
                         error,
                     );
                     parsed = null;
@@ -376,15 +377,13 @@ const index = ({ previous_url }) => {
                     ? { ...defaultPreferences, ...parsed }
                     : defaultPreferences;
 
-            const res = await axios.get(
-                route('website.posts.getsingle', {
-                    public_id: public_id ?? undefined,
-                    slug: slug ? encodeURIComponent(slug) : undefined,
-                }),
-                {
-                    params: finalPreferences,
-                },
-            );
+            const routeParams = {};
+            if (public_id) routeParams.public_id = public_id;
+            if (slug) routeParams.slug = encodeURIComponent(slug);
+
+            const res = await axios.get(route('website.posts.getsingle', routeParams), {
+                params: finalPreferences,
+            });
 
             const data = await res.data;
 
@@ -441,14 +440,16 @@ const index = ({ previous_url }) => {
                 isSinglePageRef.current = false;
                 setShowFeedSkeleton(false);
                 setShowInfoMessage(true);
-                setInfoMessage(__('Post Not Found'));
+                setInfoMessage(t('Post Not Found', true));
                 window.history.replaceState({}, '', window.location.pathname);
             }
         } catch (err) {
             isSinglePageRef.current = false;
             setShowFeedSkeleton(false);
             setShowErrorMessage(true);
-            setErrorMessage(__(err.response.data.message) || __('Something went wrong' + '!'));
+            const msg = err.response?.data?.message;
+            setErrorMessage(msg || t('Something went wrong'));
+
             window.history.replaceState({}, '', window.location.pathname);
         }
     };
@@ -468,7 +469,7 @@ const index = ({ previous_url }) => {
                     parsed = JSON.parse(decodeURIComponent(cookieValue));
                 } catch (error) {
                     console.warn(
-                        '⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'),
+                        '⚠️ ' + t('Invalid post_preferences cookie. Using defaults.'),
                         error,
                     );
                     parsed = null;
@@ -488,15 +489,11 @@ const index = ({ previous_url }) => {
                     ? { ...defaultPreferences, ...parsed }
                     : defaultPreferences;
 
+            const routeParams = {};
+            if (public_id) routeParams.public_id = public_id;
+            if (slug) routeParams.slug = encodeURIComponent(slug);
             const res = await axios.get(
-                route(
-                    'website.products.get-single-smartphone',
-
-                    {
-                        public_id: public_id ?? undefined,
-                        slug: slug ? encodeURIComponent(slug) : undefined,
-                    },
-                ),
+                route('website.products.get-single-smartphone', routeParams),
                 {
                     params: finalPreferences,
                 },
@@ -556,14 +553,15 @@ const index = ({ previous_url }) => {
                 isSinglePageRef.current = false;
                 setShowFeedSkeleton(false);
                 setShowInfoMessage(true);
-                setInfoMessage(__('Smartphone Not Found'));
+                setInfoMessage(t('Smartphone Not Found'));
                 window.history.replaceState({}, '', window.location.pathname);
             }
         } catch (err) {
             isSinglePageRef.current = false;
             setShowFeedSkeleton(false);
             setShowErrorMessage(true);
-            setErrorMessage(__(err.response.data.message) || __('Something went wrong' + '!'));
+            const msg = err.response?.data?.message;
+            setErrorMessage(msg || t('Something went wrong'));
             window.history.replaceState({}, '', window.location.pathname);
         }
     };
@@ -660,7 +658,7 @@ const index = ({ previous_url }) => {
             try {
                 parsed = JSON.parse(decodeURIComponent(cookieValue));
             } catch (error) {
-                console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
+                console.warn('⚠️ ' + t('Invalid post_preferences cookie. Using defaults.'), error);
                 parsed = null;
             }
         }
@@ -717,7 +715,7 @@ const index = ({ previous_url }) => {
                 relatedFeedNextUrlsRef.current[slug] = null;
             }
         } catch (err) {
-            console.error(`[${slug}] ❌ ${__('Error fetching related FEED')}`, err);
+            console.error(`[${slug}] ❌ ${t('Error fetching related FEED')}`, err);
 
             setShowErrorMessage(true);
             setErrorMessage(err.message);
@@ -982,8 +980,8 @@ const index = ({ previous_url }) => {
                         isSinglePageRef.current = false;
                     }
 
-                    const cleanUrl = window.location.pathname;
-                    window.history.replaceState({}, '', cleanUrl);
+                    // const cleanUrl = window.location.pathname;
+                    window.history.replaceState({}, '', '/');
 
                     // Update previous URL
                     previousUrlRef.current = window.location.href;
@@ -1006,25 +1004,30 @@ const index = ({ previous_url }) => {
                 return true;
             }
 
+            const isHomePath =
+                pathname === '/' ||
+                pathname.startsWith('/post/') ||
+                pathname.startsWith('/product/');
+
             // Block if we just closed mobile gallery
-            if (isSpatiotemporalModalOpenRef.current && pathname === '/' && !isSidebarClickActive) {
+            if (isSpatiotemporalModalOpenRef.current && isHomePath && !isSidebarClickActive) {
                 event.preventDefault();
                 return;
             }
 
-            if (isClosingMobileGalleryRef.current && pathname === '/' && !isSidebarClickActive) {
+            if (isClosingMobileGalleryRef.current && isHomePath && !isSidebarClickActive) {
                 event.preventDefault();
                 return;
             }
 
             // Block if mobile gallery is open
-            if (MobileFeedGalleryOpenRef.current && pathname === '/' && !isSidebarClickActive) {
+            if (MobileFeedGalleryOpenRef.current && isHomePath && !isSidebarClickActive) {
                 event.preventDefault();
                 return;
             }
 
             // Block if feed is open
-            if (feedGalleryRef.current !== null && pathname === '/' && !isSidebarClickActive) {
+            if (feedGalleryRef.current !== null && isHomePath && !isSidebarClickActive) {
                 event.preventDefault();
                 return;
             }
@@ -1495,12 +1498,12 @@ const index = ({ previous_url }) => {
                                                     className="size-40 sm:size-44 lg:size-60"
                                                     {...(feedGallery?.type === 'posts' && {
                                                         value:
-                                                            route('home') +
+                                                            window.location.origin +
                                                             generateURL(feedGallery, true, true),
                                                     })}
                                                     {...(feedGallery?.type === 'smartphones' && {
                                                         value:
-                                                            route('home') +
+                                                            window.location.origin +
                                                             generateSmartphoneURL(
                                                                 feedGallery,
                                                                 true,
@@ -1522,13 +1525,13 @@ const index = ({ previous_url }) => {
 
                                                     if (feedGallery?.type === 'posts') {
                                                         url =
-                                                            route('home') +
+                                                            window.location.origin +
                                                             generateURL(feedGallery, true, true);
                                                     } else if (
                                                         feedGallery?.type === 'smartphones'
                                                     ) {
                                                         url =
-                                                            route('home') +
+                                                            window.location.origin +
                                                             generateSmartphoneURL(
                                                                 feedGallery,
                                                                 true,

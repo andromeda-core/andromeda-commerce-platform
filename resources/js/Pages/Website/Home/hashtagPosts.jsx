@@ -34,19 +34,19 @@ const ResultItem = memo(
                             });
                         }
                     }}
-                    className="flex flex-wrap items-center gap-4 py-4 transition-colors rounded-md cursor-pointer no-touch-hover group lg:hover:bg-surface-2-light lg:dark:hover:bg-surface-2-dark"
+                    className="no-touch-hover group flex cursor-pointer flex-wrap items-center gap-4 rounded-md py-4 transition-colors lg:hover:bg-surface-2-light lg:dark:hover:bg-surface-2-dark"
                 >
                     {/* Thumbnail */}
-                    <div className="flex-shrink-0 w-12 h-12 ml-0 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark lg:ml-3">
+                    <div className="ml-0 h-12 w-12 flex-shrink-0 overflow-hidden rounded-lg bg-surface-1-light dark:bg-surface-1-dark lg:ml-3">
                         {item?.image || item?.video_thumbnail ? (
                             <img
                                 src={item.image || item?.video_thumbnail || Placeholder}
                                 alt={item.title || item.name}
-                                className="object-cover w-full h-full"
+                                className="h-full w-full object-cover"
                                 onError={(e) => (e.target.src = Placeholder)}
                             />
                         ) : (
-                            <div className="flex items-center justify-center h-full text-sm text-main-text-light dark:text-main-text-dark">
+                            <div className="flex h-full items-center justify-center text-sm text-main-text-light dark:text-main-text-dark">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
@@ -66,26 +66,26 @@ const ResultItem = memo(
                     </div>
 
                     {/* Info */}
-                    <div className="flex-1 min-w-0">
-                        <h3 className="font-medium truncate">{item.title || item.name}</h3>
-                        <p className="text-xs truncate text-main-text-light dark:text-main-text-dark">
+                    <div className="min-w-0 flex-1">
+                        <h3 className="truncate font-medium">{item.title || item.name}</h3>
+                        <p className="truncate text-xs text-main-text-light dark:text-main-text-dark">
                             {item.type === 'posts' ? item.location_name || '' : item.capacity || ''}
                         </p>
                         {item.tag && (
-                            <p className="text-xs truncate text-sub-text-light dark:text-sub-text-dark">
+                            <p className="truncate text-xs text-sub-text-light dark:text-sub-text-dark">
                                 {item.tag}
                             </p>
                         )}
-                        <p className="text-xs truncate text-sub-text-light dark:text-sub-text-dark">
+                        <p className="truncate text-xs text-sub-text-light dark:text-sub-text-dark">
                             {item.created_at}
                         </p>
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center flex-shrink-0 gap-2 -mr-4 transition-opacity duration-200 opacity-100 group-hover:opacity-100 lg:mr-5 lg:opacity-0">
+                    <div className="-mr-4 flex flex-shrink-0 items-center gap-2 opacity-100 transition-opacity duration-200 group-hover:opacity-100 lg:mr-5 lg:opacity-0">
                         <button
                             title={__('Copy Link')}
-                            className="p-4 rounded-full text-main-text-light dark:text-main-text-dark lg:hover:bg-surface-3-light lg:dark:hover:bg-surface-3-dark"
+                            className="rounded-full p-4 text-main-text-light dark:text-main-text-dark lg:hover:bg-surface-3-light lg:dark:hover:bg-surface-3-dark"
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -102,7 +102,7 @@ const ResultItem = memo(
                                 viewBox="0 0 24 24"
                                 strokeWidth={1.5}
                                 stroke="currentColor"
-                                className="w-4 h-4"
+                                className="h-4 w-4"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -134,7 +134,7 @@ const ResultItem = memo(
                         });
                     }
                 }}
-                className="relative overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
+                className="group relative cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
             >
                 {item?.image || item?.video_thumbnail ? (
                     <div className="relative">
@@ -165,7 +165,7 @@ const ResultItem = memo(
                                 loading="lazy"
                                 decoding="async"
                                 onError={(e) => (e.target.src = Placeholder)}
-                                className="object-cover w-full h-full"
+                                className="h-full w-full object-cover"
                             />
                         </div>
 
@@ -178,12 +178,12 @@ const ResultItem = memo(
                         <div className="absolute inset-x-0 bottom-0 p-4">
                             {item?.type === 'smartphones' && (
                                 <div className="flex flex-col items-start space-y-1 text-[14px] font-semibold">
-                                    <p className="w-full overflow-hidden text-white truncate">
+                                    <p className="w-full overflow-hidden truncate text-white">
                                         {item.selling_info?.total_price
                                             ? `${currency?.symbol}${Number(item.selling_info.total_price).toLocaleString('en-US')}`
                                             : ''}
                                     </p>
-                                    <p className="w-full overflow-hidden text-white truncate">
+                                    <p className="w-full overflow-hidden truncate text-white">
                                         {item.name.length > 20
                                             ? item.name.slice(0, 20) + '...'
                                             : item.name}{' '}
@@ -198,9 +198,9 @@ const ResultItem = memo(
 
                             {item?.type === 'posts' && (
                                 <div className="flex items-center justify-between text-[14px]">
-                                    <p className="flex-1 min-w-0 font-semibold leading-relaxed text-white">
+                                    <p className="min-w-0 flex-1 font-semibold leading-relaxed text-white">
                                         <span
-                                            className="break-words line-clamp-2"
+                                            className="line-clamp-2 break-words"
                                             dangerouslySetInnerHTML={{
                                                 __html: item?.content
                                                     ?.replace(/<[^>]*>/g, ' ')
@@ -216,14 +216,14 @@ const ResultItem = memo(
                 ) : (
                     <div className="relative flex aspect-[2/3] w-full flex-col bg-surface-2-light text-black transition-transform duration-500 dark:bg-surface-2-dark dark:text-white lg:group-hover:scale-[1.02]">
                         {/* Tag - Top Left */}
-                        <div className="absolute z-10 left-4 top-3">
+                        <div className="absolute left-4 top-3 z-10">
                             <span className="text-[14px] font-semibold text-black dark:text-white">
                                 {item?.tag}
                             </span>
                         </div>
 
                         {/* Content Area */}
-                        <div className="relative flex flex-col h-full p-4 pt-12 overflow-hidden">
+                        <div className="relative flex h-full flex-col overflow-hidden p-4 pt-12">
                             {item?.type === 'posts' ? (
                                 // Posts - Simple text display
                                 <div className="flex-1 overflow-hidden">
@@ -239,7 +239,7 @@ const ResultItem = memo(
                                 // Smartphones - Text with bottom price
                                 <>
                                     {/* Text Content */}
-                                    <div className="flex-1 pb-12 overflow-hidden">
+                                    <div className="flex-1 overflow-hidden pb-12">
                                         <p className="line-clamp-[10] whitespace-pre-line break-words text-[14px] leading-relaxed opacity-90">
                                             <span
                                                 dangerouslySetInnerHTML={{
@@ -283,19 +283,23 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
 
     const loaderRef = useRef(null);
 
+    // Posts
     const generateURL = (post, isDirect = false, isSinglePage = false) => {
         return (
-            `?public_id=${encodeURIComponent(post?.public_id)}&slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `/post/${post?.public_id ? encodeURIComponent(post?.public_id) : ''}/${encodeURIComponent(post?.slug)}` +
+            `?planet=earth` +
+            `${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
-            `&timestamp=${encodeURIComponent(post?.timestamp)}` +
-            `${post?.floor != null ? '&floor=' + encodeURIComponent(post?.floor) : ''}`
+            `&timestamp=${encodeURIComponent(post?.created_at ?? post?.timestamp)}` +
+            `${post?.floor != null ? '&floor=' + encodeURIComponent(post?.floor) : ''}` +
+            `${post?.floor_id != null ? '&floor=' + encodeURIComponent(post?.floor?.name) : ''}` //${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
         );
     };
 
-    // Smartphone URL Generation
+    // Smartphones
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
-        return `?m-public_id=${encodeURIComponent(smartphone?.public_id)}&m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
+        return `/product/${encodeURIComponent(smartphone?.public_id)}/${encodeURIComponent(smartphone?.slug)}`; //${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
     };
 
     const { width } = useWindowSize();
@@ -465,7 +469,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
             )}
 
             <div className="min-h-screen pb-20">
-                <div className="w-full max-w-6xl px-4 mx-auto overflow-x-hidden text-main-text-light dark:text-main-text-dark sm:px-8">
+                <div className="mx-auto w-full max-w-6xl overflow-x-hidden px-4 text-main-text-light dark:text-main-text-dark sm:px-8">
                     <GlobalSearch google_map_api_key={google_map_api_key} searchPage={true} />
 
                     {/* Header */}
@@ -485,7 +489,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                     </span>
                                 </div>
                             </button>
-                            <div className="relative flex items-center justify-between px-2 py-2 mb-3 text-sm transition-all rounded-md border-gray-5 group text-main-text-light dark:text-main-text-dark">
+                            <div className="border-gray-5 group relative mb-3 flex items-center justify-between rounded-md px-2 py-2 text-sm text-main-text-light transition-all dark:text-main-text-dark">
                                 <div className="flex flex-wrap items-center gap-x-2">{hashtag}</div>
                             </div>
                         </div>
@@ -551,7 +555,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                     {allResults.length === 0 ? (
                         <>
                             {!isLoaded ? (
-                                <div className="flex items-center justify-center gap-2 py-10 text-center transition-all duration-100 animate-pulse text-main-text-light dark:text-main-text-dark">
+                                <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-main-text-light transition-all duration-100 dark:text-main-text-dark">
                                     <Spinner />
                                     {__('Please Wait While We Load Data')}...
                                 </div>
@@ -591,7 +595,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                     {allResults.length > 0 && nextPageUrl && (
                         <div
                             ref={loaderRef}
-                            className="flex items-center justify-center gap-2 py-10 text-center transition-all duration-100 animate-pulse text-main-text-light dark:text-main-text-dark"
+                            className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-main-text-light transition-all duration-100 dark:text-main-text-dark"
                         >
                             <div className="flex items-center justify-center">
                                 <Spinner />

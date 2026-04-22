@@ -15,16 +15,11 @@ class AttributionController extends Controller
         $user = $request->user();
 
 
-        if (empty($user)) {
-            return redirect()->route('login');
+        if (!empty($user)) {
+            if (!$user->hasRole('Customer')) {
+                return to_route('home')->with('info', Trans::get('You are not a customer to use this feature.'));
+            }
         }
-
-
-        if (!$user->hasRole('Customer')) {
-            return to_route('home')->with('info', Trans::get('You are not a customer to use this feature.'));
-        }
-
-
 
         $link = ProductLink::where('link_public_id', $link_public_id)
             ->where('status', 'active')

@@ -29,11 +29,14 @@ export default function index() {
 
     const generateURL = (post, isDirect = false, isSinglePage = false) => {
         return (
-            `?public_id=${encodeURIComponent(post?.public_id)}&slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `/post/${encodeURIComponent(post?.public_id)}/${encodeURIComponent(post?.slug)}` +
+            `?planet=earth` +
+            `${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.created_at)}` +
-            `${post?.floor_id != null ? '&floor=' + encodeURIComponent(post?.floor?.name) : ''}`
+            `${post?.floor_id != null ? '&floor=' + encodeURIComponent(post?.floor?.name) : ''}
+            `
         );
     };
 

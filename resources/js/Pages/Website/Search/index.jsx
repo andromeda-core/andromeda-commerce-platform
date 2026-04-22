@@ -333,7 +333,7 @@ const index = ({
 
     const generateURL = useCallback((post, isDirect = false, isSinglePage = false) => {
         return (
-            `?public_id=${encodeURIComponent(post?.public_id)}&slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${
+            `/post/${encodeURIComponent(post?.public_id)}/${encodeURIComponent(post?.slug)}?planet=earth${
                 post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''
             }` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
@@ -350,7 +350,7 @@ const index = ({
     // Smartphone URL Generation
     const generateSmartphoneURL = useCallback(
         (smartphone, isDirect = false, isSinglePage = false) => {
-            return `?m-public_id=${encodeURIComponent(smartphone?.public_id)}&m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
+            return `/product/${encodeURIComponent(smartphone?.public_id)}/${smartphone?.slug}`; //${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
         },
         [],
     );

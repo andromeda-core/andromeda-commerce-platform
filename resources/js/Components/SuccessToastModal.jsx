@@ -40,7 +40,7 @@ export default function SuccessToastModal({
                         </svg>
                     </div>
                     {/* Message */}
-                    <p className="break-words text-sm text-main-text-light dark:text-main-text-dark">
+                    <p className="break-all text-sm text-main-text-light dark:text-main-text-dark">
                         {typeof message === 'string' && message.includes('<a') ? (
                             <span dangerouslySetInnerHTML={{ __html: message }} />
                         ) : (

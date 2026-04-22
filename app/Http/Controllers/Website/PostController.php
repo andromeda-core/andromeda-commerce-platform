@@ -70,9 +70,10 @@ class PostController extends Controller
     }
 
     public function getSinglePostBySlug(
+        Request $request,
         ?string $public_id = null,
         ?string $slug = null,
-        Request $request
+
     ) {
         if (! $request->ajax()) {
             return to_route('home');

@@ -76,6 +76,42 @@ Route::get('/orders-customer-order-invoice/{order_no?}', [OrderController::class
 
 // Website Un Auth Routes
 Route::group(['as' => 'website.'], function () {
+
+    // canonical routes
+    Route::get('/post/{public_id}/{slug?}', function ($public_id, $slug = null) {
+        $query = array_filter([
+            'public_id'     =>  $public_id,
+            'slug'          =>  $slug,
+            'direct'      => 'true',
+            'single_page' => 'true',
+            'planet'        => request('planet'),
+            'lat'           => request('lat'),
+            'lng'           => request('lng'),
+            'location_name' => request('location_name'),
+            'timestamp'     => request('timestamp'),
+            'floor'         => request('floor'),
+        ]);
+
+
+
+        return redirect()->to(url('/') . '?' . http_build_query($query));
+    })->name('post.findByPublicID');
+
+
+    Route::get('/product/{public_id}/{slug?}', function ($public_id, $slug = null) {
+        $query = array_filter([
+            'm-public_id' => $public_id,
+            'm-slug'      => $slug,
+            'direct'      => 'true',
+            'single_page' => 'true',
+        ]);
+
+        // dd($query);
+        return redirect()->to(url('/') . '?' . http_build_query($query));
+    })->name('smartphone.findByPublicID');
+
+
+
     // Posts
     Route::controller(WebsitePostController::class)->name('posts.')->group(function () {
         Route::get('/posts', 'index')->name('index');

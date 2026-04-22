@@ -22,5 +22,5 @@ export function useTranslation() {
         return key;
     };
 
-    return { __ };
+    return { __, loading };
 }
