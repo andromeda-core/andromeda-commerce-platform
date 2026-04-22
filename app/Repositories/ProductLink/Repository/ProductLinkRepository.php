@@ -38,7 +38,7 @@ class ProductLinkRepository implements IProductLinkRepository
             ->first();
 
         if ($existing) {
-            $existing->update(['status' => 'paused']);
+            $existing->update(['status' => 'revoked']);
         }
 
         try {
@@ -65,7 +65,7 @@ class ProductLinkRepository implements IProductLinkRepository
             'smartphone_id' => 'required|exists:smartphones,id',
             'user_id' => 'required|exists:users,id',
             'post_id' => 'nullable|exists:posts,id',
-            'status' => 'in:active,paused',
+            'status' => 'in:active,paused,revoked',
         ]);
 
         try {
@@ -78,7 +78,7 @@ class ProductLinkRepository implements IProductLinkRepository
                 ->first();
 
             if ($existing) {
-                $existing->update(['status' => 'paused']);
+                $existing->update(['status' => 'revoked']);
             }
 
             $product_link = $this->productLink->find($id);

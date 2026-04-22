@@ -146,6 +146,12 @@ export default function Edit({ productLink, smartphones, posts, users }) {
             label: 'Paused',
             css: 'border-yellow-400 bg-yellow-50 text-yellow-700 dark:bg-yellow-900/20 dark:border-yellow-700 dark:text-yellow-400',
         },
+
+        {
+            value: 'revoked',
+            label: 'Revoked',
+            css: 'border-red-400 bg-red-50 text-red-700 dark:bg-red-900/20 dark:border-red-700 dark:text-red-400',
+        },
     ];
 
     return (
