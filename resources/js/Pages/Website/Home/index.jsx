@@ -20,15 +20,18 @@ import MobileFeedSinglePage from './MobileFeedSinglePage';
 import DesktopFeedSkeleton from '@/Components/DesktopFeedSkeleton';
 import MobileFeedSkeleton from '@/Components/MobileFeedSkeleton';
 
-
-
 const index = ({ previous_url }) => {
     // show Skeleton when directly opening Any Feed
     const [showFeedSkeleton, setShowFeedSkeleton] = useState(() => {
         if (typeof window === 'undefined') return false;
 
         const params = new URLSearchParams(window.location.search);
-        const isDirect = params.get('direct') === 'true' && (params.has('slug') || params.has('m-slug'));
+        const isDirect =
+            params.get('direct') === 'true' &&
+            (params.has('slug') ||
+                params.has('m-slug') ||
+                params.has('public_id') ||
+                params.has('m-public_id'));
 
         if (isDirect) {
             return true;
@@ -36,26 +39,19 @@ const index = ({ previous_url }) => {
         return false;
     });
 
-
     const { currency, auth, smartphone_addon_items } = usePage().props;
 
     const redirectedPreviousUrl = useRef(previous_url || null);
 
-
-
     // Translation Hook
     const { __ } = useTranslation();
-
-
-
 
     useLayoutEffect(() => {
         if (!showFeedSkeleton) return;
 
         // Force browser to paint skeleton BEFORE heavy JS
-        requestAnimationFrame(() => { });
+        requestAnimationFrame(() => {});
     }, []);
-
 
     const [ErrorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
@@ -86,11 +82,9 @@ const index = ({ previous_url }) => {
 
     const nextPageUrlRef = useRef(null);
 
-
     // Preventing Un-nesseary NetWork Erros So Adding The Ref That Only Allows On Fecthing at a Time And Re-try Mechanism
     const mainFeedInFlightRef = useRef(false);
     const mainFeedRetryRef = useRef(0);
-
 
     // Initialize with first load
     useEffect(() => {
@@ -98,7 +92,6 @@ const index = ({ previous_url }) => {
     }, [nextPageUrl]);
 
     const fetchPostsAndProducts = async () => {
-
         if (mainFeedInFlightRef.current) return;
 
         mainFeedInFlightRef.current = true;
@@ -187,15 +180,9 @@ const index = ({ previous_url }) => {
                 setIsFeedLoaded(true);
             });
         } catch (error) {
-
-
-            if (
-                error?.message === 'Network Error' &&
-                mainFeedRetryRef.current < 1
-            ) {
+            if (error?.message === 'Network Error' && mainFeedRetryRef.current < 1) {
                 mainFeedRetryRef.current++;
                 mainFeedInFlightRef.current = false;
-
 
                 setTimeout(() => {
                     fetchPostsAndProducts();
@@ -208,11 +195,9 @@ const index = ({ previous_url }) => {
             setShowErrorMessage(true);
             setErrorMessage(__('Failed to Fetch Feed Please try again later.'));
         } finally {
-
             mainFeedInFlightRef.current = false;
         }
     };
-
 
     useEffect(() => {
         if (showFeedSkeleton) {
@@ -232,7 +217,7 @@ const index = ({ previous_url }) => {
     // POST UNIQUE URL GENERATION
     const generateURL = (post, isDirect = false, isSinglePage = false) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `?public_id=${encodeURIComponent(post?.public_id)}&slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.created_at)}` +
@@ -240,13 +225,10 @@ const index = ({ previous_url }) => {
         );
     };
 
-
     // Smartphone URL Generation
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
-        return (
-            `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
-        );
-    }
+        return `?m-public_id=${encodeURIComponent(smartphone?.public_id)}&m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
+    };
 
     // NAVIGATING TO HASHTAG PAGE AFTER RECEIVING HASHTAG
     const navigateToHashtag = async (hashtag) => {
@@ -258,13 +240,11 @@ const index = ({ previous_url }) => {
                 preserveScroll: true,
             });
         } catch (error) {
-            console.error(__('Hashtag navigation failed') + ":", error);
+            console.error(__('Hashtag navigation failed') + ':', error);
         }
     };
 
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
-
-
 
     const loaderRef = useRef(null);
     const [showQrCode, setShowQrCode] = useState(false);
@@ -294,7 +274,6 @@ const index = ({ previous_url }) => {
     // Checking Slug In URL If Found Than Auto Opening  FEED AND PC Modal
     const hasOpenedSlugRef = useRef(false);
 
-
     // Single Page For Mobile FEED GALLERY
     const isSinglePageRef = useRef(false);
 
@@ -304,11 +283,19 @@ const index = ({ previous_url }) => {
         const params = new URLSearchParams(window.location.search);
 
         const post_slug = params.get('slug');
+        const post_public_id = params.get('public_id');
         const smartphone_slug = params.get('m-slug');
+        const smartphone_public_id = params.get('m-public_id');
         const isSinglePage = params.get('single_page') === 'true';
 
-        if ((!post_slug && !smartphone_slug) && !isSinglePage) return;
-
+        if (
+            !post_slug &&
+            !smartphone_slug &&
+            !post_public_id &&
+            !smartphone_public_id &&
+            !isSinglePage
+        )
+            return;
 
         isSinglePageRef.current = isSinglePage;
 
@@ -319,11 +306,17 @@ const index = ({ previous_url }) => {
         setIsFeedOpeningDirectly(true);
         let feedItem = null;
 
-        if (post_slug) {
-            feedItem = feed.find((item) => item.type === 'posts' && item.slug === post_slug);
-        } else if (smartphone_slug) {
+        if (post_slug || post_public_id) {
             feedItem = feed.find(
-                (item) => item.type === 'smartphones' && item.slug === smartphone_slug,
+                (item) =>
+                    item.type === 'posts' &&
+                    (item.slug === post_slug || item.public_id === post_public_id),
+            );
+        } else if (smartphone_slug || smartphone_public_id) {
+            feedItem = feed.find(
+                (item) =>
+                    item.type === 'smartphones' &&
+                    (item.slug === smartphone_slug || item.public_id === smartphone_public_id),
             );
         }
 
@@ -334,23 +327,23 @@ const index = ({ previous_url }) => {
                 setFeedGallery(feedItem);
                 setFeedOpen(true);
                 setFeedIndex(index);
-
             }
 
             window.history.replaceState({}, '', window.location.href);
         } else {
             hasOpenedSlugRef.current = true;
 
-            if (post_slug) fetchSinglePost(post_slug);
-            else if (smartphone_slug) fetchSingleSmartphone(smartphone_slug);
+            if (post_slug || post_public_id)
+                fetchSinglePost(post_slug || null, post_public_id || null);
+            else if (smartphone_slug || smartphone_public_id)
+                fetchSingleSmartphone(smartphone_slug || null, smartphone_public_id || null);
 
             window.history.replaceState({}, '', window.location.href);
         }
-
     }, [isFeedLoaded, feed, windowSize.width]);
 
     // Fetch Single Post Method
-    const fetchSinglePost = async (slug) => {
+    const fetchSinglePost = async (slug, public_id = null) => {
         try {
             if (!isFeedLoaded) {
                 return;
@@ -362,7 +355,10 @@ const index = ({ previous_url }) => {
                 try {
                     parsed = JSON.parse(decodeURIComponent(cookieValue));
                 } catch (error) {
-                    console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
+                    console.warn(
+                        '⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'),
+                        error,
+                    );
                     parsed = null;
                 }
             }
@@ -381,7 +377,10 @@ const index = ({ previous_url }) => {
                     : defaultPreferences;
 
             const res = await axios.get(
-                route('website.posts.getsingle', encodeURIComponent(slug)),
+                route('website.posts.getsingle', {
+                    public_id: public_id ?? undefined,
+                    slug: slug ? encodeURIComponent(slug) : undefined,
+                }),
                 {
                     params: finalPreferences,
                 },
@@ -449,13 +448,13 @@ const index = ({ previous_url }) => {
             isSinglePageRef.current = false;
             setShowFeedSkeleton(false);
             setShowErrorMessage(true);
-            setErrorMessage(__(err.response.data.message) || __('Something went wrong' + "!"));
+            setErrorMessage(__(err.response.data.message) || __('Something went wrong' + '!'));
             window.history.replaceState({}, '', window.location.pathname);
         }
     };
 
     //  Fetch Single Smartphone Method
-    const fetchSingleSmartphone = async (slug) => {
+    const fetchSingleSmartphone = async (slug, public_id = null) => {
         try {
             if (!isFeedLoaded) {
                 return;
@@ -468,7 +467,10 @@ const index = ({ previous_url }) => {
                 try {
                     parsed = JSON.parse(decodeURIComponent(cookieValue));
                 } catch (error) {
-                    console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
+                    console.warn(
+                        '⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'),
+                        error,
+                    );
                     parsed = null;
                 }
             }
@@ -487,7 +489,14 @@ const index = ({ previous_url }) => {
                     : defaultPreferences;
 
             const res = await axios.get(
-                route('website.products.get-single-smartphone', encodeURIComponent(slug)),
+                route(
+                    'website.products.get-single-smartphone',
+
+                    {
+                        public_id: public_id ?? undefined,
+                        slug: slug ? encodeURIComponent(slug) : undefined,
+                    },
+                ),
                 {
                     params: finalPreferences,
                 },
@@ -554,7 +563,7 @@ const index = ({ previous_url }) => {
             isSinglePageRef.current = false;
             setShowFeedSkeleton(false);
             setShowErrorMessage(true);
-            setErrorMessage(__(err.response.data.message) || __('Something went wrong' + "!"));
+            setErrorMessage(__(err.response.data.message) || __('Something went wrong' + '!'));
             window.history.replaceState({}, '', window.location.pathname);
         }
     };
@@ -637,7 +646,6 @@ const index = ({ previous_url }) => {
         } catch (err) {
             setShowErrorMessage(true);
             setErrorMessage(err.message);
-
         } finally {
             isfetchingMoreYAxisFeed.current = false;
         }
@@ -803,12 +811,11 @@ const index = ({ previous_url }) => {
 
                 img.src = url;
             } catch (error) {
-                console.error(__('Error downloading QR code' + ":"), error);
+                console.error(__('Error downloading QR code' + ':'), error);
                 setIsQrDownloading(false);
             }
         }, 100);
     };
-
 
     // Wathcing Spatiotemporal Info Modal
     useEffect(() => {
@@ -861,28 +868,28 @@ const index = ({ previous_url }) => {
     // Setting Media Items
     useEffect(() => {
         if (feedGallery) {
-            const images = Array.isArray(feedGallery.post_image_urls) && feedGallery.type === 'posts'
-                ? feedGallery.post_image_urls.map((url) => ({ type: 'image', url }))
-                : (
-                    Array.isArray(feedGallery.smartphone_image_urls) && feedGallery.type === 'smartphones'
-                        ? feedGallery.smartphone_image_urls.map((url) => ({ type: 'image', url }))
-                        : []);
+            const images =
+                Array.isArray(feedGallery.post_image_urls) && feedGallery.type === 'posts'
+                    ? feedGallery.post_image_urls.map((url) => ({ type: 'image', url }))
+                    : Array.isArray(feedGallery.smartphone_image_urls) &&
+                        feedGallery.type === 'smartphones'
+                      ? feedGallery.smartphone_image_urls.map((url) => ({ type: 'image', url }))
+                      : [];
             const videos =
                 Array.isArray(feedGallery.post_video_urls) && feedGallery.type === 'posts'
                     ? feedGallery.post_video_urls.map((url) => ({
-                        type: 'video',
-                        url: url.url,
-                        thumbnail_url: url.thumbnail_url,
-                    }))
-                    : (
-                        Array.isArray(feedGallery.smartphone_video_urls) && feedGallery.type === 'smartphones'
-                            ? feedGallery.smartphone_video_urls.map((url) => ({
-                                type: 'video',
-                                url: url.url,
-                                thumbnail_url: url.thumbnail_url,
-                            }))
-                            : []
-                    );
+                          type: 'video',
+                          url: url.url,
+                          thumbnail_url: url.thumbnail_url,
+                      }))
+                    : Array.isArray(feedGallery.smartphone_video_urls) &&
+                        feedGallery.type === 'smartphones'
+                      ? feedGallery.smartphone_video_urls.map((url) => ({
+                            type: 'video',
+                            url: url.url,
+                            thumbnail_url: url.thumbnail_url,
+                        }))
+                      : [];
 
             const allMedia = [...images, ...videos];
             setMediaItems(allMedia);
@@ -929,14 +936,12 @@ const index = ({ previous_url }) => {
             const previousParams = new URLSearchParams(previousUrl.search);
             const wasOnMobileGallery = previousParams.has('mobile-feed-gallery');
 
-
             // SpatiotemporalInfo Modal Open
             if (isSpatiotemporalModalOpenRef.current) {
                 setSpatiotemporalInfoModal(false);
                 isSpatiotemporalModalOpenRef.current = false;
                 return;
             }
-
 
             //  Mobile gallery is currently open OR we just came from mobile gallery
             if (MobileFeedGalleryOpenRef.current || wasOnMobileGallery) {
@@ -956,7 +961,6 @@ const index = ({ previous_url }) => {
                         isClosingMobileGalleryRef.current = false;
                     }, 500);
                 }
-
 
                 return;
             }
@@ -985,7 +989,6 @@ const index = ({ previous_url }) => {
                     previousUrlRef.current = window.location.href;
                 }
 
-
                 return;
             }
 
@@ -1003,15 +1006,11 @@ const index = ({ previous_url }) => {
                 return true;
             }
 
-
-
-
             // Block if we just closed mobile gallery
             if (isSpatiotemporalModalOpenRef.current && pathname === '/' && !isSidebarClickActive) {
                 event.preventDefault();
                 return;
             }
-
 
             if (isClosingMobileGalleryRef.current && pathname === '/' && !isSidebarClickActive) {
                 event.preventDefault();
@@ -1103,13 +1102,9 @@ const index = ({ previous_url }) => {
         if (feedOpen && showFeedSkeleton) {
             requestAnimationFrame(() => {
                 setShowFeedSkeleton(false);
-            })
+            });
         }
     }, [feedOpen]);
-
-
-
-
 
     // Device Recognizer
     const isSafariMac =
@@ -1121,7 +1116,7 @@ const index = ({ previous_url }) => {
 
     return (
         <MainLayout>
-            <Head title={__("Home", true)} />
+            <Head title={__('Home', true)} />
 
             {(showErrorMessage || showInfoMessage) && (
                 <Toast
@@ -1152,13 +1147,10 @@ const index = ({ previous_url }) => {
                 </div>
             )}
 
-
-
             {showFeedSkeleton && (
                 <>
                     {windowSize.width > 1024 && <DesktopFeedSkeleton />}
                     {windowSize.width <= 1024 && <MobileFeedSkeleton />}
-
                 </>
             )}
 
@@ -1174,10 +1166,10 @@ const index = ({ previous_url }) => {
                             zIndex: feedOpen ? 0 : 1,
                         }}
                     >
-                        <div className="mx-auto max-w-8xl sm:px-6 lg:px-8 !overflow-hidden"
-                        >
-
-                            <div className={`gap-2 columns-2 sm:columns-2 md:columns-3 ${feed.length <= 2 ? 'lg:columns-2 xl:columns-2' : (isSafariMac ? 'lg:columns-3 xl:columns-4' : 'lg:columns-4 xl:columns-5')}`}>
+                        <div className="max-w-8xl mx-auto !overflow-hidden sm:px-6 lg:px-8">
+                            <div
+                                className={`columns-2 gap-2 sm:columns-2 md:columns-3 ${feed.length <= 2 ? 'lg:columns-2 xl:columns-2' : isSafariMac ? 'lg:columns-3 xl:columns-4' : 'lg:columns-4 xl:columns-5'}`}
+                            >
                                 {feed.map((item, index) => (
                                     <MasonryFeedItem
                                         key={`${item.type}-${item.id}`}
@@ -1188,20 +1180,18 @@ const index = ({ previous_url }) => {
                                         currency={currency}
                                         Index={index}
                                         windowSize={windowSize}
-
                                     />
                                 ))}
                             </div>
 
-
                             {isFeedLoaded && feed.length === 0 && (
-                                <div className="flex items-center justify-center px-6 py-12 rounded-md bg-backgroundLight dark:bg-backgroundDark">
+                                <div className="flex items-center justify-center rounded-md bg-backgroundLight px-6 py-12 dark:bg-backgroundDark">
                                     <div className="flex flex-col items-center gap-4">
                                         {/* Custom No Content SVG */}
-                                        <div className="flex items-center justify-center w-20 h-20">
+                                        <div className="flex h-20 w-20 items-center justify-center">
                                             <svg
                                                 viewBox="0 0 120 120"
-                                                className="w-full h-full text-gray-400 dark:text-gray-500"
+                                                className="h-full w-full text-gray-400 dark:text-gray-500"
                                                 fill="none"
                                                 xmlns="http://www.w3.org/2000/svg"
                                             >
@@ -1353,7 +1343,6 @@ const index = ({ previous_url }) => {
                         </div>
                     </div>
 
-
                     {/* PC Feed  */}
                     {windowSize.width > 1024 && feedOpen && feedGallery !== null && (
                         <>
@@ -1391,91 +1380,95 @@ const index = ({ previous_url }) => {
                                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                                     previous_url={redirectedPreviousUrl.current}
                                     __={__}
-
                                 />
                             )}
                         </>
                     )}
 
-
                     {/* MOBILE FEED */}
-                    {windowSize.width <= 1024 && feedOpen && feedGallery !== null && !isSinglePageRef.current && (
-                        <MobileFeed
-                            feed={feed}
-                            feedGallery={feedGallery}
-                            setFeedGallery={setFeedGallery}
-                            setFeedOpen={setFeedOpen}
-                            setLinkCopied={setLinkCopied}
-                            setShowQrCode={setShowQrCode}
-                            setBookmarkStatusChanged={setBookmarkStatusChanged}
-                            auth={auth}
-                            generateURL={generateURL}
-                            generateSmartphoneURL={generateSmartphoneURL}
-                            navigateToHashtag={navigateToHashtag}
-                            feedIndex={feedIndex}
-                            setFeedIndex={setFeedIndex}
-                            relatedFeed={relatedFeed}
-                            fetchMoreYAxis={fetchMorePostsAndProducts}
-                            MobileFeedGalleryOpen={MobileFeedGalleryOpen}
-                            setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
-                            currency={currency}
-                            placeholderImage={Placeholder}
-                            fetchRelatedFeed={fetchRelatedFeed}
-                            relatedFeedNextUrlsRef={relatedFeedNextUrlsRef}
-                            nextPageUrl={nextPageUrlRef.current}
-                            Placeholder={Placeholder}
-                            isfetchingMoreYAxisFeed={isfetchingMoreYAxisFeed.current}
-                            isFeedOpeningDirectly={isFeedOpeningDirectly}
-                            showErrorMessage={showErrorMessage}
-                            showInfoMessage={showInfoMessage}
-                            ErrorMessage={ErrorMessage}
-                            InfoMessage={InfoMessage}
-                            setInfoMessage={setInfoMessage}
-                            setShowInfoMessage={setShowInfoMessage}
-                            setErrorMessage={setErrorMessage}
-                            windowSize={windowSize}
-                            setShowErrorMessage={setShowErrorMessage}
-                            isSinglePageRef={isSinglePageRef}
-                            spatiotemporalInfoModal={spatiotemporalInfoModal}
-                            setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
-                            __={__}
-                        />
-                    )}
+                    {windowSize.width <= 1024 &&
+                        feedOpen &&
+                        feedGallery !== null &&
+                        !isSinglePageRef.current && (
+                            <MobileFeed
+                                feed={feed}
+                                feedGallery={feedGallery}
+                                setFeedGallery={setFeedGallery}
+                                setFeedOpen={setFeedOpen}
+                                setLinkCopied={setLinkCopied}
+                                setShowQrCode={setShowQrCode}
+                                setBookmarkStatusChanged={setBookmarkStatusChanged}
+                                auth={auth}
+                                generateURL={generateURL}
+                                generateSmartphoneURL={generateSmartphoneURL}
+                                navigateToHashtag={navigateToHashtag}
+                                feedIndex={feedIndex}
+                                setFeedIndex={setFeedIndex}
+                                relatedFeed={relatedFeed}
+                                fetchMoreYAxis={fetchMorePostsAndProducts}
+                                MobileFeedGalleryOpen={MobileFeedGalleryOpen}
+                                setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
+                                currency={currency}
+                                placeholderImage={Placeholder}
+                                fetchRelatedFeed={fetchRelatedFeed}
+                                relatedFeedNextUrlsRef={relatedFeedNextUrlsRef}
+                                nextPageUrl={nextPageUrlRef.current}
+                                Placeholder={Placeholder}
+                                isfetchingMoreYAxisFeed={isfetchingMoreYAxisFeed.current}
+                                isFeedOpeningDirectly={isFeedOpeningDirectly}
+                                showErrorMessage={showErrorMessage}
+                                showInfoMessage={showInfoMessage}
+                                ErrorMessage={ErrorMessage}
+                                InfoMessage={InfoMessage}
+                                setInfoMessage={setInfoMessage}
+                                setShowInfoMessage={setShowInfoMessage}
+                                setErrorMessage={setErrorMessage}
+                                windowSize={windowSize}
+                                setShowErrorMessage={setShowErrorMessage}
+                                isSinglePageRef={isSinglePageRef}
+                                spatiotemporalInfoModal={spatiotemporalInfoModal}
+                                setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                                __={__}
+                            />
+                        )}
 
                     {/*Mobile Feed Single Page */}
-                    {windowSize.width <= 1024 && feedOpen && feedGallery !== null && isSinglePageRef.current && (
-                        <MobileFeedSinglePage
-                            feedGallery={feedGallery}
-                            setFeedGallery={setFeedGallery}
-                            setLinkCopied={setLinkCopied}
-                            setShowQrCode={setShowQrCode}
-                            isSinglePageRef={isSinglePageRef}
-                            auth={auth}
-                            generateURL={generateURL}
-                            generateSmartphoneURL={generateSmartphoneURL}
-                            navigateToHashtag={navigateToHashtag}
-                            setFeedIndex={setFeedIndex}
-                            MobileFeedGalleryOpen={MobileFeedGalleryOpen}
-                            setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
-                            currency={currency}
-                            placeholderImage={Placeholder}
-                            showErrorMessage={showErrorMessage}
-                            showInfoMessage={showInfoMessage}
-                            ErrorMessage={ErrorMessage}
-                            InfoMessage={InfoMessage}
-                            setInfoMessage={setInfoMessage}
-                            setBookmarkStatusChanged={setBookmarkStatusChanged}
-                            setShowInfoMessage={setShowInfoMessage}
-                            setErrorMessage={setErrorMessage}
-                            setShowErrorMessage={setShowErrorMessage}
-                            setFeedOpen={setFeedOpen}
-                            setMediaItems={setMediaItems}
-                            spatiotemporalInfoModal={spatiotemporalInfoModal}
-                            setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
-                            previous_url={redirectedPreviousUrl.current}
-                            __={__}
-                        />
-                    )}
+                    {windowSize.width <= 1024 &&
+                        feedOpen &&
+                        feedGallery !== null &&
+                        isSinglePageRef.current && (
+                            <MobileFeedSinglePage
+                                feedGallery={feedGallery}
+                                setFeedGallery={setFeedGallery}
+                                setLinkCopied={setLinkCopied}
+                                setShowQrCode={setShowQrCode}
+                                isSinglePageRef={isSinglePageRef}
+                                auth={auth}
+                                generateURL={generateURL}
+                                generateSmartphoneURL={generateSmartphoneURL}
+                                navigateToHashtag={navigateToHashtag}
+                                setFeedIndex={setFeedIndex}
+                                MobileFeedGalleryOpen={MobileFeedGalleryOpen}
+                                setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
+                                currency={currency}
+                                placeholderImage={Placeholder}
+                                showErrorMessage={showErrorMessage}
+                                showInfoMessage={showInfoMessage}
+                                ErrorMessage={ErrorMessage}
+                                InfoMessage={InfoMessage}
+                                setInfoMessage={setInfoMessage}
+                                setBookmarkStatusChanged={setBookmarkStatusChanged}
+                                setShowInfoMessage={setShowInfoMessage}
+                                setErrorMessage={setErrorMessage}
+                                setShowErrorMessage={setShowErrorMessage}
+                                setFeedOpen={setFeedOpen}
+                                setMediaItems={setMediaItems}
+                                spatiotemporalInfoModal={spatiotemporalInfoModal}
+                                setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                                previous_url={redirectedPreviousUrl.current}
+                                __={__}
+                            />
+                        )}
                     {/* QR CODE */}
                     {showQrCode &&
                         createPortal(
@@ -1490,13 +1483,13 @@ const index = ({ previous_url }) => {
                                 <div
                                     role="dialog"
                                     aria-modal="true"
-                                    className="dark:bg-surface-1-dark dark:border-surface-3-dark bg-backgroundLight border-surface-3-light relative z-[101] w-full max-w-[280px] rounded-md border  lg:px-4 px-0 py-0 lg:py-5 sm:max-w-[340px]  lg:max-w-[500px]"
+                                    className="relative z-[101] w-full max-w-[280px] rounded-md border border-surface-3-light bg-backgroundLight px-0 py-0 dark:border-surface-3-dark dark:bg-surface-1-dark sm:max-w-[340px] lg:max-w-[500px] lg:px-4 lg:py-5"
                                 >
                                     <div className="flex flex-col items-center justify-center">
                                         {/* QR + Copy Wrapper (KEY PART) */}
                                         <div className="mx-auto my-5 w-fit">
                                             {/* QR */}
-                                            <div className="p-3 rounded-md bg-main-text-dark dark:text-main-text-light dark:bg-surface-1-dark sm:p-2">
+                                            <div className="rounded-md bg-main-text-dark p-3 dark:bg-surface-1-dark dark:text-main-text-light sm:p-2">
                                                 <QRCode
                                                     id="qr-code-canvas"
                                                     className="size-40 sm:size-44 lg:size-60"
@@ -1507,7 +1500,12 @@ const index = ({ previous_url }) => {
                                                     })}
                                                     {...(feedGallery?.type === 'smartphones' && {
                                                         value:
-                                                            route('home') + generateSmartphoneURL(feedGallery, true, true)
+                                                            route('home') +
+                                                            generateSmartphoneURL(
+                                                                feedGallery,
+                                                                true,
+                                                                true,
+                                                            ),
                                                     })}
                                                     level="H"
                                                     includemargin="true"
@@ -1517,15 +1515,25 @@ const index = ({ previous_url }) => {
                                             </div>
 
                                             {/* Copy Button */}
-                                            <button className="mt-3 w-full rounded-md bg-main-text-light dark:bg-main-text-dark py-2.5 text-lg font-medium text-main-text-dark dark:text-main-text-light transition dark:hover:bg-main-text-dark/80 hover:bg-main-text-light/80"
-
+                                            <button
+                                                className="mt-3 w-full rounded-md bg-main-text-light py-2.5 text-lg font-medium text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                                                 onClick={() => {
                                                     let url = null;
 
                                                     if (feedGallery?.type === 'posts') {
-                                                        url = route('home') + generateURL(feedGallery, true, true);
-                                                    } else if (feedGallery?.type === 'smartphones') {
-                                                        url = route('home') + generateSmartphoneURL(feedGallery, true, true);
+                                                        url =
+                                                            route('home') +
+                                                            generateURL(feedGallery, true, true);
+                                                    } else if (
+                                                        feedGallery?.type === 'smartphones'
+                                                    ) {
+                                                        url =
+                                                            route('home') +
+                                                            generateSmartphoneURL(
+                                                                feedGallery,
+                                                                true,
+                                                                true,
+                                                            );
                                                     }
 
                                                     navigator.clipboard.writeText(url);
@@ -1536,19 +1544,19 @@ const index = ({ previous_url }) => {
                                             </button>
 
                                             {/* Download Button */}
-                                            <div className="w-full mt-4">
+                                            <div className="mt-4 w-full">
                                                 <button
                                                     onClick={handleDownloadQRCode}
                                                     disabled={isQrDownloading}
-                                                    className={`flex w-full items-center justify-center gap-2 rounded-md py-2.5 text-lg font-medium text-main-text-light dark:text-main-text-dark transition lg:text-xl`}
+                                                    className={`flex w-full items-center justify-center gap-2 rounded-md py-2.5 text-lg font-medium text-main-text-light transition dark:text-main-text-dark lg:text-xl`}
                                                 >
                                                     {isQrDownloading ? (
-                                                        <Spinner customSize={"size-4 lg:size-6"} />
+                                                        <Spinner customSize={'size-4 lg:size-6'} />
                                                     ) : (
                                                         <>
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
-                                                                className="w-6 h-6"
+                                                                className="h-6 w-6"
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
                                                                 stroke="currentColor"

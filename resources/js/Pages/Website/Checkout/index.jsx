@@ -16,7 +16,6 @@ import { createPortal } from 'react-dom';
 import WebTextArea from '@/Components/WebTextArea';
 import { useConfirm } from '@/Hooks/useConfirm';
 
-
 export default function index({
     cart_items,
     refferalSessionData,
@@ -32,14 +31,12 @@ export default function index({
     const { currency, auth } = usePage().props;
     const windowSize = useWindowSize();
 
-
     const getItemKey = (item) => {
-        return buy_now ? item.temp_id : item.id
-    }
+        return buy_now ? item.temp_id : item.id;
+    };
 
     // Translation Hook
     const { __ } = useTranslation();
-
 
     const { confirm, ConfirmDialog } = useConfirm();
 
@@ -111,14 +108,11 @@ export default function index({
         const total = parseFloat(total_summary.total);
         const points = parseFloat(auth?.user?.points);
 
-
         if (total > points && points < total) {
             setPointsToUse(points);
             setPointsError('');
             return;
         }
-
-
 
         setPointsToUse(total);
         setPointsError('');
@@ -133,7 +127,6 @@ export default function index({
             return;
         }
 
-
         if (parseFloat(auth?.user?.points) === 0) {
             setErrorMessage(__('You have no points to use'));
             setShowErrorMessage(true);
@@ -141,11 +134,12 @@ export default function index({
         }
         const numValue = parseInt(value);
 
-
         if (numValue > parseFloat(auth?.user?.points)) {
             setPointsError(`${__('You can only use up to')} ${auth?.user?.points} ${__('points')}`);
         } else if (numValue > parseFloat(total_summary.total)) {
-            setPointsError(`${__('You can only use up to')} ${total_summary.total} ${__('points')}`);
+            setPointsError(
+                `${__('You can only use up to')} ${total_summary.total} ${__('points')}`,
+            );
         } else {
             setPointsError('');
         }
@@ -248,10 +242,7 @@ export default function index({
         }
     };
 
-
-
     const handlePlaceOrder = async () => {
-
         if (pointsError !== '') {
             setErrorMessage(__('Please Adjust Your Points Before Placing An Order'));
             setShowErrorMessage(true);
@@ -263,15 +254,19 @@ export default function index({
                 only: ['auth'],
                 preserveScroll: true,
                 preserveState: true,
-                preserveUrl: true
+                preserveUrl: true,
             });
         }
 
-        if (paymentMethod === 'points' && parseFloat(auth?.user?.points) > 0 && parseFloat(auth?.user?.points) < parseFloat(total_summary.total) && !secondaryPaymentOptionModal) {
+        if (
+            paymentMethod === 'points' &&
+            parseFloat(auth?.user?.points) > 0 &&
+            parseFloat(auth?.user?.points) < parseFloat(total_summary.total) &&
+            !secondaryPaymentOptionModal
+        ) {
             setSecondaryPaymentOptionModal(true);
             return;
         }
-
 
         // Validate shipping info
         const requiredFields = [
@@ -342,7 +337,6 @@ export default function index({
             });
     };
 
-
     // const getTotalQtyOfSmartphone = (smartphoneId) => {
     //     return cart_items
     //         .filter((i) => i.smartphone_id === smartphoneId)
@@ -352,7 +346,9 @@ export default function index({
     const updateQuantity = (itemId, newQuantity, temp_id) => {
         if (newQuantity < 1) return;
 
-        const cartItem = cart_items.find((item) => temp_id ? item.temp_id === temp_id : item.id === itemId);
+        const cartItem = cart_items.find((item) =>
+            temp_id ? item.temp_id === temp_id : item.id === itemId,
+        );
 
         if (!cartItem) {
             setInfoMessage(__('Item not found in cart'));
@@ -408,7 +404,12 @@ export default function index({
             setRemovingProcessing(true);
             axios
                 .delete(route('website.carts.remove-item'), {
-                    data: { item_id: itemId, type: type, page: buy_now ? 'buy_now' : 'cart', temp_id: temp_id },
+                    data: {
+                        item_id: itemId,
+                        type: type,
+                        page: buy_now ? 'buy_now' : 'cart',
+                        temp_id: temp_id,
+                    },
                 })
                 .then((response) => {
                     if (response.data.status === false) {
@@ -456,7 +457,7 @@ export default function index({
                 item_id: itemId,
                 quantity: newQuantity,
                 page: buy_now ? 'buy_now' : 'cart',
-                temp_id: temp_id
+                temp_id: temp_id,
             })
             .then((response) => {
                 if (response.data.status === false) {
@@ -474,7 +475,6 @@ export default function index({
     };
 
     const removeSmartphoneAddon = async (itemId, temp_id) => {
-
         const result = await confirm({
             title: __('Confirmation'),
             text: __('Are you sure you want to remove this item?'),
@@ -512,9 +512,6 @@ export default function index({
                     setRemovingProcessing(false);
                 });
         }
-
-
-
     };
 
     // Watching When payment method changes (Not Using For Now)
@@ -522,7 +519,6 @@ export default function index({
     //     if (paymentMethod === 'points') {
     //         const total = parseFloat(total_summary.total);
     //         const points = parseFloat(auth?.user?.points);
-
 
     //         if (total > points && points < total) {
     //             setPointsToUse('');
@@ -549,8 +545,8 @@ export default function index({
                         ...(showInfoMessage
                             ? { info: infoMessage }
                             : showErrorMessage
-                                ? { error: errorMessage }
-                                : { success: successMessage }),
+                              ? { error: errorMessage }
+                              : { success: successMessage }),
                     }}
                     onClosed={(type) => {
                         if (type === 'info') {
@@ -569,19 +565,17 @@ export default function index({
                 />
             )}
 
-
             <ConfirmDialog />
-
 
             <div className="min-h-screen transition-colors duration-200">
                 <div
-                    className={`max-w-8xl lg:my-7 mx-auto px-6 lg:px-8 ${windowSize.width <= 1024 && 'mb-20'}`}
+                    className={`max-w-8xl mx-auto px-6 lg:my-7 lg:px-8 ${windowSize.width <= 1024 && 'mb-20'}`}
                 >
                     {/* Header */}
                     <div className="my-2">
                         <Link
                             href={route('website.carts.index')}
-                            className="inline-flex items-center gap-2 mb-2 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                            className="mb-2 inline-flex items-center gap-2 text-sm font-medium text-main-text-light transition-colors dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                         >
                             <ChevronLeft />
                         </Link>
@@ -590,7 +584,7 @@ export default function index({
                         </h1>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-8 mb-20 lg:grid-cols-3">
+                    <div className="mb-20 grid grid-cols-1 gap-8 lg:grid-cols-3">
                         {/* Left Section: Shipping & Payment */}
                         <div className="space-y-6 lg:col-span-2">
                             {/* Shipping Information */}
@@ -650,7 +644,7 @@ export default function index({
 
                         {/* Right Section: Order Summary */}
                         <div className="lg:col-span-1">
-                            <div className="sticky space-y-4 top-8">
+                            <div className="sticky top-8 space-y-4">
                                 {/* Order Summary Card */}
                                 <OrderSummaryCard
                                     summary={summary}
@@ -687,7 +681,7 @@ export default function index({
                         isOpen={secondaryPaymentOptionModal}
                         onClose={() => {
                             setSecondaryPaymentOptionModal(false);
-                            setSecondaryPaymentMethod("");
+                            setSecondaryPaymentMethod('');
                         }}
                         availablePoints={parseFloat(auth?.user?.points)}
                         totalAmount={summary.total}
@@ -699,7 +693,6 @@ export default function index({
                         windowSize={windowSize}
                         processingOrder={processingOrder}
                         __={__}
-
                     />
                 )}
             </div>
@@ -744,9 +737,9 @@ function ShippingInfoCard({
     };
 
     return (
-        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Shipping Information')}
                 </h2>
@@ -755,8 +748,8 @@ function ShippingInfoCard({
                     onClick={() => setShippingAddressModal(true)}
                     className="flex cursor-pointer items-center gap-1.5 text-[13px] font-medium text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80"
                 >
-                    <Pencil className="w-4 h-4" />
-                    <span className='hidden lg:block'>{__('Edit address')}</span>
+                    <Pencil className="h-4 w-4" />
+                    <span className="hidden lg:block">{__('Edit address')}</span>
                 </button>
             </div>
 
@@ -806,7 +799,7 @@ function ShippingInfoCard({
 // Payment methods
 function PaymentMethod({ paymentMethod, setPaymentMethod, __, points, total }) {
     return (
-        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
             <h2 className="mb-4 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                 {__('Payment Method')}
             </h2>
@@ -814,10 +807,11 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __, points, total }) {
             <div className="space-y-2">
                 {/* Crypto */}
                 <label
-                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${paymentMethod === 'crypto'
-                        ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
-                        : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
-                        }`}
+                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${
+                        paymentMethod === 'crypto'
+                            ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
+                            : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
+                    }`}
                 >
                     <input
                         type="radio"
@@ -825,23 +819,23 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __, points, total }) {
                         value="crypto"
                         checked={paymentMethod === 'crypto'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="sr-only peer"
+                        className="peer sr-only"
                     />
 
                     {/* outer circle */}
-                    <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-black">
                         {/* inner white space */}
-                        <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white">
                             {/* black dot */}
                             {paymentMethod === 'crypto' && (
-                                <span className="w-3 h-3 bg-black rounded-full" />
+                                <span className="h-3 w-3 rounded-full bg-black" />
                             )}
                         </span>
                     </span>
 
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center p-2 text-center text-gray-700 bg-gray-200 rounded-full">
-                            <Bitcoin className="w-6 h-6" />
+                        <div className="flex items-center justify-center rounded-full bg-gray-200 p-2 text-center text-gray-700">
+                            <Bitcoin className="h-6 w-6" />
                         </div>
 
                         <div>
@@ -857,10 +851,11 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __, points, total }) {
 
                 {/* Bank Transfer */}
                 <label
-                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${paymentMethod === 'bank_transfer'
-                        ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
-                        : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
-                        }`}
+                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${
+                        paymentMethod === 'bank_transfer'
+                            ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
+                            : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
+                    }`}
                 >
                     <input
                         type="radio"
@@ -868,23 +863,23 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __, points, total }) {
                         value="bank_transfer"
                         checked={paymentMethod === 'bank_transfer'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="sr-only peer"
+                        className="peer sr-only"
                     />
 
                     {/* outer circle */}
-                    <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-black">
                         {/* inner white space */}
-                        <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white">
                             {/* black dot */}
                             {paymentMethod === 'bank_transfer' && (
-                                <span className="w-3 h-3 bg-black rounded-full" />
+                                <span className="h-3 w-3 rounded-full bg-black" />
                             )}
                         </span>
                     </span>
 
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center p-2 text-center text-gray-700 bg-gray-200 rounded-full">
-                            <Landmark className="w-6 h-6" />
+                        <div className="flex items-center justify-center rounded-full bg-gray-200 p-2 text-center text-gray-700">
+                            <Landmark className="h-6 w-6" />
                         </div>
                         <div>
                             <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
@@ -896,10 +891,11 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __, points, total }) {
 
                 {/* Points */}
                 <label
-                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${total > points && points < total ? 'pointer-events-none opacity-50' : ''} ${paymentMethod === 'points'
-                        ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
-                        : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
-                        }`}
+                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${total > points && points < total ? 'pointer-events-none opacity-50' : ''} ${
+                        paymentMethod === 'points'
+                            ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
+                            : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
+                    }`}
                 >
                     <input
                         type="radio"
@@ -907,23 +903,23 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __, points, total }) {
                         value="points"
                         checked={paymentMethod === 'points'}
                         onChange={(e) => setPaymentMethod(e.target.value)}
-                        className="sr-only peer"
+                        className="peer sr-only"
                     />
 
                     {/* outer circle */}
-                    <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-black">
                         {/* inner white space */}
-                        <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white">
                             {/* black dot */}
                             {paymentMethod === 'points' && (
-                                <span className="w-3 h-3 bg-black rounded-full" />
+                                <span className="h-3 w-3 rounded-full bg-black" />
                             )}
                         </span>
                     </span>
 
                     <div className="flex items-center gap-3">
-                        <div className="flex items-center justify-center p-2 text-center text-gray-700 bg-gray-200 rounded-full">
-                            <Star className="w-6 h-6" />
+                        <div className="flex items-center justify-center rounded-full bg-gray-200 p-2 text-center text-gray-700">
+                            <Star className="h-6 w-6" />
                         </div>
 
                         <div>
@@ -939,12 +935,19 @@ function PaymentMethod({ paymentMethod, setPaymentMethod, __, points, total }) {
 }
 
 // UsePoints
-function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error, __, paymentMethod }) {
-
+function UsePoints({
+    points,
+    pointsToUse,
+    setPointsToUse,
+    onUseAllPoints,
+    error,
+    __,
+    paymentMethod,
+}) {
     if (paymentMethod === 'points') return null;
 
     return (
-        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header */}
             <h2 className="mb-5 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                 {__('Use Points')}
@@ -967,7 +970,7 @@ function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error,
                         placeholder={__('Enter points amount')}
                         min="0"
                         max={points}
-                        className="focus:outline-hidden h-[40px] w-full lg:w-[300px] rounded-md border border-surface-3-light px-4 py-2.5 text-sm placeholder:text-[14px] placeholder:font-medium placeholder:text-[#b4b4b4] focus:border-surface-3-light focus:outline-none focus:ring-0 focus:ring-main-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:placeholder:text-sub-text-dark dark:focus:border-surface-3-dark"
+                        className="focus:outline-hidden h-[40px] w-full rounded-md border border-surface-3-light px-4 py-2.5 text-sm placeholder:text-[14px] placeholder:font-medium placeholder:text-[#b4b4b4] focus:border-surface-3-light focus:outline-none focus:ring-0 focus:ring-main-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:placeholder:text-sub-text-dark dark:focus:border-surface-3-dark lg:w-[300px]"
                     />
 
                     {/* Use All Button */}
@@ -975,11 +978,10 @@ function UsePoints({ points, pointsToUse, setPointsToUse, onUseAllPoints, error,
                         type="button"
                         onClick={onUseAllPoints}
                         disabled={!points || points === 0 || paymentMethod === 'points'}
-                        className={`h-[40px] rounded-md border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] font-semibold text-main-text-light transition-colors lg:hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:lg:hover:bg-surface-3-dark/80 ${paymentMethod === 'points' ? 'invisible' : 'visible'}`}
+                        className={`h-[40px] rounded-md border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] font-semibold text-main-text-light transition-colors disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark lg:hover:bg-[#ebebeb] dark:lg:hover:bg-surface-3-dark/80 ${paymentMethod === 'points' ? 'invisible' : 'visible'}`}
                     >
                         {__('Use all')}
                     </button>
-
                 </div>
 
                 {/* Available Points */}
@@ -1015,12 +1017,12 @@ function Items({
     getItemKey,
 }) {
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
-        return `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
+        return `?m-public_id=${encodeURIComponent(smartphone?.public_id)}&m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
     };
 
     return (
-        <div className="p-8 transition-all bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
-            <div className="flex items-start justify-start mb-4">
+        <div className="rounded-md border border-surface-3-light bg-white p-8 transition-all dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <div className="mb-4 flex items-start justify-start">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Order Items')} ({cart_items?.length})
                 </h2>
@@ -1039,39 +1041,39 @@ function Items({
                         key={getItemKey(item)}
                         className={`border-t border-surface-3-light py-8 dark:border-surface-3-dark`}
                     >
-                        <div className="flex flex-col gap-6 border-t lg:flex-row border-surface-3-light first:border-t-0 dark:border-surface-3-dark">
+                        <div className="flex flex-col gap-6 border-t border-surface-3-light first:border-t-0 dark:border-surface-3-dark lg:flex-row">
                             {/* Product Image */}
                             {(item?.smartphone?.smartphone_image_urls.length > 0 ||
                                 item?.smartphone?.smartphone_video_urls?.length > 0) && (
-                                    <div
-                                        className="relative overflow-hidden transition-all rounded-md cursor-pointer group/img aspect-square h-28 w-28 shrink-0 bg-surface-2-light dark:bg-surface-2-dark"
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            router.get(
-                                                route('home') +
+                                <div
+                                    className="group/img relative aspect-square h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-md bg-surface-2-light transition-all dark:bg-surface-2-dark"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        router.get(
+                                            route('home') +
                                                 generateSmartphoneURL(item?.smartphone, true, true),
-                                            );
-                                        }}
-                                    >
-                                        <img
-                                            src={
-                                                item?.smartphone?.smartphone_image_urls?.[0] ||
-                                                item?.smartphone?.smartphone_video_urls[0]
-                                                    ?.thumbnail_url ||
-                                                Placeholder
-                                            }
-                                            alt={item?.smartphone?.model_name?.name}
-                                            className="object-cover w-full h-full transition-transform duration-300 lg:group-hover/img:scale-110"
-                                            loading="lazy"
-                                            onError={(e) => (e.target.src = Placeholder)}
-                                        />
-                                    </div>
-                                )}
+                                        );
+                                    }}
+                                >
+                                    <img
+                                        src={
+                                            item?.smartphone?.smartphone_image_urls?.[0] ||
+                                            item?.smartphone?.smartphone_video_urls[0]
+                                                ?.thumbnail_url ||
+                                            Placeholder
+                                        }
+                                        alt={item?.smartphone?.model_name?.name}
+                                        className="h-full w-full object-cover transition-transform duration-300 lg:group-hover/img:scale-110"
+                                        loading="lazy"
+                                        onError={(e) => (e.target.src = Placeholder)}
+                                    />
+                                </div>
+                            )}
 
                             {/* Product Details */}
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-start justify-between gap-4 mb-3">
+                            <div className="min-w-0 flex-1">
+                                <div className="mb-3 flex items-start justify-between gap-4">
                                     <div className="flex-1">
                                         <h3 className="mb-1 text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">
                                             {item?.smartphone?.model_name?.name || 'N/A'}
@@ -1082,19 +1084,21 @@ function Items({
                                             {item?.smartphone?.capacity?.name && item?.color?.name
                                                 ? `${item?.smartphone?.capacity?.name}, ${item?.color?.name}`
                                                 : item?.smartphone?.capacity?.name ||
-                                                item?.color?.name ||
-                                                ''}
+                                                  item?.color?.name ||
+                                                  ''}
                                         </p>
                                     </div>
 
                                     {/* Remove Button */}
                                     <button
-                                        onClick={() => onProductRemove(item.id, item.type, item?.temp_id)}
+                                        onClick={() =>
+                                            onProductRemove(item.id, item.type, item?.temp_id)
+                                        }
                                         disabled={removing}
                                         className={`p-1.5 text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80 ${removing ? 'cursor-not-allowed' : ''}`}
                                         title={__('Remove item')}
                                     >
-                                        {removing ? <Spinner /> : <Trash2 className="w-5 h-5" />}
+                                        {removing ? <Spinner /> : <Trash2 className="h-5 w-5" />}
                                     </button>
                                 </div>
 
@@ -1109,19 +1113,28 @@ function Items({
                                 {/* Quantity and Stock */}
                                 <div className="flex items-center gap-4">
                                     {/* Quantity Controls */}
-                                    <div className="flex items-center border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-transparent">
+                                    <div className="flex items-center rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-transparent">
                                         <button
                                             onKeyDownCapture={(e) => {
-                                                const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
-                                                const isSpace = e.key === " " || e.code === "Space";
+                                                const isEnter =
+                                                    e.key === 'Enter' ||
+                                                    e.code === 'NumpadEnter' ||
+                                                    e.code === 'Enter';
+                                                const isSpace = e.key === ' ' || e.code === 'Space';
 
                                                 if (isEnter || isSpace) {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                 }
                                             }}
-                                            onClick={() => onUpdateQuantity(item.id, quantity - 1, item?.temp_id)}
-                                            className="px-1 py-1 transition-colors text-main-text-light focus:outline-none focus:ring-0 hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                            onClick={() =>
+                                                onUpdateQuantity(
+                                                    item.id,
+                                                    quantity - 1,
+                                                    item?.temp_id,
+                                                )
+                                            }
+                                            className="px-1 py-1 text-main-text-light transition-colors hover:bg-surface-1-light focus:outline-none focus:ring-0 disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                             disabled={quantity <= 1}
                                         >
                                             <svg
@@ -1147,16 +1160,25 @@ function Items({
                                         <button
                                             // disabled={quantity >= maxAllowedForThisItem}
                                             onKeyDownCapture={(e) => {
-                                                const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
-                                                const isSpace = e.key === " " || e.code === "Space";
+                                                const isEnter =
+                                                    e.key === 'Enter' ||
+                                                    e.code === 'NumpadEnter' ||
+                                                    e.code === 'Enter';
+                                                const isSpace = e.key === ' ' || e.code === 'Space';
 
                                                 if (isEnter || isSpace) {
                                                     e.preventDefault();
                                                     e.stopPropagation();
                                                 }
                                             }}
-                                            onClick={() => onUpdateQuantity(item.id, quantity + 1, item?.temp_id)}
-                                            className="px-1 py-1 transition-colors text-main-text-light focus:outline-none focus:ring-0 hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                            onClick={() =>
+                                                onUpdateQuantity(
+                                                    item.id,
+                                                    quantity + 1,
+                                                    item?.temp_id,
+                                                )
+                                            }
+                                            className="px-1 py-1 text-main-text-light transition-colors hover:bg-surface-1-light focus:outline-none focus:ring-0 disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1190,7 +1212,7 @@ function Items({
 
                         {/* Add-ons Section */}
                         {relatedAddons.length > 0 && (
-                            <div className="pt-6 mt-6 border-t border-surface-3-light dark:border-surface-3-dark">
+                            <div className="mt-6 border-t border-surface-3-light pt-6 dark:border-surface-3-dark">
                                 <h4 className="mb-4 text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                                     {__('Add-ons')}
                                 </h4>
@@ -1217,7 +1239,7 @@ function Items({
                         )}
 
                         {/* Total Section */}
-                        <div className="flex items-center justify-between pt-3 mt-3">
+                        <div className="mt-3 flex items-center justify-between pt-3">
                             <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('Total')}
                             </span>
@@ -1225,12 +1247,12 @@ function Items({
                                 {currency?.symbol}
                                 {Number(
                                     item?.unit_price * quantity +
-                                    Number(
-                                        relatedAddons?.reduce(
-                                            (total, addon) => total + Number(addon.total_price),
-                                            0,
+                                        Number(
+                                            relatedAddons?.reduce(
+                                                (total, addon) => total + Number(addon.total_price),
+                                                0,
+                                            ),
                                         ),
-                                    ),
                                 ).toLocaleString('en-US')}
                             </span>
                         </div>
@@ -1242,10 +1264,18 @@ function Items({
 }
 
 // Addon Items
-function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, removing, __, buy_now }) {
-
+function AddonItem({
+    item,
+    quantity,
+    onUpdateQuantity,
+    onRemove,
+    currency,
+    removing,
+    __,
+    buy_now,
+}) {
     return (
-        <div className="flex items-center justify-center gap-2 py-4 border-b lg:px-5 lg:gap-4 border-surface-3-light dark:border-surface-3-dark">
+        <div className="flex items-center justify-center gap-2 border-b border-surface-3-light py-4 dark:border-surface-3-dark lg:gap-4 lg:px-5">
             {/* Addon Name - Truncated after certain chars */}
             <div className="min-w-0 max-w-[70px] flex-1">
                 <p className="truncate text-[14px] font-normal dark:text-main-text-dark">
@@ -1260,27 +1290,34 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                 className={`p-1.5 text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80`}
                 title={__('Remove addon')}
             >
-                {removing ? <Spinner size="sm" /> : <Trash2 className="w-5 h-5" />}
+                {removing ? <Spinner size="sm" /> : <Trash2 className="h-5 w-5" />}
             </button>
 
             {/* Spacer to push quantity controls to the right */}
             <div className="lg:flex-1"></div>
 
             {/* Quantity Controls - Screenshot style with rounded square buttons */}
-            <div className="flex items-center flex-shrink-0 gap-2">
+            <div className="flex flex-shrink-0 items-center gap-2">
                 <button
                     onKeyDownCapture={(e) => {
-                        const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
-                        const isSpace = e.key === " " || e.code === "Space";
+                        const isEnter =
+                            e.key === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Enter';
+                        const isSpace = e.key === ' ' || e.code === 'Space';
 
                         if (isEnter || isSpace) {
                             e.preventDefault();
                             e.stopPropagation();
                         }
                     }}
-                    onClick={() => onUpdateQuantity((buy_now ? item?.addon_id : item?.id), quantity - 1, item?.temp_id)}
+                    onClick={() =>
+                        onUpdateQuantity(
+                            buy_now ? item?.addon_id : item?.id,
+                            quantity - 1,
+                            item?.temp_id,
+                        )
+                    }
                     disabled={quantity <= 1}
-                    className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light disabled:cursor-not-allowed disabled:border-surface-3-light focus:outline-none focus:ring-0 dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                    className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1288,29 +1325,35 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                         viewBox="0 0 24 24"
                         strokeWidth={3}
                         stroke="currentColor"
-                        className="w-4 h-4 font-semibold text-main-text-light dark:text-main-text-dark"
+                        className="h-4 w-4 font-semibold text-main-text-light dark:text-main-text-dark"
                     >
                         <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
                     </svg>
                 </button>
 
-                <span className="w-8 font-semibold text-center text-md text-main-text-light dark:text-main-text-dark">
+                <span className="text-md w-8 text-center font-semibold text-main-text-light dark:text-main-text-dark">
                     {quantity}
                 </span>
 
                 <button
                     onKeyDownCapture={(e) => {
-                        const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
-                        const isSpace = e.key === " " || e.code === "Space";
+                        const isEnter =
+                            e.key === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Enter';
+                        const isSpace = e.key === ' ' || e.code === 'Space';
 
                         if (isEnter || isSpace) {
                             e.preventDefault();
                             e.stopPropagation();
                         }
                     }}
-                    onClick={() => onUpdateQuantity((buy_now ? item?.addon_id : item?.id), quantity + 1, item?.temp_id)}
-                    className="flex h-[27px] w-[27px] focus:outline-none focus:ring-0 items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
-
+                    onClick={() =>
+                        onUpdateQuantity(
+                            buy_now ? item?.addon_id : item?.id,
+                            quantity + 1,
+                            item?.temp_id,
+                        )
+                    }
+                    className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -1318,7 +1361,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                         viewBox="0 0 24 24"
                         strokeWidth={3}
                         stroke="currentColor"
-                        className="w-4 h-4 font-semibold text-main-text-light dark:text-main-text-dark"
+                        className="h-4 w-4 font-semibold text-main-text-light dark:text-main-text-dark"
                     >
                         <path
                             strokeLinecap="round"
@@ -1330,7 +1373,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
             </div>
 
             {/* Total Price */}
-            <div className="lg:flex-shrink-0 w-16 lg:w-24 text-[14px] font-semibold text-right text-main-text-light dark:text-main-text-dark">
+            <div className="w-16 text-right text-[14px] font-semibold text-main-text-light dark:text-main-text-dark lg:w-24 lg:flex-shrink-0">
                 {currency?.symbol}
                 {Number(item?.unit_price * quantity).toLocaleString('en-US')}
             </div>
@@ -1357,15 +1400,15 @@ function OrderSummaryCard({
     __,
 }) {
     return (
-        <div className="sticky space-y-3 top-24">
+        <div className="sticky top-24 space-y-3">
             {/* Summary Card */}
-            <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
                 <h2 className="mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Order Summary')}
                 </h2>
 
                 {/* Price Breakdown */}
-                <div className="pb-5 mb-5 space-y-3">
+                <div className="mb-5 space-y-3 pb-5">
                     {/* Items Total */}
                     <div className="flex items-center justify-between">
                         <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
@@ -1433,7 +1476,7 @@ function OrderSummaryCard({
                 <button
                     onClick={handlePlaceOrder}
                     disabled={processingOrder}
-                    className="mt-7 block w-full rounded-md bg-[#282828] px-6 py-4 text-center text-base font-semibold text-white transition-all lg:hover:bg-[#282828]/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-backgroundLight dark:text-main-text-light dark:lg:hover:bg-backgroundLight/80"
+                    className="mt-7 block w-full rounded-md bg-[#282828] px-6 py-4 text-center text-base font-semibold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 dark:bg-backgroundLight dark:text-main-text-light lg:hover:bg-[#282828]/80 dark:lg:hover:bg-backgroundLight/80"
                 >
                     {processingOrder ? (
                         <div className="flex items-center justify-center gap-2">
@@ -1454,7 +1497,7 @@ function OrderSummaryCard({
                             viewBox="0 0 24 24"
                             strokeWidth={2}
                             stroke="currentColor"
-                            className="w-5 h-5 text-green-600"
+                            className="h-5 w-5 text-green-600"
                         >
                             <path
                                 strokeLinecap="round"
@@ -1485,13 +1528,13 @@ function PromoCodeCard({
     __,
 }) {
     return (
-        <div className="p-3 mb-5 border border-surface-3-light dark:border-surface-3-dark">
+        <div className="mb-5 border border-surface-3-light p-3 dark:border-surface-3-dark">
             {!appliedPromo ? (
                 <>
                     {/* Collapsed State - Toggle Button */}
                     <button
                         onClick={() => setShowInput(!showInput)}
-                        className={`flex w-full items-center justify-between ${showInput ? 'mb-5' : ''} text-[14px] font-semibold text-main-text-light transition-colors lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80`}
+                        className={`flex w-full items-center justify-between ${showInput ? 'mb-5' : ''} text-[14px] font-semibold text-main-text-light transition-colors dark:text-main-text-dark lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80`}
                     >
                         <span className="flex items-center gap-0.5">
                             <svg
@@ -1500,7 +1543,7 @@ function PromoCodeCard({
                                 viewBox="0 0 24 24"
                                 strokeWidth={3}
                                 stroke="currentColor"
-                                className="w-3 h-3"
+                                className="h-3 w-3"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -1528,18 +1571,18 @@ function PromoCodeCard({
 
                     {/* Expanded State - Input Field + Apply Button */}
                     {showInput && (
-                        <div className="mt-3 mb-5 space-y-2">
+                        <div className="mb-5 mt-3 space-y-2">
                             <div className="flex flex-wrap items-center justify-center gap-2">
-                                <div className="relative flex flex-wrap items-center flex-1 gap-2 rounded-md">
+                                <div className="relative flex flex-1 flex-wrap items-center gap-2 rounded-md">
                                     <input
                                         type="text"
                                         value={promoCode}
                                         onChange={(e) => setPromoCode(e.target.value)}
                                         placeholder={__('Enter promo code')}
-                                        className="focus:outline-hidden h-[40px] w-full  flex-1 rounded-md border border-surface-3-light px-4 py-2.5  text-sm placeholder:text-[14px] placeholder:font-medium placeholder:text-[#b4b4b4] focus:border-surface-3-light focus:outline-none focus:ring-0 focus:ring-main-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:placeholder:text-sub-text-dark dark:focus:border-surface-3-dark"
+                                        className="focus:outline-hidden h-[40px] w-full flex-1 rounded-md border border-surface-3-light px-4 py-2.5 text-sm placeholder:text-[14px] placeholder:font-medium placeholder:text-[#b4b4b4] focus:border-surface-3-light focus:outline-none focus:ring-0 focus:ring-main-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:placeholder:text-sub-text-dark dark:focus:border-surface-3-dark"
                                     />
                                     {error && (
-                                        <p className="absolute text-xs text-red-500 xl:-bottom-5 lg:-bottom-7 left-1 dark:text-red-400">
+                                        <p className="absolute left-1 text-xs text-red-500 dark:text-red-400 lg:-bottom-7 xl:-bottom-5">
                                             {error}
                                         </p>
                                     )}
@@ -1547,7 +1590,7 @@ function PromoCodeCard({
                                 <button
                                     onClick={onApply}
                                     disabled={isApplying}
-                                    className="h-[40px] rounded-md  border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] text-sm font-semibold text-main-text-light transition-colors lg:hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark dark:lg:hover:bg-surface-3-dark/80"
+                                    className="h-[40px] rounded-md border border-[#c7c7c7] bg-backgroundLight px-6 text-[14px] text-sm font-semibold text-main-text-light transition-colors disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark lg:hover:bg-[#ebebeb] dark:lg:hover:bg-surface-3-dark/80"
                                 >
                                     {isApplying ? <Spinner customSize={'size-4'} /> : __('Apply')}
                                 </button>
@@ -1557,13 +1600,13 @@ function PromoCodeCard({
                 </>
             ) : (
                 /* Applied Promo State - Success Box */
-                <div className="flex items-center justify-between p-3 border border-green-200 rounded-md bg-green-50 dark:border-green-800 dark:bg-green-900/20">
+                <div className="flex items-center justify-between rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
                     <div className="flex items-center gap-2">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 20 20"
                             fill="currentColor"
-                            className="w-5 h-5 text-green-600 dark:text-green-400"
+                            className="h-5 w-5 text-green-600 dark:text-green-400"
                         >
                             <path
                                 fillRule="evenodd"
@@ -1597,7 +1640,7 @@ function PromoCodeCard({
                                 viewBox="0 0 24 24"
                                 strokeWidth={2}
                                 stroke="currentColor"
-                                className="w-5 h-5"
+                                className="h-5 w-5"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -1709,16 +1752,31 @@ function ShippingAddressModal({
 
         const preventInertiaNavigation = (event) => {
             const pathname = event.detail?.visit?.url?.pathname || '';
-            if (pathname.includes("/shipping-addresses") || pathname.includes('/shipping-address-status-toggle')) {
+            if (
+                pathname.includes('/shipping-addresses') ||
+                pathname.includes('/shipping-address-status-toggle')
+            ) {
                 return;
             }
             if (isCreateShippingAddressModalOpen && pathname === '/shipping-address') {
                 event.preventDefault();
             }
 
-
-            const mainRoutes = ['/', '/global-search', '/shop', '/profile', '/cart', '/orders', '/bookmarks', '/privacy-policy', '/terms-of-service', 'contact'];
-            const isNavigatingToMainRoute = mainRoutes.some(route => pathname === route || pathname.startsWith(route));
+            const mainRoutes = [
+                '/',
+                '/global-search',
+                '/shop',
+                '/profile',
+                '/cart',
+                '/orders',
+                '/bookmarks',
+                '/privacy-policy',
+                '/terms-of-service',
+                'contact',
+            ];
+            const isNavigatingToMainRoute = mainRoutes.some(
+                (route) => pathname === route || pathname.startsWith(route),
+            );
 
             if (isOpen && !isNavigatingToMainRoute) {
                 event.preventDefault();
@@ -1809,7 +1867,6 @@ function ShippingAddressModal({
         setIsEditShippingAddressModalOpen(true);
     };
 
-
     // Update Shipping Address
     const handleUpdateShippingAddress = (e) => {
         e.preventDefault();
@@ -1888,7 +1945,7 @@ function ShippingAddressModal({
                     {__('Please complete your profile first.')} <br />
                     <Link
                         href={route('website.profile.index') + '?modal=edit-profile'}
-                        className="underline text-main-text-light dark:text-main-text-dark"
+                        className="text-main-text-light underline dark:text-main-text-dark"
                     >
                         {__('Go to Profile Page')}
                     </Link>
@@ -1929,13 +1986,11 @@ function ShippingAddressModal({
         );
     };
 
-
-
     const EmptyShippingAddress = ({ onClick, processing, __ }) => {
         return (
-            <div className="w-full p-8 border rounded-md border-surface-3-light bg-surface-2-light dark:border-surface-3-dark dark:bg-surface-2-dark">
+            <div className="w-full rounded-md border border-surface-3-light bg-surface-2-light p-8 dark:border-surface-3-dark dark:bg-surface-2-dark">
                 {/* Message Text */}
-                <p className="mb-4 text-sm text-center text-main-text-light dark:text-main-text-dark">
+                <p className="mb-4 text-center text-sm text-main-text-light dark:text-main-text-dark">
                     {__('No shipping address yet. Add one to use at checkout.')}
                 </p>
 
@@ -1964,27 +2019,23 @@ function ShippingAddressModal({
         setIsDropdownOpen,
         deleteProcessing,
 
-
         __,
     }) => {
         // If this is the active/default address
         if (item.is_active) {
             return (
                 <>
-                    <div className="relative w-full p-5 transition-colors bg-white border rounded-md border-main-text-light dark:bg-surface-2-dark dark:border-main-text-dark">
-
+                    <div className="relative w-full rounded-md border border-main-text-light bg-white p-5 transition-colors dark:border-main-text-dark dark:bg-surface-2-dark">
                         {/* Top Right: Default Badge + Edit Button  For Mobile*/}
-                        <div className="flex items-center justify-between gap-2 lg:hidden lg:left-auto lg:justify-end">
-
-
-                            <span className="px-4 py-1 text-sm font-medium text-white bg-green-600 rounded-full">
+                        <div className="flex items-center justify-between gap-2 lg:left-auto lg:hidden lg:justify-end">
+                            <span className="rounded-full bg-green-600 px-4 py-1 text-sm font-medium text-white">
                                 {__('default')}
                             </span>
 
                             <button
                                 type="button"
                                 onClick={() => onEdit(item)}
-                                className="flex items-center gap-1.5 rounded-md  px-3 py-1.5 text-sm font-medium text-main-text-light transition-colors hover:text-main-text-light/80  dark:text-main-text-dark dark:hover:text-main-text-dark/80"
+                                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -1992,7 +2043,7 @@ function ShippingAddressModal({
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-4 h-4"
+                                    className="h-4 w-4"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -2004,17 +2055,15 @@ function ShippingAddressModal({
                         </div>
 
                         {/* Top Right: Default Badge + Edit Button  For Desktop*/}
-                        <div className="absolute items-center hidden gap-2 lg:flex top-4 right-4">
-
-
-                            <span className="px-4 py-1 text-sm font-medium text-white bg-green-600 rounded-full">
+                        <div className="absolute right-4 top-4 hidden items-center gap-2 lg:flex">
+                            <span className="rounded-full bg-green-600 px-4 py-1 text-sm font-medium text-white">
                                 {__('default')}
                             </span>
 
                             <button
                                 type="button"
                                 onClick={() => onEdit(item)}
-                                className="flex items-center gap-1.5 rounded-md  px-3 py-1.5 text-sm font-medium text-main-text-light transition-colors hover:text-main-text-light/80  dark:text-main-text-dark dark:hover:text-main-text-dark/80"
+                                className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -2022,7 +2071,7 @@ function ShippingAddressModal({
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-4 h-4"
+                                    className="h-4 w-4"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -2035,7 +2084,7 @@ function ShippingAddressModal({
                         </div>
 
                         {/* Address Details */}
-                        <div className="pr-32 mt-3 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
+                        <div className="mt-3 pr-32 text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
                             <p className="font-semibold">{item.name}</p>
                             <p>{item.address_line1}</p>
                             {item.address_line2 && <p>{item.address_line2}</p>}
@@ -2043,11 +2092,12 @@ function ShippingAddressModal({
                                 {item.city}, {item.state} {item.postal_code}
                             </p>
                             {item.phone && (
-                                <p className="text-main-text-light dark:text-main-text-dark">{item.phone}</p>
+                                <p className="text-main-text-light dark:text-main-text-dark">
+                                    {item.phone}
+                                </p>
                             )}
                             <p>{item.country?.name || item.country}</p>
                         </div>
-
                     </div>
                 </>
             );
@@ -2056,16 +2106,14 @@ function ShippingAddressModal({
         // If this is an inactive/other address
         return (
             <>
-
-                <div className="relative w-full p-5 transition-colors bg-white border rounded-md border-surface-3-light hover:border-main-text-light/20 dark:bg-surface-1-dark dark:border-surface-3-dark dark:hover:border-main-text-dark/20">
-
+                <div className="relative w-full rounded-md border border-surface-3-light bg-white p-5 transition-colors hover:border-main-text-light/20 dark:border-surface-3-dark dark:bg-surface-1-dark dark:hover:border-main-text-dark/20">
                     {/* Top Right: Dropdown Menu */}
-                    <div className="absolute top-4 right-4">
+                    <div className="absolute right-4 top-4">
                         <div className="relative">
                             <button
                                 type="button"
                                 onClick={() => setIsDropdownOpen(item.id)}
-                                className="rounded-md p-1.5 text-main-text-light transition-colors lg:hover:bg-surface-2-light focus:outline-none focus:ring-0 focus:ring-offset-0 dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
+                                className="rounded-md p-1.5 text-main-text-light transition-colors focus:outline-none focus:ring-0 focus:ring-offset-0 dark:text-main-text-dark lg:hover:bg-surface-2-light dark:lg:hover:bg-surface-2-dark"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -2073,7 +2121,7 @@ function ShippingAddressModal({
                                     viewBox="0 0 24 24"
                                     strokeWidth={1.5}
                                     stroke="currentColor"
-                                    className="w-5 h-5"
+                                    className="h-5 w-5"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -2082,7 +2130,6 @@ function ShippingAddressModal({
                                     />
                                 </svg>
                             </button>
-
 
                             {/* Dropdown Menu */}
                             {isDropdownOpen === item.id && (
@@ -2094,7 +2141,7 @@ function ShippingAddressModal({
                                     />
 
                                     {/* Menu */}
-                                    <div className="absolute right-0 z-20 w-48 bg-white border rounded-md shadow-lg top-6 border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                    <div className="absolute right-0 top-6 z-20 w-48 rounded-md border border-surface-3-light bg-white shadow-lg dark:border-surface-3-dark dark:bg-surface-1-dark">
                                         <div className="py-3">
                                             {/* Set as Default */}
                                             <button
@@ -2102,7 +2149,7 @@ function ShippingAddressModal({
                                                 onClick={() => {
                                                     onToggle(item.id);
                                                 }}
-                                                className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left transition-colors text-main-text-light lg:hover:bg-surface-2-light dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
+                                                className="flex w-full items-center gap-2 px-4 py-1 text-left text-sm text-main-text-light transition-colors dark:text-main-text-dark lg:hover:bg-surface-2-light dark:lg:hover:bg-surface-2-dark"
                                             >
                                                 {toggleProcessing ? (
                                                     <Spinner />
@@ -2113,7 +2160,7 @@ function ShippingAddressModal({
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={2}
                                                         stroke="currentColor"
-                                                        className="w-4 h-4"
+                                                        className="h-4 w-4"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -2132,7 +2179,7 @@ function ShippingAddressModal({
                                                     setIsDropdownOpen(null);
                                                     onEdit(item);
                                                 }}
-                                                className="flex items-center w-full gap-2 px-4 py-2 text-sm text-left transition-colors text-main-text-light lg:hover:bg-surface-2-light dark:text-main-text-dark dark:lg:hover:bg-surface-2-dark"
+                                                className="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-main-text-light transition-colors dark:text-main-text-dark lg:hover:bg-surface-2-light dark:lg:hover:bg-surface-2-dark"
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -2140,7 +2187,7 @@ function ShippingAddressModal({
                                                     viewBox="0 0 24 24"
                                                     strokeWidth={1.5}
                                                     stroke="currentColor"
-                                                    className="w-4 h-4"
+                                                    className="h-4 w-4"
                                                 >
                                                     <path
                                                         strokeLinecap="round"
@@ -2158,12 +2205,12 @@ function ShippingAddressModal({
                                                 onClick={() => {
                                                     onRemove(item.id);
                                                 }}
-                                                className="flex items-center w-full gap-2 px-4 py-1 text-sm text-left text-red-600 transition-colors lg:hover:bg-red-50 dark:text-red-400 dark:lg:hover:bg-red-900/20"
+                                                className="flex w-full items-center gap-2 px-4 py-1 text-left text-sm text-red-600 transition-colors dark:text-red-400 lg:hover:bg-red-50 dark:lg:hover:bg-red-900/20"
                                             >
                                                 {deleteProcessing ? (
                                                     <Spinner />
                                                 ) : (
-                                                    <Trash2 className="w-4 h-4" />
+                                                    <Trash2 className="h-4 w-4" />
                                                 )}
                                                 {__('Delete')}
                                             </button>
@@ -2183,14 +2230,13 @@ function ShippingAddressModal({
                             {item.city}, {item.state} {item.postal_code}
                         </p>
                         {item.phone && (
-                            <p className="text-main-text-light dark:text-main-text-dark">{item.phone}</p>
+                            <p className="text-main-text-light dark:text-main-text-dark">
+                                {item.phone}
+                            </p>
                         )}
                         <p>{item.country?.name || item.country}</p>
                     </div>
-
                 </div>
-
-
             </>
         );
     };
@@ -2215,7 +2261,6 @@ function ShippingAddressModal({
         }
     }, [shipping_addresses, isOpen]);
 
-
     useEffect(() => {
         if (isOpen) {
             const url = new URL(window.location.href);
@@ -2223,22 +2268,13 @@ function ShippingAddressModal({
             window.history.pushState({}, '', url.toString());
         }
 
-
         return () => {
             if (!isOpen) {
-                window.history.pushState(
-                    { fromModal: true },
-                    '',
-                    route('website.carts.index')
-                );
+                window.history.pushState({ fromModal: true }, '', route('website.carts.index'));
             }
 
-            window.history.replaceState(
-                { fromModal: true },
-                '',
-                route('website.checkout.index')
-            );
-        }
+            window.history.replaceState({ fromModal: true }, '', route('website.checkout.index'));
+        };
     }, [isOpen]);
 
     if (!isOpen) {
@@ -2250,28 +2286,28 @@ function ShippingAddressModal({
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     {/* Backdrop/Overlay */}
                     <div
-                        className="fixed inset-0 transition-opacity duration-300 bg-black/30"
+                        className="fixed inset-0 bg-black/30 transition-opacity duration-300"
                         onClick={() => onClose()}
                     />
 
                     {/* Modal Container */}
-                    <div className="relative z-10 w-full max-w-5xl p-6 pb-1 bg-white border rounded-md border-surface-1-light text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
+                    <div className="relative z-10 w-full max-w-5xl rounded-md border border-surface-1-light bg-white p-6 pb-1 text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
                         <div className="p-6">
                             {/* Header */}
-                            <div className="flex items-center justify-between mb-6">
+                            <div className="mb-6 flex items-center justify-between">
                                 <h1 className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
                                     {__('Shipping Address')}
                                 </h1>
 
                                 <button
                                     onClick={onClose}
-                                    className="p-2 transition-colors text-main-text-light dark:text-main-text-dark hover:text-main-text-light/80 dark:hover:text-main-text-dark/80"
+                                    className="p-2 text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80"
                                 >
-                                    <X className="w-5 h-5" />
+                                    <X className="h-5 w-5" />
                                 </button>
                             </div>
 
-                            <div className="flex flex-wrap items-center justify-start gap-4 mb-4">
+                            <div className="mb-4 flex flex-wrap items-center justify-start gap-4">
                                 <p className="text-sm text-main-text-light dark:text-main-text-dark">
                                     <span className="font-semibold">
                                         {__('Default Shipping Address')}
@@ -2314,42 +2350,42 @@ function ShippingAddressModal({
                                         {/* Inactive Addresses */}
                                         {shipping_addresses.filter((addr) => !addr.is_active)
                                             .length > 0 && (
-                                                <div className="mt-8">
-                                                    <p className="mb-3 font-semibold text-main-text-light dark:text-main-text-dark">
-                                                        {__('Other Shipping Addresses')}
-                                                    </p>
-                                                    <div className="space-y-3">
-                                                        {shipping_addresses
-                                                            .filter((addr) => !addr.is_active)
-                                                            .map((item, index) => (
-                                                                <ShippingAddressItem
-                                                                    key={item.id || index}
-                                                                    item={item}
-                                                                    onRemove={
-                                                                        handleRemoveShippingAddress
-                                                                    }
-                                                                    onEdit={handleEditShippingAddress}
-                                                                    onToggle={
-                                                                        handleToggleShippingAddressStatus
-                                                                    }
-                                                                    toggleProcessing={toggleProcessing}
-                                                                    isDropdownOpen={isDropdownOpen}
-                                                                    setIsDropdownOpen={
-                                                                        setIsDropdownOpen
-                                                                    }
-                                                                    deleteProcessing={deleteProcessing}
-                                                                    __={__}
-                                                                />
-                                                            ))}
-                                                    </div>
+                                            <div className="mt-8">
+                                                <p className="mb-3 font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    {__('Other Shipping Addresses')}
+                                                </p>
+                                                <div className="space-y-3">
+                                                    {shipping_addresses
+                                                        .filter((addr) => !addr.is_active)
+                                                        .map((item, index) => (
+                                                            <ShippingAddressItem
+                                                                key={item.id || index}
+                                                                item={item}
+                                                                onRemove={
+                                                                    handleRemoveShippingAddress
+                                                                }
+                                                                onEdit={handleEditShippingAddress}
+                                                                onToggle={
+                                                                    handleToggleShippingAddressStatus
+                                                                }
+                                                                toggleProcessing={toggleProcessing}
+                                                                isDropdownOpen={isDropdownOpen}
+                                                                setIsDropdownOpen={
+                                                                    setIsDropdownOpen
+                                                                }
+                                                                deleteProcessing={deleteProcessing}
+                                                                __={__}
+                                                            />
+                                                        ))}
                                                 </div>
-                                            )}
+                                            </div>
+                                        )}
                                     </>
                                 )}
                             </div>
 
                             {/* Action Bar */}
-                            <div className="flex flex-wrap items-center justify-end gap-4 mt-10">
+                            <div className="mt-10 flex flex-wrap items-center justify-end gap-4">
                                 <PrimaryButton
                                     Text={__('Add Address')}
                                     Type={'button'}
@@ -2366,12 +2402,12 @@ function ShippingAddressModal({
                     <div className="absolute inset-0 bg-black/70"></div>
 
                     {/* Fullscreen slide-over */}
-                    <div className="relative z-10 flex h-[100dvh]  w-full flex-col overflow-y-auto border border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-backgroundDark dark:text-main-text-dark">
+                    <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto border border-surface-1-light bg-backgroundLight text-main-text-light dark:border-surface-3-dark dark:bg-backgroundDark dark:text-main-text-dark">
                         {/* Top Bar */}
                         <div className="flex items-center justify-center px-4 py-3">
                             <button
                                 onClick={() => onClose()}
-                                className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
+                                className="absolute left-4 rounded-full p-1 text-black dark:text-main-text-dark"
                             >
                                 <ChevronLeft />
                             </button>
@@ -2382,7 +2418,7 @@ function ShippingAddressModal({
                         </div>
 
                         {/* Content */}
-                        <div className="flex-1 p-4 mb-20 space-y-6">
+                        <div className="mb-20 flex-1 space-y-6 p-4">
                             {shipping_addresses.length === 0 ? (
                                 <EmptyShippingAddress
                                     onClick={useProfileAddress}
@@ -2412,38 +2448,38 @@ function ShippingAddressModal({
                                     {/* Inactive Addresses */}
                                     {shipping_addresses.filter((addr) => !addr.is_active).length >
                                         0 && (
-                                            <div className="mt-8">
-                                                <p className="mb-3 font-semibold text-main-text-light dark:text-main-text-dark">
-                                                    {__('Other Shipping Addresses')}
-                                                </p>
-                                                <div className="space-y-3">
-                                                    {shipping_addresses
-                                                        .filter((addr) => !addr.is_active)
-                                                        .map((item, index) => (
-                                                            <ShippingAddressItem
-                                                                key={item.id || index}
-                                                                item={item}
-                                                                onRemove={handleRemoveShippingAddress}
-                                                                onEdit={handleEditShippingAddress}
-                                                                onToggle={
-                                                                    handleToggleShippingAddressStatus
-                                                                }
-                                                                toggleProcessing={toggleProcessing}
-                                                                isDropdownOpen={isDropdownOpen}
-                                                                setIsDropdownOpen={setIsDropdownOpen}
-                                                                deleteProcessing={deleteProcessing}
-                                                                __={__}
-                                                            />
-                                                        ))}
-                                                </div>
+                                        <div className="mt-8">
+                                            <p className="mb-3 font-semibold text-main-text-light dark:text-main-text-dark">
+                                                {__('Other Shipping Addresses')}
+                                            </p>
+                                            <div className="space-y-3">
+                                                {shipping_addresses
+                                                    .filter((addr) => !addr.is_active)
+                                                    .map((item, index) => (
+                                                        <ShippingAddressItem
+                                                            key={item.id || index}
+                                                            item={item}
+                                                            onRemove={handleRemoveShippingAddress}
+                                                            onEdit={handleEditShippingAddress}
+                                                            onToggle={
+                                                                handleToggleShippingAddressStatus
+                                                            }
+                                                            toggleProcessing={toggleProcessing}
+                                                            isDropdownOpen={isDropdownOpen}
+                                                            setIsDropdownOpen={setIsDropdownOpen}
+                                                            deleteProcessing={deleteProcessing}
+                                                            __={__}
+                                                        />
+                                                    ))}
                                             </div>
-                                        )}
+                                        </div>
+                                    )}
                                 </>
                             )}
                         </div>
 
                         {/* Action Bar */}
-                        <div className="flex flex-wrap items-center justify-end gap-4 px-4 mb-[4rem]">
+                        <div className="mb-[4rem] flex flex-wrap items-center justify-end gap-4 px-4">
                             <PrimaryButton
                                 Text={__('Add Address')}
                                 Type={'button'}
@@ -2464,16 +2500,13 @@ function ShippingAddressModal({
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30"
+                                    className="fixed inset-0 bg-black/30 transition-opacity duration-300"
                                     onClick={() => setIsCreateShippingAddressModalOpen(false)}
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-5xl p-6 pb-1 bg-white border rounded-md border-surface-1-light text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
-
+                                <div className="relative z-10 w-full max-w-5xl rounded-md border border-surface-1-light bg-white p-6 pb-1 text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
                                     <div className="p-6">
-
-
                                         {/* Header */}
                                         <div className="flex items-center justify-between pb-4">
                                             <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
@@ -2551,7 +2584,10 @@ function ShippingAddressModal({
                                                             Required={true}
                                                             Placeholder={__('Enter Address 1')}
                                                             Action={(e) =>
-                                                                setData('address_line1', e.target.value)
+                                                                setData(
+                                                                    'address_line1',
+                                                                    e.target.value,
+                                                                )
                                                             }
                                                             Rows={1}
                                                         />
@@ -2568,7 +2604,10 @@ function ShippingAddressModal({
                                                             Value={data.address_line2}
                                                             Required={false}
                                                             Action={(e) =>
-                                                                setData('address_line2', e.target.value)
+                                                                setData(
+                                                                    'address_line2',
+                                                                    e.target.value,
+                                                                )
                                                             }
                                                             Rows={1}
                                                         />
@@ -2618,7 +2657,10 @@ function ShippingAddressModal({
                                                             Type={'text'}
                                                             Value={data.postal_code}
                                                             Action={(e) =>
-                                                                setData('postal_code', e.target.value)
+                                                                setData(
+                                                                    'postal_code',
+                                                                    e.target.value,
+                                                                )
                                                             }
                                                             Required={true}
                                                         />
@@ -2629,7 +2671,9 @@ function ShippingAddressModal({
                                                     <button
                                                         type="button"
                                                         onClick={() =>
-                                                            setIsCreateShippingAddressModalOpen(false)
+                                                            setIsCreateShippingAddressModalOpen(
+                                                                false,
+                                                            )
                                                         }
                                                         className="h-[50px] w-[180px] rounded-md bg-surface-2-light text-main-text-light transition-all hover:bg-surface-3-light dark:bg-surface-3-dark dark:text-sub-text-dark dark:hover:bg-surface-3-dark/80"
                                                     >
@@ -2669,7 +2713,7 @@ function ShippingAddressModal({
                                             onClick={() =>
                                                 setIsCreateShippingAddressModalOpen(false)
                                             }
-                                            className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
+                                            className="absolute left-4 rounded-full p-1 text-black dark:text-main-text-dark"
                                         >
                                             <ChevronLeft />
                                         </button>
@@ -2680,7 +2724,7 @@ function ShippingAddressModal({
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 p-4 space-y-6">
+                                    <div className="flex-1 space-y-6 p-4">
                                         <form
                                             onSubmit={handleCreateShippingAddress}
                                             className="mb-24 space-y-5"
@@ -2863,7 +2907,7 @@ function ShippingAddressModal({
                             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                                 {/* Backdrop */}
                                 <div
-                                    className="fixed inset-0 transition-opacity duration-300 bg-black/30"
+                                    className="fixed inset-0 bg-black/30 transition-opacity duration-300"
                                     onClick={() => {
                                         setIsEditShippingAddressModalOpen(false);
                                         setData({
@@ -2880,9 +2924,8 @@ function ShippingAddressModal({
                                 />
 
                                 {/* Modal Card */}
-                                <div className="relative z-10 w-full max-w-5xl p-6 pb-1 bg-white border rounded-md border-surface-1-light text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
-
-                                    <div className='p-6'>
+                                <div className="relative z-10 w-full max-w-5xl rounded-md border border-surface-1-light bg-white p-6 pb-1 text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
+                                    <div className="p-6">
                                         {/* Header */}
                                         <div className="flex items-center justify-between pb-4">
                                             <h2 className="text-xl font-semibold tracking-tight text-main-text-light dark:text-main-text-dark">
@@ -2960,7 +3003,10 @@ function ShippingAddressModal({
                                                             Required={true}
                                                             Placeholder={__('Enter Address 1')}
                                                             Action={(e) =>
-                                                                setData('address_line1', e.target.value)
+                                                                setData(
+                                                                    'address_line1',
+                                                                    e.target.value,
+                                                                )
                                                             }
                                                             Rows={1}
                                                         />
@@ -2977,7 +3023,10 @@ function ShippingAddressModal({
                                                             Value={data.address_line2}
                                                             Required={false}
                                                             Action={(e) =>
-                                                                setData('address_line2', e.target.value)
+                                                                setData(
+                                                                    'address_line2',
+                                                                    e.target.value,
+                                                                )
                                                             }
                                                             Rows={1}
                                                         />
@@ -3027,7 +3076,10 @@ function ShippingAddressModal({
                                                             Type={'text'}
                                                             Value={data.postal_code}
                                                             Action={(e) =>
-                                                                setData('postal_code', e.target.value)
+                                                                setData(
+                                                                    'postal_code',
+                                                                    e.target.value,
+                                                                )
                                                             }
                                                             Required={true}
                                                         />
@@ -3038,7 +3090,9 @@ function ShippingAddressModal({
                                                     <button
                                                         type="button"
                                                         onClick={() => {
-                                                            setIsEditShippingAddressModalOpen(false);
+                                                            setIsEditShippingAddressModalOpen(
+                                                                false,
+                                                            );
                                                             setData({
                                                                 country_id: '',
                                                                 name: '',
@@ -3098,7 +3152,7 @@ function ShippingAddressModal({
                                                     address_line2: '',
                                                 });
                                             }}
-                                            className="absolute p-1 text-black rounded-full left-4 dark:text-main-text-dark"
+                                            className="absolute left-4 rounded-full p-1 text-black dark:text-main-text-dark"
                                         >
                                             <ChevronLeft />
                                         </button>
@@ -3109,7 +3163,7 @@ function ShippingAddressModal({
                                     </div>
 
                                     {/* Content */}
-                                    <div className="flex-1 p-4 space-y-6">
+                                    <div className="flex-1 space-y-6 p-4">
                                         <form
                                             onSubmit={handleUpdateShippingAddress}
                                             className="mb-24 space-y-5"
@@ -3309,7 +3363,7 @@ function SecondaryPaymentModal({
     handlePlace,
     windowSize,
     processingOrder,
-    __
+    __,
 }) {
     if (!isOpen) return null;
 
@@ -3330,7 +3384,6 @@ function SecondaryPaymentModal({
         },
     ];
 
-
     // // Handle browser/mobile back button to close modals
     useEffect(() => {
         const handlePopState = (e) => {
@@ -3342,7 +3395,10 @@ function SecondaryPaymentModal({
 
         const preventInertiaNavigation = (event) => {
             const pathname = event.detail?.visit?.url?.pathname || '';
-            if (pathname.includes("/shipping-addresses") || pathname.includes('/shipping-address-status-toggle')) {
+            if (
+                pathname.includes('/shipping-addresses') ||
+                pathname.includes('/shipping-address-status-toggle')
+            ) {
                 return;
             }
 
@@ -3360,7 +3416,6 @@ function SecondaryPaymentModal({
         };
     }, [isOpen]);
 
-
     useEffect(() => {
         if (isOpen) {
             const url = new URL(window.location.href);
@@ -3368,22 +3423,13 @@ function SecondaryPaymentModal({
             window.history.pushState({}, '', url.toString());
         }
 
-
         return () => {
             if (!isOpen) {
-                window.history.pushState(
-                    { fromModal: true },
-                    '',
-                    route('website.carts.index')
-                );
+                window.history.pushState({ fromModal: true }, '', route('website.carts.index'));
             }
 
-            window.history.replaceState(
-                { fromModal: true },
-                '',
-                route('website.checkout.index')
-            );
-        }
+            window.history.replaceState({ fromModal: true }, '', route('website.checkout.index'));
+        };
     }, [isOpen]);
 
     return (
@@ -3394,14 +3440,14 @@ function SecondaryPaymentModal({
                     <div className="fixed inset-0 z-50 flex items-center justify-center">
                         {/* Backdrop */}
                         <div
-                            className="fixed inset-0 transition-opacity duration-300 bg-black/30"
+                            className="fixed inset-0 bg-black/30 transition-opacity duration-300"
                             onClick={onClose}
                         />
 
                         {/* Modal Card */}
-                        <div className="relative z-10 w-full max-w-5xl p-6 pb-1 bg-white border rounded-md border-surface-3-light text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
+                        <div className="relative z-10 w-full max-w-5xl rounded-md border border-surface-3-light bg-white p-6 pb-1 text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
                             {/* Header */}
-                            <div className='p-6'>
+                            <div className="p-6">
                                 <div className="flex items-center justify-between">
                                     <h2 className="mb-4 text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('Select Secondary Payment')}
@@ -3409,9 +3455,9 @@ function SecondaryPaymentModal({
 
                                     <button
                                         onClick={onClose}
-                                        className="p-2 transition-colors text-main-text-light dark:text-main-text-dark hover:text-main-text-light/80 dark:hover:text-main-text-dark/80"
+                                        className="p-2 text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80"
                                     >
-                                        <X className="w-5 h-5" />
+                                        <X className="h-5 w-5" />
                                     </button>
                                 </div>
 
@@ -3419,14 +3465,14 @@ function SecondaryPaymentModal({
                                 <div className="mt-6 max-h-[80vh] overflow-y-auto pr-2">
                                     <div className="mb-10 space-y-6">
                                         {/* Points Usage Info */}
-                                        <div className="p-4 border rounded-md border-surface-3-light bg-backgroundLight dark:bg-surface-3-dark dark:border-surface-3-dark">
+                                        <div className="rounded-md border border-surface-3-light bg-backgroundLight p-4 dark:border-surface-3-dark dark:bg-surface-3-dark">
                                             <div className="flex items-start gap-3">
-                                                <div className="flex-shrink-0 mt-0.5">
+                                                <div className="mt-0.5 flex-shrink-0">
                                                     <span className="text-xl">
                                                         <Star />
                                                     </span>
                                                 </div>
-                                                <div className="flex-1 min-w-0">
+                                                <div className="min-w-0 flex-1">
                                                     <h3 className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                                         {__('Your Points Will Be Applied')}
                                                     </h3>
@@ -3434,37 +3480,46 @@ function SecondaryPaymentModal({
                                                         <span className="font-medium text-blue-600 dark:text-blue-400">
                                                             {availablePoints} {__('points')}
                                                         </span>{' '}
-                                                        {__('will be deducted from your account. You need to pay the remaining amount using a secondary payment method.')}
+                                                        {__(
+                                                            'will be deducted from your account. You need to pay the remaining amount using a secondary payment method.',
+                                                        )}
                                                     </p>
                                                 </div>
                                             </div>
                                         </div>
 
                                         {/* Payment Breakdown */}
-                                        <div className="p-4 space-y-3 border rounded-md border-surface-3-light bg-backgroundLight dark:bg-surface-3-dark dark:border-surface-3-dark">
+                                        <div className="space-y-3 rounded-md border border-surface-3-light bg-backgroundLight p-4 dark:border-surface-3-dark dark:bg-surface-3-dark">
                                             <div className="flex items-center justify-between text-sm">
                                                 <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                                     {__('Total Amount')}
                                                 </span>
-                                                <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                    {currency?.symbol}{Number(totalAmount).toLocaleString('en-US')}
+                                                <span className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    {currency?.symbol}
+                                                    {Number(totalAmount).toLocaleString('en-US')}
                                                 </span>
                                             </div>
                                             <div className="flex items-center justify-between text-sm">
                                                 <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                                     {__('Points Discount')}
                                                 </span>
-                                                <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                    -{currency?.symbol}{(totalAmount - remainingAmount).toLocaleString('en-US')}
+                                                <span className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    -{currency?.symbol}
+                                                    {(totalAmount - remainingAmount).toLocaleString(
+                                                        'en-US',
+                                                    )}
                                                 </span>
                                             </div>
-                                            <div className="pt-3 border-t border-surface-2-light dark:border-surface-3-dark">
+                                            <div className="border-t border-surface-2-light pt-3 dark:border-surface-3-dark">
                                                 <div className="flex items-center justify-between">
                                                     <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                                         {__('Remaining to Pay')}
                                                     </span>
-                                                    <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                        {currency?.symbol}{Number(remainingAmount).toLocaleString('en-US')}
+                                                    <span className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                                        {currency?.symbol}
+                                                        {Number(remainingAmount).toLocaleString(
+                                                            'en-US',
+                                                        )}
                                                     </span>
                                                 </div>
                                             </div>
@@ -3480,34 +3535,41 @@ function SecondaryPaymentModal({
                                                 {paymentOptions.map((option) => (
                                                     <label
                                                         key={option.id}
-                                                        className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${selectedPayment === option.id
-                                                            ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
-                                                            : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
-                                                            }`}
+                                                        className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${
+                                                            selectedPayment === option.id
+                                                                ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
+                                                                : 'dark:hover:bg-surface-2-dark lg:hover:bg-[#eaeaea]'
+                                                        }`}
                                                     >
                                                         <input
                                                             type="radio"
                                                             name="payment_method"
                                                             value="crypto"
                                                             checked={selectedPayment === option.id}
-                                                            onChange={(e) => onSelectPayment(option.id)}
-                                                            className="sr-only peer"
+                                                            onChange={(e) =>
+                                                                onSelectPayment(option.id)
+                                                            }
+                                                            className="peer sr-only"
                                                         />
 
                                                         {/* outer circle */}
-                                                        <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                                                        <span className="flex h-5 w-5 items-center justify-center rounded-full border border-black">
                                                             {/* inner white space */}
-                                                            <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                                                            <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white">
                                                                 {/* black dot */}
                                                                 {selectedPayment === option.id && (
-                                                                    <span className="w-3 h-3 bg-black rounded-full" />
+                                                                    <span className="h-3 w-3 rounded-full bg-black" />
                                                                 )}
                                                             </span>
                                                         </span>
 
                                                         <div className="flex items-center gap-3">
-                                                            <div className={`flex items-center justify-center p-2 text-center text-gray-700 bg-gray-200 rounded-full`}>
-                                                                <span className="w-6 h-6">{option.icon}</span>
+                                                            <div
+                                                                className={`flex items-center justify-center rounded-full bg-gray-200 p-2 text-center text-gray-700`}
+                                                            >
+                                                                <span className="h-6 w-6">
+                                                                    {option.icon}
+                                                                </span>
                                                             </div>
 
                                                             <div>
@@ -3537,7 +3599,7 @@ function SecondaryPaymentModal({
                                                 <button
                                                     type="button"
                                                     onClick={handlePlace}
-                                                    className="text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80"
+                                                    className="text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-[#282828] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
                                                 >
                                                     {processingOrder ? (
                                                         <div className="flex items-center justify-center gap-2">
@@ -3552,7 +3614,6 @@ function SecondaryPaymentModal({
                                         </div>
                                     </div>
                                 </div>
-
                             </div>
                         </div>
                     </div>
@@ -3563,12 +3624,12 @@ function SecondaryPaymentModal({
                         <div className="absolute inset-0 bg-black/70"></div>
 
                         {/* Fullscreen slide-over */}
-                        <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto bg-white border rounded-md border-surface-3-light text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
+                        <div className="relative z-10 flex h-[100dvh] w-full flex-col overflow-y-auto rounded-md border border-surface-3-light bg-white text-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark">
                             {/* Top Bar */}
                             <div className="flex items-center justify-center px-4 py-3">
                                 <button
                                     onClick={onClose}
-                                    className="absolute p-1 rounded-full left-4 text-main-text-light dark:text-main-text-dark"
+                                    className="absolute left-4 rounded-full p-1 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <ChevronLeft />
                                 </button>
@@ -3579,17 +3640,17 @@ function SecondaryPaymentModal({
                             </div>
 
                             {/* Content */}
-                            <div className="flex-1 p-4 space-y-6">
+                            <div className="flex-1 space-y-6 p-4">
                                 <div className="mb-24 space-y-6">
                                     {/* Points Usage Info */}
-                                    <div className="p-4 border rounded-md border-surface-3-light bg-backgroundLight dark:bg-surface-3-dark dark:border-surface-3-dark">
+                                    <div className="rounded-md border border-surface-3-light bg-backgroundLight p-4 dark:border-surface-3-dark dark:bg-surface-3-dark">
                                         <div className="flex items-start gap-3">
-                                            <div className="flex-shrink-0 mt-0.5">
+                                            <div className="mt-0.5 flex-shrink-0">
                                                 <span className="text-xl">
                                                     <Star />
                                                 </span>
                                             </div>
-                                            <div className="flex-1 min-w-0">
+                                            <div className="min-w-0 flex-1">
                                                 <h3 className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                                     {__('Your Points Will Be Applied')}
                                                 </h3>
@@ -3597,37 +3658,46 @@ function SecondaryPaymentModal({
                                                     <span className="font-medium text-blue-600 dark:text-blue-400">
                                                         {availablePoints} {__('points')}
                                                     </span>{' '}
-                                                    {__('will be deducted from your account. You need to pay the remaining amount using a secondary payment method.')}
+                                                    {__(
+                                                        'will be deducted from your account. You need to pay the remaining amount using a secondary payment method.',
+                                                    )}
                                                 </p>
                                             </div>
                                         </div>
                                     </div>
 
                                     {/* Payment Breakdown */}
-                                    <div className="p-4 space-y-3 border rounded-md border-surface-3-light bg-backgroundLight dark:bg-surface-3-dark dark:border-surface-3-dark">
+                                    <div className="space-y-3 rounded-md border border-surface-3-light bg-backgroundLight p-4 dark:border-surface-3-dark dark:bg-surface-3-dark">
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                                 {__('Total Amount')}
                                             </span>
-                                            <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                {currency?.symbol}{Number(totalAmount).toLocaleString('en-US')}
+                                            <span className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                                {currency?.symbol}
+                                                {Number(totalAmount).toLocaleString('en-US')}
                                             </span>
                                         </div>
                                         <div className="flex items-center justify-between text-sm">
                                             <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                                 {__('Points Discount')}
                                             </span>
-                                            <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                -{currency?.symbol}{(totalAmount - remainingAmount).toLocaleString('en-US')}
+                                            <span className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                                -{currency?.symbol}
+                                                {(totalAmount - remainingAmount).toLocaleString(
+                                                    'en-US',
+                                                )}
                                             </span>
                                         </div>
-                                        <div className="pt-3 border-t border-surface-2-light dark:border-surface-3-dark">
+                                        <div className="border-t border-surface-2-light pt-3 dark:border-surface-3-dark">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                                     {__('Remaining to Pay')}
                                                 </span>
-                                                <span className="font-semibold text-[18px] text-main-text-light dark:text-main-text-dark">
-                                                    {currency?.symbol}{Number(remainingAmount).toLocaleString('en-US')}
+                                                <span className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                                    {currency?.symbol}
+                                                    {Number(remainingAmount).toLocaleString(
+                                                        'en-US',
+                                                    )}
                                                 </span>
                                             </div>
                                         </div>
@@ -3643,10 +3713,11 @@ function SecondaryPaymentModal({
                                             {paymentOptions.map((option) => (
                                                 <label
                                                     key={option.id}
-                                                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${selectedPayment === option.id
-                                                        ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
-                                                        : ''
-                                                        }`}
+                                                    className={`flex cursor-pointer items-center gap-3 rounded-md px-4 py-3 transition ${
+                                                        selectedPayment === option.id
+                                                            ? 'bg-[#eaeaea] dark:bg-surface-2-dark'
+                                                            : ''
+                                                    }`}
                                                 >
                                                     <input
                                                         type="radio"
@@ -3654,23 +3725,27 @@ function SecondaryPaymentModal({
                                                         value="crypto"
                                                         checked={selectedPayment === option.id}
                                                         onChange={(e) => onSelectPayment(option.id)}
-                                                        className="sr-only peer"
+                                                        className="peer sr-only"
                                                     />
 
                                                     {/* outer circle */}
-                                                    <span className="flex items-center justify-center w-5 h-5 border border-black rounded-full">
+                                                    <span className="flex h-5 w-5 items-center justify-center rounded-full border border-black">
                                                         {/* inner white space */}
-                                                        <span className="flex items-center justify-center w-4 h-4 bg-white rounded-full">
+                                                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-white">
                                                             {/* black dot */}
                                                             {selectedPayment === option.id && (
-                                                                <span className="w-3 h-3 bg-black rounded-full" />
+                                                                <span className="h-3 w-3 rounded-full bg-black" />
                                                             )}
                                                         </span>
                                                     </span>
 
                                                     <div className="flex items-center gap-3">
-                                                        <div className={`flex items-center justify-center p-2 text-center text-gray-700 bg-gray-200 rounded-full`}>
-                                                            <span className="w-6 h-6">{option.icon}</span>
+                                                        <div
+                                                            className={`flex items-center justify-center rounded-full bg-gray-200 p-2 text-center text-gray-700`}
+                                                        >
+                                                            <span className="h-6 w-6">
+                                                                {option.icon}
+                                                            </span>
                                                         </div>
 
                                                         <div>
@@ -3700,7 +3775,7 @@ function SecondaryPaymentModal({
                                             <button
                                                 type="button"
                                                 onClick={handlePlace}
-                                                className="text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md  font-semibold text-main-text-dark transition-all bg-[#282828] lg:hover:bg-[#282828]/80 dark:bg-main-text-dark dark:text-main-text-light dark:lg:hover:bg-main-text-dark/80"
+                                                className="text-md flex h-[50px] w-[180px] items-center justify-center gap-2 rounded-md bg-[#282828] font-semibold text-main-text-dark transition-all dark:bg-main-text-dark dark:text-main-text-light lg:hover:bg-[#282828]/80 dark:lg:hover:bg-main-text-dark/80"
                                             >
                                                 {processingOrder ? (
                                                     <div className="flex items-center justify-center gap-2">
@@ -3723,6 +3798,3 @@ function SecondaryPaymentModal({
         </>
     );
 }
-
-
-

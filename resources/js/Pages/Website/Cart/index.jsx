@@ -39,14 +39,11 @@ export default function index({ cart_items, addon_items, total_summary }) {
 
     const [summary, setSummary] = useState(total_summary || []);
 
-
-
     // const getTotalQtyOfSmartphone = (smartphoneId) => {
     //     return cart_items
     //         .filter(i => i.smartphone_id === smartphoneId)
     //         .reduce((sum, i) => sum + (quantities[i.id] ?? i.quantity), 0);
     // };
-
 
     const updateQuantity = (itemId, newQuantity) => {
         if (newQuantity < 1) return;
@@ -108,7 +105,7 @@ export default function index({ cart_items, addon_items, total_summary }) {
             setRemovingProcessing(true);
             axios
                 .delete(route('website.carts.remove-item'), {
-                    data: { item_id: itemId, type: type, page: 'cart', },
+                    data: { item_id: itemId, type: type, page: 'cart' },
                 })
                 .then((response) => {
                     if (response.data.status === false) {
@@ -181,7 +178,7 @@ export default function index({ cart_items, addon_items, total_summary }) {
             setRemovingProcessing(true);
             axios
                 .delete(route('website.carts.remove-smartphone-addon-item'), {
-                    data: { item_id: itemId, page: 'cart', },
+                    data: { item_id: itemId, page: 'cart' },
                 })
                 .then((response) => {
                     if (response.data.status === false) {
@@ -244,10 +241,9 @@ export default function index({ cart_items, addon_items, total_summary }) {
     //     return noTaxMessage;
     // };
 
-
     return (
         <MainLayout>
-            <Head title={__("Cart", true)} />
+            <Head title={__('Cart', true)} />
 
             {(showInfoMessage || showErrorMessage || showSuccessMessage) && (
                 <Toast
@@ -255,8 +251,8 @@ export default function index({ cart_items, addon_items, total_summary }) {
                         ...(showInfoMessage
                             ? { info: infoMessage }
                             : showErrorMessage
-                                ? { error: errorMessage }
-                                : { success: successMessage }),
+                              ? { error: errorMessage }
+                              : { success: successMessage }),
                     }}
                     onClosed={(type) => {
                         if (type === 'info') {
@@ -275,33 +271,33 @@ export default function index({ cart_items, addon_items, total_summary }) {
                 />
             )}
 
-
             <ConfirmDialog />
 
             <div className="min-h-screen transition-colors duration-200">
                 {/* Main Content */}
-                <div className={`mx-auto max-w-8xl px-4 sm:px-6 lg:mt-7 ${windowSize.width <= 1024 && 'mb-20'}`}>
+                <div
+                    className={`max-w-8xl mx-auto px-4 sm:px-6 lg:mt-7 ${windowSize.width <= 1024 && 'mb-20'}`}
+                >
                     {cart_items.length === 0 ? (
                         <EmptyCart __={__} />
                     ) : (
                         <>
-
                             <div className="my-2">
                                 <button
                                     onClick={() => window.history.back()}
-                                    className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                                    className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-main-text-light transition-colors dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                                 >
                                     <ChevronLeft />
                                 </button>
 
                                 {/* Cart Heading */}
-                                <h1 className='mb-5 text-[24px] font-semibold text-main-text-light dark:text-main-text-dark'>
+                                <h1 className="mb-5 text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                                     {__('Cart')} ({cart_items.length})
                                 </h1>
                             </div>
 
                             {/* Grid Layout */}
-                            <div className="grid grid-cols-1 gap-6 mb-10 lg:gap-8 lg:grid-cols-3">
+                            <div className="mb-10 grid grid-cols-1 gap-6 lg:grid-cols-3 lg:gap-8">
                                 {/* Cart Items - Left Side */}
                                 <div className="space-y-4 lg:col-span-2">
                                     {cart_items.map((item) => {
@@ -316,12 +312,14 @@ export default function index({ cart_items, addon_items, total_summary }) {
                                                 removing={removingProcessing}
                                                 addon_items={item?.smartphone_addon_items}
                                                 __={__}
-                                                smartphoneAddonQuantities={smartphoneAddonQuantities}
+                                                smartphoneAddonQuantities={
+                                                    smartphoneAddonQuantities
+                                                }
                                                 onUpdateSmartphoneAddon={updateSmartphoneAddon}
                                                 onRemoveSmartphoneAddon={removeSmartphoneAddon}
-                                            // getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
+                                                // getTotalQtyOfSmartphone={getTotalQtyOfSmartphone}
                                             />
-                                        )
+                                        );
                                     })}
                                 </div>
 
@@ -379,22 +377,23 @@ function CartItem({
     //     item.smartphone.inventory_items_count - otherItemsQty;
 
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
-        return (
-            `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
-        );
+        return `?m-public_id=${encodeURIComponent(smartphone?.public_id)}&m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
     };
 
     return (
-        <div className="p-6 transition-all bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="rounded-md border border-surface-3-light bg-white p-6 transition-all dark:border-surface-3-dark dark:bg-surface-1-dark">
             <div className="flex flex-col gap-6 lg:flex-row">
                 {/* Product Image */}
-                {(item?.smartphone?.smartphone_image_urls.length > 0 || item?.smartphone?.smartphone_video_urls?.length > 0) && (
+                {(item?.smartphone?.smartphone_image_urls.length > 0 ||
+                    item?.smartphone?.smartphone_video_urls?.length > 0) && (
                     <div
-                        className="relative overflow-hidden transition-all rounded-md cursor-pointer bg-surface-2-light w-28 h-28 group/img aspect-square dark:bg-surface-2-dark shrink-0"
+                        className="group/img relative aspect-square h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-md bg-surface-2-light transition-all dark:bg-surface-2-dark"
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            router.get(route('home') + generateSmartphoneURL(item?.smartphone, true, true));
+                            router.get(
+                                route('home') + generateSmartphoneURL(item?.smartphone, true, true),
+                            );
                         }}
                     >
                         <img
@@ -404,7 +403,7 @@ function CartItem({
                                 Placeholder
                             }
                             alt={item?.smartphone?.model_name?.name}
-                            className="object-cover w-full h-full transition-transform duration-300 group-hover/img:scale-110"
+                            className="h-full w-full object-cover transition-transform duration-300 group-hover/img:scale-110"
                             loading="lazy"
                             onError={(e) => (e.target.src = Placeholder)}
                         />
@@ -412,8 +411,8 @@ function CartItem({
                 )}
 
                 {/* Product Details */}
-                <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4 mb-3 ">
+                <div className="min-w-0 flex-1">
+                    <div className="mb-3 flex items-start justify-between gap-4">
                         <div className="flex-1">
                             <h3 className="mb-1 text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">
                                 {item?.smartphone?.model_name?.name || 'N/A'}
@@ -434,31 +433,29 @@ function CartItem({
                             className={`p-1.5 text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80 ${removing ? 'cursor-not-allowed' : ''}`}
                             title={__('Remove item')}
                         >
-                            {removing ? (
-                                <Spinner />
-                            ) : (
-
-
-                                <Trash2 className='w-5 h-5' />
-                            )}
+                            {removing ? <Spinner /> : <Trash2 className="h-5 w-5" />}
                         </button>
                     </div>
 
                     {/* Price */}
                     <div className="mb-4">
                         <span className="text-[16px] font-semibold text-main-text-light dark:text-main-text-dark">
-                            {currency?.symbol}{Number(item.unit_price).toLocaleString('en-US')}
+                            {currency?.symbol}
+                            {Number(item.unit_price).toLocaleString('en-US')}
                         </span>
                     </div>
 
                     {/* Quantity and Stock */}
                     <div className="flex items-center gap-4">
                         {/* Quantity Controls */}
-                        <div className="flex items-center border rounded-md border-surface-3-light bg-backgroundLight dark:bg-transparent dark:border-surface-3-dark">
+                        <div className="flex items-center rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-transparent">
                             <button
                                 onKeyDownCapture={(e) => {
-                                    const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
-                                    const isSpace = e.key === " " || e.code === "Space";
+                                    const isEnter =
+                                        e.key === 'Enter' ||
+                                        e.code === 'NumpadEnter' ||
+                                        e.code === 'Enter';
+                                    const isSpace = e.key === ' ' || e.code === 'Space';
 
                                     if (isEnter || isSpace) {
                                         e.preventDefault();
@@ -466,7 +463,7 @@ function CartItem({
                                     }
                                 }}
                                 onClick={() => onUpdateQuantity(item.id, quantity - 1)}
-                                className="px-1 py-1 transition-colors focus:outline-none focus:ring-0 text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                className="px-1 py-1 text-main-text-light transition-colors hover:bg-surface-1-light focus:outline-none focus:ring-0 disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                 disabled={quantity <= 1}
                             >
                                 <svg
@@ -475,7 +472,7 @@ function CartItem({
                                     viewBox="0 0 24 24"
                                     strokeWidth={3}
                                     stroke="currentColor"
-                                    className="w-[0.8rem] h-4"
+                                    className="h-4 w-[0.8rem]"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -485,14 +482,17 @@ function CartItem({
                                 </svg>
                             </button>
 
-                            <span className="min-w-[3rem] px-2 py-1 text-center text-md font-semibold text-main-text-light dark:text-main-text-dark">
+                            <span className="text-md min-w-[3rem] px-2 py-1 text-center font-semibold text-main-text-light dark:text-main-text-dark">
                                 {quantity}
                             </span>
 
                             <button
                                 onKeyDownCapture={(e) => {
-                                    const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
-                                    const isSpace = e.key === " " || e.code === "Space";
+                                    const isEnter =
+                                        e.key === 'Enter' ||
+                                        e.code === 'NumpadEnter' ||
+                                        e.code === 'Enter';
+                                    const isSpace = e.key === ' ' || e.code === 'Space';
 
                                     if (isEnter || isSpace) {
                                         e.preventDefault();
@@ -501,7 +501,7 @@ function CartItem({
                                 }}
                                 // disabled={quantity >= maxAllowedForThisItem}
                                 onClick={() => onUpdateQuantity(item.id, quantity + 1)}
-                                className="px-1 py-1 transition-colors focus:outline-none focus:ring-0 text-main-text-light hover:bg-surface-1-light disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                className="px-1 py-1 text-main-text-light transition-colors hover:bg-surface-1-light focus:outline-none focus:ring-0 disabled:opacity-50 dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                             >
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
@@ -509,7 +509,7 @@ function CartItem({
                                     viewBox="0 0 24 24"
                                     strokeWidth={3}
                                     stroke="currentColor"
-                                    className="w-[0.8rem] h-4"
+                                    className="h-4 w-[0.8rem]"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -532,7 +532,7 @@ function CartItem({
 
             {/* Add-ons Section */}
             {relatedAddons.length > 0 && (
-                <div className="pt-6 mt-6 border-t border-surface-3-light dark:border-surface-3-dark">
+                <div className="mt-6 border-t border-surface-3-light pt-6 dark:border-surface-3-dark">
                     <h4 className="mb-4 text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                         {__('Add-ons')}
                     </h4>
@@ -557,19 +557,20 @@ function CartItem({
             )}
 
             {/* Total Section */}
-            <div className="flex items-center justify-between pt-3 mt-3">
+            <div className="mt-3 flex items-center justify-between pt-3">
                 <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Total')}
                 </span>
                 <span className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
-                    {currency?.symbol}{Number(
+                    {currency?.symbol}
+                    {Number(
                         item?.unit_price * quantity +
-                        Number(
-                            relatedAddons?.reduce(
-                                (total, addon) => total + Number(addon.total_price),
-                                0,
+                            Number(
+                                relatedAddons?.reduce(
+                                    (total, addon) => total + Number(addon.total_price),
+                                    0,
+                                ),
                             ),
-                        )
                     ).toLocaleString('en-US')}
                 </span>
             </div>
@@ -580,9 +581,9 @@ function CartItem({
 // Addon Item Component
 function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, removing, __ }) {
     return (
-        <div className="flex items-center justify-center gap-2 py-4 border-b lg:px-5 lg:gap-4 border-surface-3-light dark:border-surface-3-dark">
+        <div className="flex items-center justify-center gap-2 border-b border-surface-3-light py-4 dark:border-surface-3-dark lg:gap-4 lg:px-5">
             {/* Addon Name - Truncated after certain chars */}
-            <div className="flex-1 min-w-0 lg:max-w-[70px]">
+            <div className="min-w-0 flex-1 lg:max-w-[70px]">
                 <p className="text-[14px] font-normal dark:text-main-text-dark">
                     {item?.name || 'Option title'}
                 </p>
@@ -595,22 +596,19 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                 className={`p-1.5 text-main-text-light transition-colors hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark/80`}
                 title={__('Remove addon')}
             >
-                {removing ? (
-                    <Spinner size="sm" />
-                ) : (
-                    <Trash2 className='w-5 h-5' />
-                )}
+                {removing ? <Spinner size="sm" /> : <Trash2 className="h-5 w-5" />}
             </button>
 
             {/* Spacer to push quantity controls to the right */}
             <div className="lg:flex-1"></div>
 
             {/* Quantity Controls - Screenshot style with rounded square buttons */}
-            <div className="flex items-center flex-shrink-0 gap-2">
+            <div className="flex flex-shrink-0 items-center gap-2">
                 <button
                     onKeyDownCapture={(e) => {
-                        const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
-                        const isSpace = e.key === " " || e.code === "Space";
+                        const isEnter =
+                            e.key === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Enter';
+                        const isSpace = e.key === ' ' || e.code === 'Space';
 
                         if (isEnter || isSpace) {
                             e.preventDefault();
@@ -619,7 +617,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                     }}
                     onClick={() => onUpdateQuantity(item.id, quantity - 1)}
                     disabled={quantity <= 1}
-                    className="flex items-center justify-center w-[27px] h-[27px] focus:outline-none focus:ring-0 transition-colors border rounded-md text-main-text-light dark:text-main-text-dark border-main-text-light bg-backgroundLight dark:bg-surface-1-dark hover:bg-surface-2-light  disabled:border-surface-3-light disabled:cursor-not-allowed dark:border-surface-3-dark dark:hover:bg-surface-2-dark"
+                    className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -627,24 +625,21 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                         viewBox="0 0 24 24"
                         strokeWidth={3}
                         stroke="currentColor"
-                        className="w-4 h-4 font-semibold text-main-text-light dark:text-main-text-dark"
+                        className="h-4 w-4 font-semibold text-main-text-light dark:text-main-text-dark"
                     >
-                        <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M19.5 12h-15"
-                        />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 12h-15" />
                     </svg>
                 </button>
 
-                <span className="w-8 font-semibold text-center text-md text-main-text-light dark:text-main-text-dark ">
+                <span className="text-md w-8 text-center font-semibold text-main-text-light dark:text-main-text-dark">
                     {quantity}
                 </span>
 
                 <button
                     onKeyDownCapture={(e) => {
-                        const isEnter = e.key === "Enter" || e.code === "NumpadEnter" || e.code === "Enter";
-                        const isSpace = e.key === " " || e.code === "Space";
+                        const isEnter =
+                            e.key === 'Enter' || e.code === 'NumpadEnter' || e.code === 'Enter';
+                        const isSpace = e.key === ' ' || e.code === 'Space';
 
                         if (isEnter || isSpace) {
                             e.preventDefault();
@@ -652,7 +647,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                         }
                     }}
                     onClick={() => onUpdateQuantity(item.id, quantity + 1)}
-                    className="flex items-center justify-center w-[27px] h-[27px] focus:outline-none focus:ring-0 transition-colors border rounded-md text-main-text-light dark:text-main-text-dark border-main-text-light bg-backgroundLight dark:bg-surface-1-dark hover:bg-surface-2-light disabled:opacity-60 disabled:cursor-not-allowed dark:border-surface-3-dark dark:hover:bg-surface-2-dark"
+                    className="flex h-[27px] w-[27px] items-center justify-center rounded-md border border-main-text-light bg-backgroundLight text-main-text-light transition-colors hover:bg-surface-2-light focus:outline-none focus:ring-0 disabled:cursor-not-allowed disabled:opacity-60 dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                 >
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -660,7 +655,7 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
                         viewBox="0 0 24 24"
                         strokeWidth={3}
                         stroke="currentColor"
-                        className="w-4 h-4 font-semibold text-main-text-light dark:text-main-text-dark"
+                        className="h-4 w-4 font-semibold text-main-text-light dark:text-main-text-dark"
                     >
                         <path
                             strokeLinecap="round"
@@ -672,26 +667,20 @@ function AddonItem({ item, quantity, onUpdateQuantity, onRemove, currency, remov
             </div>
 
             {/* Total Price */}
-            <div className="lg:flex-shrink-0 w-16 lg:w-24 text-[14px] font-semibold text-right text-main-text-light dark:text-main-text-dark">
-                {currency?.symbol}{Number(item?.unit_price * quantity).toLocaleString('en-US')}
+            <div className="w-16 text-right text-[14px] font-semibold text-main-text-light dark:text-main-text-dark lg:w-24 lg:flex-shrink-0">
+                {currency?.symbol}
+                {Number(item?.unit_price * quantity).toLocaleString('en-US')}
             </div>
         </div>
     );
 }
 
 // Order Summary Component
-function OrderSummary({
-    summary,
-    currency,
-    cart_items,
-    __,
-}) {
-
-
+function OrderSummary({ summary, currency, cart_items, __ }) {
     return (
-        <div className="sticky space-y-3 ">
+        <div className="sticky space-y-3">
             {/* Summary Card */}
-            <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
                 <h2 className="mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Order Summary')}
                 </h2>
@@ -699,11 +688,12 @@ function OrderSummary({
                 {/* Price Breakdown */}
                 <div className="mb-6 space-y-4">
                     <div className="flex items-center justify-between">
-                        <span className="text-main-text-light text-[14px] font-semibold dark:text-main-text-dark">
+                        <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                             {__('Items total')}
                         </span>
                         <span className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
-                            {currency?.symbol}{Number(summary.items_total).toLocaleString('en-US')}
+                            {currency?.symbol}
+                            {Number(summary.items_total).toLocaleString('en-US')}
                         </span>
                     </div>
 
@@ -716,19 +706,20 @@ function OrderSummary({
                 <div className="my-6 border-t border-surface-3-light dark:border-surface-3-dark"></div>
 
                 {/* Estimated Total */}
-                <div className="flex items-center justify-between mb-6">
+                <div className="mb-6 flex items-center justify-between">
                     <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                         {__('Estimated total')}
                     </span>
                     <span className="text-[28px] font-semibold text-main-text-light dark:text-main-text-dark">
-                        {currency?.symbol}{Number(summary.items_total).toLocaleString('en-US')}
+                        {currency?.symbol}
+                        {Number(summary.items_total).toLocaleString('en-US')}
                     </span>
                 </div>
 
                 {/* Checkout Button */}
                 <Link
                     href={route('website.checkout.index')}
-                    className="block w-full px-6 py-4 text-base font-semibold text-center text-white transition-all rounded-md mt-14 dark:text-main-text-light bg-[#282828] hover:bg-backgroundDark/80 dark:bg-backgroundLight dark:hover:bg-backgroundLight/80"
+                    className="mt-14 block w-full rounded-md bg-[#282828] px-6 py-4 text-center text-base font-semibold text-white transition-all hover:bg-backgroundDark/80 dark:bg-backgroundLight dark:text-main-text-light dark:hover:bg-backgroundLight/80"
                 >
                     {__('Checkout')} ({cart_items?.length})
                 </Link>
@@ -742,7 +733,7 @@ function OrderSummary({
                             viewBox="0 0 24 24"
                             strokeWidth={2}
                             stroke="currentColor"
-                            className="w-5 h-5 text-green-600"
+                            className="h-5 w-5 text-green-600"
                         >
                             <path
                                 strokeLinecap="round"
@@ -767,7 +758,7 @@ function EmptyCart({ __ }) {
                     {__('Your cart is empty')}
                 </h3>
 
-                <p className="max-w-md mt-2 mb-8 text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                <p className="mb-8 mt-2 max-w-md text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
                     {__("Looks like you haven't added anything to your cart yet")}
                 </p>
 

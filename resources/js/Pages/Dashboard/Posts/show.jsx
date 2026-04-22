@@ -30,7 +30,6 @@ export default function view({ post }) {
 
     const [showQrCode, setShowQrCode] = useState(false);
 
-
     // QR CODE DOWNLOAD STATE AND DOWNLOAD METHOD
     const [isQrDownloading, setIsQrDownloading] = useState(false);
     const handleDownloadQRCode = () => {
@@ -45,21 +44,17 @@ export default function view({ post }) {
             }
 
             try {
-
                 const svgClone = svg.cloneNode(true);
                 svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
 
-
                 const svgData = new XMLSerializer().serializeToString(svgClone);
-
 
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
-
                 const padding = 40;
                 const qrSize = 800;
-                const totalSize = qrSize + (padding * 2);
+                const totalSize = qrSize + padding * 2;
 
                 canvas.width = totalSize;
                 canvas.height = totalSize;
@@ -69,48 +64,46 @@ export default function view({ post }) {
                 const url = URL.createObjectURL(svgBlob);
 
                 img.onload = () => {
-
                     ctx.fillStyle = '#ffffff';
                     ctx.fillRect(0, 0, totalSize, totalSize);
 
-
                     ctx.drawImage(img, padding, padding, qrSize, qrSize);
-
 
                     ctx.strokeStyle = '#000000';
                     ctx.lineWidth = 2;
                     ctx.strokeRect(padding - 1, padding - 1, qrSize + 2, qrSize + 2);
 
+                    canvas.toBlob(
+                        (blob) => {
+                            if (!blob) {
+                                console.error('Failed to create blob');
+                                URL.revokeObjectURL(url);
+                                setIsQrDownloading(false);
+                                return;
+                            }
 
-                    canvas.toBlob((blob) => {
-                        if (!blob) {
-                            console.error('Failed to create blob');
-                            URL.revokeObjectURL(url);
-                            setIsQrDownloading(false);
-                            return;
-                        }
+                            const downloadUrl = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
 
-                        const downloadUrl = URL.createObjectURL(blob);
-                        const link = document.createElement('a');
+                            const filename = 'qr-code-post-download.png';
 
+                            link.href = downloadUrl;
+                            link.download = filename;
 
-                        const filename = 'qr-code-post-download.png';
+                            document.body.appendChild(link);
+                            link.click();
 
-                        link.href = downloadUrl;
-                        link.download = filename;
-
-
-                        document.body.appendChild(link);
-                        link.click();
-
-                        // Cleanup
-                        setTimeout(() => {
-                            document.body.removeChild(link);
-                            URL.revokeObjectURL(downloadUrl);
-                            URL.revokeObjectURL(url);
-                            setIsQrDownloading(false);
-                        }, 100);
-                    }, 'image/png', 1.0);
+                            // Cleanup
+                            setTimeout(() => {
+                                document.body.removeChild(link);
+                                URL.revokeObjectURL(downloadUrl);
+                                URL.revokeObjectURL(url);
+                                setIsQrDownloading(false);
+                            }, 100);
+                        },
+                        'image/png',
+                        1.0,
+                    );
                 };
 
                 img.onerror = () => {
@@ -120,7 +113,6 @@ export default function view({ post }) {
                 };
 
                 img.src = url;
-
             } catch (error) {
                 console.error('Error downloading QR code:', error);
                 setIsQrDownloading(false);
@@ -128,10 +120,9 @@ export default function view({ post }) {
         }, 100);
     };
 
-
     const generateURL = (post) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `?public_id=${encodeURIComponent(post?.public_id)}&slug=${encodeURIComponent(post?.slug)}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.created_at)}` +
@@ -185,106 +176,121 @@ export default function view({ post }) {
                     child="View Posts"
                 />
 
-
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-col w-full max-w-5xl mx-auto overflow-hidden rounded-lg shadow-lg md:flex-row">
+                            <div className="mx-auto flex w-full max-w-5xl flex-col overflow-hidden rounded-lg shadow-lg md:flex-row">
                                 {/* Media Section - Shows on top for mobile, left for desktop */}
                                 {((Array.isArray(post?.post_video_urls) &&
                                     post.post_video_urls.length > 0) ||
                                     (Array.isArray(post?.post_image_urls) &&
                                         post.post_image_urls.length > 0)) && (
-                                        <div className="w-full bg-gray-200 dark:bg-deepcharcoal md:w-1/2">
-                                            <div className="flex h-[300px] items-center justify-center md:h-[500px]">
-                                                <Swiper
-                                                    style={{
-                                                        '--swiper-navigation-color': '#fff',
-                                                        '--swiper-pagination-color': '#fff',
-                                                    }}
-                                                    pagination={{
-                                                        clickable: true,
-                                                    }}
-                                                    loop
-                                                    navigation={true}
-                                                    modules={[Pagination, Navigation]}
-                                                    className="w-full h-full mySwiper"
-                                                >
-                                                    {Array.isArray(post?.post_image_urls) &&
-                                                        post.post_image_urls.map(
-                                                            (img, index) =>
-                                                                img && (
-                                                                    <SwiperSlide key={`img-${index}`}>
-                                                                        <div className="relative flex items-center justify-center w-full h-full">
-                                                                            {/* Blurred background filler */}
-                                                                            <img
-                                                                                src={img}
-                                                                                alt=""
-                                                                                aria-hidden="true"
-                                                                                className="absolute inset-0 object-cover w-full h-full scale-110 blur-lg"
-                                                                            />
+                                    <div className="w-full bg-gray-200 dark:bg-deepcharcoal md:w-1/2">
+                                        <div className="flex h-[300px] items-center justify-center md:h-[500px]">
+                                            <Swiper
+                                                style={{
+                                                    '--swiper-navigation-color': '#fff',
+                                                    '--swiper-pagination-color': '#fff',
+                                                }}
+                                                pagination={{
+                                                    clickable: true,
+                                                }}
+                                                loop
+                                                navigation={true}
+                                                modules={[Pagination, Navigation]}
+                                                className="mySwiper h-full w-full"
+                                            >
+                                                {Array.isArray(post?.post_image_urls) &&
+                                                    post.post_image_urls.map(
+                                                        (img, index) =>
+                                                            img && (
+                                                                <SwiperSlide key={`img-${index}`}>
+                                                                    <div className="relative flex h-full w-full items-center justify-center">
+                                                                        {/* Blurred background filler */}
+                                                                        <img
+                                                                            src={img}
+                                                                            alt=""
+                                                                            aria-hidden="true"
+                                                                            className="absolute inset-0 h-full w-full scale-110 object-cover blur-lg"
+                                                                        />
 
-                                                                            {/* Actual image */}
-                                                                            <img
-                                                                                src={img}
-                                                                                alt={`Image ${index + 1}`}
-                                                                                loading="lazy"
-                                                                                className="relative z-10 object-contain w-auto h-full"
-                                                                            />
-                                                                        </div>
+                                                                        {/* Actual image */}
+                                                                        <img
+                                                                            src={img}
+                                                                            alt={`Image ${index + 1}`}
+                                                                            loading="lazy"
+                                                                            className="relative z-10 h-full w-auto object-contain"
+                                                                        />
+                                                                    </div>
 
-                                                                        <div className="swiper-lazy-preloader dark:swiper-lazy-preloader-white"></div>
-                                                                    </SwiperSlide>
-                                                                ),
-                                                        )}
-                                                    {Array.isArray(post?.post_video_urls) &&
-                                                        post.post_video_urls.map(
-                                                            (vid, index) =>
-                                                                vid && (
-                                                                    <SwiperSlide key={`vid-${index}`}>
-                                                                        <div className="relative flex items-center justify-center w-full h-full">
-                                                                            <VideoWithThumbnail
-                                                                                thumbnail={vid?.thumbnail_url}
-                                                                                videoUrl={vid?.url}
-                                                                                Preload='metadata'
-                                                                                type='customized'
-                                                                                className={'object-cover object-center'}
-
-                                                                            />
-                                                                        </div>
-                                                                    </SwiperSlide>
-                                                                ),
-                                                        )}
-                                                </Swiper>
-                                            </div>
+                                                                    <div className="swiper-lazy-preloader dark:swiper-lazy-preloader-white"></div>
+                                                                </SwiperSlide>
+                                                            ),
+                                                    )}
+                                                {Array.isArray(post?.post_video_urls) &&
+                                                    post.post_video_urls.map(
+                                                        (vid, index) =>
+                                                            vid && (
+                                                                <SwiperSlide key={`vid-${index}`}>
+                                                                    <div className="relative flex h-full w-full items-center justify-center">
+                                                                        <VideoWithThumbnail
+                                                                            thumbnail={
+                                                                                vid?.thumbnail_url
+                                                                            }
+                                                                            videoUrl={vid?.url}
+                                                                            Preload="metadata"
+                                                                            type="customized"
+                                                                            className={
+                                                                                'object-cover object-center'
+                                                                            }
+                                                                        />
+                                                                    </div>
+                                                                </SwiperSlide>
+                                                            ),
+                                                    )}
+                                            </Swiper>
                                         </div>
-                                    )}
+                                    </div>
+                                )}
 
                                 {/* Content Section - Shows below media on mobile, right side on desktop */}
                                 <div
-                                    className={`w-full bg-white dark:bg-deepcharcoal ${(Array.isArray(post?.post_video_urls) &&
-                                        post.post_video_urls.length > 0) ||
+                                    className={`w-full bg-white dark:bg-deepcharcoal ${
+                                        (Array.isArray(post?.post_video_urls) &&
+                                            post.post_video_urls.length > 0) ||
                                         (Array.isArray(post?.post_image_urls) &&
                                             post.post_image_urls.length > 0)
-                                        ? 'md:w-1/2'
-                                        : 'md:w-full'
-                                        }`}
+                                            ? 'md:w-1/2'
+                                            : 'md:w-full'
+                                    }`}
                                 >
-                                    <div className="w-full p-6 mx-auto space-y-4 md:p-10">
+                                    <div className="mx-auto w-full space-y-4 p-6 md:p-10">
                                         {/* Author Header */}
                                         <div className="flex flex-wrap items-center justify-between space-x-3">
                                             <div className="flex items-center space-x-3">
                                                 <img
-                                                    src={generalSetting?.app_favicon ?? DummyLogo}
-                                                    className="w-10 h-10 rounded-full"
+                                                    src={
+                                                        generalSetting?.app_main_logo_dark ??
+                                                        DummyLogo
+                                                    }
+                                                    className="hidden h-10 w-10 rounded-md dark:block"
+                                                    alt="Profile"
+                                                />
+
+                                                <img
+                                                    src={
+                                                        generalSetting?.app_main_logo_light ??
+                                                        DummyLogo
+                                                    }
+                                                    className="block h-10 w-10 rounded-md dark:hidden"
                                                     alt="Profile"
                                                 />
                                                 <span className="text-lg font-semibold dark:text-white/80">
                                                     {generalSetting?.app_name.length > 20
                                                         ? generalSetting?.app_name
-                                                            .split(' ')
-                                                            .map((word) => word[0])
-                                                            .join('')
+                                                              .split(' ')
+                                                              .map((word) => word[0])
+                                                              .join('')
                                                         : generalSetting?.app_name}
                                                 </span>
                                             </div>
@@ -324,7 +330,7 @@ export default function view({ post }) {
                                                             }}
                                                         >
                                                             <ul
-                                                                className="py-1 overflow-y-scroll text-sm text-gray-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-blue-500 dark:text-gray-200 dark:scrollbar-thumb-white"
+                                                                className="overflow-y-scroll py-1 text-sm text-gray-700 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-blue-500 dark:text-gray-200 dark:scrollbar-thumb-white"
                                                                 style={{ maxHeight: '180px' }}
                                                             >
                                                                 <li>
@@ -333,7 +339,7 @@ export default function view({ post }) {
                                                                             setShowQrCode(true);
                                                                             setShowDropdown(false);
                                                                         }}
-                                                                        className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                        className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                                                     >
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
@@ -360,7 +366,7 @@ export default function view({ post }) {
 
                                                                 <li>
                                                                     <button
-                                                                        className="flex items-center w-full gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                        className="flex w-full items-center gap-3 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
                                                                             router.put(
@@ -380,8 +386,6 @@ export default function view({ post }) {
                                                                                                 true,
                                                                                             );
                                                                                         },
-
-
                                                                                 },
                                                                             );
                                                                         }}
@@ -390,7 +394,9 @@ export default function view({ post }) {
                                                                             xmlns="http://www.w3.org/2000/svg"
                                                                             fill={
                                                                                 post?.is_bookmarked
-                                                                                    ? isDarkMode ? '#ffff' : '#222'
+                                                                                    ? isDarkMode
+                                                                                        ? '#ffff'
+                                                                                        : '#222'
                                                                                     : 'none'
                                                                             }
                                                                             viewBox="0 0 24 24"
@@ -410,7 +416,7 @@ export default function view({ post }) {
 
                                                                 <li>
                                                                     <button
-                                                                        className="flex items-center w-full gap-1 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
+                                                                        className="flex w-full items-center gap-1 px-3 py-2 text-left transition-colors hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white"
                                                                         onClick={(e) => {
                                                                             navigator.clipboard.writeText(
                                                                                 url.trim(),
@@ -447,12 +453,12 @@ export default function view({ post }) {
 
                                         {/* Post Content */}
 
-                                        <p className="mt-8 font-semibold text-gray-800 break-words whitespace-normal text-md dark:text-white/80">
+                                        <p className="text-md mt-8 whitespace-normal break-words font-semibold text-gray-800 dark:text-white/80">
                                             {post?.title}
                                         </p>
 
                                         <div
-                                            className="prose text-gray-800 break-words max-w-none dark:prose-invert dark:text-white/80"
+                                            className="prose max-w-none break-words text-gray-800 dark:prose-invert dark:text-white/80"
                                             dangerouslySetInnerHTML={{
                                                 __html: post?.content,
                                             }}
@@ -469,12 +475,12 @@ export default function view({ post }) {
 
                                         {/* Post Meta Info */}
                                         <div className="flex flex-wrap gap-2 text-xs text-gray-700 dark:text-white/80">
-                                            <span className="px-2 py-1 bg-gray-100 rounded-full dark:bg-zinc-800/50">
+                                            <span className="rounded-full bg-gray-100 px-2 py-1 dark:bg-zinc-800/50">
                                                 {post?.added_at + ' ' + post?.created_at_time}
                                             </span>
 
                                             {post?.location_name && (
-                                                <span className="px-2 py-1 bg-gray-100 rounded-full dark:bg-zinc-800/50">
+                                                <span className="rounded-full bg-gray-100 px-2 py-1 dark:bg-zinc-800/50">
                                                     {post?.location_name}
                                                 </span>
                                             )}
@@ -500,13 +506,13 @@ export default function view({ post }) {
                             <div
                                 role="dialog"
                                 aria-modal="true"
-                                className="dark:bg-deepcharcoal dark:border-gray-900 bg-backgroundLight border-surface-3-light relative z-[101] w-full max-w-[280px] rounded-md border  lg:px-4 px-0 py-0 lg:py-5 sm:max-w-[340px]  lg:max-w-[500px]"
+                                className="relative z-[101] w-full max-w-[280px] rounded-md border border-surface-3-light bg-backgroundLight px-0 py-0 dark:border-gray-900 dark:bg-deepcharcoal sm:max-w-[340px] lg:max-w-[500px] lg:px-4 lg:py-5"
                             >
                                 <div className="flex flex-col items-center justify-center">
                                     {/* QR + Copy Wrapper (KEY PART) */}
                                     <div className="mx-auto my-5 w-fit">
                                         {/* QR */}
-                                        <div className="p-3 rounded-md bg-main-text-dark dark:text-main-text-light dark:bg-surface-1-dark sm:p-2">
+                                        <div className="rounded-md bg-main-text-dark p-3 dark:bg-surface-1-dark dark:text-main-text-light sm:p-2">
                                             <QRCode
                                                 id="qr-code-canvas"
                                                 className="size-40 sm:size-44 lg:size-60"
@@ -519,8 +525,8 @@ export default function view({ post }) {
                                         </div>
 
                                         {/* Copy Button */}
-                                        <button className="mt-3 w-full rounded-md bg-main-text-light dark:bg-main-text-dark py-2.5 text-lg font-medium text-main-text-dark dark:text-main-text-light transition dark:hover:bg-main-text-dark/80 hover:bg-main-text-light/80"
-
+                                        <button
+                                            className="mt-3 w-full rounded-md bg-main-text-light py-2.5 text-lg font-medium text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                                             onClick={() => {
                                                 navigator.clipboard.writeText(url);
                                                 setLinkCopied(true);
@@ -530,19 +536,19 @@ export default function view({ post }) {
                                         </button>
 
                                         {/* Download Button */}
-                                        <div className="w-full mt-4">
+                                        <div className="mt-4 w-full">
                                             <button
                                                 onClick={handleDownloadQRCode}
                                                 disabled={isQrDownloading}
-                                                className={`flex w-full items-center justify-center gap-2 rounded-md py-2.5 text-lg font-medium text-main-text-light dark:text-main-text-dark transition lg:text-xl`}
+                                                className={`flex w-full items-center justify-center gap-2 rounded-md py-2.5 text-lg font-medium text-main-text-light transition dark:text-main-text-dark lg:text-xl`}
                                             >
                                                 {isQrDownloading ? (
-                                                    <Spinner customSize={"size-4 lg:size-6"} />
+                                                    <Spinner customSize={'size-4 lg:size-6'} />
                                                 ) : (
                                                     <>
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
-                                                            className="w-6 h-6"
+                                                            className="h-6 w-6"
                                                             fill="none"
                                                             viewBox="0 0 24 24"
                                                             stroke="currentColor"
@@ -565,9 +571,6 @@ export default function view({ post }) {
                         </div>,
                         document.body,
                     )}
-
-
-
             </AuthenticatedLayout>
 
             {bookmarkStatusChanged && (
@@ -577,12 +580,8 @@ export default function view({ post }) {
                 />
             )}
 
-
             {linkCopied && (
-                <LinkCopiedModal
-                    linkCopied={linkCopied}
-                    setLinkCopied={setLinkCopied}
-                />
+                <LinkCopiedModal linkCopied={linkCopied} setLinkCopied={setLinkCopied} />
             )}
         </>
     );

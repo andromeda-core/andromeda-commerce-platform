@@ -12,7 +12,6 @@ import BookmarkStatusChangedModal from '@/Components/BookmarkStatusChangedModal'
 import useWindowSize from '@/Hooks/useWindowSize';
 import { ChevronLeft } from 'lucide-react';
 
-
 export default function index() {
     const [bookmarkedPosts, setBookmarkedPosts] = useState([]);
     const [bookmarkStatusChanged, setBookmarkStatusChanged] = useState(false);
@@ -25,14 +24,12 @@ export default function index() {
     const loaderRef = useRef(null);
     const [isLoaded, setIsLoaded] = useState(false);
 
-
     const [ErrorMessage, setErrorMessage] = useState(null);
     const [showErrorMessage, setShowErrorMessage] = useState(false);
 
-
     const generateURL = (post, isDirect = false, isSinglePage = false) => {
         return (
-            `?slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
+            `?public_id=${encodeURIComponent(post?.public_id)}&slug=${encodeURIComponent(post?.slug)}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}&planet=earth${post?.latitude != null ? '&lat=' + encodeURIComponent(post?.latitude) : ''}` +
             `${post?.longitude != null ? '&lng=' + encodeURIComponent(post?.longitude) : ''}` +
             `${post?.location_name != null ? '&location_name=' + encodeURIComponent(post?.location_name) : ''}` +
             `&timestamp=${encodeURIComponent(post?.created_at)}` +
@@ -51,7 +48,10 @@ export default function index() {
                 try {
                     parsed = JSON.parse(decodeURIComponent(cookieValue));
                 } catch (error) {
-                    console.warn('⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'), error);
+                    console.warn(
+                        '⚠️ ' + __('Invalid post_preferences cookie. Using defaults.'),
+                        error,
+                    );
                     parsed = null;
                 }
             }
@@ -144,12 +144,9 @@ export default function index() {
         router.visit(route('home') + url, { replace: true });
     };
 
-
-
-
     return (
         <MainLayout>
-            <Head title={__("Bookmarks", true)} />
+            <Head title={__('Bookmarks', true)} />
 
             {showErrorMessage && (
                 <Toast
@@ -164,7 +161,7 @@ export default function index() {
             )}
 
             {!isLoaded && (
-                <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80">
+                <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80">
                     <Spinner />
                     {__('Please Wait While We Load Bookmarked Posts...')}
                 </div>
@@ -172,31 +169,28 @@ export default function index() {
 
             {/* Masonry Layout */}
             {isLoaded && (
-                <div
-                    className={`pb-20`}
-                >
-                    <div className="px-6 mx-auto max-w-8xl lg:px-8">
-
+                <div className={`pb-20`}>
+                    <div className="max-w-8xl mx-auto px-6 lg:px-8">
                         <div className="my-2 lg:my-7">
                             <button
                                 onClick={() => window.history.back()}
-                                className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                                className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-main-text-light transition-colors dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                             >
                                 <ChevronLeft />
                             </button>
 
                             {/* Bookmark Heading */}
-                            <h1 className=' text-[24px] font-semibold text-main-text-light dark:text-main-text-dark'>
+                            <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('Bookmark')}
                             </h1>
-                            <p className="max-w-3xl mt-1 text-sm text-sub-text-light dark:sub-text-dark">
-                                {__('Access and manage all your saved bookmarks in one convenient place.')}
+                            <p className="dark:sub-text-dark mt-1 max-w-3xl text-sm text-sub-text-light">
+                                {__(
+                                    'Access and manage all your saved bookmarks in one convenient place.',
+                                )}
                             </p>
                         </div>
 
-
-
-                        <div className="[column-width:_240px] [column-gap:_8px]">
+                        <div className="[column-gap:_8px] [column-width:_240px]">
                             {bookmarkedPosts.map((item, index) => {
                                 return (
                                     <MasonryFeedItem
@@ -211,8 +205,6 @@ export default function index() {
                                         setBookmarkStatusChanged={setBookmarkStatusChanged}
                                         setBookmarkActionPost={setBookmarkActionPost}
                                         windowSize={windowSize}
-
-
                                     />
                                 );
                             })}
@@ -221,12 +213,13 @@ export default function index() {
                             <div className="flex min-h-[50vh] items-center justify-center px-6">
                                 <div className="text-center">
                                     <h3 className="text-[22px] font-semibold tracking-tight text-black dark:text-white">
-
                                         {__('No Bookmarks Found')}
                                     </h3>
 
-                                    <p className="max-w-md mt-2 mb-8 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-                                        {__('Start bookmarking your favorite Posts to see them here')}
+                                    <p className="mb-8 mt-2 max-w-md text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                                        {__(
+                                            'Start bookmarking your favorite Posts to see them here',
+                                        )}
                                     </p>
 
                                     <Link
@@ -245,7 +238,7 @@ export default function index() {
                                 {nextPageUrl && (
                                     <div
                                         ref={loaderRef}
-                                        className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
+                                        className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
                                     >
                                         <Spinner />
                                         {__('Loading more' + '...')}
@@ -263,7 +256,6 @@ export default function index() {
                             viewablePost={bookmarkActionPost}
                         />
                     )}
-
                 </div>
             )}
         </MainLayout>

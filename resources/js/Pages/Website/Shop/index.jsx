@@ -7,36 +7,35 @@ import React, { useRef, useState, useEffect, Fragment, useLayoutEffect, useCallb
 import { createPortal } from 'react-dom';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
 
-const index = (
-    { categories,
-        products,
-        nextPageUrl,
-        smartphone_tags,
-        filterCategories,
-        applied_filters
-    }) => {
+const index = ({
+    categories,
+    products,
+    nextPageUrl,
+    smartphone_tags,
+    filterCategories,
+    applied_filters,
+}) => {
     const { currency } = usePage().props;
     const windowSize = useWindowSize();
     const { __ } = useTranslation();
 
-
     const [activeTab, setActiveTab] = useState('all');
     const [activeCategory, setActiveCategory] = useState(null);
     const [activeHashtag, setActiveHashtag] = useState(null);
-
-
 
     const [tabScrollState, setTabScrollState] = useState({
         canScrollLeft: false,
         canScrollRight: false,
     });
 
-    const [filters, setFilters] = useState(applied_filters || {
-        price_range: [],
-        storage: [],
-        color: [],
-        condition: [],
-    });
+    const [filters, setFilters] = useState(
+        applied_filters || {
+            price_range: [],
+            storage: [],
+            color: [],
+            condition: [],
+        },
+    );
 
     const [tabsData, setTabsData] = useState([
         { key: 'all', label: __('All') },
@@ -48,11 +47,9 @@ const index = (
     const [nextPageUrlData, setNextPageUrlData] = useState(nextPageUrl || null);
     const [dropdownStyle, setDropdownStyle] = useState(null);
 
-
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isFilterApplying, setIsFilterApplying] = useState(false);
     const [isFilterResetting, setIsFilterResetting] = useState(false);
-
 
     const tabsContainerRef = useRef(null);
     const tabRefs = useRef({});
@@ -63,18 +60,13 @@ const index = (
 
     // Smartphone URL Generation
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
-        return (
-            `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`
-        );
-    }
-
+        return `?m-public_id=${encodeURIComponent(smartphone?.public_id)}&m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
+    };
 
     const [canCategoryScrollLeft, setCanCategoryScrollLeft] = useState(false);
     const [canCategoryScrollRight, setCanCategoryScrollRight] = useState(false);
 
-
     const scrollContainerRef = useRef(null);
-
 
     // Scroll handlers
     const scrollLeftCategory = useCallback(() => {
@@ -85,9 +77,6 @@ const index = (
         scrollContainerRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
     }, []);
 
-
-
-
     // Optimized scroll button update with debouncing
     const updateCategoryScrollButtons = useCallback(() => {
         if (scrollContainerRef.current) {
@@ -96,14 +85,15 @@ const index = (
             const newCanScrollRight = scrollLeft < scrollWidth - clientWidth - 20;
 
             // Only update if values changed
-            if (newCanScrollLeft !== canCategoryScrollLeft || newCanScrollRight !== canCategoryScrollRight) {
-
+            if (
+                newCanScrollLeft !== canCategoryScrollLeft ||
+                newCanScrollRight !== canCategoryScrollRight
+            ) {
                 setCanCategoryScrollLeft(newCanScrollLeft);
                 setCanCategoryScrollRight(newCanScrollRight);
             }
         }
     }, [canCategoryScrollLeft, canCategoryScrollRight]);
-
 
     useEffect(() => {
         const container = scrollContainerRef.current;
@@ -123,7 +113,6 @@ const index = (
         };
     }, [updateCategoryScrollButtons, categories.length]);
 
-
     const handleTabClick = async (tabKey) => {
         if (activeTab === tabKey) return;
 
@@ -134,17 +123,13 @@ const index = (
         setIsLoadingMore(true);
 
         try {
-            const response = await axios.get(
-                route('website.shop.loadMore'),
-                {
-                    params: {
-                        ...(tabKey !== 'all' && { tag: tabKey }),
-                        category_id: activeCategory,
-                        filters,
-                    }
-
-                }
-            );
+            const response = await axios.get(route('website.shop.loadMore'), {
+                params: {
+                    ...(tabKey !== 'all' && { tag: tabKey }),
+                    category_id: activeCategory,
+                    filters,
+                },
+            });
 
             setProductsData(response.data.products);
             setNextPageUrlData(response.data.nextPageUrl);
@@ -178,7 +163,6 @@ const index = (
         const avgTabWidth = tabEl.offsetWidth;
         const jumpDistance = avgTabWidth * 2.5;
 
-
         if (tabLeft - visibleLeft < avgTabWidth * 1.2) {
             container.scrollTo({
                 left: tabLeft - jumpDistance,
@@ -203,9 +187,7 @@ const index = (
         try {
             const response = await axios.get(nextPageUrlData);
 
-            setProductsData(prev =>
-                mergeUniqueProducts(prev, response.data.products)
-            );
+            setProductsData((prev) => mergeUniqueProducts(prev, response.data.products));
 
             setNextPageUrlData(response.data.nextPageUrl);
         } catch (e) {
@@ -215,17 +197,15 @@ const index = (
         }
     };
 
-
     const mergeUniqueProducts = (oldItems, newItems) => {
         const map = new Map();
 
-        [...oldItems, ...newItems].forEach(item => {
+        [...oldItems, ...newItems].forEach((item) => {
             map.set(item.id, item);
         });
 
         return Array.from(map.values());
     };
-
 
     const updateDropdownPosition = () => {
         if (!filterRef.current) return;
@@ -241,58 +221,53 @@ const index = (
         });
     };
 
-
     const toggleFilter = (categoryId, optionKey) => {
-        setFilters(prev => {
+        setFilters((prev) => {
             const current = prev[categoryId] || [];
             const exists = current.includes(optionKey);
 
             return {
                 ...prev,
                 [categoryId]: exists
-                    ? current.filter(k => k !== optionKey)
+                    ? current.filter((k) => k !== optionKey)
                     : [...current, optionKey],
             };
         });
     };
 
-
     const hasAppliedFilters = () => {
-
         const hasApplied =
-            Object.values(filters).some(
-                (values) => Array.isArray(values) && values.length > 0
-            ) ||
-            (applied_filters && Object.values(applied_filters).some(
-                (values) => Array.isArray(values) && values.length > 0
-            ));
+            Object.values(filters).some((values) => Array.isArray(values) && values.length > 0) ||
+            (applied_filters &&
+                Object.values(applied_filters).some(
+                    (values) => Array.isArray(values) && values.length > 0,
+                ));
 
         return hasApplied;
     };
 
     const applyFilter = () => {
-
         if (!hasAppliedFilters()) {
             setIsFilterOpen(false);
             return;
         }
 
         setIsFilterApplying(true);
-        router.post(route('website.shop.index'),
+        router.post(
+            route('website.shop.index'),
             {
                 filters,
-                category_id: activeCategory
-            }, {
-            preserveScroll: true,
-            preserveUrl: true,
-            onFinish: () => {
-
-                setIsFilterApplying(false);
-                setIsFilterOpen(false);
-            }
-        });
-
-
+                category_id: activeCategory,
+            },
+            {
+                preserveScroll: true,
+                preserveUrl: true,
+                onFinish: () => {
+                    setIsFilterApplying(false);
+                    setIsFilterOpen(false);
+                },
+            },
+        );
     };
 
     const resetFilters = () => {
@@ -304,28 +279,22 @@ const index = (
             condition: [],
         });
 
-
-
         router.reload({
             only: ['products', 'nextPageUrl', 'applied_filters', 'smartphone_tags'],
             preserveUrl: true,
             onFinish: () => {
                 setIsFilterResetting(false);
                 setIsFilterOpen(false);
-
             },
         });
     };
 
-    const isChecked = (categoryId, optionKey) =>
-        filters[categoryId]?.includes(optionKey);
-
+    const isChecked = (categoryId, optionKey) => filters[categoryId]?.includes(optionKey);
 
     const handleCategoryClick = async (category) => {
         if (activeCategory === category.id) return;
 
         setActiveCategory(category.id);
-
 
         setActiveTab('all');
         setActiveHashtag(null);
@@ -333,17 +302,18 @@ const index = (
         setNextPageUrlData(null);
         setIsLoadingMore(true);
 
-        window.history.replaceState({}, '', route('website.shop.index', { category_id: category.id }));
+        window.history.replaceState(
+            {},
+            '',
+            route('website.shop.index', { category_id: category.id }),
+        );
         try {
-            const response = await axios.get(
-                route('website.shop.loadMore'),
-                {
-                    params: {
-                        category_id: category.id,
-                        filters,
-                    }
-                }
-            );
+            const response = await axios.get(route('website.shop.loadMore'), {
+                params: {
+                    category_id: category.id,
+                    filters,
+                },
+            });
 
             setProductsData(response.data.products);
             setTabsData([
@@ -375,15 +345,17 @@ const index = (
             const newCanScrollRight = scrollLeft < scrollWidth - clientWidth - 20;
 
             // Only update if values changed
-            if (newCanScrollLeft !== tabScrollState.canScrollLeft || newCanScrollRight !== tabScrollState.canScrollRight) {
+            if (
+                newCanScrollLeft !== tabScrollState.canScrollLeft ||
+                newCanScrollRight !== tabScrollState.canScrollRight
+            ) {
                 setTabScrollState({
                     canScrollLeft: newCanScrollLeft,
-                    canScrollRight: newCanScrollRight
+                    canScrollRight: newCanScrollRight,
                 });
             }
         }
     }, [tabScrollState.canScrollLeft, tabScrollState.canScrollRight]);
-
 
     // Update TabScrollState Buttons
     useEffect(() => {
@@ -400,16 +372,12 @@ const index = (
         }
     }, [tabsData, updateScrollButtons]);
 
-
     useEffect(() => {
         if (!categories?.length) return;
-
 
         if (!activeCategory) {
             const params = new URLSearchParams(window.location.search);
             const category_id = params.get('category_id');
-
-
 
             const firstCategory = categories[0];
 
@@ -420,11 +388,9 @@ const index = (
     // Close filter dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
-            const clickedInsideButton =
-                filterRef.current?.contains(event.target);
+            const clickedInsideButton = filterRef.current?.contains(event.target);
 
-            const clickedInsideDropdown =
-                dropdownRef.current?.contains(event.target);
+            const clickedInsideDropdown = dropdownRef.current?.contains(event.target);
 
             if (!clickedInsideButton && !clickedInsideDropdown) {
                 setIsFilterOpen(false);
@@ -435,13 +401,8 @@ const index = (
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-
     useEffect(() => {
-        setTabsData([
-            { key: 'all', label: __('All') },
-            ...(smartphone_tags || []),
-        ]);
-
+        setTabsData([{ key: 'all', label: __('All') }, ...(smartphone_tags || [])]);
     }, [smartphone_tags]);
 
     useEffect(() => {
@@ -468,12 +429,11 @@ const index = (
         const onScroll = () => {
             setIsFilterOpen(false);
             updateDropdownPosition();
-        }
+        };
         container.addEventListener('scroll', onScroll);
 
         return () => container.removeEventListener('scroll', onScroll);
     }, []);
-
 
     useLayoutEffect(() => {
         if (!isFilterOpen) return;
@@ -498,116 +458,135 @@ const index = (
         return () => observer.disconnect();
     }, [nextPageUrlData, activeHashtag]);
 
-
-
-
     return (
         <MainLayout>
             <Head title={__('Shop', true)} />
 
             {/* Main Container*/}
             <div className="w-full px-6 lg:mt-6 lg:px-8">
-                <div className={`w-full mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} max-w-[1400px]`}>
-
+                <div
+                    className={`mx-auto w-full ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} max-w-[1400px]`}
+                >
                     {/* Navigation Tabs */}
-                    <div className="w-full my-2 mb-6 sm:mb-8">
+                    <div className="my-2 mb-6 w-full sm:mb-8">
                         {/* Headers */}
-                        <div className="w-full mb-7">
+                        <div className="mb-7 w-full">
                             <div className="relative grid w-full grid-cols-1 overflow-hidden">
-
-                                <div className="relative flex items-center w-full">
+                                <div className="relative flex w-full items-center">
                                     {/* Left Arrow */}
                                     {canCategoryScrollLeft && (
                                         <button
                                             onClick={scrollLeftCategory}
-                                            className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                            className="absolute left-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-1-light p-2 transition-all duration-200 hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
                                             style={{ left: '0px' }}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-sub-text-light size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="size-4 text-sub-text-light dark:text-sub-text-dark"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                                                />
+                                            </svg>
                                         </button>
                                     )}
 
-
                                     <div
                                         ref={scrollContainerRef}
-                                        className="flex items-center w-full overflow-x-auto gap-7 flex-nowrap scrollbar-none scroll-smooth"
+                                        className="flex w-full flex-nowrap items-center gap-7 overflow-x-auto scroll-smooth scrollbar-none"
                                         style={{
                                             transform: 'translateZ(0)',
                                             WebkitOverflowScrolling: 'touch',
                                             scrollbarWidth: 'none',
                                             msOverflowStyle: 'none',
                                             maxWidth: '100%',
-                                            display: 'flex'
+                                            display: 'flex',
                                         }}
                                     >
-
-
                                         {categories?.map((category, index) => (
                                             <Fragment key={category.id}>
-
                                                 {/* Category name */}
 
                                                 <button
                                                     onClick={() => handleCategoryClick(category)}
-
-
-                                                    className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap
-        border-b-[3px] pl-1   py-2 text-sm font-semibold transition-all
-        ${activeCategory === category.id
-                                                            ? 'border-main-text-light text-main-text-light dark:text-main-text-dark dark:border-main-text-dark'
-                                                            : 'border-transparent text-main-text-light lg:hover:border-main-text-light dark:text-main-text-dark dark:lg:hover:border-main-text-dark'
-                                                        }`}
+                                                    className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap border-b-[3px] py-2 pl-1 text-sm font-semibold transition-all ${
+                                                        activeCategory === category.id
+                                                            ? 'border-main-text-light text-main-text-light dark:border-main-text-dark dark:text-main-text-dark'
+                                                            : 'border-transparent text-main-text-light dark:text-main-text-dark lg:hover:border-main-text-light dark:lg:hover:border-main-text-dark'
+                                                    }`}
                                                 >
-
-
-
-
-                                                    <span className='text-[24px] font-semibold text-main-text-light dark:text-main-text-dark'> {category.name}</span>
+                                                    <span className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
+                                                        {' '}
+                                                        {category.name}
+                                                    </span>
                                                 </button>
-
-
-
                                             </Fragment>
                                         ))}
-
-
                                     </div>
 
                                     {/* Right Arrow */}
                                     {canCategoryScrollRight && (
                                         <button
                                             onClick={scrollRightCategory}
-                                            className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                            className="absolute right-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-1-light p-2 transition-all duration-200 hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-sub-text-light size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="size-4 text-sub-text-light dark:text-sub-text-dark"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                                />
+                                            </svg>
                                         </button>
                                     )}
-
-
                                 </div>
                             </div>
                         </div>
 
-
-
                         {/* Tabs Container */}
-                        <div className="relative w-full mt-6 mb-4">
+                        <div className="relative mb-4 mt-6 w-full">
                             <div className="relative grid w-full grid-cols-1 overflow-hidden">
-                                <div className="relative flex items-center w-full">
-
+                                <div className="relative flex w-full items-center">
                                     {/* Left Arrow */}
-                                    {(tabScrollState.canScrollLeft && windowSize.width <= 1024) && (
+                                    {tabScrollState.canScrollLeft && windowSize.width <= 1024 && (
                                         <button
                                             onClick={scrollLeft}
-                                            className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex"
+                                            className="absolute left-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-2-light p-2 transition-all duration-200 hover:scale-110 dark:bg-surface-3-dark md:flex"
                                             style={{ left: '0px' }}
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-gray-600 size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" /></svg>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="size-4 text-gray-600 dark:text-sub-text-dark"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M15.75 19.5L8.25 12l7.5-7.5"
+                                                />
+                                            </svg>
                                         </button>
                                     )}
 
                                     {/* Scrollable Container */}
-                                    <div className="flex items-center w-full gap-3 overflow-x-auto flex-nowrap scrollbar-none scroll-smooth"
+                                    <div
+                                        className="flex w-full flex-nowrap items-center gap-3 overflow-x-auto scroll-smooth scrollbar-none"
                                         ref={tabsContainerRef}
                                         style={{
                                             transform: 'translateZ(0)',
@@ -615,25 +594,30 @@ const index = (
                                             scrollbarWidth: 'none',
                                             msOverflowStyle: 'none',
                                             maxWidth: '100%',
-                                            display: 'flex'
+                                            display: 'flex',
                                         }}
                                     >
                                         {/* Filter Button with Dropdown */}
                                         <div ref={filterRef} className="relative flex-shrink-0">
-
-
                                             <button
                                                 onClick={() => setIsFilterOpen(!isFilterOpen)}
-
-                                                className={`relative flex items-center gap-4 flex-shrink-0 px-4 py-2 text-sm transition-all rounded-full whitespace-nowrap bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark`}
+                                                className={`relative flex flex-shrink-0 items-center gap-4 whitespace-nowrap rounded-full bg-surface-1-light px-4 py-2 text-sm text-main-text-light transition-all dark:bg-surface-1-dark dark:text-main-text-dark`}
                                             >
                                                 <span>{__('Filter')}</span>
-                                                <svg className="w-5 h-5 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 9l-7 7-7-7" />
+                                                <svg
+                                                    className="h-5 w-5 sm:h-4 sm:w-4"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        strokeWidth={1.5}
+                                                        d="M19 9l-7 7-7-7"
+                                                    />
                                                 </svg>
                                             </button>
-
-
                                         </div>
 
                                         {/* Tabs */}
@@ -645,30 +629,39 @@ const index = (
                                                     handleTabClick(tab.key);
                                                     scrollToTabIfNeeded(tab.key);
                                                 }}
-
-                                                className={`relative flex-shrink-0 px-4 py-2 text-sm transition-all rounded-full whitespace-nowrap ${activeTab === tab.key
-                                                    ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light '
-                                                    : 'bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark'
-                                                    }`}
+                                                className={`relative flex-shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm transition-all ${
+                                                    activeTab === tab.key
+                                                        ? 'bg-main-text-light text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light'
+                                                        : 'bg-surface-1-light text-main-text-light dark:bg-surface-1-dark dark:text-main-text-dark'
+                                                }`}
                                             >
                                                 {tab.label}
                                             </button>
                                         ))}
                                     </div>
 
-
                                     {/* Right Arrow */}
-                                    {(tabScrollState.canScrollRight && windowSize.width <= 1024) && (
+                                    {tabScrollState.canScrollRight && windowSize.width <= 1024 && (
                                         <button
                                             onClick={scrollRight}
-                                            className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex"
+                                            className="absolute right-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-2-light p-2 transition-all duration-200 hover:scale-110 dark:bg-surface-3-dark md:flex"
                                         >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="text-black size-4 dark:text-sub-text-dark"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" /></svg>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="size-4 text-black dark:text-sub-text-dark"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                                />
+                                            </svg>
                                         </button>
                                     )}
-
-
-
                                 </div>
                             </div>
                         </div>
@@ -676,21 +669,21 @@ const index = (
 
                     {/* No Results */}
                     {!isLoadingMore && productsData.length === 0 && (
-                        <div className="flex flex-col items-center justify-center w-full py-16 text-center">
-
-
+                        <div className="flex w-full flex-col items-center justify-center py-16 text-center">
                             <h3 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('No products found')}
                             </h3>
 
-                            <p className="max-w-md mt-2 text-sm text-sub-text-light dark:text-sub-text-dark">
-                                {__('Try adjusting your filters or removing some selections to see more results.')}
+                            <p className="mt-2 max-w-md text-sm text-sub-text-light dark:text-sub-text-dark">
+                                {__(
+                                    'Try adjusting your filters or removing some selections to see more results.',
+                                )}
                             </p>
 
                             {hasAppliedFilters() && (
                                 <button
                                     onClick={() => resetFilters()}
-                                    className="flex items-center justify-center mt-5 text-sm font-semibold text-center underline text-main-text-light dark:text-main-text-dark"
+                                    className="mt-5 flex items-center justify-center text-center text-sm font-semibold text-main-text-light underline dark:text-main-text-dark"
                                 >
                                     {isFilterResetting ? <Spinner /> : __('Clear all filters')}
                                 </button>
@@ -698,42 +691,37 @@ const index = (
                         </div>
                     )}
 
-
                     {/* Product Grid */}
-                    <div className={`grid ${getGridCols()} gap-3 sm:gap-4 lg:gap-6 w-full`}>
+                    <div className={`grid ${getGridCols()} w-full gap-3 sm:gap-4 lg:gap-6`}>
                         {productsData.map((product) => (
                             <div
                                 key={product.id}
-                                className="w-full overflow-hidden cursor-pointer group"
-                                onClick={() => router.get(
-                                    route('home') + generateSmartphoneURL(product, true, true)
-                                )}
+                                className="group w-full cursor-pointer overflow-hidden"
+                                onClick={() =>
+                                    router.get(
+                                        route('home') + generateSmartphoneURL(product, true, true),
+                                    )
+                                }
                             >
                                 {/* Product Image / Text Container - */}
-                                <div className="relative w-full overflow-hidden transition-all duration-500 rounded-md text-main-text-light dark:text-main-text-dark aspect-square bg-surface-2-light dark:bg-surface-2-dark lg:group-hover:scale-105">
+                                <div className="relative aspect-square w-full overflow-hidden rounded-md bg-surface-2-light text-main-text-light transition-all duration-500 dark:bg-surface-2-dark dark:text-main-text-dark lg:group-hover:scale-105">
                                     {product?.image || product?.video_thumbnail ? (
                                         <img
-                                            src={product?.image || product?.video_thumbnail || Placeholder}
+                                            src={
+                                                product?.image ||
+                                                product?.video_thumbnail ||
+                                                Placeholder
+                                            }
                                             alt={product?.name}
-                                            className="object-cover w-full h-full"
+                                            className="h-full w-full object-cover"
                                             onError={(e) => {
                                                 e.target.src = Placeholder;
                                             }}
                                         />
                                     ) : (
-                                        <div className="flex items-start justify-center w-full h-full p-3 overflow-hidden sm:p-4">
+                                        <div className="flex h-full w-full items-start justify-center overflow-hidden p-3 sm:p-4">
                                             <div
-                                                className="
-                                text-[14px]
-                                opacity-90
-                                leading-relaxed
-                                break-words
-                                overflow-hidden
-                                text-ellipsis
-                                line-clamp-[10]
-                                text-left
-                                w-full
-                            "
+                                                className="line-clamp-[10] w-full overflow-hidden text-ellipsis break-words text-left text-[14px] leading-relaxed opacity-90"
                                                 dangerouslySetInnerHTML={{
                                                     __html: product?.content?.trim(),
                                                 }}
@@ -743,23 +731,23 @@ const index = (
                                 </div>
 
                                 {/* Product Info */}
-                                <div className="w-full p-2.5 sm:p-3 lg:p-4 space-y-1">
-                                    <h3 className="text-sm font-medium text-main-text-light dark:text-main-text-dark line-clamp-1">
+                                <div className="w-full space-y-1 p-2.5 sm:p-3 lg:p-4">
+                                    <h3 className="line-clamp-1 text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                         {product?.name}
                                     </h3>
 
-                                    <p className="text-xs font-medium text-sub-text-light dark:text-sub-text-dark line-clamp-1">
+                                    <p className="line-clamp-1 text-xs font-medium text-sub-text-light dark:text-sub-text-dark">
                                         {product?.condition}, {product?.capacity}, {product.color}
                                     </p>
 
                                     <p className="text-base font-semibold text-main-text-light dark:text-main-text-dark">
-                                        {currency?.name} {currency?.symbol}{Number(product?.total_price).toLocaleString('en-US')}
+                                        {currency?.name} {currency?.symbol}
+                                        {Number(product?.total_price).toLocaleString('en-US')}
                                     </p>
                                 </div>
                             </div>
                         ))}
                     </div>
-
 
                     {nextPageUrlData && (
                         <div
@@ -771,11 +759,8 @@ const index = (
                         </div>
                     )}
 
-
                     {isLoadingMore && (
-                        <div
-                            className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-[10px] text-main-text-light transition-all duration-100 dark:text-main-text-dark lg:text-[18px]"
-                        >
+                        <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-[10px] text-main-text-light transition-all duration-100 dark:text-main-text-dark lg:text-[18px]">
                             <Spinner />
                             {__('Loading')}...
                         </div>
@@ -784,110 +769,95 @@ const index = (
             </div>
 
             {/* Filter Dropdown */}
-            {
-                createPortal(
-                    <div
-                        ref={dropdownRef}
-                        style={{
-                            ...dropdownStyle,
-                            opacity: isFilterOpen ? 1 : 0,
-                            transform: isFilterOpen ? 'translateY(0)' : 'translateY(-4px)',
-                            pointerEvents: isFilterOpen ? 'auto' : 'none',
-                            transition: 'opacity 120ms ease, transform 120ms ease',
-                        }}
-                        className="border rounded-md shadow-md bg-surface-1-light dark:bg-surface-1-dark border-surface-3-light dark:border-surface-3-dark"
-                    >
-                        <div className="p-3 space-y-4 max-h-[50vh] scrollbar overflow-y-auto">
-                            {filterCategories.map((category) => (
-                                <div key={category.id}>
-                                    <h4 className="mx-2 mb-2 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
-                                        {category.label}
-                                    </h4>
-                                    <div className="space-y-2">
+            {createPortal(
+                <div
+                    ref={dropdownRef}
+                    style={{
+                        ...dropdownStyle,
+                        opacity: isFilterOpen ? 1 : 0,
+                        transform: isFilterOpen ? 'translateY(0)' : 'translateY(-4px)',
+                        pointerEvents: isFilterOpen ? 'auto' : 'none',
+                        transition: 'opacity 120ms ease, transform 120ms ease',
+                    }}
+                    className="rounded-md border border-surface-3-light bg-surface-1-light shadow-md dark:border-surface-3-dark dark:bg-surface-1-dark"
+                >
+                    <div className="max-h-[50vh] space-y-4 overflow-y-auto p-3 scrollbar">
+                        {filterCategories.map((category) => (
+                            <div key={category.id}>
+                                <h4 className="mx-2 mb-2 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                    {category.label}
+                                </h4>
+                                <div className="space-y-2">
+                                    {category.options.map((option) => (
+                                        <label
+                                            key={option.key}
+                                            className="flex cursor-pointer items-center space-x-2"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                className="sr-only"
+                                                checked={isChecked(category.id, option.key)}
+                                                onChange={() =>
+                                                    toggleFilter(category.id, option.key)
+                                                }
+                                            />
 
-
-
-                                        {category.options.map((option) => (
-                                            <label
-                                                key={option.key}
-                                                className="flex items-center space-x-2 cursor-pointer"
+                                            <div
+                                                className={
+                                                    isChecked(category.id, option.key) === true
+                                                        ? 'dark:border-surafce-3-dark mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-black bg-black dark:border-gray-700 dark:bg-surface-1-dark'
+                                                        : 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-gray-300 bg-transparent'
+                                                }
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    className="sr-only"
-                                                    checked={isChecked(category.id, option.key)}
-                                                    onChange={() =>
-                                                        toggleFilter(category.id, option.key)
-                                                    }
-                                                />
-
-                                                <div
-
-
-
-                                                    className={
-                                                        isChecked(category.id, option.key) === true
-                                                            ? 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-black dark:border-surafce-3-dark bg-black dark:bg-surface-1-dark dark:border-gray-700'
-                                                            : 'mr-3 flex h-5 w-5 items-center justify-center rounded-md border-[1.25px] border-gray-300 bg-transparent'
-                                                    }
-                                                >
-                                                    {isChecked(category.id, option.key) && (
-                                                        <span
-
+                                                {isChecked(category.id, option.key) && (
+                                                    <span>
+                                                        <svg
+                                                            width="14"
+                                                            height="14"
+                                                            viewBox="0 0 14 14"
+                                                            fill="none"
+                                                            xmlns="http://www.w3.org/2000/svg"
                                                         >
-                                                            <svg
-                                                                width="14"
-                                                                height="14"
-                                                                viewBox="0 0 14 14"
-                                                                fill="none"
-                                                                xmlns="http://www.w3.org/2000/svg"
-                                                            >
-                                                                <path
-                                                                    d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
-                                                                    stroke="white"
-                                                                    strokeWidth="1.94437"
-                                                                    strokeLinecap="round"
-                                                                    strokeLinejoin="round"
-                                                                />
-                                                            </svg>
-                                                        </span>
-                                                    )}
-                                                </div>
+                                                            <path
+                                                                d="M11.6666 3.5L5.24992 9.91667L2.33325 7"
+                                                                stroke="white"
+                                                                strokeWidth="1.94437"
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                            />
+                                                        </svg>
+                                                    </span>
+                                                )}
+                                            </div>
 
-                                                <span className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                                    {option.label}
-                                                </span>
-                                            </label>
-                                        ))}
-
-                                    </div>
+                                            <span className="text-sm text-sub-text-light dark:text-sub-text-dark">
+                                                {option.label}
+                                            </span>
+                                        </label>
+                                    ))}
                                 </div>
-                            ))}
-                            <div className="flex gap-2 pt-4 border-t border-surface-1-light dark:border-surface-1-dark">
-                                <button
-                                    disabled={!hasAppliedFilters()}
-                                    onClick={() => resetFilters()}
-                                    className={`h-10 px-2 flex-1 flex justify-center items-center rounded-md border border-main-text-light bg-white text-center text-md font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!hasAppliedFilters() && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
-                                >
-
-                                    {isFilterResetting ? <Spinner /> : __('Reset')}
-                                </button>
-                                <button
-                                    disabled={!hasAppliedFilters()}
-                                    onClick={() => applyFilter()}
-                                    className={`flex-1 h-10 px-2 flex justify-center items-center font-semibold text-center transition border rounded-md text-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!hasAppliedFilters() && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
-                                >
-                                    {isFilterApplying ? <Spinner /> : __('Apply')}
-
-                                </button>
                             </div>
+                        ))}
+                        <div className="flex gap-2 border-t border-surface-1-light pt-4 dark:border-surface-1-dark">
+                            <button
+                                disabled={!hasAppliedFilters()}
+                                onClick={() => resetFilters()}
+                                className={`text-md flex h-10 flex-1 items-center justify-center rounded-md border border-main-text-light bg-white px-2 text-center font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!hasAppliedFilters() && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                            >
+                                {isFilterResetting ? <Spinner /> : __('Reset')}
+                            </button>
+                            <button
+                                disabled={!hasAppliedFilters()}
+                                onClick={() => applyFilter()}
+                                className={`text-md flex h-10 flex-1 items-center justify-center rounded-md border border-main-text-dark bg-main-text-light px-2 text-center font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!hasAppliedFilters() && 'cursor-not-allowed opacity-25 dark:opacity-40'}`}
+                            >
+                                {isFilterApplying ? <Spinner /> : __('Apply')}
+                            </button>
                         </div>
-                    </div>,
-                    document.body
-                )
-            }
-
-
+                    </div>
+                </div>,
+                document.body,
+            )}
         </MainLayout>
     );
 };

@@ -983,7 +983,7 @@ function PaymentProof({
 // Items
 function OrderItems({ order, currency, __ }) {
     const generateSmartphoneURL = (smartphone, isDirect = false, isSinglePage = false) => {
-        return `?m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
+        return `?m-public_id=${encodeURIComponent(smartphone?.public_id)}&m-slug=${smartphone?.slug}${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
     };
 
     return (

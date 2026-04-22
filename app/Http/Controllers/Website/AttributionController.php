@@ -32,7 +32,7 @@ class AttributionController extends Controller
             ->first();
 
         if (empty($link) || empty($link->smartphone)) {
-            return redirect()->route('website.shop.index')->with('info', Trans::get('Invalid Link Provided'));
+            return to_route('website.shop.index')->with('info', Trans::get('Invalid Link Provided'));
         }
 
         $attribution = json_encode([
