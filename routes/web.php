@@ -81,22 +81,22 @@ Route::group(['as' => 'website.'], function () {
 
     // canonical routes
     Route::get('/post/{public_id}/{slug?}', function ($public_id, $slug = null) {
-        $query = array_filter([
-            'public_id'     =>  $public_id,
-            'slug'          =>  $slug,
-            'direct'      => 'true',
-            'single_page' => 'true',
-            // 'planet'        => request('planet'),
-            // 'lat'           => request('lat'),
-            // 'lng'           => request('lng'),
-            // 'location_name' => request('location_name'),
-            // 'timestamp'     => request('timestamp'),
-            // 'floor'         => request('floor'),
-        ]);
+        // $query = array_filter([
+        //     'public_id'     =>  $public_id,
+        //     'slug'          =>  $slug,
+        //     'direct'      => 'true',
+        //     'single_page' => 'true',
+        //     // 'planet'        => request('planet'),
+        //     // 'lat'           => request('lat'),
+        //     // 'lng'           => request('lng'),
+        //     // 'location_name' => request('location_name'),
+        //     // 'timestamp'     => request('timestamp'),
+        //     // 'floor'         => request('floor'),
+        // ]);
 
 
 
-        $url = url('/') . '?' . http_build_query($query);
+        // $url = url('/') . '?' . http_build_query($query);
 
         $previous_url = null;
         return Inertia::render('Website/Home/index', [
@@ -107,20 +107,20 @@ Route::group(['as' => 'website.'], function () {
             ],
         ]);
 
-        return redirect()->to($url, 301);
+        // return redirect()->to($url, 301);
     })->name('post.findByPublicId');
 
 
 
     Route::get('/product/{public_id}/{slug?}', function ($public_id, $slug = null) {
-        $query = array_filter([
-            'm-public_id' => $public_id,
-            'm-slug'      => $slug,
-        ]);
-        $query['direct'] = 'true';
-        $query['single_page'] = 'true';
+        // $query = array_filter([
+        //     'm-public_id' => $public_id,
+        //     'm-slug'      => $slug,
+        // ]);
+        // $query['direct'] = 'true';
+        // $query['single_page'] = 'true';
 
-        $url = url('/') . '?' . http_build_query($query);
+        // $url = url('/') . '?' . http_build_query($query);
 
         $previous_url = null;
         return Inertia::render('Website/Home/index', [
@@ -131,7 +131,7 @@ Route::group(['as' => 'website.'], function () {
             ],
         ]);
 
-        return redirect()->to($url, 301);
+        // return redirect()->to($url, 301);
     })->name('product.findByPublicId');
 
 
