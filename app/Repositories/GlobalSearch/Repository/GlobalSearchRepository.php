@@ -327,25 +327,25 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
                             $q->where(function ($sub) use ($query, $encodedQuery, $urlEncodedQuery) {
 
-                                $sub->where('content', 'LIKE', '%href="'.$query.'"%')
-                                    ->orWhere('content', 'LIKE', "%href='".$query."'%")
+                                $sub->where('content', 'LIKE', '%href="' . $query . '"%')
+                                    ->orWhere('content', 'LIKE', "%href='" . $query . "'%")
 
-                                    ->orWhere('content', 'LIKE', '%src="'.$query.'"%')
-                                    ->orWhere('content', 'LIKE', "%src='".$query."'%")
+                                    ->orWhere('content', 'LIKE', '%src="' . $query . '"%')
+                                    ->orWhere('content', 'LIKE', "%src='" . $query . "'%")
 
-                                    ->orWhere('content', 'LIKE', '%>'.$query.'<%')
-                                    ->orWhere('content', 'LIKE', '%> '.$query.' <%')
+                                    ->orWhere('content', 'LIKE', '%>' . $query . '<%')
+                                    ->orWhere('content', 'LIKE', '%> ' . $query . ' <%')
 
-                                    ->orWhere('content', 'LIKE', '%'.$encodedQuery.'%')
-                                    ->orWhere('content', 'LIKE', '%'.$urlEncodedQuery.'%')
+                                    ->orWhere('content', 'LIKE', '%' . $encodedQuery . '%')
+                                    ->orWhere('content', 'LIKE', '%' . $urlEncodedQuery . '%')
 
-                                    ->orWhere('content', 'LIKE', '%'.$query.'%');
+                                    ->orWhere('content', 'LIKE', '%' . $query . '%');
                             });
                         } else {
 
                             $q->where(function ($sub) use ($query) {
-                                $sub->where('title', 'LIKE', '%'.$query.'%')
-                                    ->orWhere('content', 'LIKE', '%'.$query.'%');
+                                $sub->where('title', 'LIKE', '%' . $query . '%')
+                                    ->orWhere('content', 'LIKE', '%' . $query . '%');
                             });
                         }
                     });
@@ -379,7 +379,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
                 // info(json_encode($posts->get()->toArray()));
                 $posts = $posts->with(['floor'])
-                 // its For restricting The Text Only Posts -> Not needed Now
+                    // its For restricting The Text Only Posts -> Not needed Now
                     // ->where(function ($sub) {
                     //     $sub->whereRaw('JSON_LENGTH(images) > 0')
                     //         ->orWhereRaw('JSON_LENGTH(videos) > 0');
@@ -404,6 +404,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                             'id' => $post->id,
                             'title' => Str::length($post->title) > 30 ? Str::limit($post->title, 30, '...') : $post->title,
                             'slug' => $post->slug,
+                            'public_id' => $post->public_id,
                             'location_name' => $post->location_name,
                             'latitude' => $post->latitude,
                             'longitude' => $post->longitude,
@@ -420,19 +421,18 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     });
 
                 $results = $results->merge($posts);
-
             }
 
             if ((! empty($query) || (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])))) {
                 $smartphones = $this->smartphone::query();
 
                 $hasGeo =
-                        isset($post_filters['address']) &&
-                        isset($post_filters['address']['lat'], $post_filters['address']['lng']) &&
-                        is_numeric($post_filters['address']['lat']) &&
-                        is_numeric($post_filters['address']['lng']) &&
-                        isset($post_filters['radius']) &&
-                        (float) $post_filters['radius'] > 0;
+                    isset($post_filters['address']) &&
+                    isset($post_filters['address']['lat'], $post_filters['address']['lng']) &&
+                    is_numeric($post_filters['address']['lat']) &&
+                    is_numeric($post_filters['address']['lng']) &&
+                    isset($post_filters['radius']) &&
+                    (float) $post_filters['radius'] > 0;
 
                 if ($hasGeo) {
 
@@ -467,7 +467,6 @@ class GlobalSearchRepository implements IGlobalSearchRepository
               ', [$lat, $lng, $lat])
                         ->having('distance', '<', $radius)
                         ->orderBy('distance', 'asc');
-
                 }
                 if (blank($post_filters) || blank($post_preferences)) {
                     return $results;
@@ -483,10 +482,10 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
                     $smartphones = $smartphones->where(function ($query) use ($searchQuery) {
 
-                        $query->where('model_searchable_name', 'LIKE', '%'.$searchQuery.'%')
-                            ->orWhere('content', 'LIKE', '%'.$searchQuery.'%')
+                        $query->where('model_searchable_name', 'LIKE', '%' . $searchQuery . '%')
+                            ->orWhere('content', 'LIKE', '%' . $searchQuery . '%')
                             ->orWhereHas('capacity', function ($subQQ) use ($searchQuery) {
-                                $subQQ->where('name', 'LIKE', '%'.$searchQuery.'%');
+                                $subQQ->where('name', 'LIKE', '%' . $searchQuery . '%');
                             })
                             ->orWhere('tag', '=', $searchQuery);
                     });
@@ -549,6 +548,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                             'content' => $smartphone->content,
                             'selling_info' => $smartphone->selling_info,
                             'slug' => $smartphone->slug,
+                            'public_id' => $smartphone->public_id,
                             'created_at' => $smartphone->created_at->format('Y-m-d g:i A'),
                             'timestamp' => $smartphone->created_at->timestamp,
                             'matchType' => $matchType,
@@ -558,7 +558,6 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 $results = $results->merge($smartphones)
                     ->sortByDesc('timestamp')
                     ->values();
-
             }
 
             // dd($results);
@@ -630,8 +629,8 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     'has_more_pages' => $hasMore,
                     'next_page' => $hasMore ? $page + 1 : null,
                     'total' => $results->count(),
-                    'next_page_url' => $hasMore ? route('website.global-search.getmoreresults').'?'.http_build_query($nextParams) : null,
-                    'prev_page_url' => $page > 1 ? route('website.global-search.getmoreresults').'?'.http_build_query($prevParams) : null,
+                    'next_page_url' => $hasMore ? route('website.global-search.getmoreresults') . '?' . http_build_query($nextParams) : null,
+                    'prev_page_url' => $page > 1 ? route('website.global-search.getmoreresults') . '?' . http_build_query($prevParams) : null,
                 ],
             ];
         } catch (Exception $e) {
@@ -688,6 +687,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                             'id' => $result->id ?? null,
                             'type' => $result->type ?? null,
                             'slug' => $result->slug ?? null,
+                            'public_id' => $result?->public_id ?? null,
                             'title' => $result->title ?? null,
                             'name' => $result->name ?? null,
                             'image' => $result->image ?? null,
@@ -715,7 +715,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
             // })
             ->unique(function ($result) {
 
-                return $result->type.'-'.$result->id;
+                return $result->type . '-' . $result->id;
             })
             ->values();
 

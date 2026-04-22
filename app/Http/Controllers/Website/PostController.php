@@ -69,17 +69,23 @@ class PostController extends Controller
         return back();
     }
 
-    public function getSinglePostBySlug(?string $slug, Request $request)
-    {
+    public function getSinglePostBySlug(
+        ?string $public_id = null,
+        ?string $slug = null,
+        Request $request
+    ) {
         if (! $request->ajax()) {
             return to_route('home');
         }
 
-        if (empty($slug)) {
+
+        $identifier = $public_id ?? $slug;
+
+        if (empty($identifier)) {
             return response()->json(['status' => false]);
         }
 
-        $post = $this->post->getSinglePostBySlug($slug, $request);
+        $post = $this->post->getSinglePostBySlug($identifier, $request);
 
         if (empty($post)) {
             return response()->json(['status' => false]);
@@ -98,7 +104,6 @@ class PostController extends Controller
 
         if (empty($slug)) {
             return response()->json(['status' => false, 'message' => $this->trans->get('Post Not Found')], 400);
-
         }
 
         $results = $this->post->getRelated($request, $slug);
@@ -135,8 +140,13 @@ class PostController extends Controller
         $preferences = $request->input('post_preferences');
 
         if (empty($preferences)) {
-            $preferences = ['text' => true, 'images' => true, 'videos' => true, 'show_posts' => true,
-                'show_products' => true];
+            $preferences = [
+                'text' => true,
+                'images' => true,
+                'videos' => true,
+                'show_posts' => true,
+                'show_products' => true
+            ];
         }
 
         if (is_string($preferences)) {
@@ -174,6 +184,5 @@ class PostController extends Controller
         ]);
 
         return Inertia::render('Website/Home/hashtagPosts', compact('results', 'next_page_url', 'hashtag'));
-
     }
 }

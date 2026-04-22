@@ -8,7 +8,7 @@ interface IPostRepository
 {
     public function getAllPosts(Request $request);
 
-    public function getSinglePostBySlug(string $slug, Request $request);
+    public function getSinglePostBySlug(string $identifier, Request $request);
 
     public function getSinglePostById(string $id);
 

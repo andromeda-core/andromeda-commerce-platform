@@ -11,17 +11,23 @@ class ProductController extends Controller
 {
     public function __construct(private IProductsRepository $product, private Trans $trans) {}
 
-    public function getSingleSmartphone(Request $request, ?string $slug = null)
-    {
+    public function getSingleSmartphone(
+        Request $request,
+        ?string $public_id = null,
+        ?string $slug = null
+    ) {
 
-        if (empty($slug)) {
+
+        $identifier = $public_id ?? $slug;
+
+        if (empty($identifier)) {
             return response()->json([
                 'status' => false,
-                'message' => $this->trans->get('Slug Not Found'),
+                'message' => $this->trans->get('Identifier Not Found'),
             ], 404);
         }
 
-        $data = $this->product->getSingleSmartphone($request, $slug);
+        $data = $this->product->getSingleSmartphone($request, $identifier);
         if ($data['status'] === false) {
             return response()->json([
                 'status' => false,
@@ -40,6 +46,5 @@ class ProductController extends Controller
             'status' => true,
             'smartphone' => $data['smartphone'],
         ], 200);
-
     }
 }

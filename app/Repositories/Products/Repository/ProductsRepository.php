@@ -27,7 +27,7 @@ class ProductsRepository implements IProductsRepository
     ) {}
 
     // Smartphone
-    public function getSingleSmartphone(Request $request, string $slug)
+    public function getSingleSmartphone(Request $request, string $identifier)
     {
         try {
 
@@ -38,30 +38,30 @@ class ProductsRepository implements IProductsRepository
             $videos = $request->boolean('videos', true);
 
             $smartphone = $this->smartphone
-                    // ->where(function ($q) use ($text, $images, $videos) {
-                    //     if ($text) {
+                // ->where(function ($q) use ($text, $images, $videos) {
+                //     if ($text) {
 
-                    //         $q->orWhere(function ($sub) {
-                    //             $sub->whereNull('images')
-                    //                 ->whereNull('videos');
-                    //         });
-                    //     }
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNull('images')
+                //                 ->whereNull('videos');
+                //         });
+                //     }
 
-                    //     if ($images) {
+                //     if ($images) {
 
-                    //         $q->orWhere(function ($sub) {
-                    //             $sub->whereNotNull('images')
-                    //                 ->whereNull('videos');
-                    //         });
-                    //     }
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNotNull('images')
+                //                 ->whereNull('videos');
+                //         });
+                //     }
 
-                    //     if ($videos) {
+                //     if ($videos) {
 
-                    //         $q->orWhere(function ($sub) {
-                    //             $sub->whereNotNull('videos');
-                    //         });
-                    //     }
-                    // })
+                //         $q->orWhere(function ($sub) {
+                //             $sub->whereNotNull('videos');
+                //         });
+                //     }
+                // })
                 ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug'])
                 ->withCount([
                     'inventory_items' => function ($query) {
@@ -70,7 +70,10 @@ class ProductsRepository implements IProductsRepository
                 ])
                 ->whereHas('selling_info')
                 ->whereNotNull('slug')
-                ->where('slug', $slug)
+                ->where(function ($q) use ($identifier) {
+                    $q->where('public_id', $identifier)
+                        ->orWhere('slug', $identifier);
+                })
                 ->get()
                 ->map(function ($smartphone) use ($show_posts, $text, $images, $videos) {
 
@@ -134,6 +137,7 @@ class ProductsRepository implements IProductsRepository
                                 'shipping_policy' => $smartphone?->shipping_policy,
                                 'inventory_items_count' => $smartphone?->inventory_items_count,
                                 'slug' => $smartphone->slug,
+                                'public_id' => $smartphone->public_id,
                                 'tag' => $smartphone->tag,
                                 'content' => $smartphone->content,
                                 'type' => 'smartphones',
@@ -204,6 +208,7 @@ class ProductsRepository implements IProductsRepository
                         'shipping_policy' => $smartphone?->shipping_policy,
                         'addons' => $smartphone?->addons,
                         'slug' => $smartphone?->slug,
+                        'public_id' => $smartphone?->public_id,
                         'tag' => $smartphone?->tag,
                         'content' => $smartphone?->content,
                         'type' => 'smartphones',
@@ -301,13 +306,10 @@ class ProductsRepository implements IProductsRepository
                                     if ($range === 'over_1000') {
                                         $priceQuery->orWhere('total_price', '>=', 1000);
                                     }
-
                                 }
-
                             });
                         });
                     });
-
             })
             ->latest()
             ->paginate(10)
@@ -325,8 +327,8 @@ class ProductsRepository implements IProductsRepository
                 'total_price' => $smartphone?->selling_info?->total_price,
                 'color' => $smartphone?->colors[0]?->name,
                 'slug' => $smartphone?->slug,
+                'public_id' => $smartphone?->public_id,
             ];
-
         });
 
         return [
@@ -425,7 +427,7 @@ class ProductsRepository implements IProductsRepository
         return $query
             ->orderBy('smartphones.tag')
             ->get()
-            ->map(fn ($row) => [
+            ->map(fn($row) => [
                 'key' => $row->tag,
                 'label' => ucfirst($row->tag),
             ])

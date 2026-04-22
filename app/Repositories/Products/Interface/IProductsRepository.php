@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 interface IProductsRepository
 {
     // Smartphone
-    public function getSingleSmartphone(Request $request, string $slug);
+    public function getSingleSmartphone(Request $request, string $identifier);
 
     public function getSmartphonesForShop(Request $request);
 

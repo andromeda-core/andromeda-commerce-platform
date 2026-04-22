@@ -81,7 +81,7 @@ Route::group(['as' => 'website.'], function () {
         Route::get('/posts', 'index')->name('index');
         Route::get('/posts-getmore', 'getMorePosts')->name('getmore');
         Route::get('posts-getrelated/{slug?}', 'getRelated')->name('getrelated');
-        Route::get('/posts-getsingle/{slug?}', 'getSinglePostBySlug')->name('getsingle');
+        Route::get('/posts-getsingle/{public_id?}/{slug?}', 'getSinglePostBySlug')->name('getsingle');
         Route::put('/posts-bookmark', 'bookmark')->name('bookmark')->middleware('auth');
         Route::get('/hashtag/{hashtag?}', 'hashtagIndex')->name('hashtag.index');
         Route::post('/hashtag-results', 'hashtagResults')->name('hashtag-results');
@@ -133,7 +133,7 @@ Route::group(['as' => 'website.'], function () {
 
     // Product Routes
     Route::controller(ProductController::class)->name('products.')->group(function () {
-        Route::get('/products/get-single-smartphone/{slug?}', 'getSingleSmartphone')->name('get-single-smartphone');
+        Route::get('/products/get-single-smartphone/{public_id?}/{slug?}', 'getSingleSmartphone')->name('get-single-smartphone');
     });
 
     // Cart Routes

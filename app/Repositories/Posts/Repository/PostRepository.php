@@ -41,7 +41,7 @@ class PostRepository implements IPostRepository
         return $posts;
     }
 
-    public function getSinglePostBySlug(string $slug, ?Request $request = null)
+    public function getSinglePostBySlug(string $identifier, ?Request $request = null)
     {
 
         // $from_backend = ! empty($request) ? ($request->has('from_backend') ? $request->boolean('from_backend') : false) : false;
@@ -52,7 +52,10 @@ class PostRepository implements IPostRepository
         $show_products = ! empty($request) ? ($request->has('show_products') ? $request->boolean('show_products') : true) : null;
 
         $post = $this->post->with(['floor', 'user'])
-            ->where('slug', $slug)
+            ->where(function ($q) use ($identifier) {
+                $q->where('public_id', $identifier)
+                    ->orWhere('slug', $identifier);
+            })
             ->when(! empty($show_posts), function ($q) {
                 $q->where('status', true);
             })
@@ -204,6 +207,7 @@ class PostRepository implements IPostRepository
                             'addons' => $smartphone?->addons,
                             'inventory_items_count' => $smartphone->inventory_items_count,
                             'slug' => $smartphone->slug,
+                            'public_id' => $smartphone->public_id,
                             'tag' => $smartphone->tag,
                             'content' => $smartphone->content,
                             'type' => 'smartphones',
@@ -960,6 +964,7 @@ class PostRepository implements IPostRepository
                                 'addons' => $smartphone?->addons,
                                 'inventory_items_count' => $smartphone->inventory_items_count,
                                 'slug' => $smartphone->slug,
+                                'public_id' => $smartphone->public_id,
                                 'tag' => $smartphone->tag,
                                 'content' => $smartphone->content,
                                 'type' => 'smartphones',
@@ -1127,6 +1132,7 @@ class PostRepository implements IPostRepository
                                 'addons' => $smartphone?->addons,
                                 'inventory_items_count' => $smartphone->inventory_items_count,
                                 'slug' => $smartphone->slug,
+                                'public_id' => $smartphone->public_id,
                                 'tag' => $smartphone->tag,
                                 'content' => $smartphone->content,
                                 'type' => 'smartphones',
@@ -1228,6 +1234,7 @@ class PostRepository implements IPostRepository
                         'floor' => $sp->floor,
                         'addons' => $sp?->addons,
                         'slug' => $sp->slug,
+                        'public_id' => $sp->public_id,
                         'tag' => $sp->tag,
                         'content' => $sp->content,
                         'type' => 'smartphones',
@@ -1487,6 +1494,7 @@ class PostRepository implements IPostRepository
                             'addons' => $smartphone?->addons,
                             'inventory_items_count' => $smartphone->inventory_items_count,
                             'slug' => $smartphone->slug,
+                            'public_id' => $smartphone->public_id,
                             'tag' => $smartphone->tag,
                             'content' => $smartphone->content,
                             'type' => 'smartphones',
@@ -1603,6 +1611,7 @@ class PostRepository implements IPostRepository
                         'id' => $post->id,
                         'title' => Str::length($post->title) > 30 ? Str::limit($post->title, 30, '...') : $post->title,
                         'slug' => $post->slug,
+                        'public_id' => $post->public_id,
                         'location_name' => $post->location_name,
                         'latitude' => $post->latitude,
                         'longitude' => $post->longitude,
@@ -1684,6 +1693,7 @@ class PostRepository implements IPostRepository
                         'shipping_policy' => $smartphone?->shipping_policy,
                         'content' => $smartphone->content,
                         'slug' => $smartphone->slug,
+                        'public_id' => $smartphone->public_id,
                         'addons' => $smartphone?->addons,
                         'tag' => $smartphone->tag,
                         'type' => 'smartphones',
