@@ -43,6 +43,7 @@ use App\Http\Controllers\Dashboard\UserController;
 use App\Http\Controllers\DeviceFingerPrintController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\OpenAiController;
+use App\Http\Controllers\SitemapController;
 use App\Http\Controllers\Website\AttributionController;
 use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
 use App\Http\Controllers\Website\CartController;
@@ -97,7 +98,7 @@ Route::group(['as' => 'website.'], function () {
 
         $url = url('/') . '?' . http_build_query($query);
 
-        return redirect()->to($url);
+        return redirect()->to($url, 301);
     })->name('post.findByPublicId');
 
 
@@ -112,7 +113,7 @@ Route::group(['as' => 'website.'], function () {
 
         $url = url('/') . '?' . http_build_query($query);
 
-        return redirect()->to($url);
+        return redirect()->to($url, 301);
     })->name('product.findByPublicId');
 
 
@@ -959,5 +960,8 @@ Route::post('/device-fingerprint', DeviceFingerPrintController::class)->name('de
 
 Route::post('/scanner/ai-decode', [OpenAiController::class, 'aiDecode'])
     ->name('scanner.ai-decode');
+
+
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 require __DIR__ . '/auth.php';
