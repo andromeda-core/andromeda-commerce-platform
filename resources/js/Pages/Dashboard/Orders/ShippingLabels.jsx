@@ -1,53 +1,144 @@
-// resources/js/Pages/Orders/ShippingLabels.jsx - COMPLETE REPLACEMENT
-
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import { Head, router } from '@inertiajs/react';
-import html2pdf from 'html2pdf.js';
 import React, { useState } from 'react';
 
 export default function ShippingLabels({ order }) {
     const [processing, setProcessing] = useState(false);
+    const [pdfDownloading, setPdfDownloading] = useState(false);
 
-    const distributor = order?.order_items[0]?.smartphone?.category?.distributor;
+    const distributor = order?.order_items?.[0]?.smartphone?.category?.distributor;
 
-    const handlePrintLabels = () => {
-        window.print();
+    const generateLabelsPdf = async () => {
+        const jsPDFModule = await import('jspdf');
+        const html2canvasModule = await import('html2canvas');
+
+        const jsPDF = jsPDFModule.default;
+        const html2canvas = html2canvasModule.default;
+
+        const labelPages = Array.from(document.querySelectorAll('.label-page'));
+
+        if (!labelPages.length) {
+            throw new Error('No label pages found.');
+        }
+
+        const pdf = new jsPDF({
+            unit: 'mm',
+            format: [80, 60],
+            orientation: 'landscape',
+            compress: true,
+        });
+
+        for (let i = 0; i < labelPages.length; i++) {
+            const label = labelPages[i];
+
+            const canvas = await html2canvas(label, {
+                scale: 3,
+                useCORS: true,
+                backgroundColor: '#ffffff',
+                logging: false,
+            });
+
+            const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+            if (i > 0) {
+                pdf.addPage([80, 60], 'landscape');
+            }
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, 80, 60);
+        }
+
+        return pdf;
     };
-    const handleDownloadPDF = async () => {
+
+    const handlePrintLabels = async () => {
+        const printWindow = window.open('', '_blank');
+
+        if (!printWindow) {
+            alert('Please allow popups to print the labels.');
+            return;
+        }
+
+        printWindow.document.write(`
+        <html>
+            <head>
+                <title>Generating Labels PDF...</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        height: 100vh;
+                        margin: 0;
+                        background: #ffffff;
+                        color: #111827;
+                    }
+                </style>
+            </head>
+            <body>
+                <div>Generating labels PDF For Print, please wait...</div>
+            </body>
+        </html>
+    `);
+        printWindow.document.close();
+
         setProcessing(true);
 
         try {
-            const jsPDF = (await import('jspdf')).default;
-            const html2canvas = (await import('html2canvas')).default;
+            const pdf = await generateLabelsPdf();
+            const blob = pdf.output('blob');
+            const blobUrl = URL.createObjectURL(blob);
 
-            const pdf = new jsPDF({
-                unit: 'mm',
-                format: [80, 60],
-                orientation: 'landscape',
-            });
+            const cleanup = () => {
+                setTimeout(() => {
+                    URL.revokeObjectURL(blobUrl);
+                }, 60000);
+            };
 
-            // Get both labels
-            const label1 = document.querySelectorAll('.label-page')[0];
-            const label2 = document.querySelectorAll('.label-page')[1];
+            printWindow.location.href = blobUrl;
 
-            // Convert first label to canvas
-            const canvas1 = await html2canvas(label1, { scale: 2, useCORS: true });
-            const imgData1 = canvas1.toDataURL('image/jpeg', 1.0);
-            pdf.addImage(imgData1, 'JPEG', 0, 0, 80, 60);
+            const tryPrint = () => {
+                try {
+                    printWindow.focus();
+                    printWindow.print();
+                } catch (error) {
+                    console.error('Auto print failed:', error);
+                } finally {
+                    cleanup();
+                }
+            };
 
-            // Add new page for second label
-            pdf.addPage();
-            const canvas2 = await html2canvas(label2, { scale: 2, useCORS: true });
-            const imgData2 = canvas2.toDataURL('image/jpeg', 1.0);
-            pdf.addImage(imgData2, 'JPEG', 0, 0, 80, 60);
+            printWindow.onload = () => {
+                setTimeout(tryPrint, 800);
+            };
 
-            // Save PDF
-            pdf.save(`shipping-labels-${order.order_no}.pdf`);
+            setTimeout(tryPrint, 1500);
+        } catch (err) {
+            console.error('Print PDF generation failed:', err);
+
+            try {
+                printWindow.document.body.innerHTML = `
+                <div style="font-family: Arial, sans-serif; padding: 24px;">
+                    Failed to generate the labels PDF.
+                </div>
+            `;
+            } catch (_) {}
+        } finally {
             setProcessing(false);
+        }
+    };
+
+    const handleDownloadPDF = async () => {
+        setPdfDownloading(true);
+
+        try {
+            const pdf = await generateLabelsPdf();
+            pdf.save(`shipping-labels-${order.order_no}.pdf`);
         } catch (err) {
             console.error('PDF generation failed:', err);
-            setProcessing(false);
+        } finally {
+            setPdfDownloading(false);
         }
     };
 
@@ -55,11 +146,12 @@ export default function ShippingLabels({ order }) {
         <AuthenticatedLayout allHidden={true}>
             <Head title={`Shipping Labels - ${order.order_no}`} />
 
-            {/* Action Buttons */}
             <div className="mx-auto mb-4 flex w-auto flex-wrap items-center justify-center gap-4 lg:w-[600px] lg:flex-nowrap print:hidden">
                 <PrimaryButton
                     Text={'Print Labels'}
                     Action={handlePrintLabels}
+                    Disabled={processing}
+                    Spinner={processing}
                     Icon={
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -77,11 +169,12 @@ export default function ShippingLabels({ order }) {
                         </svg>
                     }
                 />
+
                 <PrimaryButton
                     Text={'Save As PDF'}
                     Action={handleDownloadPDF}
-                    Disabled={processing}
-                    Spinner={processing}
+                    Disabled={pdfDownloading}
+                    Spinner={pdfDownloading}
                     Icon={
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -99,6 +192,7 @@ export default function ShippingLabels({ order }) {
                         </svg>
                     }
                 />
+
                 <PrimaryButton
                     Text={'Back'}
                     Action={() => router.get(route('dashboard.orders.show', order.id))}
@@ -121,38 +215,34 @@ export default function ShippingLabels({ order }) {
                 />
             </div>
 
-            {/* Labels Container */}
-            <div id="shipping-labels" className="mx-auto w-full max-w-[3.5in] bg-white">
+            <div id="shipping-labels" className="mx-auto bg-white">
                 {/* PAGE 1 - FROM ONLY (Distributor) */}
-                <div className="label-page label-container w-full px-3 py-3">
-                    {/* <div className="p-3 mb-4 text-center bg-gray-100 border-2 border-black rounded">
-                        <div className="text-base font-bold">Order #{order.order_no}</div>
-                        <div className="text-sm text-gray-600">
-                            {new Date(order.created_at).toLocaleDateString()}
-                        </div>
-                    </div> */}
-
-                    <div className="rounded border-2 border-black p-4">
-                        <h3 className="mb-3 border-b-2 border-black pb-2 text-sm font-bold">
+                <div className="label-page label-container px-3 py-3">
+                    <div className="label-card rounded border-2 border-black p-3">
+                        <h3 className="label-title mb-2 border-b-2 border-black pb-1.5 text-sm font-bold">
                             FROM
                         </h3>
-                        <div className="space-y-2 text-sm">
+
+                        <div className="label-content space-y-1.5 text-sm">
                             <div>
                                 <span className="font-semibold">Name: </span>
                                 <span className="break-words">
                                     {distributor?.user?.name || 'N/A'}
                                 </span>
                             </div>
+
                             <div>
                                 <span className="font-semibold">Address:</span>
-                                <div className="mt-0.5 break-words">
+                                <div className="label-address mt-0.5 break-words">
                                     {distributor?.address || 'N/A'}
                                 </div>
                             </div>
+
                             <div>
                                 <span className="font-semibold">Postal Code: </span>
                                 <span>{distributor?.postal_code || 'N/A'}</span>
                             </div>
+
                             <div>
                                 <span className="font-semibold">Phone: </span>
                                 <span>{distributor?.user?.phone || 'N/A'}</span>
@@ -164,33 +254,32 @@ export default function ShippingLabels({ order }) {
                 <div className="my-5 border-t-2 border-dashed border-gray-400 print:hidden"></div>
 
                 {/* PAGE 2 - TO ONLY (Courier) */}
-                <div className="label-page label-container w-full px-3 py-3">
-                    {/* <div className="p-3 mb-4 text-center bg-gray-100 border-2 border-black rounded">
-                        <div className="text-base font-bold">Order #{order.order_no}</div>
-                        <div className="text-sm text-gray-600">
-                            {new Date(order.created_at).toLocaleDateString()}
-                        </div>
-                    </div> */}
+                <div className="label-page label-container px-3 py-3">
+                    <div className="label-card rounded border-2 border-black p-3">
+                        <h3 className="label-title mb-2 border-b-2 border-black pb-1.5 text-sm font-bold">
+                            TO
+                        </h3>
 
-                    <div className="rounded border-2 border-black p-4">
-                        <h3 className="mb-3 border-b-2 border-black pb-2 text-sm font-bold">TO</h3>
-                        <div className="space-y-2 text-sm">
+                        <div className="label-content space-y-1.5 text-sm">
                             <div>
                                 <span className="font-semibold">Name: </span>
                                 <span className="break-words">
                                     {order?.courier_company || 'N/A'}
                                 </span>
                             </div>
+
                             <div>
                                 <span className="font-semibold">Address:</span>
-                                <div className="mt-0.5 break-words">
+                                <div className="label-address mt-0.5 break-words">
                                     {order?.courier_company_address || 'N/A'}
                                 </div>
                             </div>
+
                             <div>
                                 <span className="font-semibold">Postal Code: </span>
                                 <span>{order?.courier_company_postal_code || 'N/A'}</span>
                             </div>
+
                             <div>
                                 <span className="font-semibold">Phone: </span>
                                 <span>{order?.courier_company_phone || 'N/A'}</span>
@@ -199,83 +288,170 @@ export default function ShippingLabels({ order }) {
                     </div>
                 </div>
             </div>
+
             <style jsx global>{`
                 * {
+                    box-sizing: border-box;
+                }
+
+                html,
+                body {
                     margin: 0;
                     padding: 0;
+                    background: #ffffff;
+                }
+
+                #shipping-labels {
+                    width: 80mm;
+                    max-width: 80mm;
+                }
+
+                .label-page {
+                    width: 80mm;
+                    height: 60mm;
+                    padding: 3mm;
+                    margin: 0 auto;
+                    background: #ffffff;
+                    overflow: hidden;
                     box-sizing: border-box;
+                    display: block;
+                    page-break-after: always;
+                    page-break-inside: avoid;
+                    break-after: page;
+                    break-inside: avoid;
+                }
+
+                .label-page:last-child {
+                    page-break-after: auto;
+                    break-after: auto;
+                }
+
+                .label-card {
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+                .label-title {
+                    flex-shrink: 0;
+                }
+
+                .label-content {
+                    flex: 1;
+                    min-height: 0;
+                    overflow: hidden;
+                }
+
+                .label-address,
+                .label-content,
+                .label-content * {
+                    overflow-wrap: anywhere;
+                    word-break: break-word;
                 }
 
                 @page {
                     size: 80mm 60mm;
-                    margin: 0mm;
+                    margin: 0;
                 }
 
                 @media print {
                     html,
                     body {
-                        width: 80mm;
-                        margin: 0;
-                        padding: 0;
+                        width: 80mm !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
+                        background: #ffffff !important;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                    }
+
+                    body * {
+                        visibility: hidden;
+                    }
+
+                    #shipping-labels,
+                    #shipping-labels * {
+                        visibility: visible;
                     }
 
                     #shipping-labels {
-                        width: 80mm;
+                        width: 80mm !important;
+                        max-width: 80mm !important;
+                        margin: 0 !important;
+                        padding: 0 !important;
                     }
 
                     .label-page {
                         width: 80mm !important;
                         height: 60mm !important;
+                        min-width: 80mm !important;
+                        max-width: 80mm !important;
+                        min-height: 60mm !important;
+                        max-height: 60mm !important;
                         padding: 3mm !important;
                         margin: 0 !important;
+                        overflow: hidden !important;
+                        box-sizing: border-box !important;
                         page-break-after: always !important;
                         page-break-inside: avoid !important;
-                        box-sizing: border-box !important;
+                        break-after: page !important;
+                        break-inside: avoid !important;
                     }
 
                     .label-page:last-child {
                         page-break-after: auto !important;
+                        break-after: auto !important;
                     }
 
-                    /* Reduce font sizes for 60mm height */
-                    .label-page .text-base {
-                        font-size: 9px !important;
+                    .label-page .rounded {
+                        border-radius: 2mm !important;
+                    }
+
+                    .label-page .border-2 {
+                        border-width: 0.5mm !important;
+                    }
+
+                    .label-page .p-3 {
+                        padding: 2mm !important;
+                    }
+
+                    .label-page .px-3 {
+                        padding-left: 3mm !important;
+                        padding-right: 3mm !important;
+                    }
+
+                    .label-page .py-3 {
+                        padding-top: 3mm !important;
+                        padding-bottom: 3mm !important;
+                    }
+
+                    .label-page .pb-1\\.5 {
+                        padding-bottom: 1mm !important;
+                    }
+
+                    .label-page .mb-2 {
+                        margin-bottom: 1mm !important;
+                    }
+
+                    .label-page .space-y-1\\.5 > * + * {
+                        margin-top: 0.8mm !important;
+                    }
+
+                    .label-page .mt-0\\.5 {
+                        margin-top: 0.5mm !important;
                     }
 
                     .label-page .text-sm {
                         font-size: 7px !important;
+                        line-height: 1.15 !important;
                     }
 
-                    .label-page .text-xs {
-                        font-size: 6px !important;
+                    .label-page .font-bold {
+                        font-weight: 700 !important;
                     }
 
-                    .label-page .mb-4 {
-                        margin-bottom: 1.5mm !important;
-                    }
-
-                    .label-page .mb-3 {
-                        margin-bottom: 1mm !important;
-                    }
-
-                    .label-page .mb-2 {
-                        margin-bottom: 0.8mm !important;
-                    }
-
-                    .label-page .p-3 {
-                        padding: 1.5mm !important;
-                    }
-
-                    .label-page .p-2\.5 {
-                        padding: 1.2mm !important;
-                    }
-
-                    .label-page .p-2 {
-                        padding: 1mm !important;
-                    }
-
-                    .label-page .space-y-1 > * + * {
-                        margin-top: 0.8mm !important;
+                    .label-page .font-semibold {
+                        font-weight: 600 !important;
                     }
                 }
             `}</style>
