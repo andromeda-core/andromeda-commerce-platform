@@ -2,6 +2,9 @@
 
 namespace App\Repositories\OrderRefund\Repository;
 
+use App\Helpers\Trans;
+use App\Jobs\ReturnTrackingSlipDestroyOnAWS;
+use App\Jobs\ReturnTrackingSlipStoreOnAWS;
 use App\Models\OrderRefund;
 use App\Repositories\OrderRefund\Interface\IOrderRefundRepository;
 use Exception;
@@ -84,10 +87,59 @@ class OrderRefundRepository implements IOrderRefundRepository
                 'status' => true,
                 'message' => 'Order refund updated successfully.',
             ];
-
         } catch (Exception $e) {
             return [
                 'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    public function uploadReturnTrackingSlip(Request $request, string $id)
+    {
+        $request->validate([
+            'return_tracking_image' => [
+                'required',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:5120',
+            ],
+        ]);
+
+        try {
+            $orderRefund = $this->order_refund->findOrFail($id);
+
+            if ($orderRefund->refund_status !== 'awaiting_return_tracking') {
+                throw new Exception(Trans::get('Tracking slip can only be uploaded for refunds awaiting return tracking.'));
+            }
+
+            if (now()->isAfter($orderRefund->return_tracking_deadline_at)) {
+                throw new Exception(Trans::get('The 48-hour deadline has passed. Your refund has been rejected.'));
+            }
+
+            // Destroy old image from S3 if customer is re-uploading (If Functionality Given in Future)
+            if (! empty($orderRefund->return_tracking_image)) {
+                dispatch(new ReturnTrackingSlipDestroyOnAWS($orderRefund->return_tracking_image));
+            }
+
+            // Store locally - S3 job will update return_tracking_image with full URL
+            $localPath = $request->file('return_tracking_image')
+                ->store('return-tracking-slips', 'local');
+
+            // Set uploaded_at immediately, job handles the image URL update
+            $orderRefund->updateQuietly([
+                'return_tracking_uploaded_at' => now(),
+            ]);
+
+            dispatch(new ReturnTrackingSlipStoreOnAWS($localPath, $orderRefund));
+
+            return [
+                'status'  => true,
+                'message' => Trans::get('Tracking slip uploaded successfully. Your refund is now being processed.'),
+            ];
+        } catch (Exception $e) {
+            return [
+                'status'  => false,
                 'message' => $e->getMessage(),
             ];
         }

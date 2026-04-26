@@ -236,6 +236,7 @@ Route::group(['as' => 'website.'], function () {
         Route::post('/orders/refund/withdrawl', 'refundWithdrawl')->name('refund.withdrawl');
         Route::post('/orders/re-order', 'reOrder')->name('re-order');
         Route::post('/orders/verify-imei', 'verifyOrderProduct')->name('verify');
+        Route::post('/orders/{order_no}/refund/upload-tracking-slip',  'uploadReturnTrackingSlip')->name('refund.upload-tracking-slip');
     });
 
     // Profile Routes

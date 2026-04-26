@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers\Website;
 
+use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\Cart\Interface\ICartRepository;
+use App\Repositories\OrderRefund\Interface\IOrderRefundRepository;
 use App\Repositories\Orders\Interface\IOrderRepository;
 use App\Repositories\Settings\Interface\ISettingRepository;
 use Illuminate\Http\Request;
@@ -15,6 +17,7 @@ class OrderController extends Controller
         private IOrderRepository $order,
         private ISettingRepository $setting,
         private ICartRepository $cart,
+        private IOrderRefundRepository $orderRefund,
     ) {}
 
     public function index(Request $request)
@@ -67,7 +70,6 @@ class OrderController extends Controller
         }
 
         return back()->with('success', $response['message']);
-
     }
 
     public function markPackagingVideoViewed(Request $request)
@@ -121,13 +123,12 @@ class OrderController extends Controller
         }
 
         $countries = collect($this->setting->getCountries())
-            ->map(fn ($country) => [
+            ->map(fn($country) => [
                 'name' => $country->name,
             ])
             ->toArray();
 
         return Inertia::render('Website/Orders/ShippingAddressChangeRequest/index', compact('order_no', 'countries'));
-
     }
 
     public function shippingAddressChangeRequestStore(Request $request, ?string $order_no = null)
@@ -160,7 +161,6 @@ class OrderController extends Controller
         }
 
         return back()->with('success', $widthdrawl['message']);
-
     }
 
     public function refundWithdrawl(Request $request)
@@ -171,7 +171,6 @@ class OrderController extends Controller
         }
 
         return back()->with('success', $widthdrawl['message']);
-
     }
 
     public function reOrder(Request $request)
@@ -193,7 +192,6 @@ class OrderController extends Controller
         }
 
         return to_route('website.checkout.index', ['buy_now' => true]);
-
     }
 
     public function verifyOrderProduct(Request $request)
@@ -201,5 +199,31 @@ class OrderController extends Controller
         $response = $this->order->orderProductVerification($request);
 
         return response()->json($response);
+    }
+
+
+    public function uploadReturnTrackingSlip(Request $request, ?string $order_no = null)
+    {
+        if (empty($order_no)) {
+            return to_route('website.orders.index');
+        }
+
+        $order = $this->order->getCustomerSingleOrder($request, $order_no);
+
+        if (empty($order)) {
+            return to_route('website.orders.index');
+        }
+
+        if (empty($order->refund)) {
+            return back()->with('error', Trans::get('No refund request found for this order.'));
+        }
+
+        $response = $this->orderRefund->uploadReturnTrackingSlip($request, $order->refund->id);
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
     }
 }

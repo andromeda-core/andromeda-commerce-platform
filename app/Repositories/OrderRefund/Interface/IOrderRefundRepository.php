@@ -11,4 +11,6 @@ interface IOrderRefundRepository
     public function getSingleOrderRefund(string $id);
 
     public function updateOrderRefund(Request $request, string $id);
+
+    public function uploadReturnTrackingSlip(Request $request, string $id);
 }

@@ -1071,6 +1071,11 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Shipping country must not exceed 255 characters.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Shipping postal code is required.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Shipping postal code must not exceed 255 characters.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Tracking slip can only be uploaded for refunds awaiting return tracking.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Rejected refunds cannot be modified.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'The 48-hour deadline has passed. Your refund has been rejected.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Tracking slip uploaded successfully. Your refund is now being processed.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'No refund request found for this order.', 'created_at' => $now, 'updated_at' => $now],
 
             // Jobs
 
@@ -1446,6 +1451,17 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Supplier Commission Not Configured', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'An order has been placed, but the commission rate for the Supplier has not been configured.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Please review the settings and configure the commission rate to ensure proper calculation for future orders.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Refund Request Rejected: Tracking Slip Not Uploaded', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Hello', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Unfortunately, your refund request has been automatically rejected.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Order Number', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'The 48-hour deadline to upload your return shipping tracking slip has passed without a submission.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'If you believe this is an error, please contact our support team.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Action Required: Upload Your Return Tracking Slip', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your refund request has been approved. To proceed, please ship the item back and upload a photo of your return shipping tracking slip.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Deadline', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'If the tracking slip is not uploaded within 48 hours, your refund request will be automatically rejected.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Upload Tracking Slip', 'created_at' => $now, 'updated_at' => $now],
         ];
 
         $existingKeys = \DB::table('translation_keys')

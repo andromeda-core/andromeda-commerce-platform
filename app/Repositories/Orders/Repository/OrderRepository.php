@@ -1554,6 +1554,7 @@ class OrderRepository implements IOrderRepository
     {
         $order = $this->order->with(
             [
+                'refund',
                 'collaborator',
                 'orderPackageRecordings' => function ($q) {
                     $q->where('is_visible', true);

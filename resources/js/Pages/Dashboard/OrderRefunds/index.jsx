@@ -23,7 +23,7 @@ export default function index({ order_refunds }) {
                     return (
                         <Link
                             href={route('dashboard.orders.show', item?.order?.id)}
-                            className="text-blue-500 underline cursor-pointer"
+                            className="cursor-pointer text-blue-500 underline"
                         >
                             {item?.order?.order_no ?? 'N/A'}
                         </Link>
@@ -34,17 +34,21 @@ export default function index({ order_refunds }) {
             { key: 'customer.user.email', label: 'Customer Email' },
             { key: 'customer.user.phone', label: 'Customer Phone' },
 
-
-
             {
                 label: 'Defect Evidance Video',
                 render: (item) => {
                     if (item?.defect_evidence_video) {
-                        return <a target={"__blank"} href={item?.defect_evidence_video} className="p-2 text-indigo-500 underline rounded-lg">
-                            View View
-                        </a>
+                        return (
+                            <a
+                                target={'__blank'}
+                                href={item?.defect_evidence_video}
+                                className="rounded-lg p-2 text-indigo-500 underline"
+                            >
+                                View View
+                            </a>
+                        );
                     } else {
-                        return "N/A";
+                        return 'N/A';
                     }
                 },
             },
@@ -53,46 +57,61 @@ export default function index({ order_refunds }) {
                 label: 'Return Packaging Video',
                 render: (item) => {
                     if (item?.return_packaging_video) {
-                        return <a target={"__blank"} href={item?.return_packaging_video} className="p-2 text-indigo-500 underline rounded-lg">
-                            View View
-                        </a>
+                        return (
+                            <a
+                                target={'__blank'}
+                                href={item?.return_packaging_video}
+                                className="rounded-lg p-2 text-indigo-500 underline"
+                            >
+                                View View
+                            </a>
+                        );
                     } else {
-                        return "N/A";
+                        return 'N/A';
                     }
                 },
             },
-
-
 
             {
                 label: 'Order Status',
                 render: (item) => {
                     return (
-                        <span className="p-2 text-white bg-indigo-500 rounded-lg">
-                            {item.order?.previous_status ? item.order?.previous_status.replace(/_/g, ' ').toUpperCase() : item.order?.status.replace(/_/g, ' ').toUpperCase()}
+                        <span className="rounded-lg bg-indigo-500 p-2 text-white">
+                            {item.order?.previous_status
+                                ? item.order?.previous_status.replace(/_/g, ' ').toUpperCase()
+                                : item.order?.status.replace(/_/g, ' ').toUpperCase()}
                         </span>
-                    )
+                    );
                 },
             },
 
+            {
+                label: 'Refund Auto Rejected',
+                render: (item) => {
+                    return item.is_auto_rejected ? (
+                        <span className="rounded-lg bg-red-500 p-2 text-white">Yes</span>
+                    ) : (
+                        <span className="rounded-lg bg-green-500 p-2 text-white">No</span>
+                    );
+                },
+            },
 
             {
                 label: 'Status',
                 render: (item) => {
                     return (
-                        <span className="p-2 text-white bg-indigo-500 rounded-lg">
+                        <span className="rounded-lg bg-indigo-500 p-2 text-white">
                             {item.refund_status.replace(/_/g, ' ').toUpperCase()}
                         </span>
-                    )
+                    );
                 },
             },
-
 
             {
                 label: 'Order Payment Method',
                 render: (item) => {
                     return (
-                        <span className="p-2 text-white bg-gray-500 rounded-lg">
+                        <span className="rounded-lg bg-gray-500 p-2 text-white">
                             {item.order?.payment_method?.replace(/_/g, ' ').toUpperCase()}
                         </span>
                     );
@@ -103,7 +122,7 @@ export default function index({ order_refunds }) {
                 label: 'Refund Amount',
                 render: (item) => {
                     return (
-                        <span className="p-2 text-white bg-gray-500 rounded-lg">
+                        <span className="rounded-lg bg-gray-500 p-2 text-white">
                             {currency?.symbol}
                             {Number(item.refund_amount).toLocaleString('en-US')}
                         </span>
@@ -116,10 +135,10 @@ export default function index({ order_refunds }) {
             { key: 'rejected_at', label: 'Rejected At' },
             { key: 'completed_at', label: 'Completed At' },
             { key: 'withdrawn_at', label: 'Withdrawn At' },
+            { key: 'return_tracking_uploaded_at', label: 'Return Tracking Uploaded At' },
+            { key: 'return_tracking_deadline_at', label: 'Return Tracking Deadline At' },
             { key: 'added_at', label: 'Added At' },
         ];
-
-
 
         setColumns(columns);
     }, []);
@@ -143,9 +162,12 @@ export default function index({ order_refunds }) {
                     Content={
                         <>
                             <Table
-
                                 DeleteAction={false}
-                                EditRoute={can('Order Refunds Edit') ? 'dashboard.order-refunds.edit' : null}
+                                EditRoute={
+                                    can('Order Refunds Edit')
+                                        ? 'dashboard.order-refunds.edit'
+                                        : null
+                                }
                                 SearchRoute={'dashboard.order-refunds.index'}
                                 Search={true}
                                 DefaultSearchInput={false}
@@ -164,19 +186,19 @@ export default function index({ order_refunds }) {
                                                 items={[
                                                     {
                                                         id: 'requested',
-                                                        name: "Requested"
+                                                        name: 'Requested',
                                                     },
                                                     {
                                                         id: 'approved',
-                                                        name: "Approved"
+                                                        name: 'Approved',
                                                     },
                                                     {
                                                         id: 'rejected',
-                                                        name: "Rejected"
+                                                        name: 'Rejected',
                                                     },
                                                     {
                                                         id: 'completed',
-                                                        name: "Completed"
+                                                        name: 'Completed',
                                                     },
                                                 ]}
                                                 itemKey={'name'}

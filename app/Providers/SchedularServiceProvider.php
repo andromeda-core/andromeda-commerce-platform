@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Console\Commands\AutoMarkingOrderExpiredIfNotPaid;
+use App\Console\Commands\AutoRejectRefundsMissingTracking;
 use App\Console\Commands\CheckRewardPointExpiry;
 use App\Console\Commands\ClearPreviousOrderPackageRecordings;
 use App\Console\Commands\ConfirmPurchaseOrders;
@@ -50,5 +51,6 @@ class SchedularServiceProvider extends ServiceProvider
         $schedule->command(MarkingOrdersAsDeliveryConfirmedAfterSevenDays::class)->everyFifteenMinutes();
         $schedule->command(ConfirmPurchaseOrders::class)->everyFifteenMinutes();
         $schedule->command(WarmSitemapCache::class)->daily();
+        $schedule->command(AutoRejectRefundsMissingTracking::class)->everyFifteenMinutes()->withoutOverlapping();
     }
 }

@@ -134,6 +134,56 @@ export default function OrderView({ order, countries }) {
         }
     };
 
+    // Tracking slip states
+    const [trackingSlipFile, setTrackingSlipFile] = useState(null);
+    const [trackingSlipPreview, setTrackingSlipPreview] = useState(null);
+    const [isUploadingTrackingSlip, setIsUploadingTrackingSlip] = useState(false);
+
+    const handleTrackingSlipSelect = (file) => {
+        setTrackingSlipFile(file);
+        const reader = new FileReader();
+        reader.onloadend = () => setTrackingSlipPreview(reader.result);
+        reader.readAsDataURL(file);
+    };
+
+    const handleTrackingSlipRemove = () => {
+        setTrackingSlipFile(null);
+        setTrackingSlipPreview(null);
+    };
+
+    const handleUploadTrackingSlip = async () => {
+        if (!trackingSlipFile) return;
+        setIsUploadingTrackingSlip(true);
+
+        const formData = new FormData();
+        formData.append('return_tracking_image', trackingSlipFile);
+
+        try {
+            await router.post(
+                route('website.orders.refund.upload-tracking-slip', order.order_no),
+                formData,
+                {
+                    preserveScroll: true,
+                    onSuccess: () => {
+                        setTrackingSlipFile(null);
+                        setTrackingSlipPreview(null);
+                    },
+                    onError: (errors) => {
+                        setShowErrorMessage(true);
+                        setErrorMessage(
+                            errors.return_tracking_image ||
+                                __('Failed to upload tracking slip. Please try again.'),
+                        );
+                    },
+                    onFinish: () => setIsUploadingTrackingSlip(false),
+                },
+            );
+        } catch (error) {
+            console.error('Upload error:', error);
+            setIsUploadingTrackingSlip(false);
+        }
+    };
+
     useEffect(() => {
         window.history.replaceState({}, '', cleanUrl);
     }, []);
@@ -319,6 +369,19 @@ export default function OrderView({ order, countries }) {
                                 order={order}
                                 setSelectedPackageVideoID={setSelectedPackageVideoID}
                                 handleRecordingView={handleRecordingView}
+                            />
+
+                            {/* Return Tracking Slip — shown only when refund is approved and awaiting tracking */}
+                            <ReturnTrackingSlipUpload
+                                order={order}
+                                __={__}
+                                handleTrackingSlipSelect={handleTrackingSlipSelect}
+                                handleTrackingSlipRemove={handleTrackingSlipRemove}
+                                trackingSlipFile={trackingSlipFile}
+                                trackingSlipPreview={trackingSlipPreview}
+                                isUploadingTrackingSlip={isUploadingTrackingSlip}
+                                handleUploadTrackingSlip={handleUploadTrackingSlip}
+                                handleImageView={handleImageView}
                             />
                         </div>
 
@@ -1359,6 +1422,251 @@ function PackagingVideos({ order, __, handleRecordingView }) {
                     );
                 })}
             </div>
+        </div>
+    );
+}
+
+// Return Tracking Slip Upload Component
+function ReturnTrackingSlipUpload({
+    order,
+    __,
+    handleTrackingSlipSelect,
+    handleTrackingSlipRemove,
+    trackingSlipFile,
+    trackingSlipPreview,
+    isUploadingTrackingSlip,
+    handleUploadTrackingSlip,
+    handleImageView,
+}) {
+    const refund = order?.refund;
+    // Only show when refund exists and status is approved
+    if (
+        !refund ||
+        (refund.refund_status !== 'awaiting_return_tracking' && !refund.return_tracking_uploaded_at)
+    )
+        return null;
+
+    const deadlinePassed = refund.return_tracking_deadline_at
+        ? Math.round((new Date(refund.return_tracking_deadline_at) - new Date()) / 60000) <= 0
+        : false;
+
+    // If uploaded_at is set, customer already uploaded — show processing
+    // regardless of whether S3 job has completed yet
+    const alreadyUploaded = !!refund.return_tracking_uploaded_at;
+
+    return (
+        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
+            {/* Header */}
+            <div className="mb-4 flex items-center justify-start gap-4">
+                <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
+                    {__('Return Tracking Slip')}
+                </h2>
+
+                {/* Deadline badge */}
+                {!alreadyUploaded && (
+                    <span className="text-[14px] font-semibold text-[#ff0000]">
+                        {(() => {
+                            const totalMinutes = Math.round(
+                                (new Date(refund.return_tracking_deadline_at) - new Date()) / 60000,
+                            );
+                            if (totalMinutes <= 0) return __('Deadline Passed');
+                            const hours = Math.floor(totalMinutes / 60);
+                            const minutes = totalMinutes % 60;
+                            if (hours > 0 && minutes > 0)
+                                return `${__('Expires in')} ${hours}h ${minutes}m`;
+                            if (hours > 0) return `${__('Expires in')} ${hours}h`;
+                            return `${__('Expires in')} ${minutes}m`;
+                        })()}
+                    </span>
+                )}
+            </div>
+
+            {/* Deadline info line */}
+            {refund.return_tracking_deadline_at && !alreadyUploaded && (
+                <p className="mb-4 text-[13px] font-medium text-sub-text-light dark:text-sub-text-dark">
+                    {__('Deadline')}:{' '}
+                    {new Date(refund.return_tracking_deadline_at).toLocaleString()}
+                </p>
+            )}
+
+            {/* Already uploaded — show processing state */}
+            {alreadyUploaded && (
+                <div className="space-y-4">
+                    {/* If S3 job completed, show the image */}
+                    {refund.return_tracking_image ? (
+                        <div>
+                            <div
+                                onClick={() => handleImageView(refund.return_tracking_image)}
+                                className="group cursor-pointer overflow-hidden rounded-md border-2 border-surface-3-light bg-surface-3-light transition-all dark:border-surface-3-dark dark:bg-surface-3-dark"
+                            >
+                                <img
+                                    src={refund.return_tracking_image}
+                                    alt={__('Return Tracking Slip')}
+                                    className="h-64 w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                                />
+                            </div>
+
+                            <div className="mt-4 rounded-md border border-surface-3-light bg-surface-1-light p-4 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                <div className="flex gap-3">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={2}
+                                        stroke="currentColor"
+                                        className="h-5 w-5 flex-shrink-0 text-main-text-light dark:text-main-text-dark"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z"
+                                        />
+                                    </svg>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                            {__('Your tracking slip has been submitted')}
+                                        </p>
+                                        <p className="mt-1 text-xs text-main-text-light dark:text-main-text-dark">
+                                            {__("We'll process your refund shortly.")}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        // S3 job still processing
+                        <div className="rounded-md border border-surface-3-light bg-surface-1-light p-4 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                            <div className="flex gap-3">
+                                <svg
+                                    className="h-5 w-5 flex-shrink-0 animate-spin text-main-text-light dark:text-main-text-dark"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    />
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                    />
+                                </svg>
+                                <div className="flex-1">
+                                    <p className="text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                        {__('Your tracking slip is being processed')}
+                                    </p>
+                                    <p className="mt-1 text-xs text-main-text-light dark:text-main-text-dark">
+                                        {__('This may take a moment. Please check back shortly.')}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Deadline passed and not uploaded */}
+            {!alreadyUploaded && deadlinePassed && (
+                <div className="mt-2 w-full rounded-md border border-[#FBBABA] bg-red-50 p-4 px-7 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                    <p className="text-[13px] font-semibold text-main-text-light dark:text-main-text-dark">
+                        {__(
+                            'The deadline to upload your return tracking slip has passed. Your refund request may be rejected automatically.',
+                        )}
+                    </p>
+                </div>
+            )}
+
+            {/* Upload form — only when not yet uploaded and deadline not passed */}
+            {!alreadyUploaded && !deadlinePassed && (
+                <div className="space-y-4">
+                    {/* Instruction box */}
+                    <div className="w-full rounded-md border border-[#FBBABA] bg-red-50 p-4 px-7 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                        <h3 className="mb-2 text-[13px] font-semibold text-main-text-light dark:text-main-text-dark">
+                            {__('Important Instructions')}
+                        </h3>
+                        <ul className="mb-2 list-inside list-disc space-y-1 text-[13px] font-medium text-main-text-light dark:text-main-text-dark">
+                            <li>{__('Ship the item back to us using a trackable courier')}</li>
+                            <li>{__('Take a clear photo of the return shipping tracking slip')}</li>
+                            <li>
+                                {__(
+                                    'Upload the photo before the deadline to avoid automatic rejection',
+                                )}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <CustomFileUploader
+                        onFileSelect={handleTrackingSlipSelect}
+                        onFileRemove={handleTrackingSlipRemove}
+                        accept="image/*"
+                        maxSize={5 * 1024 * 1024}
+                        preview={trackingSlipPreview}
+                        fileName={trackingSlipFile?.name}
+                        fileSize={trackingSlipFile?.size}
+                        uploadButtonText={__('Upload Tracking Slip')}
+                        disabled={isUploadingTrackingSlip}
+                        customMessage={__('Upload a photo of your return shipping tracking slip.')}
+                    />
+
+                    {trackingSlipPreview && (
+                        <button
+                            onClick={handleUploadTrackingSlip}
+                            disabled={isUploadingTrackingSlip}
+                            className="flex w-full items-center justify-center gap-2 rounded-md bg-main-text-light px-6 py-4 text-sm font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                        >
+                            {isUploadingTrackingSlip ? (
+                                <>
+                                    <svg
+                                        className="h-5 w-5 animate-spin"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <circle
+                                            className="opacity-25"
+                                            cx="12"
+                                            cy="12"
+                                            r="10"
+                                            stroke="currentColor"
+                                            strokeWidth="4"
+                                        />
+                                        <path
+                                            className="opacity-75"
+                                            fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                                        />
+                                    </svg>
+                                    {__('Uploading')}...
+                                </>
+                            ) : (
+                                <>
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={2}
+                                        stroke="currentColor"
+                                        className="h-5 w-5"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                                        />
+                                    </svg>
+                                    {__('Upload Tracking Slip')}
+                                </>
+                            )}
+                        </button>
+                    )}
+                </div>
+            )}
         </div>
     );
 }

@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use App\Notifications\OrderRefundNotification;
+use App\Notifications\RefundAutoRejectedNoTrackingNotification;
+use App\Notifications\RefundAwaitingTrackingNotification;
 use App\Services\AttributionRewardService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
+
 
 class OrderRefund extends Model
 {
@@ -27,16 +30,37 @@ class OrderRefund extends Model
         'rejected_at',
         'completed_at',
         'withdrawn_at',
+        'return_tracking_image',
+        'return_tracking_uploaded_at',
+        'return_tracking_deadline_at',
+        'is_auto_rejected',
     ];
 
     // Attributes
-    protected $appends = ['added_at'];
+    protected $appends = ['added_at', 'return_tracking_image_url', 'hours_remaining'];
 
     public function getAddedAtAttribute()
     {
         return ! empty($this->created_at) ? $this->created_at->format('Y-m-d H:i:s') : null;
     }
 
+    // Accessor for S3 image URL
+    public function getReturnTrackingImageUrlAttribute(): ?string
+    {
+        return $this->return_tracking_image ?? null;
+    }
+
+    // Accessor for hours remaining on deadline
+    public function getHoursRemainingAttribute(): ?int
+    {
+        if (! $this->return_tracking_deadline_at) return null;
+
+        $diffInMinutes = now()->diffInMinutes($this->return_tracking_deadline_at, false);
+
+        if ($diffInMinutes <= 0) return 0;
+
+        return (int) ceil($diffInMinutes / 60);
+    }
     // RelationShips
     public function order(): BelongsTo
     {
@@ -65,42 +89,62 @@ class OrderRefund extends Model
                 return;
             }
 
+            // $orderStatus = match ($refund->refund_status) {
+            //     'requested' => 'refund_requested',
+            //     'approved' => 'refund_approved',
+            //     'rejected' => $order->previous_status,
+            //     'completed' => 'refund_completed',
+            // };
+
             $orderStatus = match ($refund->refund_status) {
-                'requested' => 'refund_requested',
+                'requested'                  => 'refund_requested',
                 'approved' => 'refund_approved',
-                'rejected' => $order->previous_status,
-                'completed' => 'refund_completed',
+                'awaiting_return_tracking'   => 'refund_approved',
+                'rejected'                   => $order->previous_status ?? $order->status,
+                'completed'                  => 'refund_completed',
+                'withdrawn'                  => $order->previous_status ?? $order->status,
+                default                      => $order->status,
             };
 
             $order->updateQuietly([
                 'status' => $orderStatus,
             ]);
 
-            if (
-                $refund->refund_status === 'completed' &&
-                $refund->refund_method === 'points'
-            ) {
-                $expiry = now()->addYears(5);
-                $refund->customer?->user?->reward_points()->create(
-                    [
-                        'points' => $refund->refund_amount,
-                        'expires_at' => $expiry,
 
-                    ]
+
+            if ($refund->refund_status === 'approved') {
+
+                $refund->updateQuietly([
+                    'refund_status'               => 'awaiting_return_tracking',
+                    'approved_at'                 => now(),
+                    'return_tracking_deadline_at' => now()->addHours(48),
+                ]);
+
+                $refund->customer->user->notify(new OrderRefundNotification($refund, 'approved'));
+
+
+                $refund->customer->user->notify(
+                    new RefundAwaitingTrackingNotification($refund)
                 );
             }
 
-            if ($refund->refund_status === 'approved') {
-                $refund->customer->user->notify(new OrderRefundNotification($refund, 'approved'));
+            if (
+                $refund->wasChanged('refund_status')
+                && $refund->refund_status === 'rejected'
+                && $refund->is_auto_rejected
+            ) {
+                $refund->order->customer->user->notify(
+                    new RefundAutoRejectedNoTrackingNotification($refund)
+                );
             }
 
-            if ($refund->refund_status === 'rejected') {
+            if ($refund->refund_status === 'rejected' && !$refund->is_auto_rejected) {
                 $refund->customer->user->notify(new OrderRefundNotification($refund, 'rejected'));
             }
 
             if ($refund->refund_status === 'completed') {
 
-                DB::transaction(function () use ($order) {
+                DB::transaction(function () use ($order, $refund) {
 
                     $order->payment()->update([
                         'status' => 'reversed',
@@ -108,6 +152,19 @@ class OrderRefund extends Model
                     ]);
 
                     app(AttributionRewardService::class)->reverseReward($order);
+
+                    if (
+                        $refund->refund_method === 'points'
+                    ) {
+                        $expiry = now()->addYears(5);
+                        $refund->customer?->user?->reward_points()->create(
+                            [
+                                'points' => $refund->refund_amount,
+                                'expires_at' => $expiry,
+
+                            ]
+                        );
+                    }
 
                     foreach ($order->orderItems as $item) {
 
@@ -131,4 +188,9 @@ class OrderRefund extends Model
             }
         });
     }
+
+
+    protected $casts = [
+        'is_auto_rejected'             => 'boolean',
+    ];
 }

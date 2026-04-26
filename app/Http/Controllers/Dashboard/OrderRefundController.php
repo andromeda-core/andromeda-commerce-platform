@@ -50,6 +50,10 @@ class OrderRefundController extends Controller implements HasMiddleware
             return back()->with('error', $this->trans->get('Completed refunds cannot be modified.'));
         }
 
+        if ($order_refund->refund_status === 'rejected') {
+            return back()->with('error', $this->trans->get('Rejected refunds cannot be modified.'));
+        }
+
         if ($order_refund->refund_status === 'withdrawn') {
             return back()->with('error', $this->trans->get('Withdrawn refunds cannot be modified.'));
         }
