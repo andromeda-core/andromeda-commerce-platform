@@ -1081,6 +1081,10 @@ class TranslationKeysSeeder extends Seeder
 
             // Meta
             ['key' => 'Hello', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Return Tracking Slip Received', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'We have received your return tracking slip successfully.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Order Number', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your returned item is now in transit. We will process your refund once the item is received.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Thank you for placing your order with us! Your order', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'has been successfully created and is currently awaiting confirmation on the blockchain.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Once the payment is verified by the network, your order will be automatically confirmed and processed for dispatch. No further action is required from your side at this time.', 'created_at' => $now, 'updated_at' => $now],

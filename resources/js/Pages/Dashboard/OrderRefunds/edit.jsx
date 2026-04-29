@@ -115,8 +115,10 @@ export default function edit({ order_refund, currency }) {
                                                         .toUpperCase()}
                                                 />
 
-                                                {order_refund?.refund_status ===
-                                                    'awaiting_return_tracking' && (
+                                                {(order_refund?.refund_status ===
+                                                    'awaiting_return_tracking' ||
+                                                    order_refund?.refund_status ===
+                                                        'awaiting_returned_item') && (
                                                     <Input
                                                         InputName={
                                                             'Current Refund Status (Non Editable)'
@@ -125,7 +127,12 @@ export default function edit({ order_refund, currency }) {
                                                         Name={'current_refund_status'}
                                                         Type={'text'}
                                                         readOnly={true}
-                                                        Value={'Awaiting Return Tracking'}
+                                                        Value={
+                                                            order_refund?.refund_status ===
+                                                            'awaiting_return_tracking'
+                                                                ? 'Awaiting Return Tracking'
+                                                                : 'Awaiting Return Item'
+                                                        }
                                                     />
                                                 )}
 
@@ -245,30 +252,33 @@ export default function edit({ order_refund, currency }) {
                                                         )}
 
                                                         {/* Deadline info */}
-                                                        <span className="ml-2 font-semibold text-yellow-600">
-                                                            (
-                                                            {(() => {
-                                                                const totalMinutes = Math.round(
-                                                                    (new Date(
-                                                                        order_refund.return_tracking_deadline_at,
-                                                                    ) -
-                                                                        new Date()) /
-                                                                        60000,
-                                                                );
-                                                                if (totalMinutes <= 0)
-                                                                    return 'Deadline Passed';
-                                                                const hours = Math.floor(
-                                                                    totalMinutes / 60,
-                                                                );
-                                                                const minutes = totalMinutes % 60;
-                                                                if (hours > 0 && minutes > 0)
-                                                                    return `${hours}h ${minutes}m remaining`;
-                                                                if (hours > 0)
-                                                                    return `${hours}h remaining`;
-                                                                return `${minutes}m remaining`;
-                                                            })()}
-                                                            )
-                                                        </span>
+                                                        {!order_refund?.return_tracking_uploaded_at && (
+                                                            <span className="ml-2 font-semibold text-yellow-600">
+                                                                (
+                                                                {(() => {
+                                                                    const totalMinutes = Math.round(
+                                                                        (new Date(
+                                                                            order_refund.return_tracking_deadline_at,
+                                                                        ) -
+                                                                            new Date()) /
+                                                                            60000,
+                                                                    );
+                                                                    if (totalMinutes <= 0)
+                                                                        return 'Deadline Passed';
+                                                                    const hours = Math.floor(
+                                                                        totalMinutes / 60,
+                                                                    );
+                                                                    const minutes =
+                                                                        totalMinutes % 60;
+                                                                    if (hours > 0 && minutes > 0)
+                                                                        return `${hours}h ${minutes}m remaining`;
+                                                                    if (hours > 0)
+                                                                        return `${hours}h remaining`;
+                                                                    return `${minutes}m remaining`;
+                                                                })()}
+                                                                )
+                                                            </span>
+                                                        )}
 
                                                         {/* Uploaded at */}
                                                         <p className="mb-3 text-xs text-gray-500">

@@ -6,6 +6,7 @@ use App\Helpers\Trans;
 use App\Jobs\ReturnTrackingSlipDestroyOnAWS;
 use App\Jobs\ReturnTrackingSlipStoreOnAWS;
 use App\Models\OrderRefund;
+use App\Notifications\OrderRefundNotification;
 use App\Repositories\OrderRefund\Interface\IOrderRefundRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -69,6 +70,14 @@ class OrderRefundRepository implements IOrderRefundRepository
                 }
             }
 
+
+            if (
+                in_array($orderRefund->refund_status, ['awaiting_return_tracking', 'awaiting_returned_item'])
+                && in_array($validated['refund_status'], ['requested', 'approved'])
+            ) {
+                throw new Exception('Refund cannot be moved back to requested or approved once tracking is in progress.');
+            }
+
             $timestamps = match ($validated['refund_status']) {
                 'approved' => ['approved_at' => now()],
                 'rejected' => ['rejected_at' => now()],
@@ -129,9 +138,18 @@ class OrderRefundRepository implements IOrderRefundRepository
             // Set uploaded_at immediately, job handles the image URL update
             $orderRefund->updateQuietly([
                 'return_tracking_uploaded_at' => now(),
+                'refund_status'               => 'awaiting_returned_item',
             ]);
 
             dispatch(new ReturnTrackingSlipStoreOnAWS($localPath, $orderRefund));
+
+
+            $orderRefund->load(['order', 'customer.user']);
+            $orderRefund->customer->user->notify(
+                new OrderRefundNotification($orderRefund, 'awaiting_returned_item')
+            );
+
+
 
             return [
                 'status'  => true,

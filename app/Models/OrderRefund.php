@@ -100,6 +100,7 @@ class OrderRefund extends Model
                 'requested'                  => 'refund_requested',
                 'approved' => 'refund_approved',
                 'awaiting_return_tracking'   => 'refund_approved',
+                'awaiting_returned_item'     => 'refund_approved',
                 'rejected'                   => $order->previous_status ?? $order->status,
                 'completed'                  => 'refund_completed',
                 'withdrawn'                  => $order->previous_status ?? $order->status,
@@ -109,6 +110,8 @@ class OrderRefund extends Model
             $order->updateQuietly([
                 'status' => $orderStatus,
             ]);
+
+
 
 
 
@@ -127,7 +130,6 @@ class OrderRefund extends Model
                     new RefundAwaitingTrackingNotification($refund)
                 );
             }
-
             if (
                 $refund->wasChanged('refund_status')
                 && $refund->refund_status === 'rejected'

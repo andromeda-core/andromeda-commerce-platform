@@ -1442,7 +1442,9 @@ function ReturnTrackingSlipUpload({
     // Only show when refund exists and status is approved
     if (
         !refund ||
-        (refund.refund_status !== 'awaiting_return_tracking' && !refund.return_tracking_uploaded_at)
+        (refund.refund_status !== 'awaiting_return_tracking' &&
+            refund.refund_status !== 'awaiting_returned_item' &&
+            !refund.return_tracking_uploaded_at)
     )
         return null;
 
