@@ -31,6 +31,7 @@ Milestone 2: Supplier, Collaborator, and Smartphone Management, posts management
 
 4: Posts Management: ✅
 - CRUD for Posts
+
 - Track Posts View Count
 - Location Tracking And URL Generation
 - QR Code Generation
