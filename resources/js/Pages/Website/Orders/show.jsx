@@ -12,8 +12,10 @@ import { useTranslation } from '@/Hooks/useTranslation';
 import { ChevronLeft, Copy } from 'lucide-react';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import duration from 'dayjs/plugin/duration';
+import utc from 'dayjs/plugin/utc';
 import dayjs from 'dayjs';
 dayjs.extend(duration);
+dayjs.extend(utc);
 
 export default function OrderView({ order, countries }) {
     const { currency } = usePage().props;
@@ -883,7 +885,7 @@ function PaymentProof({
         if (!expiresAt) return null;
 
         const now = dayjs();
-        const expiry = dayjs(expiresAt);
+        const expiry = dayjs.utc(expiresAt);
 
         if (expiry.isBefore(now)) {
             return 'Expired';
@@ -1449,7 +1451,7 @@ function ReturnTrackingSlipUpload({
         return null;
 
     const deadlinePassed = refund.return_tracking_deadline_at
-        ? Math.round((new Date(refund.return_tracking_deadline_at) - new Date()) / 60000) <= 0
+        ? dayjs.utc(refund.return_tracking_deadline_at).diff(dayjs(), 'minute') <= 0
         : false;
 
     // If uploaded_at is set, customer already uploaded — show processing
@@ -1468,9 +1470,9 @@ function ReturnTrackingSlipUpload({
                 {!alreadyUploaded && (
                     <span className="text-[14px] font-semibold text-[#ff0000]">
                         {(() => {
-                            const totalMinutes = Math.round(
-                                (new Date(refund.return_tracking_deadline_at) - new Date()) / 60000,
-                            );
+                            const totalMinutes = dayjs
+                                .utc(refund.return_tracking_deadline_at)
+                                .diff(dayjs(), 'minute');
                             if (totalMinutes <= 0) return __('Deadline Passed');
                             const hours = Math.floor(totalMinutes / 60);
                             const minutes = totalMinutes % 60;
@@ -1487,7 +1489,11 @@ function ReturnTrackingSlipUpload({
             {refund.return_tracking_deadline_at && !alreadyUploaded && (
                 <p className="mb-4 text-[13px] font-medium text-sub-text-light dark:text-sub-text-dark">
                     {__('Deadline')}:{' '}
-                    {new Date(refund.return_tracking_deadline_at).toLocaleString()}
+                    {dayjs
+                        .utc(refund.return_tracking_deadline_at)
+                        .local()
+                        .toDate()
+                        .toLocaleString()}
                 </p>
             )}
 

@@ -194,5 +194,6 @@ class OrderRefund extends Model
 
     protected $casts = [
         'is_auto_rejected'             => 'boolean',
+        'return_tracking_deadline_at' => 'datetime',
     ];
 }

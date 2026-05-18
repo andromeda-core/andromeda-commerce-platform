@@ -10,9 +10,11 @@ import { Copy } from 'lucide-react';
 import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import utc from 'dayjs/plugin/utc';
 import { useConfirm } from '@/Hooks/useConfirm';
 
 dayjs.extend(duration);
+dayjs.extend(utc);
 
 export default function index({ orders, next_page_url }) {
     const { currency } = usePage().props;
@@ -499,7 +501,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
         if (!expiresAt) return null;
 
         const now = dayjs();
-        const expiry = dayjs(expiresAt);
+        const expiry = dayjs.utc(expiresAt);
 
         if (expiry.isBefore(now)) {
             return 'Expired';
@@ -524,7 +526,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
 
         if (!order?.refund_expires_at) return true;
 
-        const expiresAt = dayjs(order.refund_expires_at);
+        const expiresAt = dayjs.utc(order.refund_expires_at);
         if (!expiresAt.isValid()) return true;
 
         return dayjs().isBefore(expiresAt);
