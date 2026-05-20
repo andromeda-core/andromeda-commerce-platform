@@ -1073,7 +1073,7 @@ const DesktopFeed = ({
                 <div className="absolute inset-y-0 left-[var(--sidebar-w)] right-0 z-[60] bg-backgroundLight dark:bg-backgroundDark">
                     {/* Modal Container */}
 
-                    <div className="flex items-center justify-center w-full h-full overflow-hidden">
+                    <div className="flex h-full w-full items-center justify-center overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
                             {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
@@ -1088,7 +1088,7 @@ const DesktopFeed = ({
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -1125,7 +1125,7 @@ const DesktopFeed = ({
                                     viewBox="0 0 24 24"
                                     strokeWidth={2}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -1148,7 +1148,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1171,7 +1171,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1195,7 +1195,7 @@ const DesktopFeed = ({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1214,9 +1214,9 @@ const DesktopFeed = ({
                                 <div className="h-full">
                                     <div className="flex h-[83vh] min-h-0 flex-col gap-[40px] bg-backgroundLight dark:bg-backgroundDark lg:flex-row lg:items-start">
                                         {/* Content Area - Matches Media Feed Structure */}
-                                        <div className="flex flex-col w-full h-full min-h-0">
+                                        <div className="flex h-full min-h-0 w-full flex-col">
                                             {/* Tag and Actions Header */}
-                                            <div className="flex items-center justify-between mb-2">
+                                            <div className="mb-2 flex items-center justify-between">
                                                 {/* Three Dot Menu */}
                                                 <div className="relative flex-1">
                                                     <button
@@ -1229,7 +1229,7 @@ const DesktopFeed = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={2.5}
                                                             stroke="currentColor"
-                                                            className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                                            className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -1246,7 +1246,7 @@ const DesktopFeed = ({
                                                     {showPostDesktopActionsDropdown && (
                                                         <div
                                                             data-post-actions-dropdown
-                                                            className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                            className="absolute left-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                         >
                                                             <div className="py-2">
                                                                 {/* QR Code */}
@@ -1257,7 +1257,7 @@ const DesktopFeed = ({
                                                                             false,
                                                                         );
                                                                     }}
-                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                    className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1265,7 +1265,7 @@ const DesktopFeed = ({
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={1.5}
                                                                         stroke="currentColor"
-                                                                        className="w-5 h-5"
+                                                                        className="h-5 w-5"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
@@ -1324,7 +1324,7 @@ const DesktopFeed = ({
                                                                                 },
                                                                             );
                                                                         }}
-                                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                     >
                                                                         <svg
                                                                             xmlns="http://www.w3.org/2000/svg"
@@ -1344,7 +1344,7 @@ const DesktopFeed = ({
                                                                             }
                                                                             strokeWidth={1.5}
                                                                             viewBox="0 0 24 24"
-                                                                            className="w-5 h-5"
+                                                                            className="h-5 w-5"
                                                                         >
                                                                             <path
                                                                                 strokeLinecap="round"
@@ -1380,7 +1380,7 @@ const DesktopFeed = ({
                                                                             false,
                                                                         );
                                                                     }}
-                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                    className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                 >
                                                                     <svg
                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1388,7 +1388,7 @@ const DesktopFeed = ({
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={1.5}
                                                                         stroke="currentColor"
-                                                                        className="w-5 h-5"
+                                                                        className="h-5 w-5"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
@@ -1414,7 +1414,7 @@ const DesktopFeed = ({
                                                                                     false,
                                                                                 );
                                                                             }}
-                                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                            className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                         >
                                                                             <svg
                                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -1422,7 +1422,7 @@ const DesktopFeed = ({
                                                                                 viewBox="0 0 24 24"
                                                                                 strokeWidth={1.5}
                                                                                 stroke="currentColor"
-                                                                                className="w-5 h-5"
+                                                                                className="h-5 w-5"
                                                                             >
                                                                                 <path
                                                                                     strokeLinecap="round"
@@ -1444,7 +1444,7 @@ const DesktopFeed = ({
                                                                         </button>
                                                                     )}
 
-                                                                <span className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark">
+                                                                <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
                                                                     <span>
                                                                         {__('Post Created')}:
                                                                         <p>
@@ -1475,7 +1475,7 @@ const DesktopFeed = ({
                                             </div>
 
                                             {/* Post Content - Scrollable */}
-                                            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
+                                            <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin scrollbar-none">
                                                 <div
                                                     className="prose prose-sm max-w-none whitespace-pre-line break-words pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                     dangerouslySetInnerHTML={{
@@ -1508,7 +1508,7 @@ const DesktopFeed = ({
         return (
             <>
                 <div className="absolute inset-y-0 left-[var(--sidebar-w)] right-0 z-[60] bg-backgroundLight dark:bg-backgroundDark">
-                    <div className="flex items-center justify-center w-full h-full overflow-hidden">
+                    <div className="flex h-full w-full items-center justify-center overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
                             {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
@@ -1523,7 +1523,7 @@ const DesktopFeed = ({
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -1560,7 +1560,7 @@ const DesktopFeed = ({
                                     viewBox="0 0 24 24"
                                     strokeWidth={2}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -1583,7 +1583,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1606,7 +1606,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1630,7 +1630,7 @@ const DesktopFeed = ({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1652,7 +1652,7 @@ const DesktopFeed = ({
                                             <>
                                                 <div className="relative flex h-full w-full justify-center lg:w-[50%] xl:w-[50%]">
                                                     <div className="flex h-full w-full max-w-[520px] flex-col">
-                                                        <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
+                                                        <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin scrollbar-none">
                                                             <div
                                                                 className="prose prose-sm max-w-none whitespace-pre-line break-words pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                                 dangerouslySetInnerHTML={{
@@ -1708,7 +1708,7 @@ const DesktopFeed = ({
                                                                     .length > 1)) && (
                                                             <div
                                                                 ref={MediaThumbRef}
-                                                                className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                                                                className="mb-3 flex items-center gap-2 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
                                                             >
                                                                 {/* Render thumbnails */}
                                                                 {visibleThumbs.map(
@@ -1744,7 +1744,7 @@ const DesktopFeed = ({
                                                                                             Placeholder
                                                                                         }
                                                                                         alt={`Thumbnail ${realIndex + 1}`}
-                                                                                        className="object-cover w-full h-full"
+                                                                                        className="h-full w-full object-cover"
                                                                                         loading={
                                                                                             selectedMediaIndex ===
                                                                                             realIndex
@@ -1772,7 +1772,7 @@ const DesktopFeed = ({
                                                                                             Placeholder
                                                                                         }
                                                                                         alt={`Thumbnail ${index + 1}`}
-                                                                                        className="object-cover w-full h-full"
+                                                                                        className="h-full w-full object-cover"
                                                                                         loading={
                                                                                             selectedMediaIndex ===
                                                                                             realIndex
@@ -1835,11 +1835,11 @@ const DesktopFeed = ({
                                                     {/* Content Area */}
 
                                                     <div
-                                                        className="flex-1 min-h-0 overflow-y-auto scrollbar-none"
+                                                        className="min-h-0 flex-1 overflow-y-auto scrollbar-none"
                                                         ref={productRightPanelScrollRef}
                                                     >
                                                         {/* Tag and Actions Header */}
-                                                        <div className="flex justify-between mb-2 align-start">
+                                                        <div className="align-start mb-2 flex justify-between">
                                                             {/* Three Dot Menu */}
                                                             <div
                                                                 className="relative flex-1"
@@ -1857,7 +1857,7 @@ const DesktopFeed = ({
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={2.5}
                                                                         stroke="currentColor"
-                                                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
@@ -1874,7 +1874,7 @@ const DesktopFeed = ({
                                                                 {showSmartphoneDesktopActionsDropdown && (
                                                                     <div
                                                                         data-smartphone-actions-dropdown
-                                                                        className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                                        className="absolute left-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                                     >
                                                                         <div className="py-2">
                                                                             {/* QR Code */}
@@ -1887,7 +1887,7 @@ const DesktopFeed = ({
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -1897,7 +1897,7 @@ const DesktopFeed = ({
                                                                                         1.5
                                                                                     }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -1937,7 +1937,7 @@ const DesktopFeed = ({
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -1947,7 +1947,7 @@ const DesktopFeed = ({
                                                                                         1.5
                                                                                     }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -1978,7 +1978,7 @@ const DesktopFeed = ({
                                                                                                 false,
                                                                                             );
                                                                                         }}
-                                                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                     >
                                                                                         <svg
                                                                                             xmlns="http://www.w3.org/2000/svg"
@@ -1988,7 +1988,7 @@ const DesktopFeed = ({
                                                                                                 1.5
                                                                                             }
                                                                                             stroke="currentColor"
-                                                                                            className="w-5 h-5"
+                                                                                            className="h-5 w-5"
                                                                                         >
                                                                                             <path
                                                                                                 strokeLinecap="round"
@@ -2010,7 +2010,7 @@ const DesktopFeed = ({
                                                                                     </button>
                                                                                 )}
 
-                                                                            <span className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark">
+                                                                            <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
                                                                                 <span>
                                                                                     {__(
                                                                                         'Post Created',
@@ -2110,14 +2110,14 @@ const DesktopFeed = ({
                                                                         .map(
                                                                             (smartphone, index) => (
                                                                                 <div
-                                                                                    className="w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                                                    className="w-full rounded-sm bg-surface-1-light p-4 dark:bg-surface-2-dark"
                                                                                     key={index}
                                                                                 >
                                                                                     <div className="flex flex-wrap items-center justify-between gap-4">
                                                                                         <div className="flex flex-col items-start gap-3">
                                                                                             {/* Product Name */}
-                                                                                            <div className="flex-1 min-w-0">
-                                                                                                <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
+                                                                                            <div className="min-w-0 flex-1">
+                                                                                                <p className="truncate text-sm text-main-text-light dark:text-main-text-dark">
                                                                                                     {
                                                                                                         smartphone?.name
                                                                                                     }{' '}
@@ -2141,7 +2141,7 @@ const DesktopFeed = ({
                                                                                                             smartphone?.color_id,
                                                                                                         )
                                                                                                     }
-                                                                                                    className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                    className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                                 >
                                                                                                     <svg
                                                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -2151,7 +2151,7 @@ const DesktopFeed = ({
                                                                                                         strokeWidth={
                                                                                                             1.5
                                                                                                         }
-                                                                                                        className="w-4 h-4"
+                                                                                                        className="h-4 w-4"
                                                                                                     >
                                                                                                         <path
                                                                                                             strokeLinecap="round"
@@ -2175,7 +2175,7 @@ const DesktopFeed = ({
                                                                                                             smartphone?.color_id,
                                                                                                         )
                                                                                                     }
-                                                                                                    className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                    className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                                 >
                                                                                                     <svg
                                                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -2185,7 +2185,7 @@ const DesktopFeed = ({
                                                                                                         strokeWidth={
                                                                                                             1.5
                                                                                                         }
-                                                                                                        className="w-4 h-4"
+                                                                                                        className="h-4 w-4"
                                                                                                     >
                                                                                                         <path
                                                                                                             strokeLinecap="round"
@@ -2229,7 +2229,7 @@ const DesktopFeed = ({
                                                                         )
                                                                         .map((addon, index) => (
                                                                             <div
-                                                                                className="relative w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                                                className="relative w-full rounded-sm bg-surface-1-light p-4 dark:bg-surface-2-dark"
                                                                                 key={index}
                                                                             >
                                                                                 {/* Remove Addon */}
@@ -2250,7 +2250,7 @@ const DesktopFeed = ({
                                                                                             2
                                                                                         }
                                                                                         stroke="currentColor"
-                                                                                        className="w-4 h-4"
+                                                                                        className="h-4 w-4"
                                                                                     >
                                                                                         <path
                                                                                             strokeLinecap="round"
@@ -2263,8 +2263,8 @@ const DesktopFeed = ({
                                                                                 <div className="flex flex-wrap items-center justify-between gap-4">
                                                                                     <div className="flex flex-col items-start gap-3">
                                                                                         {/* Addon Name */}
-                                                                                        <div className="flex-1 min-w-0">
-                                                                                            <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
+                                                                                        <div className="min-w-0 flex-1">
+                                                                                            <p className="truncate text-sm text-main-text-light dark:text-main-text-dark">
                                                                                                 {
                                                                                                     addon?.name
                                                                                                 }
@@ -2280,7 +2280,7 @@ const DesktopFeed = ({
                                                                                                         addon?.id,
                                                                                                     )
                                                                                                 }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                             >
                                                                                                 <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -2290,7 +2290,7 @@ const DesktopFeed = ({
                                                                                                     strokeWidth={
                                                                                                         1.5
                                                                                                     }
-                                                                                                    className="w-4 h-4"
+                                                                                                    className="h-4 w-4"
                                                                                                 >
                                                                                                     <path
                                                                                                         strokeLinecap="round"
@@ -2314,7 +2314,7 @@ const DesktopFeed = ({
                                                                                                         addon?.id,
                                                                                                     )
                                                                                                 }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                             >
                                                                                                 <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -2324,7 +2324,7 @@ const DesktopFeed = ({
                                                                                                     strokeWidth={
                                                                                                         1.5
                                                                                                     }
-                                                                                                    className="w-4 h-4"
+                                                                                                    className="h-4 w-4"
                                                                                                 >
                                                                                                     <path
                                                                                                         strokeLinecap="round"
@@ -2361,11 +2361,11 @@ const DesktopFeed = ({
                                                                 <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
 
                                                                 {/* Product Price */}
-                                                                <div className="flex items-center w-full">
-                                                                    <span className="font-medium text-left text-main-text-light dark:text-main-text-dark">
+                                                                <div className="flex w-full items-center">
+                                                                    <span className="text-left font-medium text-main-text-light dark:text-main-text-dark">
                                                                         {__('Total Price')}
                                                                     </span>
-                                                                    <span className="ml-auto text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark">
+                                                                    <span className="ml-auto text-right text-3xl font-semibold text-main-text-light dark:text-main-text-dark">
                                                                         {currency?.symbol}
                                                                         {Number(
                                                                             smartphoneTotalPrice[
@@ -2482,7 +2482,7 @@ const DesktopFeed = ({
                                                                                         },
                                                                                     );
                                                                                 }}
-                                                                                className="flex-1 h-12 font-semibold transition bg-white border rounded-md text-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
+                                                                                className="text-md h-12 flex-1 rounded-md border border-main-text-light bg-white font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
                                                                             >
                                                                                 {__('Login')}
                                                                             </button>
@@ -2506,7 +2506,7 @@ const DesktopFeed = ({
                                                                                         },
                                                                                     );
                                                                                 }}
-                                                                                className="flex-1 h-12 font-semibold transition border rounded-md text-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
+                                                                                className="text-md h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
                                                                             >
                                                                                 {__('Register')}
                                                                             </button>
@@ -2568,7 +2568,7 @@ const DesktopFeed = ({
                 <div className="absolute inset-y-0 left-[var(--sidebar-w)] right-0 z-[60] bg-backgroundLight dark:bg-backgroundDark">
                     {/* Modal Container */}
 
-                    <div className="flex items-center justify-center w-full h-full overflow-hidden">
+                    <div className="flex h-full w-full items-center justify-center overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
                             {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
@@ -2583,7 +2583,7 @@ const DesktopFeed = ({
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -2620,7 +2620,7 @@ const DesktopFeed = ({
                                     viewBox="0 0 24 24"
                                     strokeWidth={2}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -2643,7 +2643,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -2666,7 +2666,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -2690,7 +2690,7 @@ const DesktopFeed = ({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -2726,7 +2726,7 @@ const DesktopFeed = ({
                                                                 initial={false}
                                                                 custom={direction}
                                                             >
-                                                                <div className="absolute inset-0 flex items-center justify-center w-full h-full">
+                                                                <div className="absolute inset-0 flex h-full w-full items-center justify-center">
                                                                     {mediaItems.map((item, idx) => {
                                                                         const isCurrent =
                                                                             idx ===
@@ -2749,7 +2749,7 @@ const DesktopFeed = ({
                                                                                     duration: 0.4,
                                                                                     ease: 'easeInOut',
                                                                                 }}
-                                                                                className="absolute inset-0 flex items-center justify-center w-full h-full"
+                                                                                className="absolute inset-0 flex h-full w-full items-center justify-center"
                                                                             >
                                                                                 {item.type ===
                                                                                 'image' ? (
@@ -2759,7 +2759,7 @@ const DesktopFeed = ({
                                                                                             Placeholder
                                                                                         }
                                                                                         alt={`Media ${idx}`}
-                                                                                        className="object-cover object-center w-full h-full rounded-md"
+                                                                                        className="h-full w-full rounded-md object-cover object-center"
                                                                                         loading={
                                                                                             isCurrent
                                                                                                 ? 'eager'
@@ -2788,7 +2788,7 @@ const DesktopFeed = ({
                                                                                         autoPlay={
                                                                                             videoAutoplay
                                                                                         }
-                                                                                        className="object-cover object-center w-full h-full rounded-md"
+                                                                                        className="h-full w-full rounded-md object-cover object-center"
                                                                                         videoUrl={
                                                                                             item.url
                                                                                         }
@@ -2863,7 +2863,7 @@ const DesktopFeed = ({
                                                                     1)) && (
                                                             <div
                                                                 ref={MediaThumbRef}
-                                                                className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                                                                className="mb-3 flex items-center gap-2 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
                                                             >
                                                                 {/* Render thumbnails */}
                                                                 {visibleThumbs.map(
@@ -2899,7 +2899,7 @@ const DesktopFeed = ({
                                                                                             Placeholder
                                                                                         }
                                                                                         alt={`Thumbnail ${realIndex + 1}`}
-                                                                                        className="object-cover w-full h-full"
+                                                                                        className="h-full w-full object-cover"
                                                                                         loading={
                                                                                             selectedMediaIndex ===
                                                                                             realIndex
@@ -2927,7 +2927,7 @@ const DesktopFeed = ({
                                                                                             Placeholder
                                                                                         }
                                                                                         alt={`Thumbnail ${index + 1}`}
-                                                                                        className="object-cover w-full h-full"
+                                                                                        className="h-full w-full object-cover"
                                                                                         loading={
                                                                                             selectedMediaIndex ===
                                                                                             realIndex
@@ -2988,9 +2988,9 @@ const DesktopFeed = ({
                                                     </div>
 
                                                     {/* Content Area */}
-                                                    <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none">
+                                                    <div className="min-h-0 flex-1 overflow-y-auto scrollbar-none">
                                                         {/* Tag and Actions Header */}
-                                                        <div className="flex justify-between mb-2 align-start">
+                                                        <div className="align-start mb-2 flex justify-between">
                                                             {/* Three Dot Menu */}
                                                             <div className="relative flex-1">
                                                                 <button
@@ -3003,7 +3003,7 @@ const DesktopFeed = ({
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={2.5}
                                                                         stroke="currentColor"
-                                                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
@@ -3020,7 +3020,7 @@ const DesktopFeed = ({
                                                                 {showPostDesktopActionsDropdown && (
                                                                     <div
                                                                         data-post-actions-dropdown
-                                                                        className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                                        className="absolute left-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                                     >
                                                                         <div className="py-2">
                                                                             {/* QR Code */}
@@ -3033,7 +3033,7 @@ const DesktopFeed = ({
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -3043,7 +3043,7 @@ const DesktopFeed = ({
                                                                                         1.5
                                                                                     }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -3105,7 +3105,7 @@ const DesktopFeed = ({
                                                                                             },
                                                                                         );
                                                                                     }}
-                                                                                    className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                    className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                 >
                                                                                     <svg
                                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -3127,7 +3127,7 @@ const DesktopFeed = ({
                                                                                             1.5
                                                                                         }
                                                                                         viewBox="0 0 24 24"
-                                                                                        className="w-5 h-5"
+                                                                                        className="h-5 w-5"
                                                                                     >
                                                                                         <path
                                                                                             strokeLinecap="round"
@@ -3169,7 +3169,7 @@ const DesktopFeed = ({
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -3179,7 +3179,7 @@ const DesktopFeed = ({
                                                                                         1.5
                                                                                     }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -3210,7 +3210,7 @@ const DesktopFeed = ({
                                                                                                 false,
                                                                                             );
                                                                                         }}
-                                                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                     >
                                                                                         <svg
                                                                                             xmlns="http://www.w3.org/2000/svg"
@@ -3220,7 +3220,7 @@ const DesktopFeed = ({
                                                                                                 1.5
                                                                                             }
                                                                                             stroke="currentColor"
-                                                                                            className="w-5 h-5"
+                                                                                            className="h-5 w-5"
                                                                                         >
                                                                                             <path
                                                                                                 strokeLinecap="round"
@@ -3242,7 +3242,7 @@ const DesktopFeed = ({
                                                                                     </button>
                                                                                 )}
 
-                                                                            <span className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark">
+                                                                            <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
                                                                                 <span>
                                                                                     {__(
                                                                                         'Post Created',
@@ -3337,7 +3337,7 @@ const DesktopFeed = ({
         return (
             <>
                 <div className="absolute inset-y-0 left-[var(--sidebar-w)] right-0 z-[60] bg-backgroundLight dark:bg-backgroundDark">
-                    <div className="flex items-center justify-center w-full h-full overflow-hidden">
+                    <div className="flex h-full w-full items-center justify-center overflow-hidden">
                         <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
                             {/* Navigation Arrows + Close Button Starts */}
                             {/* Left Arrow */}
@@ -3352,7 +3352,7 @@ const DesktopFeed = ({
                                     fill="none"
                                     viewBox="0 0 24 24"
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -3389,7 +3389,7 @@ const DesktopFeed = ({
                                     viewBox="0 0 24 24"
                                     strokeWidth={2}
                                     stroke="currentColor"
-                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -3412,7 +3412,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -3435,7 +3435,7 @@ const DesktopFeed = ({
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -3459,7 +3459,7 @@ const DesktopFeed = ({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -3499,7 +3499,7 @@ const DesktopFeed = ({
                                                                 initial={false}
                                                                 custom={direction}
                                                             >
-                                                                <div className="absolute inset-0 flex items-center justify-center w-full h-full">
+                                                                <div className="absolute inset-0 flex h-full w-full items-center justify-center">
                                                                     {mediaItems.map((item, idx) => {
                                                                         const isCurrent =
                                                                             idx ===
@@ -3522,7 +3522,7 @@ const DesktopFeed = ({
                                                                                     duration: 0.4,
                                                                                     ease: 'easeInOut',
                                                                                 }}
-                                                                                className="absolute inset-0 flex items-center justify-center w-full h-full"
+                                                                                className="absolute inset-0 flex h-full w-full items-center justify-center"
                                                                             >
                                                                                 {item.type ===
                                                                                 'image' ? (
@@ -3532,7 +3532,7 @@ const DesktopFeed = ({
                                                                                             Placeholder
                                                                                         }
                                                                                         alt={`Media ${idx}`}
-                                                                                        className="object-cover object-center w-full h-full rounded-md"
+                                                                                        className="h-full w-full rounded-md object-cover object-center"
                                                                                         loading={
                                                                                             isCurrent
                                                                                                 ? 'eager'
@@ -3561,7 +3561,7 @@ const DesktopFeed = ({
                                                                                         autoPlay={
                                                                                             videoAutoplay
                                                                                         }
-                                                                                        className="object-cover object-center w-full h-full rounded-md"
+                                                                                        className="h-full w-full rounded-md object-cover object-center"
                                                                                         videoUrl={
                                                                                             item.url
                                                                                         }
@@ -3634,7 +3634,7 @@ const DesktopFeed = ({
                                                                     .length > 1)) && (
                                                             <div
                                                                 ref={MediaThumbRef}
-                                                                className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                                                                className="mb-3 flex items-center gap-2 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
                                                             >
                                                                 {/* Render thumbnails */}
                                                                 {visibleThumbs.map(
@@ -3670,7 +3670,7 @@ const DesktopFeed = ({
                                                                                             Placeholder
                                                                                         }
                                                                                         alt={`Thumbnail ${realIndex + 1}`}
-                                                                                        className="object-cover w-full h-full"
+                                                                                        className="h-full w-full object-cover"
                                                                                         loading={
                                                                                             selectedMediaIndex ===
                                                                                             realIndex
@@ -3698,7 +3698,7 @@ const DesktopFeed = ({
                                                                                             Placeholder
                                                                                         }
                                                                                         alt={`Thumbnail ${index + 1}`}
-                                                                                        className="object-cover w-full h-full"
+                                                                                        className="h-full w-full object-cover"
                                                                                         loading={
                                                                                             selectedMediaIndex ===
                                                                                             realIndex
@@ -3761,11 +3761,11 @@ const DesktopFeed = ({
                                                     {/* Content Area */}
 
                                                     <div
-                                                        className="flex-1 min-h-0 overflow-y-auto scrollbar-none"
+                                                        className="min-h-0 flex-1 overflow-y-auto scrollbar-none"
                                                         ref={productRightPanelScrollRef}
                                                     >
                                                         {/* Tag and Actions Header */}
-                                                        <div className="flex justify-between mb-2 align-start">
+                                                        <div className="align-start mb-2 flex justify-between">
                                                             {/* Three Dot Menu */}
                                                             <div
                                                                 className="relative flex-1"
@@ -3783,7 +3783,7 @@ const DesktopFeed = ({
                                                                         viewBox="0 0 24 24"
                                                                         strokeWidth={2.5}
                                                                         stroke="currentColor"
-                                                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                                                        className="h-5 w-5 text-main-text-light dark:text-main-text-dark"
                                                                     >
                                                                         <path
                                                                             strokeLinecap="round"
@@ -3800,7 +3800,7 @@ const DesktopFeed = ({
                                                                 {showSmartphoneDesktopActionsDropdown && (
                                                                     <div
                                                                         data-smartphone-actions-dropdown
-                                                                        className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                                        className="absolute left-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
                                                                     >
                                                                         <div className="py-2">
                                                                             {/* QR Code */}
@@ -3813,7 +3813,7 @@ const DesktopFeed = ({
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -3823,7 +3823,7 @@ const DesktopFeed = ({
                                                                                         1.5
                                                                                     }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -3863,7 +3863,7 @@ const DesktopFeed = ({
                                                                                         false,
                                                                                     );
                                                                                 }}
-                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                             >
                                                                                 <svg
                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -3873,7 +3873,7 @@ const DesktopFeed = ({
                                                                                         1.5
                                                                                     }
                                                                                     stroke="currentColor"
-                                                                                    className="w-5 h-5"
+                                                                                    className="h-5 w-5"
                                                                                 >
                                                                                     <path
                                                                                         strokeLinecap="round"
@@ -3904,7 +3904,7 @@ const DesktopFeed = ({
                                                                                                 false,
                                                                                             );
                                                                                         }}
-                                                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                     >
                                                                                         <svg
                                                                                             xmlns="http://www.w3.org/2000/svg"
@@ -3914,7 +3914,7 @@ const DesktopFeed = ({
                                                                                                 1.5
                                                                                             }
                                                                                             stroke="currentColor"
-                                                                                            className="w-5 h-5"
+                                                                                            className="h-5 w-5"
                                                                                         >
                                                                                             <path
                                                                                                 strokeLinecap="round"
@@ -3936,7 +3936,7 @@ const DesktopFeed = ({
                                                                                     </button>
                                                                                 )}
 
-                                                                            <span className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark">
+                                                                            <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
                                                                                 <span>
                                                                                     {__(
                                                                                         'Post Created',
@@ -4036,14 +4036,14 @@ const DesktopFeed = ({
                                                                         .map(
                                                                             (smartphone, index) => (
                                                                                 <div
-                                                                                    className="w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                                                    className="w-full rounded-sm bg-surface-1-light p-4 dark:bg-surface-2-dark"
                                                                                     key={index}
                                                                                 >
                                                                                     <div className="flex flex-wrap items-center justify-between gap-4">
                                                                                         <div className="flex flex-col items-start gap-3">
                                                                                             {/* Product Name */}
-                                                                                            <div className="flex-1 min-w-0">
-                                                                                                <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
+                                                                                            <div className="min-w-0 flex-1">
+                                                                                                <p className="truncate text-sm text-main-text-light dark:text-main-text-dark">
                                                                                                     {
                                                                                                         smartphone?.name
                                                                                                     }{' '}
@@ -4067,7 +4067,7 @@ const DesktopFeed = ({
                                                                                                             smartphone?.color_id,
                                                                                                         )
                                                                                                     }
-                                                                                                    className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                    className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                                 >
                                                                                                     <svg
                                                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -4077,7 +4077,7 @@ const DesktopFeed = ({
                                                                                                         strokeWidth={
                                                                                                             1.5
                                                                                                         }
-                                                                                                        className="w-4 h-4"
+                                                                                                        className="h-4 w-4"
                                                                                                     >
                                                                                                         <path
                                                                                                             strokeLinecap="round"
@@ -4101,7 +4101,7 @@ const DesktopFeed = ({
                                                                                                             smartphone?.color_id,
                                                                                                         )
                                                                                                     }
-                                                                                                    className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                    className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                                 >
                                                                                                     <svg
                                                                                                         xmlns="http://www.w3.org/2000/svg"
@@ -4111,7 +4111,7 @@ const DesktopFeed = ({
                                                                                                         strokeWidth={
                                                                                                             1.5
                                                                                                         }
-                                                                                                        className="w-4 h-4"
+                                                                                                        className="h-4 w-4"
                                                                                                     >
                                                                                                         <path
                                                                                                             strokeLinecap="round"
@@ -4155,7 +4155,7 @@ const DesktopFeed = ({
                                                                         )
                                                                         .map((addon, index) => (
                                                                             <div
-                                                                                className="relative w-full p-4 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                                                className="relative w-full rounded-sm bg-surface-1-light p-4 dark:bg-surface-2-dark"
                                                                                 key={index}
                                                                             >
                                                                                 {/* Remove Addon */}
@@ -4176,7 +4176,7 @@ const DesktopFeed = ({
                                                                                             2
                                                                                         }
                                                                                         stroke="currentColor"
-                                                                                        className="w-4 h-4"
+                                                                                        className="h-4 w-4"
                                                                                     >
                                                                                         <path
                                                                                             strokeLinecap="round"
@@ -4189,8 +4189,8 @@ const DesktopFeed = ({
                                                                                 <div className="flex flex-wrap items-center justify-between gap-4">
                                                                                     <div className="flex flex-col items-start gap-3">
                                                                                         {/* Addon Name */}
-                                                                                        <div className="flex-1 min-w-0">
-                                                                                            <p className="text-sm truncate text-main-text-light dark:text-main-text-dark">
+                                                                                        <div className="min-w-0 flex-1">
+                                                                                            <p className="truncate text-sm text-main-text-light dark:text-main-text-dark">
                                                                                                 {
                                                                                                     addon?.name
                                                                                                 }
@@ -4206,7 +4206,7 @@ const DesktopFeed = ({
                                                                                                         addon?.id,
                                                                                                     )
                                                                                                 }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light disabled:opacity-50 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                             >
                                                                                                 <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -4216,7 +4216,7 @@ const DesktopFeed = ({
                                                                                                     strokeWidth={
                                                                                                         1.5
                                                                                                     }
-                                                                                                    className="w-4 h-4"
+                                                                                                    className="h-4 w-4"
                                                                                                 >
                                                                                                     <path
                                                                                                         strokeLinecap="round"
@@ -4240,7 +4240,7 @@ const DesktopFeed = ({
                                                                                                         addon?.id,
                                                                                                     )
                                                                                                 }
-                                                                                                className="flex items-center justify-center transition-colors bg-white h-9 w-9 text-main-text-light hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                                                className="flex h-9 w-9 items-center justify-center bg-white text-main-text-light transition-colors hover:bg-surface-2-light dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark"
                                                                                             >
                                                                                                 <svg
                                                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -4250,7 +4250,7 @@ const DesktopFeed = ({
                                                                                                     strokeWidth={
                                                                                                         1.5
                                                                                                     }
-                                                                                                    className="w-4 h-4"
+                                                                                                    className="h-4 w-4"
                                                                                                 >
                                                                                                     <path
                                                                                                         strokeLinecap="round"
@@ -4287,11 +4287,11 @@ const DesktopFeed = ({
                                                                 <div className="mt-5 h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
 
                                                                 {/* Product Price */}
-                                                                <div className="flex items-center w-full">
-                                                                    <span className="font-medium text-left text-main-text-light dark:text-main-text-dark">
+                                                                <div className="flex w-full items-center">
+                                                                    <span className="text-left font-medium text-main-text-light dark:text-main-text-dark">
                                                                         {__('Total Price')}
                                                                     </span>
-                                                                    <span className="ml-auto text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark">
+                                                                    <span className="ml-auto text-right text-3xl font-semibold text-main-text-light dark:text-main-text-dark">
                                                                         {currency?.symbol}
                                                                         {Number(
                                                                             smartphoneTotalPrice[
@@ -4408,7 +4408,7 @@ const DesktopFeed = ({
                                                                                         },
                                                                                     );
                                                                                 }}
-                                                                                className="flex-1 h-12 font-semibold transition bg-white border rounded-md text-md border-main-text-light text-main-text-light hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
+                                                                                className="text-md h-12 flex-1 rounded-md border border-main-text-light bg-white font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80"
                                                                             >
                                                                                 {__('Login')}
                                                                             </button>
@@ -4432,7 +4432,7 @@ const DesktopFeed = ({
                                                                                         },
                                                                                     );
                                                                                 }}
-                                                                                className="flex-1 h-12 font-semibold transition border rounded-md text-md border-main-text-dark bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
+                                                                                className="text-md h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80"
                                                                             >
                                                                                 {__('Register')}
                                                                             </button>

@@ -9,7 +9,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import Toast from '@/Components/Toast';
-import TipTapEditor from '@/Components/TipTapEditor';
 import { Loader } from '@googlemaps/js-api-loader';
 import Swal from 'sweetalert2';
 import { useScanner } from '@/Hooks/useScanner';
@@ -904,18 +903,38 @@ export default function create({
                                             />
 
                                             <div className="grid grid-cols-1 gap-4">
-                                                <TipTapEditor
-                                                    Label={'Content'}
-                                                    Id={'content'}
-                                                    Required={true}
-                                                    Value={data.content}
-                                                    Error={errors.content}
-                                                    Action={(value) => {
-                                                        if (value == '<p></p>')
-                                                            setData('content', '');
-                                                        else setData('content', value);
-                                                    }}
-                                                />
+                                                <div className="my-4">
+                                                    <label
+                                                        htmlFor="content"
+                                                        className="mb-1.5 block text-sm font-medium text-main-text-light dark:text-main-text-dark"
+                                                    >
+                                                        Content{' '}
+                                                        <span className="font-bold text-main-text-light dark:text-main-text-dark">
+                                                            {' '}
+                                                            *
+                                                        </span>
+                                                    </label>
+
+                                                    <textarea
+                                                        id="content"
+                                                        name="content"
+                                                        rows={16}
+                                                        value={data.content}
+                                                        onChange={(e) =>
+                                                            setData('content', e.target.value)
+                                                        }
+                                                        placeholder="Paste the full product HTML here. It will be saved exactly as entered."
+                                                        className="w-full resize-y rounded-lg border bg-white p-4 font-mono text-sm leading-relaxed text-gray-800 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-900 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white"
+                                                    />
+
+                                                    <div className="h-5">
+                                                        {errors.content && (
+                                                            <p className="ml-1 mt-1 text-sm text-red-500 dark:text-white">
+                                                                {errors.content}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
 
                                             <div className="flex w-full items-center justify-end">

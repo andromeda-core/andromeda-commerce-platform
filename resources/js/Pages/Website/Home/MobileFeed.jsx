@@ -53,19 +53,13 @@ const MobileFeed = ({
         window.history.pushState({}, '', url.toString());
     }, []);
 
-
     const isIOS =
         typeof window !== 'undefined' &&
-        (
-            /iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-        );
-
+        (/iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 
     // Local feed state for seamless looping
     const [localFeed, setLocalFeed] = useState([]);
-
-
 
     // Manually Passing Correct Feed To Feed Gallery To Open
     const [manualFeedGalleryItem, setManualFeedGalleryItem] = useState(null);
@@ -76,14 +70,12 @@ const MobileFeed = ({
 
     const shouldCleanupBrowserHistoryRef = useRef(true);
 
-
     // its for FEED ITEMS To TRACK WHIHC ITEMS LOADED OR WHICH ARENT To SHOW SKELETON
     const [loadedItems, setLoadedItems] = useState(new Set());
 
     const [mobileFeedGalleryOpening, setMobileFeedGalleryOpening] = useState(false);
 
     const scrollContainerRef = useRef(null);
-
 
     // SCROLLING TRACKING REFS
     const hasInitializedScroll = useRef(false);
@@ -129,15 +121,10 @@ const MobileFeed = ({
 
     const isDarkMode = useDarkMode();
 
-
-
-
     // Video Player Control Zustand Hook Methods
     const setActiveVideo = useVideoStore((state) => state.setActiveVideo);
     const pauseAll = useVideoStore((state) => state.pauseAll);
     const initAutoplay = useVideoStore((state) => state.initAutoplay);
-
-
 
     // Helper Function to Get Related Feed Count
     // const getRelatedCount = (slug) => {
@@ -168,7 +155,7 @@ const MobileFeed = ({
         return (
             <div
                 key={`skeleton-${index}`}
-                className="relative min-w-full cursor-not-allowed pointer-events-none snap-start"
+                className="pointer-events-none relative min-w-full cursor-not-allowed snap-start"
                 inert=""
                 style={{
                     height: '100%',
@@ -188,18 +175,18 @@ const MobileFeed = ({
                 onTouchEnd={(e) => e.preventDefault()}
             >
                 {/* HEADER SKELETON */}
-                <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 pt-3 pb-2">
+                <div className="absolute left-0 right-0 top-0 z-30 flex items-center justify-between px-4 pb-2 pt-3">
                     {/* Tag skeleton */}
-                    <div className="w-20 h-5 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
+                    <div className="h-5 w-20 animate-pulse rounded bg-gray-200 dark:bg-zinc-700" />
 
                     {/* Three dots skeleton */}
-                    <div className="w-5 h-5 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
+                    <div className="h-5 w-5 animate-pulse rounded bg-gray-200 dark:bg-zinc-700" />
                 </div>
 
                 {/* MEDIA AREA SKELETON */}
-                <div className="relative w-full h-full overflow-hidden">
+                <div className="relative h-full w-full overflow-hidden">
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="object-cover w-full h-full bg-gray-200 animate-pulse dark:bg-zinc-700" />
+                        <div className="h-full w-full animate-pulse bg-gray-200 object-cover dark:bg-zinc-700" />
                     </div>
                 </div>
 
@@ -208,8 +195,8 @@ const MobileFeed = ({
                     <div className="flex items-center justify-between gap-3">
                         {/* Text skeleton */}
                         <div className="flex-1 space-y-2">
-                            <div className="w-full h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
-                            <div className="w-2/3 h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
+                            <div className="h-4 w-full animate-pulse rounded bg-gray-200 dark:bg-zinc-700" />
+                            <div className="h-4 w-2/3 animate-pulse rounded bg-gray-200 dark:bg-zinc-700" />
                         </div>
 
                         {/* Button skeleton */}
@@ -223,9 +210,9 @@ const MobileFeed = ({
     // Helper Function to Render Feed CONTENT Skeleton before Showing Actual ITEM
     const RenderFeedItemContentSkeleton = () => {
         return (
-            <div className="relative w-full h-full overflow-hidden">
+            <div className="relative h-full w-full overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="object-cover w-full h-full bg-gray-200 animate-pulse dark:bg-zinc-700" />
+                    <div className="h-full w-full animate-pulse bg-gray-200 object-cover dark:bg-zinc-700" />
                 </div>
             </div>
         );
@@ -239,7 +226,6 @@ const MobileFeed = ({
         }
         return window.innerHeight;
     });
-
 
     useEffect(() => {
         const container = scrollContainerRef.current;
@@ -309,12 +295,25 @@ const MobileFeed = ({
         };
     }, [localRelatedFeedRef.current]);
 
+    const toPlainPreview = (html) => {
+        if (typeof html !== 'string' || !html) return '';
+        return html
+            .replace(/<head[\s\S]*?<\/head>/gi, ' ') // drop <head> (title, meta, scripts)
+            .replace(/<script[\s\S]*?<\/script>/gi, ' ') // drop inline scripts
+            .replace(/<style[\s\S]*?<\/style>/gi, ' ') // drop inline styles
+            .replace(/<!--[\s\S]*?-->/g, ' ') // drop comments
+            .replace(/<[^>]+>/g, ' ') // drop remaining tags
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/&amp;/gi, '&')
+            .replace(/&quot;/gi, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/\s+/g, ' ') // collapse whitespace
+            .trim();
+    };
 
     // Helper function to render a single feed item (used for both main and related items)
     const renderFeedItem = useCallback(
         (item, isRelated = false, index) => {
-
-
             if (item?.__dummy) {
                 return (
                     <div
@@ -334,10 +333,7 @@ const MobileFeed = ({
                 );
             }
 
-
-            const plain = item?.content
-                ? item.content.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
-                : '';
+            const plain = toPlainPreview(item?.content);
 
             // Text Post Logic Starts
             const isText =
@@ -348,9 +344,6 @@ const MobileFeed = ({
                     item.smartphone_image_urls?.length === 0 &&
                     item.smartphone_video_urls?.length === 0);
 
-
-
-
             // View More Button Height
             const viewMoreHeightPx = 100;
 
@@ -358,8 +351,7 @@ const MobileFeed = ({
             const lineHeightPx = 18;
 
             // 80% of screen height
-            const maxHeightPx =
-                windowSize.height * 0.7 - viewMoreHeightPx;
+            const maxHeightPx = windowSize.height * 0.7 - viewMoreHeightPx;
 
             // how many lines fit
             const maxLines = Math.floor(maxHeightPx / lineHeightPx);
@@ -387,26 +379,22 @@ const MobileFeed = ({
 
             const hasVideo =
                 item.type === 'posts'
-                    ? (item.post_video_urls?.length > 0 && !item?.post_image_urls?.[0])
+                    ? item.post_video_urls?.length > 0 && !item?.post_image_urls?.[0]
                     : item.type === 'smartphones'
-                        ? (item.smartphone_video_urls?.length > 0 && !item?.smartphone_image_urls?.[0])
-                        : false;
+                      ? item.smartphone_video_urls?.length > 0 && !item?.smartphone_image_urls?.[0]
+                      : false;
 
             const hasPoster =
                 hasVideo &&
-                (
-                    item.type === 'posts'
-                        ? item.post_video_urls?.[0]?.thumbnail_url
-                        : item.type === 'smartphones'
-                            ? item.smartphone_video_urls?.[0]?.thumbnail_url
-                            : null
-                );
+                (item.type === 'posts'
+                    ? item.post_video_urls?.[0]?.thumbnail_url
+                    : item.type === 'smartphones'
+                      ? item.smartphone_video_urls?.[0]?.thumbnail_url
+                      : null);
 
             const BottomOffset = hasVideo ? 105 : 70;
 
             const isLoaded = isText || loadedItems.has(item?.slug) || hasPoster;
-
-
 
             const handleOnLoad = () => {
                 if (item?.slug) {
@@ -417,7 +405,7 @@ const MobileFeed = ({
             return (
                 <div
                     key={index}
-                    className="min-w-full feed-page snap-start"
+                    className="feed-page min-w-full snap-start"
                     style={{
                         height: feedItemHeight,
                         scrollSnapAlign: 'start',
@@ -442,7 +430,6 @@ const MobileFeed = ({
                     <div
                         className={`absolute left-0 right-0 top-2 z-20 flex items-center justify-between px-4 pt-4 ${isText ? 'text-main-text-light dark:text-main-text-dark' : 'text-main-text-dark'}`}
                     >
-
                         <button
                             onClick={() => {
                                 setFeedGallery(null);
@@ -450,10 +437,20 @@ const MobileFeed = ({
                             }}
                             className="text-[18px] font-semibold"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                                className="size-6"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15.75 19.5 8.25 12l7.5-7.5"
+                                />
                             </svg>
-
                         </button>
 
                         <button
@@ -462,15 +459,13 @@ const MobileFeed = ({
                         >
                             {item.tag}
                         </button>
-
-
                     </div>
 
                     {!isLoaded && <RenderFeedItemContentSkeleton />}
 
                     {/* Image + Videos - Takes remaining space */}
                     <div
-                        className="absolute inset-0 w-full h-full"
+                        className="absolute inset-0 h-full w-full"
                         style={{
                             lineHeight: 0,
                             display: 'block',
@@ -508,7 +503,7 @@ const MobileFeed = ({
                                         key={item.id}
                                         src={item.smartphone_image_urls[0] || placeholderImage}
                                         alt={item.title}
-                                        className="object-cover object-center w-full h-full rounded-none"
+                                        className="h-full w-full rounded-none object-cover object-center"
                                         loading={shouldEagerLoad ? 'eager' : 'lazy'}
                                         fetchpriority={shouldEagerLoad ? 'high' : 'low'}
                                         decoding="async"
@@ -529,7 +524,7 @@ const MobileFeed = ({
                                         slug={item.slug}
                                         videoUrl={item.smartphone_video_urls[0].url}
                                         thumbnail={item.smartphone_video_urls[0]?.thumbnail_url}
-                                        className="object-cover object-center w-full h-full"
+                                        className="h-full w-full object-cover object-center"
                                         OnLoadedMetaData={() => {
                                             if (item.slug)
                                                 setLoadedItems((prev) =>
@@ -542,17 +537,9 @@ const MobileFeed = ({
                                     />
                                 ) : (
                                     isText && (
-                                        <div className="absolute inset-0 px-4 pt-20 pb-40 overflow-hidden">
+                                        <div className="absolute inset-0 overflow-hidden px-4 pb-40 pt-20">
                                             <div
-                                                className="
-                whitespace-pre-line
-                break-words
-                text-sm
-                leading-relaxed
-                text-main-text-light
-                dark:text-main-text-dark
-                line-clamp-[var(--text-lines)]
-            "
+                                                className="line-clamp-[var(--text-lines)] whitespace-pre-line break-words text-sm leading-relaxed text-main-text-light dark:text-main-text-dark"
                                                 style={{ '--text-lines': maxLines }}
                                                 dangerouslySetInnerHTML={{
                                                     __html: plain,
@@ -571,7 +558,7 @@ const MobileFeed = ({
                                         key={item.id}
                                         src={item.post_image_urls[0] || placeholderImage}
                                         alt={item.title}
-                                        className="object-cover object-center w-full h-full rounded-none"
+                                        className="h-full w-full rounded-none object-cover object-center"
                                         loading={shouldEagerLoad ? 'eager' : 'lazy'}
                                         fetchpriority={shouldEagerLoad ? 'high' : 'low'}
                                         decoding="async"
@@ -592,7 +579,7 @@ const MobileFeed = ({
                                         slug={item.slug}
                                         videoUrl={item.post_video_urls[0].url}
                                         thumbnail={item.post_video_urls[0]?.thumbnail_url}
-                                        className="object-cover object-center w-full h-full"
+                                        className="h-full w-full object-cover object-center"
                                         OnLoadedMetaData={() => {
                                             if (item.slug)
                                                 setLoadedItems((prev) =>
@@ -605,17 +592,9 @@ const MobileFeed = ({
                                     />
                                 ) : (
                                     isText && (
-                                        <div className="absolute inset-0 px-4 pt-20 pb-40 overflow-hidden">
+                                        <div className="absolute inset-0 overflow-hidden px-4 pb-40 pt-20">
                                             <div
-                                                className="
-                whitespace-pre-line
-                break-words
-                text-sm
-                leading-relaxed
-                text-main-text-light
-                dark:text-main-text-dark
-                line-clamp-[var(--text-lines)]
-            "
+                                                className="line-clamp-[var(--text-lines)] whitespace-pre-line break-words text-sm leading-relaxed text-main-text-light dark:text-main-text-dark"
                                                 style={{ '--text-lines': maxLines }}
                                                 dangerouslySetInnerHTML={{
                                                     __html: plain,
@@ -634,14 +613,15 @@ const MobileFeed = ({
                             className={`absolute left-0 right-0 z-20 px-5 pt-3 text-main-text-dark`}
                             style={{ bottom: `${BottomOffset}px` }}
                         >
-
-                            <div className="w-full ">
+                            <div className="w-full">
                                 {isText ? (
                                     shouldShowMore && (
-                                        <div className='flex items-center justify-between'>
-                                            <span className="text-[20px] text-main-text-light font-semibold dark:text-main-text-dark ">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
                                                 {currency?.symbol}
-                                                {Number(item.selling_info?.total_price).toLocaleString('en-US')}
+                                                {Number(
+                                                    item.selling_info?.total_price,
+                                                ).toLocaleString('en-US')}
                                             </span>
                                             <button
                                                 onClick={() => {
@@ -653,7 +633,7 @@ const MobileFeed = ({
                                                         setMobileFeedGalleryOpening(false);
                                                     }, 500);
                                                 }}
-                                                className="flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-full bg-transparent text-[14px] font-semibold dark:text-main-text-dark text-main-text-light transition-colors"
+                                                className="flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-full bg-transparent text-[14px] font-semibold text-main-text-light transition-colors dark:text-main-text-dark"
                                             >
                                                 {mobileFeedGalleryOpening ? (
                                                     <Spinner customSize={'size-3'} />
@@ -668,7 +648,7 @@ const MobileFeed = ({
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={1.5}
                                                                 stroke="currentColor"
-                                                                className="w-4 h-4"
+                                                                className="h-4 w-4"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -684,9 +664,11 @@ const MobileFeed = ({
                                     )
                                 ) : (
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[20px] font-semibold ">
+                                        <span className="text-[20px] font-semibold">
                                             {currency?.symbol}
-                                            {Number(item.selling_info?.total_price).toLocaleString('en-US')}
+                                            {Number(item.selling_info?.total_price).toLocaleString(
+                                                'en-US',
+                                            )}
                                         </span>
                                         <button
                                             onClick={() => {
@@ -713,7 +695,7 @@ const MobileFeed = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="w-4 h-4"
+                                                            className="h-4 w-4"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -732,14 +714,14 @@ const MobileFeed = ({
                             <div className={`mb-1 flex items-center justify-between gap-3`}>
                                 {/* CHECKING IF MEDIA IS EMPTY THAN ITS TEXT ONLY SMARTPHONE SO THIS WONT SHOW BECAUSE WE ALREADY SHOWED In CONTENT */}
                                 {item?.smartphone_image_urls?.length === 0 &&
-                                    item?.smartphone_video_urls?.length === 0 ? (
+                                item?.smartphone_video_urls?.length === 0 ? (
                                     <p></p>
                                 ) : (
                                     <p className="] min-w-0 flex-1 text-[15px] font-medium leading-relaxed text-main-text-dark">
                                         <span
                                             className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
                                             dangerouslySetInnerHTML={{
-                                                __html: plain
+                                                __html: plain,
                                             }}
                                         />
                                     </p>
@@ -766,7 +748,7 @@ const MobileFeed = ({
                                                     setMobileFeedGalleryOpening(false);
                                                 }, 500);
                                             }}
-                                            className="flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-full bg-transparent text-[14px] font-semibold dark:text-main-text-dark text-main-text-light transition-colors"
+                                            className="flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-full bg-transparent text-[14px] font-semibold text-main-text-light transition-colors dark:text-main-text-dark"
                                         >
                                             {mobileFeedGalleryOpening ? (
                                                 <Spinner customSize={'size-3'} />
@@ -781,7 +763,7 @@ const MobileFeed = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="w-4 h-4"
+                                                            className="h-4 w-4"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -820,7 +802,7 @@ const MobileFeed = ({
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className="w-4 h-4"
+                                                        className="h-4 w-4"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -838,14 +820,14 @@ const MobileFeed = ({
                             <div className={`mb-1 flex items-center justify-between gap-3`}>
                                 {/* CHECKING IF MEDIA IS EMPTY THAN ITS TEXT ONLY POST SO THIS WONT SHOW BECAUSE WE ALREADY SHOWED In CONTENT */}
                                 {item?.post_image_urls?.length === 0 &&
-                                    item?.post_video_urls?.length === 0 ? (
+                                item?.post_video_urls?.length === 0 ? (
                                     <p></p>
                                 ) : (
                                     <p className="] min-w-0 flex-1 text-[15px] font-medium leading-relaxed text-main-text-dark">
                                         <span
                                             className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
                                             dangerouslySetInnerHTML={{
-                                                __html: plain
+                                                __html: plain,
                                             }}
                                         />
                                     </p>
@@ -856,12 +838,7 @@ const MobileFeed = ({
                 </div>
             );
         },
-        [
-            mobileFeedGalleryOpening,
-            isDarkMode,
-            loadedItems,
-            localFeed,
-        ],
+        [mobileFeedGalleryOpening, isDarkMode, loadedItems, localFeed],
     );
 
     // Tracking GLobal Filter Open Or Not
@@ -873,7 +850,6 @@ const MobileFeed = ({
             isFilterOpenRef.current = state.isOpen;
         });
     }, []);
-
 
     // Not Needed RN He Said To Remove It
     //  Hide bottom bar when MobileFeed mounts, show when unmounts
@@ -930,8 +906,6 @@ const MobileFeed = ({
         localRelatedFeedRef.current = relatedFeed;
     }, [relatedFeed]);
 
-
-
     // Force Re-layout on IOS
     useEffect(() => {
         if (!isIOS) return;
@@ -979,7 +953,7 @@ const MobileFeed = ({
             // iOS: Wait for layout to stabilize
             const itemHeight = isIOS
                 ? feedItemHeight
-                : (container.firstElementChild?.offsetHeight || window.innerHeight);
+                : container.firstElementChild?.offsetHeight || window.innerHeight;
 
             const targetScroll = (feedIndex + 1) * itemHeight;
 
@@ -993,7 +967,6 @@ const MobileFeed = ({
 
             container.scrollTop = targetScroll;
 
-
             // iOS: Verify scroll position was set
             if (isIOS) {
                 requestAnimationFrame(() => {
@@ -1004,7 +977,6 @@ const MobileFeed = ({
                 });
             }
 
-
             hasInitializedScroll.current = true;
             setIsScrollCompleted(true);
 
@@ -1014,7 +986,6 @@ const MobileFeed = ({
 
             rafCleanups.add(raf1);
         };
-
 
         // iOS: extra delay for layout stabilization
         const initialDelay = isIOS ? 150 : 0;
@@ -1030,7 +1001,7 @@ const MobileFeed = ({
             timeoutCleanups.forEach((timeout) => clearTimeout(timeout));
             rafCleanups.clear();
             timeoutCleanups.clear();
-        }
+        };
     }, [feedIndex, feedItemHeight, isIOS]);
 
     // MODIFIED: Fallback X-axis alignment - only run for NEW rows
@@ -1131,7 +1102,6 @@ const MobileFeed = ({
             if (isMobileFeedGalleryOpenRef.current) {
                 return;
             }
-
 
             const firstRealItem = container.children[1];
             if (firstRealItem) {
@@ -1345,7 +1315,12 @@ const MobileFeed = ({
                 const total = feedRef.current.length;
                 const remaining = total - globalIndex - 1;
 
-                if (remaining <= 5 && nextPageUrl !== null && !isfetchingMoreYAxisFeed && !isLoopingRef.current) {
+                if (
+                    remaining <= 5 &&
+                    nextPageUrl !== null &&
+                    !isfetchingMoreYAxisFeed &&
+                    !isLoopingRef.current
+                ) {
                     fetchMoreYAxis();
                 }
 
@@ -1362,7 +1337,6 @@ const MobileFeed = ({
             gsap.ticker.remove(scrollTick);
             timeoutIds.forEach((id) => clearTimeout(id));
             if (scrollTimeout) clearTimeout(scrollTimeout);
-
 
             rafIds.forEach((id) => cancelAnimationFrame(id));
 
@@ -1396,7 +1370,6 @@ const MobileFeed = ({
                     return;
                 }
 
-
                 if (isMobileFeedGalleryOpenRef.current) {
                     return;
                 }
@@ -1408,7 +1381,6 @@ const MobileFeed = ({
                 if (useHomeNavStore.getState().navigatingHome) {
                     return;
                 }
-
 
                 if (
                     isXLoopingRef.current ||
@@ -1428,7 +1400,6 @@ const MobileFeed = ({
                         itemWidthRef.current[rowIndex] ||
                         (itemWidthRef.current[rowIndex] = rowContainer.offsetWidth);
                 }
-
 
                 if (!itemWidth) return;
 
@@ -1451,8 +1422,6 @@ const MobileFeed = ({
                 const relatedItems = getRelatedItems(parentFeedItem);
                 const totalItems = relatedItems.length;
                 const relatedOnlyCount = totalItems - 1; // Parent + related items
-
-
 
                 const FIRST_REAL = 1;
                 const LAST_REAL = totalItems;
@@ -1520,13 +1489,7 @@ const MobileFeed = ({
                                 rowContainer.style.scrollBehavior = 'smooth';
                                 rowContainer.style.pointerEvents = '';
                             }
-
-
-
-
-
                         }, 100);
-
 
                         timeouts.add(timeout1);
 
@@ -1543,7 +1506,6 @@ const MobileFeed = ({
 
                 // LEFT LOOP (same for all feeds now)
                 if (SL <= leftLimit) {
-
                     lastLoopTime = now;
                     isXLoopingRef.current = true;
                     setIsXAxisLooping(true);
@@ -1671,7 +1633,6 @@ const MobileFeed = ({
                     isProcessingRef.current = false;
                 }, 100);
 
-
                 //  push scrollTimeout in global timeouts
                 timeouts.add(scrollTimeout);
             };
@@ -1729,11 +1690,9 @@ const MobileFeed = ({
         }
     }, [MobileFeedGalleryOpen, pauseAll]);
 
-
     // Cleanups
     useEffect(() => {
         return () => {
-
             if (shouldCleanupBrowserHistoryRef.current) {
                 window.history.replaceState({}, '', window.location.pathname);
             }
@@ -1755,9 +1714,6 @@ const MobileFeed = ({
             feedRef.current = [];
             localRelatedFeedRef.current = null;
 
-
-
-
             // Reset flags
             isLoopingRef.current = false;
             isXLoopingRef.current = false;
@@ -1769,25 +1725,19 @@ const MobileFeed = ({
             hasInitializedHorizontalRef.current = false;
             hasUserInteractedRef.current = false;
 
-
             parentFeedSlugRef.current = null;
             itemHeightRef.current = null;
             isSinglePageRef.current = false;
 
-
-
             // Reset stateful memory holders
             setLoadedItems(new Set());
-
         };
     }, []);
-
 
     return (
         <>
             {createPortal(
-                <div className="fixed inset-0 z-50 overflow-hidden bg-backgroundLight text-main-text-light scrollbar-none dark:bg-backgroundDark dark:text-main-text-dark"
-                >
+                <div className="fixed inset-0 z-50 overflow-hidden bg-backgroundLight text-main-text-light scrollbar-none dark:bg-backgroundDark dark:text-main-text-dark">
                     {(!isScrollCompleted || isXAxisLooping) && <RenderFeedItemSkeleton index={0} />}
                     <div
                         className={`${MobileFeedGalleryOpen ? 'overflow-hidden' : ''} scrollbar-none`}
@@ -1832,7 +1782,7 @@ const MobileFeed = ({
                             return (
                                 <div
                                     key={`feed-${item.id}`}
-                                    className="min-w-full feed-page snap-start"
+                                    className="feed-page min-w-full snap-start"
                                     style={{
                                         height: feedItemHeight,
                                         contentVisibility: isIOS ? 'visible' : 'auto',
@@ -1846,7 +1796,7 @@ const MobileFeed = ({
                                     }}
                                 >
                                     <div
-                                        className="flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-none"
+                                        className="flex w-full snap-x snap-mandatory overflow-x-auto scrollbar-none"
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
 
@@ -1960,7 +1910,6 @@ const MobileFeed = ({
                     shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
-
                     __={__}
                 />
             )}
