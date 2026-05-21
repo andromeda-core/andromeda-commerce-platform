@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Dashboard\AttributionRewardController;
+use App\Http\Controllers\Dashboard\InternalProductImageController;
 use App\Http\Controllers\Dashboard\BatchController;
 use App\Http\Controllers\Dashboard\BookmarkController;
 use App\Http\Controllers\Dashboard\CategoryController;
@@ -671,6 +672,16 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('/attribution-links', ProductLinkController::class)->except(['show']);
         Route::delete('/attribution-links-deleteBySelection', [ProductLinkController::class, 'destroyBySelection'])->name('attribution-links.destroyBySelection');
 
+
+        // Internal Product Images Routes
+        Route::controller(InternalProductImageController::class)->name('internal-product-images.')->group(function () {
+            Route::get('/internal-product-images', 'index')->name('index');
+            Route::get('/internal-product-images-create', 'create')->name('create');
+            Route::post('/internal-product-images-store', 'store')->name('store');
+            Route::post('/internal-product-images-store-folder', 'storeFolder')->name('store-folder');
+            Route::delete('/internal-product-images-destroy/{id?}', 'destroy')->name('destroy');
+            Route::delete('/internal-product-images-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+        });
 
         // Attribution Reward Routes
         Route::prefix('attribution-rewards')->name('attribution-rewards.')->group(function () {

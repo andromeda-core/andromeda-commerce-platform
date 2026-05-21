@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
             // FloorSeeder::class,
             // UserSeeder::class,
             // CountrySeeder::class,
-            // PermissionSeeder::class,
+            PermissionSeeder::class,
             // PostSeeder::class,
             // LanguageSeeder::class,
             TranslationKeysSeeder::class,

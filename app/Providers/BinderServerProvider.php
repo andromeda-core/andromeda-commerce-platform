@@ -96,6 +96,8 @@ use App\Repositories\UnsettledAccounts\Interface\IUnsettledAccountsRepository;
 use App\Repositories\UnsettledAccounts\Repository\UnsettledAccountsRepository;
 use App\Repositories\Users\Interface\IUserRepository;
 use App\Repositories\Users\Repository\UserRepository;
+use App\Repositories\InternalProductImage\Interface\IInternalProductImageRepository;
+use App\Repositories\InternalProductImage\Repository\InternalProductImageRepository;
 use Illuminate\Support\ServiceProvider;
 
 class BinderServerProvider extends ServiceProvider
@@ -152,6 +154,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IOrderCourierCompanyRepository::class, OrderCourierCompanyRepository::class);
         $this->app->bind(IProductLinkRepository::class, ProductLinkRepository::class);
         $this->app->bind(IAttributionRewardRepository::class, AttributionRewardRepository::class);
+        $this->app->bind(IInternalProductImageRepository::class, InternalProductImageRepository::class);
     }
 
     /**

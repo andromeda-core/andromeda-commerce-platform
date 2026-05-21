@@ -143,6 +143,7 @@ export default function Sidebar({
             'dashboard.settings.condition-settings.',
             'dashboard.settings.addon-settings.',
             'dashboard.inventory-verifications.',
+            'dashboard.internal-product-images.',
         ].some((prefix) => route().current().startsWith(prefix));
 
         const isUsersRoute = ['dashboard.customers.', 'dashboard.reward-points.'].some((prefix) =>
@@ -251,6 +252,7 @@ export default function Sidebar({
             'Model Names View',
             'Addon Items View',
             'Smartphone Country Price View',
+            'Internal Product Images View',
         ]) ||
             (user?.role === 'Distributor'
                 ? can('Inventories Verification') &&
@@ -631,6 +633,19 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.inventory-verifications.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Inventory Verification
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can('Internal Product Images View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.internal-product-images.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current().startsWith('dashboard.internal-product-images.') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Product Images
                                                         </Link>
                                                     </li>
                                                 )}

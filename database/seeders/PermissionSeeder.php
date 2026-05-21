@@ -1310,20 +1310,54 @@ class PermissionSeeder extends Seeder
                 'created_at' => '2026-03-04 20:19:05',
                 'updated_at' => '2026-03-04 20:19:05',
             ],
+            [
+                'id' => 363,
+                'name' => 'Internal Product Images View',
+                'guard_name' => 'web',
+                'parent_name' => 'Products',
+                'alias' => null,
+                'icon' => 'ArchiveBoxIcon',
+                'created_at' => '2026-05-21 00:00:01',
+                'updated_at' => '2026-05-21 00:00:01',
+            ],
+            [
+                'id' => 364,
+                'name' => 'Internal Product Images Create',
+                'guard_name' => 'web',
+                'parent_name' => 'Products',
+                'alias' => null,
+                'icon' => 'ArchiveBoxIcon',
+                'created_at' => '2026-05-21 00:00:02',
+                'updated_at' => '2026-05-21 00:00:02',
+            ],
+            [
+                'id' => 365,
+                'name' => 'Internal Product Images Delete',
+                'guard_name' => 'web',
+                'parent_name' => 'Products',
+                'alias' => null,
+                'icon' => 'ArchiveBoxIcon',
+                'created_at' => '2026-05-21 00:00:03',
+                'updated_at' => '2026-05-21 00:00:03',
+            ],
         ];
 
-        DB::table('permissions')->upsert(
-            $permissions,
-            ['id'],
-            [
-                'name',
-                'guard_name',
-                'parent_name',
-                'alias',
-                'icon',
-                'created_at',
-                'updated_at',
-            ]
-        );
+        // DB::table('permissions')->upsert(
+        //     $permissions,
+        //     ['id'],
+        //     [
+        //         'name',
+        //         'guard_name',
+        //         'parent_name',
+        //         'alias',
+        //         'icon',
+        //         'created_at',
+        //         'updated_at',
+        //     ]
+        // );
+
+
+        DB::table('permissions')->insertOrIgnore($permissions);
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
     }
 }
