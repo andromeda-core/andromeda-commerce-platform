@@ -65,10 +65,17 @@ class Currency extends Model
     {
         static::created(function () {
             Cache::forget('currency');
+            Cache::forget('available_currencies');
         });
 
         static::updated(function () {
             Cache::forget('currency');
+            Cache::forget('available_currencies');
+        });
+
+        static::deleted(function () {
+            Cache::forget('currency');
+            Cache::forget('available_currencies');
         });
     }
 }

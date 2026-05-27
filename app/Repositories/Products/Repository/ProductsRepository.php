@@ -484,12 +484,10 @@ class ProductsRepository implements IProductsRepository
 
     private function getPriceRanges()
     {
-        $currency = Cache::get('currency');
-
         return [
-            ['key' => 'under_500', 'label' => "Under {$currency?->symbol}500", 'value' => 500],
-            ['key' => 'under_1000', 'label' => "Under {$currency?->symbol}1000", 'value' => 1000],
-            ['key' => 'over_1000', 'label' => "Over {$currency?->symbol}1000", 'value' => 1000],
+            ['key' => 'under_500', 'label' => Trans::get('Under'), 'value' => 500],
+            ['key' => 'under_1000', 'label' => Trans::get('Under'), 'value' => 1000],
+            ['key' => 'over_1000', 'label' => Trans::get('Over'), 'value' => 1000],
         ];
     }
 

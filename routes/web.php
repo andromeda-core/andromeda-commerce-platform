@@ -151,6 +151,11 @@ Route::group(['as' => 'website.'], function () {
     Route::get('/languages-translations-get-all-json', [LanguageController::class, 'getAllLanguagesAndTranslationsJson'])->name('languages-translations.getalljson');
     Route::post('/languages-set-language', [LanguageController::class, 'setLanguage'])->name('languages.set-language');
 
+    // Currency Switcher Routes — no auth, visitors can switch too
+    // The cookie drives CurrencyResolverService priority 1 (display-only, no financial effect).
+    Route::post('/currency/switch', \App\Http\Controllers\Website\CurrencySwitcherController::class)->name('currency.switch');
+    Route::post('/currency/reset', [\App\Http\Controllers\Website\CurrencySwitcherController::class, 'reset'])->name('currency.reset');
+
     // Global Search Route
     Route::controller(GlobalSearchController::class)->name('global-search.')->group(function () {
         Route::match(['get', 'post'], '/global-search', 'index')->name('index');

@@ -4,18 +4,28 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
 
-const PostMobileFeedGallery = (
-    { post, setShowQrCode, setLinkCopied, navigateToHashtag, placeholderImage, generateURL, __, auth, setBookmarkStatusChanged, isDarkMode, setMobileFeedGalleryOpen,
-        setSpatiotemporalInfoModal,
-        spatiotemporalInfoModal,
-        previous_url,
-    }) => {
+const PostMobileFeedGallery = ({
+    post,
+    setShowQrCode,
+    setLinkCopied,
+    navigateToHashtag,
+    placeholderImage,
+    generateURL,
+    __,
+    auth,
+    setBookmarkStatusChanged,
+    isDarkMode,
+    setMobileFeedGalleryOpen,
+    setSpatiotemporalInfoModal,
+    shouldCleanupBrowserHistoryRef,
+    spatiotemporalInfoModal,
+    previous_url,
+}) => {
     const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
     const [actionDropdownOpen, setActionDropdownOpen] = useState(null);
     const actionDropdownRef = useRef(null);
     const thumbnailContainerRef = useRef(null);
     const scrollContainerRef = useRef(null);
-
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -34,21 +44,18 @@ const PostMobileFeedGallery = (
         const itemWidth = container.offsetWidth;
         const newIndex = Math.round(scrollLeft / itemWidth);
 
-
         if (newIndex !== currentMediaIndex) {
             setCurrentMediaIndex(newIndex);
             handleStopNonVisibleVideos();
-
 
             const activeThumb = thumbnailContainerRef.current?.children[newIndex];
             activeThumb?.scrollIntoView({
                 behavior: 'smooth',
                 block: 'nearest',
-                inline: 'center'
+                inline: 'center',
             });
         }
     };
-
 
     const handleThumbnailClick = (index) => {
         setCurrentMediaIndex(index);
@@ -56,16 +63,14 @@ const PostMobileFeedGallery = (
         targetMainItem?.scrollIntoView({
             behavior: 'instant',
             block: 'nearest',
-            inline: 'start'
+            inline: 'start',
         });
     };
-
 
     // Pause Non Visible Videos When Swipes
     const handleStopNonVisibleVideos = () => {
         const container = scrollContainerRef.current;
         if (!container) return;
-
 
         const allVideos = container.querySelectorAll('video');
 
@@ -73,16 +78,11 @@ const PostMobileFeedGallery = (
             const videoContainer = video.closest('.snap-center');
 
             if (videoContainer) {
-
                 const rect = videoContainer.getBoundingClientRect();
                 const containerRect = container.getBoundingClientRect();
 
-
-                const isVisible = (
-                    rect.left >= containerRect.left - 10 &&
-                    rect.right <= containerRect.right + 10
-                );
-
+                const isVisible =
+                    rect.left >= containerRect.left - 10 && rect.right <= containerRect.right + 10;
 
                 if (!isVisible) {
                     video.pause();
@@ -90,7 +90,6 @@ const PostMobileFeedGallery = (
             }
         });
     };
-
 
     const mediaItems = useMemo(() => {
         const images =
@@ -103,228 +102,201 @@ const PostMobileFeedGallery = (
             post?.videos?.map((vid) => ({
                 type: 'video',
                 url: vid.url,
-                thumbnail_url: vid?.thumbnail_url
+                thumbnail_url: vid?.thumbnail_url,
             })) || [];
 
         return [...images, ...videos];
     }, [post]);
 
-
-
     // LOCKING BODY WHEN MOUNT TO PREVENT SCROLLS BENEATH MODAL
     useEffect(() => {
-
-        document.body.style.overflow = "hidden";
-        document.body.style.touchAction = "none";
+        document.body.style.overflow = 'hidden';
+        document.body.style.touchAction = 'none';
 
         return () => {
             // Restore scroll when modal closes
-            document.body.style.overflow = "";
-            document.body.style.touchAction = "";
+            document.body.style.overflow = '';
+            document.body.style.touchAction = '';
         };
     }, []);
-
-
 
     return (
         <>
             {createPortal(
-                <div className="fixed inset-0 z-[70] flex flex-col bg-backgroundLight dark:bg-backgroundDark overscroll-contain">
-                    <div className="flex items-center justify-between px-4 pt-[1.4rem] pb-2 shrink-0">
-
+                <div className="fixed inset-0 z-[70] flex flex-col overscroll-contain bg-backgroundLight dark:bg-backgroundDark">
+                    <div className="flex shrink-0 items-center justify-between px-4 pb-2 pt-[1.4rem]">
                         <button
                             onClick={() => {
                                 if (previous_url) {
                                     router.visit(previous_url);
                                 } else {
                                     setMobileFeedGalleryOpen(false);
-
                                 }
                             }}
                             className="text-[18px] font-semibold"
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="size-6 text-main-text-light dark:text-main-text-dark">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={2}
+                                stroke="currentColor"
+                                className="size-6 text-main-text-light dark:text-main-text-dark"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M15.75 19.5 8.25 12l7.5-7.5"
+                                />
                             </svg>
-
                         </button>
 
                         <button
-                            onClick={() => navigateToHashtag(post.tag)}
+                            onClick={() => {
+                                shouldCleanupBrowserHistoryRef.current = false;
+                                navigateToHashtag(post?.tag);
+                            }}
                             className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark"
-
                         >
                             {post.tag}
                         </button>
-
                     </div>
 
                     {/* Scrollable Content Area */}
-                    <div className="flex-1 px-8 overflow-y-auto scrollbar-none">
+                    <div className="flex-1 overflow-y-auto px-8 scrollbar-none">
                         {mediaItems?.length > 0 && (
                             <div className="relative">
                                 {/* Horizontal Scroll Container - Swipeable */}
                                 <div
                                     ref={scrollContainerRef}
                                     onScroll={handleScroll}
-                                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none"
+                                    className="flex snap-x snap-mandatory overflow-x-auto scrollbar-none"
                                     style={{
                                         scrollbarWidth: 'none',
                                         msOverflowStyle: 'none',
                                         WebkitOverflowScrolling: 'touch',
                                         scrollSnapType: 'x mandatory',
-                                        height: 'calc(100vh - 180px)'
+                                        height: 'calc(100vh - 180px)',
                                     }}
                                 >
                                     {mediaItems.map((item, index) => (
                                         <div
                                             key={index}
-                                            className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
+                                            className="flex h-full w-full shrink-0 snap-center snap-always items-center justify-center"
                                         >
                                             {item.type === 'image' ? (
                                                 <img
                                                     src={item.url || placeholderImage}
                                                     alt={`Media ${index}`}
-                                                    className="object-cover w-full h-full max-w-full max-h-full rounded-md"
+                                                    className="h-full max-h-full w-full max-w-full rounded-md object-cover"
                                                     loading="eager"
                                                     fetchpriority="high"
                                                     decoding="async"
-                                                    onError={(e) => (e.target.src = placeholderImage)}
+                                                    onError={(e) =>
+                                                        (e.target.src = placeholderImage)
+                                                    }
                                                 />
                                             ) : (
-                                                <div className="flex items-center justify-center w-full h-full">
-
+                                                <div className="flex h-full w-full items-center justify-center">
                                                     <InstagramStyledVideoPlayer
-                                                        thumbnail={item?.thumbnail_url || placeholderImage}
-                                                        className="object-cover w-full h-full"
+                                                        thumbnail={
+                                                            item?.thumbnail_url || placeholderImage
+                                                        }
+                                                        className="h-full w-full object-cover"
                                                         videoUrl={item.url}
-                                                        Preload='metadata'
+                                                        Preload="metadata"
                                                         slug={item?.slug}
                                                         timelinePadding={2}
-
                                                     />
                                                 </div>
                                             )}
                                         </div>
                                     ))}
                                 </div>
-
-
-
-
                             </div>
                         )}
-
 
                         {/* Thumbnail Refs */}
                         <div className="flex items-center justify-start gap-0 pt-4">
                             {/* Thumbnails */}
-                            {((Array.isArray(
-                                post?.post_video_urls,
-                            ) &&
+                            {((Array.isArray(post?.post_video_urls) &&
                                 post.post_video_urls.length > 1) ||
-                                (Array.isArray(
-                                    post?.post_image_urls,
-                                ) &&
-                                    post.post_image_urls.length >
-                                    1)) && (
-                                    <div
-                                        ref={thumbnailContainerRef}
-                                        className="flex items-center gap-3 overflow-x-auto scrollbar-none"
-                                        style={{ scrollBehavior: 'smooth' }}
-                                    >
-                                        {/* Render thumbnails */}
-                                        {mediaItems.map(
-                                            (mediaItem, index) => {
-
-                                                return (
-                                                    <button
-                                                        key={index}
-
-                                                        onClick={() => handleThumbnailClick(index)}
-                                                        className={`aspect-square ${currentMediaIndex === index ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(70px,5vw,70px)] flex-shrink-0 overflow-hidden rounded-md  transition-all`}
-                                                    >
-                                                        {mediaItem?.type ===
-                                                            'image' ? (
-                                                            <img
-                                                                src={
-                                                                    mediaItem?.url ||
-                                                                    placeholderImage
-                                                                }
-                                                                alt={`Thumbnail ${index + 1}`}
-                                                                className="object-cover w-full h-full"
-                                                                loading={
-                                                                    currentMediaIndex ===
-                                                                        index
-                                                                        ? 'eager'
-                                                                        : 'lazy'
-                                                                }
-                                                                decoding="async"
-                                                                fetchpriority={
-                                                                    currentMediaIndex ===
-                                                                        index
-                                                                        ? 'high'
-                                                                        : 'low'
-                                                                }
-                                                                onError={(
-                                                                    e,
-                                                                ) =>
-                                                                (e.target.src =
-                                                                    placeholderImage)
-                                                                }
-                                                            />
-                                                        ) : (
-                                                            <img
-                                                                src={
-                                                                    mediaItem?.thumbnail_url ||
-                                                                    placeholderImage
-                                                                }
-                                                                alt={`Thumbnail ${index + 1}`}
-                                                                className="object-cover w-full h-full"
-                                                                loading={
-                                                                    currentMediaIndex ===
-                                                                        index
-                                                                        ? 'eager'
-                                                                        : 'lazy'
-                                                                }
-                                                                decoding="async"
-                                                                fetchpriority={
-                                                                    currentMediaIndex ===
-                                                                        index
-                                                                        ? 'high'
-                                                                        : 'low'
-                                                                }
-                                                                onError={(
-                                                                    e,
-                                                                ) =>
-                                                                (e.target.src =
-                                                                    placeholderImage)
-                                                                }
-                                                            />
-                                                        )}
-                                                    </button>
-                                                );
-                                            },
-                                        )}
-                                    </div>
-                                )}
-
-
+                                (Array.isArray(post?.post_image_urls) &&
+                                    post.post_image_urls.length > 1)) && (
+                                <div
+                                    ref={thumbnailContainerRef}
+                                    className="flex items-center gap-3 overflow-x-auto scrollbar-none"
+                                    style={{ scrollBehavior: 'smooth' }}
+                                >
+                                    {/* Render thumbnails */}
+                                    {mediaItems.map((mediaItem, index) => {
+                                        return (
+                                            <button
+                                                key={index}
+                                                onClick={() => handleThumbnailClick(index)}
+                                                className={`aspect-square ${currentMediaIndex === index ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(70px,5vw,70px)] flex-shrink-0 overflow-hidden rounded-md transition-all`}
+                                            >
+                                                {mediaItem?.type === 'image' ? (
+                                                    <img
+                                                        src={mediaItem?.url || placeholderImage}
+                                                        alt={`Thumbnail ${index + 1}`}
+                                                        className="h-full w-full object-cover"
+                                                        loading={
+                                                            currentMediaIndex === index
+                                                                ? 'eager'
+                                                                : 'lazy'
+                                                        }
+                                                        decoding="async"
+                                                        fetchpriority={
+                                                            currentMediaIndex === index
+                                                                ? 'high'
+                                                                : 'low'
+                                                        }
+                                                        onError={(e) =>
+                                                            (e.target.src = placeholderImage)
+                                                        }
+                                                    />
+                                                ) : (
+                                                    <img
+                                                        src={
+                                                            mediaItem?.thumbnail_url ||
+                                                            placeholderImage
+                                                        }
+                                                        alt={`Thumbnail ${index + 1}`}
+                                                        className="h-full w-full object-cover"
+                                                        loading={
+                                                            currentMediaIndex === index
+                                                                ? 'eager'
+                                                                : 'lazy'
+                                                        }
+                                                        decoding="async"
+                                                        fetchpriority={
+                                                            currentMediaIndex === index
+                                                                ? 'high'
+                                                                : 'low'
+                                                        }
+                                                        onError={(e) =>
+                                                            (e.target.src = placeholderImage)
+                                                        }
+                                                    />
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
 
-
                         {/* Full Content - Scrollable, No Truncation */}
-                        <div className="mt-2 mb-10">
+                        <div className="mb-10 mt-2">
                             {mediaItems.length > 0 && (
-
-
-                                <div className="flex items-center justify-end mb-4">
+                                <div className="mb-4 flex items-center justify-end">
                                     <div className="relative" ref={actionDropdownRef}>
-
-
                                         <button
                                             className="text-main-text-light dark:text-main-text-dark"
-                                            onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
+                                            onClick={() =>
+                                                setActionDropdownOpen(!actionDropdownOpen)
+                                            }
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -347,14 +319,14 @@ const PostMobileFeedGallery = (
                                         </button>
 
                                         {actionDropdownOpen && (
-                                            <div className="absolute right-0 z-50 w-56 border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark top-full dark:bg-surface-1-dark">
+                                            <div className="absolute right-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
                                                 <div className="py-1">
                                                     <button
                                                         onClick={() => {
                                                             setShowQrCode(true);
                                                             setActionDropdownOpen(null);
                                                         }}
-                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -362,7 +334,7 @@ const PostMobileFeedGallery = (
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="w-5 h-5"
+                                                            className="h-5 w-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -403,13 +375,17 @@ const PostMobileFeedGallery = (
                                                                             );
                                                                         },
                                                                         onError: (e) => {
-                                                                            setShowErrorMessage(true);
-                                                                            setErrorMessage(e.message);
+                                                                            setShowErrorMessage(
+                                                                                true,
+                                                                            );
+                                                                            setErrorMessage(
+                                                                                e.message,
+                                                                            );
                                                                         },
                                                                     },
                                                                 );
                                                             }}
-                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
+                                                            className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -448,12 +424,15 @@ const PostMobileFeedGallery = (
                                                     <button
                                                         onClick={() => {
                                                             const url =
-                                                                route('home') + generateURL(post, true, true);
-                                                            navigator.clipboard.writeText(url.trim());
+                                                                route('home') +
+                                                                generateURL(post, true, true);
+                                                            navigator.clipboard.writeText(
+                                                                url.trim(),
+                                                            );
                                                             setLinkCopied(true);
                                                             setActionDropdownOpen(null);
                                                         }}
-                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -461,7 +440,7 @@ const PostMobileFeedGallery = (
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="w-5 h-5"
+                                                            className="h-5 w-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -472,39 +451,50 @@ const PostMobileFeedGallery = (
                                                         <span>{__('Copy Link')}</span>
                                                     </button>
 
-
-
                                                     {/* Spatiotemporal Information */}
-                                                    {(post?.latitude != null && post?.longitude != null) && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                setSpatiotemporalInfoModal(true);
-                                                                setActionDropdownOpen(null);
-                                                            }}
-                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                        >
+                                                    {post?.latitude != null &&
+                                                        post?.longitude != null && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    setSpatiotemporalInfoModal(
+                                                                        true,
+                                                                    );
+                                                                    setActionDropdownOpen(null);
+                                                                }}
+                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                            >
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    strokeWidth={1.5}
+                                                                    stroke="currentColor"
+                                                                    className="h-5 w-5"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                                    />
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                                    />
+                                                                </svg>
 
+                                                                <span className="font-normal">
+                                                                    {__('Spatiotemporal Info')}
+                                                                </span>
+                                                            </button>
+                                                        )}
 
-                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                                            </svg>
-
-
-                                                            <span className="font-normal">
-                                                                {__('Spatiotemporal Info')}
-                                                            </span>
-                                                        </button>
-                                                    )}
-
-                                                    <span
-
-                                                        className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                    >
-
-                                                        <span>{__('Post Created')}:
+                                                    <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
+                                                        <span>
+                                                            {__('Post Created')}:
                                                             <p>
-                                                                {post?.added_at} {post?.created_at_time}
+                                                                {post?.added_at}{' '}
+                                                                {post?.created_at_time}
                                                             </p>
                                                         </span>
                                                     </span>
@@ -513,14 +503,12 @@ const PostMobileFeedGallery = (
                                         )}
                                     </div>
                                 </div>
-
                             )}
 
                             <div className="mb-4">
                                 {post?.content && (
                                     <div
-                                        className="text-[16px] font-medium  leading-[22px] prose break-words text-main-text-light dark:text-main-text-dark"
-
+                                        className="prose break-words text-[16px] font-medium leading-[22px] text-main-text-light dark:text-main-text-dark"
                                         dangerouslySetInnerHTML={{
                                             __html: post?.content,
                                         }}
@@ -528,39 +516,37 @@ const PostMobileFeedGallery = (
                                 )}
                             </div>
 
-
-                            <div
-                                className=" z-[90] flex items-center justify-start my-4"
-                            >
-
-                                <div className="transition-all duration-200 rounded-full bg-[#efefef] text-[#595959] dark:text-main-text-dark dark:bg-surface-2-dark dark:hover:bg-surface-3-dark">
+                            <div className="z-[90] my-4 flex items-center justify-start">
+                                <div className="rounded-full bg-[#efefef] text-[#595959] transition-all duration-200 dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark">
                                     <div className="flex items-center gap-2 p-2">
-
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-4 text-[#595959] dark:text-main-text-dark">
-                                            <path fillRule="evenodd" d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z" clipRule="evenodd" />
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 24 24"
+                                            fill="currentColor"
+                                            className="size-4 text-[#595959] dark:text-main-text-dark"
+                                        >
+                                            <path
+                                                fillRule="evenodd"
+                                                d="M7.5 6a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM3.751 20.105a8.25 8.25 0 0 1 16.498 0 .75.75 0 0 1-.437.695A18.683 18.683 0 0 1 12 22.5c-2.786 0-5.433-.608-7.812-1.7a.75.75 0 0 1-.437-.695Z"
+                                                clipRule="evenodd"
+                                            />
                                         </svg>
 
-                                        <span className='text-[13px] font-medium truncate line-clamp-1'>
+                                        <span className="line-clamp-1 truncate text-[13px] font-medium">
                                             {post?.user?.name}
                                         </span>
                                     </div>
-
                                 </div>
-
-
                             </div>
 
-
                             {mediaItems.length === 0 && (
-
-
-                                <div className="flex items-center justify-end mb-4">
+                                <div className="mb-4 flex items-center justify-end">
                                     <div className="relative" ref={actionDropdownRef}>
-
-
                                         <button
                                             className="text-main-text-light dark:text-main-text-dark"
-                                            onClick={() => setActionDropdownOpen(!actionDropdownOpen)}
+                                            onClick={() =>
+                                                setActionDropdownOpen(!actionDropdownOpen)
+                                            }
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -583,14 +569,14 @@ const PostMobileFeedGallery = (
                                         </button>
 
                                         {actionDropdownOpen && (
-                                            <div className="absolute right-0 z-50 w-56 border rounded-md border-surface-3-light bg-backgroundLight dark:border-surface-3-dark top-full dark:bg-surface-1-dark">
+                                            <div className="absolute right-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
                                                 <div className="py-1">
                                                     <button
                                                         onClick={() => {
                                                             setShowQrCode(true);
                                                             setActionDropdownOpen(null);
                                                         }}
-                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -598,7 +584,7 @@ const PostMobileFeedGallery = (
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="w-5 h-5"
+                                                            className="h-5 w-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -639,13 +625,17 @@ const PostMobileFeedGallery = (
                                                                             );
                                                                         },
                                                                         onError: (e) => {
-                                                                            setShowErrorMessage(true);
-                                                                            setErrorMessage(e.message);
+                                                                            setShowErrorMessage(
+                                                                                true,
+                                                                            );
+                                                                            setErrorMessage(
+                                                                                e.message,
+                                                                            );
                                                                         },
                                                                     },
                                                                 );
                                                             }}
-                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark "
+                                                            className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -684,12 +674,15 @@ const PostMobileFeedGallery = (
                                                     <button
                                                         onClick={() => {
                                                             const url =
-                                                                route('home') + generateURL(post, true, true);
-                                                            navigator.clipboard.writeText(url.trim());
+                                                                route('home') +
+                                                                generateURL(post, true, true);
+                                                            navigator.clipboard.writeText(
+                                                                url.trim(),
+                                                            );
                                                             setLinkCopied(true);
                                                             setActionDropdownOpen(null);
                                                         }}
-                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
+                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -697,7 +690,7 @@ const PostMobileFeedGallery = (
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="w-5 h-5"
+                                                            className="h-5 w-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -708,39 +701,50 @@ const PostMobileFeedGallery = (
                                                         <span>{__('Copy Link')}</span>
                                                     </button>
 
-
-
                                                     {/* Spatiotemporal Information */}
-                                                    {(post?.latitude != null && post?.longitude != null) && (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                setSpatiotemporalInfoModal(true);
-                                                                setActionDropdownOpen(null);
-                                                            }}
-                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                        >
+                                                    {post?.latitude != null &&
+                                                        post?.longitude != null && (
+                                                            <button
+                                                                onClick={(e) => {
+                                                                    setSpatiotemporalInfoModal(
+                                                                        true,
+                                                                    );
+                                                                    setActionDropdownOpen(null);
+                                                                }}
+                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                            >
+                                                                <svg
+                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    strokeWidth={1.5}
+                                                                    stroke="currentColor"
+                                                                    className="h-5 w-5"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                                    />
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                                    />
+                                                                </svg>
 
+                                                                <span className="font-normal">
+                                                                    {__('Spatiotemporal Info')}
+                                                                </span>
+                                                            </button>
+                                                        )}
 
-                                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z" />
-                                                            </svg>
-
-
-                                                            <span className="font-normal">
-                                                                {__('Spatiotemporal Info')}
-                                                            </span>
-                                                        </button>
-                                                    )}
-
-                                                    <span
-
-                                                        className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
-                                                    >
-
-                                                        <span>{__('Post Created')}:
+                                                    <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
+                                                        <span>
+                                                            {__('Post Created')}:
                                                             <p>
-                                                                {post?.added_at} {post?.created_at_time}
+                                                                {post?.added_at}{' '}
+                                                                {post?.created_at_time}
                                                             </p>
                                                         </span>
                                                     </span>
@@ -749,28 +753,21 @@ const PostMobileFeedGallery = (
                                         )}
                                     </div>
                                 </div>
-
                             )}
-
                         </div>
                     </div>
-
-
                 </div>,
                 document.getElementById('modal-root') || document.body,
             )}
 
-            {
-                spatiotemporalInfoModal && (
-                    <SpatiotemporalInfoModal
-                        onClose={() => {
-                            setSpatiotemporalInfoModal(false);
-                        }}
-                        post={post}
-                    />
-                )
-            }
-
+            {spatiotemporalInfoModal && (
+                <SpatiotemporalInfoModal
+                    onClose={() => {
+                        setSpatiotemporalInfoModal(false);
+                    }}
+                    post={post}
+                />
+            )}
         </>
     );
 };

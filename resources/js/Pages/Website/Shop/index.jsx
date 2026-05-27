@@ -6,6 +6,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import React, { useRef, useState, useEffect, Fragment, useLayoutEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Placeholder from 'asset/assets/images/product/placeholder.jpg';
+import DisplayPrice from '@/Components/DisplayPrice';
 
 const index = ({
     categories,
@@ -740,10 +741,12 @@ const index = ({
                                         {product?.condition}, {product?.capacity}, {product.color}
                                     </p>
 
-                                    <p className="text-base font-semibold text-main-text-light dark:text-main-text-dark">
-                                        {currency?.name} {currency?.symbol}
-                                        {Number(product?.total_price).toLocaleString('en-US')}
-                                    </p>
+                                    <DisplayPrice
+                                        usdAmount={product?.total_price}
+                                        showCode
+                                        showEstimatedLabel={false}
+                                        className="text-base font-semibold text-main-text-light dark:text-main-text-dark"
+                                    />
                                 </div>
                             </div>
                         ))}
@@ -830,8 +833,17 @@ const index = ({
                                                 )}
                                             </div>
 
-                                            <span className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                                {option.label}
+                                            <span className="flex items-center gap-1 text-sm text-sub-text-light dark:text-sub-text-dark">
+                                                <span>{option.label}</span>
+                                                {category.id === 'price_range' &&
+                                                    option.value != null && (
+                                                        <DisplayPrice
+                                                            usdAmount={option.value}
+                                                            showEstimatedLabel={false}
+                                                            size="sm"
+                                                            className="text-sub-text-light dark:text-sub-text-dark"
+                                                        />
+                                                    )}
                                             </span>
                                         </label>
                                     ))}

@@ -9,10 +9,11 @@ import { useConfirm } from '@/Hooks/useConfirm';
 import useWindowSize from '@/Hooks/useWindowSize';
 import Spinner from '@/Components/Spinner';
 import { useTranslation } from '@/Hooks/useTranslation';
+import DisplayPrice from '@/Components/DisplayPrice';
 
 // Memoized result item component
 const ResultItem = memo(
-    ({ item, onCopyLink, generateURL, generateSmartphoneURL, activeView, __, currency }) => {
+    ({ item, onCopyLink, generateURL, generateSmartphoneURL, activeView, __ }) => {
         const { width } = useWindowSize();
         // List View
         if (activeView === 'list') {
@@ -179,11 +180,15 @@ const ResultItem = memo(
                         <div className="absolute inset-x-0 bottom-0 p-4">
                             {item?.type === 'smartphones' && (
                                 <div className="flex flex-col items-start space-y-1 text-[14px] font-semibold">
-                                    <p className="w-full overflow-hidden truncate text-white">
-                                        {item.selling_info?.total_price
-                                            ? `${currency?.symbol}${Number(item.selling_info.total_price).toLocaleString('en-US')}`
-                                            : ''}
-                                    </p>
+                                    {item.selling_info?.total_price ? (
+                                        <DisplayPrice
+                                            usdAmount={item.selling_info.total_price}
+                                            showEstimatedLabel={false}
+                                            className="w-full overflow-hidden truncate text-white"
+                                        />
+                                    ) : (
+                                        ''
+                                    )}
                                     <p className="w-full overflow-hidden truncate text-white">
                                         {item.name.length > 20
                                             ? item.name.slice(0, 20) + '...'
@@ -253,11 +258,11 @@ const ResultItem = memo(
                                     {/* Price Bar  */}
                                     <div className="absolute inset-x-0 bottom-0 p-4 pt-6">
                                         <div className="flex flex-col items-start space-y-1 font-semibold">
-                                            <p className="w-full truncate text-[14px] text-main-text-light dark:text-main-text-dark">
-                                                {item.selling_info?.total_price
-                                                    ? `${currency?.symbol}${Number(item.selling_info.total_price).toLocaleString('en-US')}`
-                                                    : ''}
-                                            </p>
+                                            <DisplayPrice
+                                                usdAmount={item.selling_info?.total_price}
+                                                showEstimatedLabel={false}
+                                                className="w-full truncate text-[14px] text-main-text-light dark:text-main-text-dark"
+                                            />
                                         </div>
                                     </div>
                                 </>
@@ -281,7 +286,7 @@ const index = ({
     search_history_next_page_url,
     all_search_histories,
 }) => {
-    const { auth, currency } = usePage().props;
+    const { auth } = usePage().props;
 
     // Translation Hook
     const { __ } = useTranslation();
@@ -1360,7 +1365,6 @@ const index = ({
                                     generateSmartphoneURL={generateSmartphoneURL}
                                     activeView={activeView}
                                     __={__}
-                                    currency={currency}
                                 />
                             ))
                         )}

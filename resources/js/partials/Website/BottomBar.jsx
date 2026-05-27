@@ -446,6 +446,23 @@ const BottomBar = ({
 
 
 
+                                    {/* Currency switcher — display only */}
+                                    <li>
+                                        <button
+                                            className={`${activeModal === 'currency-switcher' ? 'menu-sub-item-active' : 'menu-sub-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                            onClick={() => {
+                                                if (activeModal === 'currency-switcher') {
+                                                    setActiveModal(null);
+                                                } else {
+                                                    setActiveModal('currency-switcher');
+                                                }
+                                                setMoreDropdown(false);
+                                            }}
+                                        >
+                                            <span>{__('Currency')}</span>
+                                        </button>
+                                    </li>
+
                                     <li>
                                         <Link
                                             prefetch

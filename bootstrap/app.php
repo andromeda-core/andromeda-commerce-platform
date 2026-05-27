@@ -26,6 +26,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->encryptCookies(except: [
             'language',
+            'display_currency_id', // display-only preference — integer ID, no security value in encrypting
         ]);
 
         $middleware->alias([

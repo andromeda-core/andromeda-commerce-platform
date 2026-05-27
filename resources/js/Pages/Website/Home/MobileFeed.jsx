@@ -8,6 +8,7 @@ import { useFilterStore } from '@/Hooks/useFilterStore';
 import { useVideoStore } from '@/Hooks/useVideoStore';
 import { useHomeNavStore } from '@/Hooks/useHomeNavStore';
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
+import DisplayPrice from '@/Components/DisplayPrice';
 // import "@/Components/dubugOverlay";
 const MobileFeed = ({
     feed,
@@ -454,7 +455,10 @@ const MobileFeed = ({
                         </button>
 
                         <button
-                            onClick={() => navigateToHashtag(item.tag)}
+                            onClick={() => {
+                                shouldCleanupBrowserHistoryRef.current = false;
+                                navigateToHashtag(item.tag);
+                            }}
                             className="text-[18px] font-semibold"
                         >
                             {item.tag}
@@ -617,12 +621,11 @@ const MobileFeed = ({
                                 {isText ? (
                                     shouldShowMore && (
                                         <div className="flex items-center justify-between">
-                                            <span className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark">
-                                                {currency?.symbol}
-                                                {Number(
-                                                    item.selling_info?.total_price,
-                                                ).toLocaleString('en-US')}
-                                            </span>
+                                            <DisplayPrice
+                                                usdAmount={item.selling_info?.total_price}
+                                                showEstimatedLabel={false}
+                                                className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark"
+                                            />
                                             <button
                                                 onClick={() => {
                                                     setManualFeedGalleryItem(item);
@@ -664,12 +667,11 @@ const MobileFeed = ({
                                     )
                                 ) : (
                                     <div className="flex items-center justify-between">
-                                        <span className="text-[20px] font-semibold">
-                                            {currency?.symbol}
-                                            {Number(item.selling_info?.total_price).toLocaleString(
-                                                'en-US',
-                                            )}
-                                        </span>
+                                        <DisplayPrice
+                                            usdAmount={item.selling_info?.total_price}
+                                            showEstimatedLabel={false}
+                                            className="text-[20px] font-semibold"
+                                        />
                                         <button
                                             onClick={() => {
                                                 setManualFeedGalleryItem(item);
@@ -1694,7 +1696,7 @@ const MobileFeed = ({
     useEffect(() => {
         return () => {
             if (shouldCleanupBrowserHistoryRef.current) {
-                window.history.replaceState({}, '', window.location.pathname);
+                window.history.replaceState({}, '', '/');
             }
 
             setFeedGallery(null);

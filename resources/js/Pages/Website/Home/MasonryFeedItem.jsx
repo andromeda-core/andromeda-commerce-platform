@@ -1,4 +1,4 @@
-
+import DisplayPrice from '@/Components/DisplayPrice';
 import Spinner from '@/Components/Spinner';
 import { router } from '@inertiajs/react';
 import React, { memo, useState } from 'react';
@@ -8,7 +8,6 @@ const MasonryFeedItem = memo(
         item,
         onClick,
         Placeholder,
-        currency,
         Index,
         isBookmarkPage = false,
         setBookmarkedPosts,
@@ -24,7 +23,7 @@ const MasonryFeedItem = memo(
         if (item.type === 'posts') {
             return (
                 <article
-                    className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
+                    className="group relative mb-2 cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
                     style={{
                         WebkitColumnBreakInside: 'avoid',
                         pageBreakInside: 'avoid',
@@ -87,14 +86,14 @@ const MasonryFeedItem = memo(
                             {loaded && (
                                 <>
                                     <div className="absolute left-3 top-3">
-                                        <span className=" text-white font-semibold text-[13px] lg:text-[14px] leading-[17px]">
+                                        <span className="text-[13px] font-semibold leading-[17px] text-white lg:text-[14px]">
                                             {item?.tag}
                                         </span>
                                     </div>
 
                                     {isBookmarkPage && (
                                         <div
-                                            className="absolute z-30 pointer-events-auto right-3 top-3"
+                                            className="pointer-events-auto absolute right-3 top-3 z-30"
                                             onClick={(e) => {
                                                 setUnmarking(true);
                                                 e.stopPropagation();
@@ -150,12 +149,15 @@ const MasonryFeedItem = memo(
                                     )}
 
                                     <div className="absolute inset-x-0 bottom-0 p-4">
-                                        <div className="mt-1 flex items-center justify-between text-[13px] lg:text-[14px] leading-[17px]">
-                                            <p className="flex-1 min-w-0 font-semibold text-main-text-dark">
+                                        <div className="mt-1 flex items-center justify-between text-[13px] leading-[17px] lg:text-[14px]">
+                                            <p className="min-w-0 flex-1 font-semibold text-main-text-dark">
                                                 <span
-                                                    className="line-clamp-2 break-all !display-['-webkit-box'] [&_*]:inline "
+                                                    className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
                                                     dangerouslySetInnerHTML={{
-                                                        __html: item?.content?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
+                                                        __html: item?.content
+                                                            ?.replace(/<[^>]*>/g, ' ')
+                                                            .replace(/\s+/g, ' ')
+                                                            .trim(),
                                                     }}
                                                 />
                                             </p>
@@ -220,15 +222,14 @@ const MasonryFeedItem = memo(
                             {loaded && (
                                 <>
                                     <div className="absolute left-3 top-3">
-                                        <span className=" text-white  font-semibold text-[13px] lg:text-[14px] leading-[17px]">
+                                        <span className="text-[13px] font-semibold leading-[17px] text-white lg:text-[14px]">
                                             {item?.tag}
                                         </span>
                                     </div>
 
-
                                     {isBookmarkPage && (
                                         <div
-                                            className="absolute z-30 pointer-events-auto right-3 top-3"
+                                            className="pointer-events-auto absolute right-3 top-3 z-30"
                                             onClick={(e) => {
                                                 setUnmarking(true);
                                                 e.stopPropagation();
@@ -284,12 +285,15 @@ const MasonryFeedItem = memo(
                                     )}
 
                                     <div className="absolute inset-x-0 bottom-0 p-4">
-                                        <div className="mt-1 flex items-center justify-between text-[13px] lg:text-[14px] leading-[17px]">
-                                            <p className="flex-1 min-w-0 font-semibold text-main-text-dark">
+                                        <div className="mt-1 flex items-center justify-between text-[13px] leading-[17px] lg:text-[14px]">
+                                            <p className="min-w-0 flex-1 font-semibold text-main-text-dark">
                                                 <span
-                                                    className="line-clamp-2 break-all !display-['-webkit-box'] [&_*]:inline"
+                                                    className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
                                                     dangerouslySetInnerHTML={{
-                                                        __html: item?.content?.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim(),
+                                                        __html: item?.content
+                                                            ?.replace(/<[^>]*>/g, ' ')
+                                                            .replace(/\s+/g, ' ')
+                                                            .trim(),
                                                     }}
                                                 />
                                             </p>
@@ -299,17 +303,18 @@ const MasonryFeedItem = memo(
                             )}
                         </div>
                     ) : (
-                        <div className={`relative flex flex-col bg-surface-2-light lg:group-hover:scale-[1.02] transition-all duration-500 dark:bg-surface-2-dark p-[18px] text-black dark:text-white w-full ${windowSize.width > 1024 ? ' min-h-[clamp(300px,100%,100%)]' : ''}`}>
-
+                        <div
+                            className={`relative flex w-full flex-col bg-surface-2-light p-[18px] text-black transition-all duration-500 dark:bg-surface-2-dark dark:text-white lg:group-hover:scale-[1.02] ${windowSize.width > 1024 ? 'min-h-[clamp(300px,100%,100%)]' : ''}`}
+                        >
                             <div className="absolute left-4 top-3">
-                                <span className=" text-black dark:text-white font-semibold text-[13px] lg:text-[14px] leading-[17px]">
+                                <span className="text-[13px] font-semibold leading-[17px] text-black dark:text-white lg:text-[14px]">
                                     {item?.tag}
                                 </span>
                             </div>
 
                             {isBookmarkPage && (
                                 <div
-                                    className="absolute z-30 pointer-events-auto right-3 top-3"
+                                    className="pointer-events-auto absolute right-3 top-3 z-30"
                                     onClick={(e) => {
                                         setUnmarking(true);
                                         e.stopPropagation();
@@ -328,9 +333,7 @@ const MasonryFeedItem = memo(
                                                     setBookmarkActionPost(updatedItem);
                                                     setBookmarkStatusChanged(true);
                                                     setBookmarkedPosts((prev) =>
-                                                        prev.filter(
-                                                            (post) => post.id !== item.id,
-                                                        ),
+                                                        prev.filter((post) => post.id !== item.id),
                                                     );
                                                 },
 
@@ -365,7 +368,7 @@ const MasonryFeedItem = memo(
                             )}
 
                             <div className="mt-10">
-                                <p className="xl:line-clamp-[20] lg:line-clamp-[16] line-clamp-6 md:line-clamp-[12] sm:line-clamp-[10] whitespace-pre-line break-all opacity-90  text-[13px] lg:text-[14px] leading-[17px]">
+                                <p className="line-clamp-6 whitespace-pre-line break-all text-[13px] leading-[17px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
                                     <span
                                         dangerouslySetInnerHTML={{
                                             __html: item?.content.trim(),
@@ -375,9 +378,6 @@ const MasonryFeedItem = memo(
                             </div>
                         </div>
                     )}
-
-
-
                 </article>
             );
         }
@@ -385,7 +385,7 @@ const MasonryFeedItem = memo(
         // Smartphones
         return (
             <article
-                className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
+                className="group relative mb-2 cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
                 style={{
                     WebkitColumnBreakInside: 'avoid',
                     pageBreakInside: 'avoid',
@@ -449,25 +449,30 @@ const MasonryFeedItem = memo(
                         {loaded && (
                             <>
                                 <div className="absolute left-3 top-3">
-                                    <span className="font-semibold text-white  text-[13px] lg:text-[14px] leading-[17px]">
+                                    <span className="text-[13px] font-semibold leading-[17px] text-white lg:text-[14px]">
                                         {item?.tag}
                                     </span>
                                 </div>
 
-                                <div className="absolute inset-x-0 bottom-0 p-3 bg-transparent">
-                                    <div className="mt-2 flex flex-col font-semibold items-start text-[13px] lg:text-[14px] leading-[17px] w-full">
-                                        <p className="w-full text-white truncate">
-                                            {item.selling_info?.total_price
-                                                ? `${currency?.symbol}${Number(item.selling_info.total_price).toLocaleString('en-US')}`
-                                                : ''}
+                                <div className="absolute inset-x-0 bottom-0 bg-transparent p-3">
+                                    <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
+                                        <p className="w-full truncate text-white">
+                                            {item.selling_info?.total_price ? (
+                                                <DisplayPrice
+                                                    usdAmount={item.selling_info.total_price}
+                                                    size="sm"
+                                                    className="w-full truncate text-white"
+                                                />
+                                            ) : (
+                                                ''
+                                            )}
                                         </p>
 
-                                        <p className="w-full text-white truncate">
+                                        <p className="w-full truncate text-white">
                                             {item.name} ({item.capacity})
                                         </p>
                                     </div>
                                 </div>
-
                             </>
                         )}
                     </div>
@@ -526,36 +531,39 @@ const MasonryFeedItem = memo(
 
                         {loaded && (
                             <>
-                                <div className="absolute inset-x-0 bottom-0 p-3 bg-transparent">
-                                    <div className="mt-2 flex flex-col font-semibold items-start text-[13px] lg:text-[14px] leading-[17px] w-full">
-                                        <p className="w-full text-white truncate">
-                                            {item.selling_info?.total_price
-                                                ? `${currency?.symbol}${item.selling_info.total_price}`
-                                                : ''}
+                                <div className="absolute inset-x-0 bottom-0 bg-transparent p-3">
+                                    <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
+                                        <p className="w-full truncate text-white">
+                                            {item.selling_info?.total_price ? (
+                                                <DisplayPrice
+                                                    usdAmount={item.selling_info.total_price}
+                                                    size="sm"
+                                                />
+                                            ) : (
+                                                ''
+                                            )}
                                         </p>
 
-                                        <p className="w-full text-white truncate">
+                                        <p className="w-full truncate text-white">
                                             {item.name} ({item.capacity})
                                         </p>
                                     </div>
                                 </div>
-
                             </>
                         )}
                     </div>
                 ) : (
-                    <div className={`relative flex flex-col bg-surface-2-light dark:bg-surface-2-dark p-[18px] text-black lg:group-hover:scale-[1.02] transition-all duration-500 dark:text-white w-full ${windowSize.width > 1024 ? ' min-h-[clamp(300px,100%,100%)]' : ''}`}>
-
+                    <div
+                        className={`relative flex w-full flex-col bg-surface-2-light p-[18px] text-black transition-all duration-500 dark:bg-surface-2-dark dark:text-white lg:group-hover:scale-[1.02] ${windowSize.width > 1024 ? 'min-h-[clamp(300px,100%,100%)]' : ''}`}
+                    >
                         <div className="absolute left-4 top-3">
-                            <span className=" text-black dark:text-white font-semibold text-[13px] lg:text-[14px] leading-[17px]">
+                            <span className="text-[13px] font-semibold leading-[17px] text-black dark:text-white lg:text-[14px]">
                                 {item?.tag}
                             </span>
                         </div>
 
-
-
                         <div className="relative mt-10 pb-[42px]">
-                            <p className="xl:line-clamp-[20] lg:line-clamp-[16] line-clamp-6 md:line-clamp-[12] sm:line-clamp-[10] whitespace-pre-line break-all opacity-90 text-[13px] lg:text-[14px] leading-[17px]]">
+                            <p className="leading-[17px]] line-clamp-6 whitespace-pre-line break-all text-[13px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
                                 <span
                                     dangerouslySetInnerHTML={{
                                         __html: item?.content.trim(),
@@ -565,20 +573,22 @@ const MasonryFeedItem = memo(
 
                             {/* PRICE bottom bar */}
                             <div className="absolute inset-x-0 bottom-0 bg-transparent text-main-text-light dark:text-main-text-dark">
-                                <div className="flex flex-col font-semibold items-start text-[13px] lg:text-[14px] leading-[17px] w-full">
+                                <div className="flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                     <p className="w-full truncate">
-                                        {item.selling_info?.total_price
-                                            ? `${currency?.symbol}${Number(item.selling_info.total_price).toLocaleString('en-US')}`
-                                            : ''}
+                                        {item.selling_info?.total_price ? (
+                                            <DisplayPrice
+                                                usdAmount={item.selling_info.total_price}
+                                                size="sm"
+                                            />
+                                        ) : (
+                                            ''
+                                        )}
                                     </p>
                                 </div>
                             </div>
                         </div>
-
-
                     </div>
                 )}
-
             </article>
         );
     },

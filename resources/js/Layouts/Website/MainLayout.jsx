@@ -1,4 +1,5 @@
 import AppStatusManager from '@/Components/AppStatusManager';
+import CurrencySwitcher from '@/Components/CurrencySwitcher';
 import Preloader from '@/Components/Preloader';
 import PWAAlertBar from '@/Components/PWAAlertBar';
 import Toast from '@/Components/Toast';
@@ -234,6 +235,12 @@ export default function MainLayout({ children }) {
                     previousUrlRef={previousUrlRef}
                     languages={languages}
                     loading={loading}
+                />
+
+                {/* Currency switcher — website only, not dashboard */}
+                <CurrencySwitcher
+                    isOpen={activeModal === 'currency-switcher'}
+                    close={() => setActiveModal(null)}
                 />
 
 

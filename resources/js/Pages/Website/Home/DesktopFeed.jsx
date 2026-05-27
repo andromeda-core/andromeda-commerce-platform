@@ -11,6 +11,7 @@ import CustomizedVideoPlayer from '@/Components/CustomizedVideoPlayer';
 import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
 import SmartphoneDetailsAccordion from '@/Components/SmartphoneDetailsAccordion';
 import axios from 'axios';
+import DisplayPrice from '@/Components/DisplayPrice';
 
 const DesktopFeed = ({
     feedGallery,
@@ -256,7 +257,7 @@ const DesktopFeed = ({
                 case 'Escape':
                     setFeedGallery(null);
                     setFeedOpen(false);
-                    window.history.replaceState({}, '', window.location.pathname);
+                    window.history.replaceState({}, '', '/');
                     break;
             }
         };
@@ -1039,7 +1040,7 @@ const DesktopFeed = ({
     useEffect(() => {
         return () => {
             if (shouldCleanupBrowserHistoryRef.current) {
-                window.history.replaceState({}, '', window.location.pathname);
+                window.history.replaceState({}, '', '/');
             }
             setShowQrCode(false);
             setCartProcessing(false);
@@ -1463,9 +1464,10 @@ const DesktopFeed = ({
                                                 <div>
                                                     {feedGallery?.tag && (
                                                         <button
-                                                            onClick={() =>
-                                                                navigateToHashtag(feedGallery?.tag)
-                                                            }
+                                                            onClick={() => {
+                                                                shouldCleanupBrowserHistoryRef.current = false;
+                                                                navigateToHashtag(feedGallery?.tag);
+                                                            }}
                                                             className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                         >
                                                             {feedGallery?.tag}
@@ -2034,11 +2036,12 @@ const DesktopFeed = ({
                                                             <div>
                                                                 {feedGallery?.tag && (
                                                                     <button
-                                                                        onClick={() =>
+                                                                        onClick={() => {
+                                                                            shouldCleanupBrowserHistoryRef.current = false;
                                                                             navigateToHashtag(
                                                                                 feedGallery?.tag,
-                                                                            )
-                                                                        }
+                                                                            );
+                                                                        }}
                                                                         className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
                                                                         {feedGallery?.tag}
@@ -2199,20 +2202,16 @@ const DesktopFeed = ({
 
                                                                                         {/* Price */}
                                                                                         <div className="flex-shrink-0">
-                                                                                            <p className="text-xl font-medium text-main-text-light dark:text-main-text-dark">
-                                                                                                {
-                                                                                                    currency?.name
-                                                                                                }{' '}
-                                                                                                {
-                                                                                                    currency?.symbol
+                                                                                            <DisplayPrice
+                                                                                                usdAmount={
+                                                                                                    smartphone?.price
                                                                                                 }
-                                                                                                {''}
-                                                                                                {Number(
-                                                                                                    smartphone?.price,
-                                                                                                ).toLocaleString(
-                                                                                                    'en-US',
-                                                                                                )}
-                                                                                            </p>
+                                                                                                showCode
+                                                                                                showEstimatedLabel={
+                                                                                                    false
+                                                                                                }
+                                                                                                className="text-xl font-medium text-main-text-light dark:text-main-text-dark"
+                                                                                            />
                                                                                         </div>
                                                                                     </div>
                                                                                 </div>
@@ -2338,20 +2337,16 @@ const DesktopFeed = ({
 
                                                                                     {/* Price */}
                                                                                     <div className="flex-shrink-0">
-                                                                                        <p className="text-xl font-medium text-main-text-light dark:text-main-text-dark">
-                                                                                            {
-                                                                                                currency?.name
-                                                                                            }{' '}
-                                                                                            {
-                                                                                                currency?.symbol
+                                                                                        <DisplayPrice
+                                                                                            usdAmount={
+                                                                                                addon?.price
                                                                                             }
-                                                                                            {''}
-                                                                                            {Number(
-                                                                                                addon?.price,
-                                                                                            ).toLocaleString(
-                                                                                                'en-US',
-                                                                                            )}
-                                                                                        </p>
+                                                                                            showCode
+                                                                                            showEstimatedLabel={
+                                                                                                false
+                                                                                            }
+                                                                                            className="text-xl font-medium text-main-text-light dark:text-main-text-dark"
+                                                                                        />
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
@@ -2365,15 +2360,15 @@ const DesktopFeed = ({
                                                                     <span className="text-left font-medium text-main-text-light dark:text-main-text-dark">
                                                                         {__('Total Price')}
                                                                     </span>
-                                                                    <span className="ml-auto text-right text-3xl font-semibold text-main-text-light dark:text-main-text-dark">
-                                                                        {currency?.symbol}
-                                                                        {Number(
+                                                                    <DisplayPrice
+                                                                        usdAmount={
                                                                             smartphoneTotalPrice[
                                                                                 feedGallery?.id
-                                                                            ],
-                                                                        ).toLocaleString('en-US') ||
-                                                                            0}
-                                                                    </span>
+                                                                            ]
+                                                                        }
+                                                                        showEstimatedLabel={false}
+                                                                        className="ml-auto text-right text-3xl font-semibold text-main-text-light dark:text-main-text-dark"
+                                                                    />
                                                                 </div>
 
                                                                 {/* Buttons */}
@@ -3266,11 +3261,12 @@ const DesktopFeed = ({
                                                             <div>
                                                                 {feedGallery?.tag && (
                                                                     <button
-                                                                        onClick={() =>
+                                                                        onClick={() => {
+                                                                            shouldCleanupBrowserHistoryRef.current = false;
                                                                             navigateToHashtag(
                                                                                 feedGallery?.tag,
-                                                                            )
-                                                                        }
+                                                                            );
+                                                                        }}
                                                                         className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
                                                                         {feedGallery?.tag}
@@ -3960,11 +3956,12 @@ const DesktopFeed = ({
                                                             <div>
                                                                 {feedGallery?.tag && (
                                                                     <button
-                                                                        onClick={() =>
+                                                                        onClick={() => {
+                                                                            shouldCleanupBrowserHistoryRef.current = false;
                                                                             navigateToHashtag(
                                                                                 feedGallery?.tag,
-                                                                            )
-                                                                        }
+                                                                            );
+                                                                        }}
                                                                         className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
                                                                         {feedGallery?.tag}
@@ -4125,20 +4122,16 @@ const DesktopFeed = ({
 
                                                                                         {/* Price */}
                                                                                         <div className="flex-shrink-0">
-                                                                                            <p className="text-xl font-medium text-main-text-light dark:text-main-text-dark">
-                                                                                                {
-                                                                                                    currency?.name
-                                                                                                }{' '}
-                                                                                                {
-                                                                                                    currency?.symbol
+                                                                                            <DisplayPrice
+                                                                                                usdAmount={
+                                                                                                    smartphone?.price
                                                                                                 }
-                                                                                                {''}
-                                                                                                {Number(
-                                                                                                    smartphone?.price,
-                                                                                                ).toLocaleString(
-                                                                                                    'en-US',
-                                                                                                )}
-                                                                                            </p>
+                                                                                                showCode
+                                                                                                showEstimatedLabel={
+                                                                                                    false
+                                                                                                }
+                                                                                                className="text-xl font-medium text-main-text-light dark:text-main-text-dark"
+                                                                                            />
                                                                                         </div>
                                                                                     </div>
                                                                                 </div>
@@ -4264,20 +4257,16 @@ const DesktopFeed = ({
 
                                                                                     {/* Price */}
                                                                                     <div className="flex-shrink-0">
-                                                                                        <p className="text-xl font-medium text-main-text-light dark:text-main-text-dark">
-                                                                                            {
-                                                                                                currency?.name
-                                                                                            }{' '}
-                                                                                            {
-                                                                                                currency?.symbol
+                                                                                        <DisplayPrice
+                                                                                            usdAmount={
+                                                                                                addon?.price
                                                                                             }
-                                                                                            {''}
-                                                                                            {Number(
-                                                                                                addon?.price,
-                                                                                            ).toLocaleString(
-                                                                                                'en-US',
-                                                                                            )}
-                                                                                        </p>
+                                                                                            showCode
+                                                                                            showEstimatedLabel={
+                                                                                                false
+                                                                                            }
+                                                                                            className="text-xl font-medium text-main-text-light dark:text-main-text-dark"
+                                                                                        />
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
@@ -4291,15 +4280,15 @@ const DesktopFeed = ({
                                                                     <span className="text-left font-medium text-main-text-light dark:text-main-text-dark">
                                                                         {__('Total Price')}
                                                                     </span>
-                                                                    <span className="ml-auto text-right text-3xl font-semibold text-main-text-light dark:text-main-text-dark">
-                                                                        {currency?.symbol}
-                                                                        {Number(
+                                                                    <DisplayPrice
+                                                                        usdAmount={
                                                                             smartphoneTotalPrice[
                                                                                 feedGallery?.id
-                                                                            ],
-                                                                        ).toLocaleString('en-US') ||
-                                                                            0}
-                                                                    </span>
+                                                                            ]
+                                                                        }
+                                                                        showEstimatedLabel={false}
+                                                                        className="ml-auto text-right text-3xl font-semibold text-main-text-light dark:text-main-text-dark"
+                                                                    />
                                                                 </div>
 
                                                                 {/* Buttons */}

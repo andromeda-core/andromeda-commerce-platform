@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use App\Models\CartItem;
 use App\Models\SmartphoneCartAddon;
+use App\Services\CurrencyResolverService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
@@ -73,6 +74,39 @@ class HandleInertiaRequests extends Middleware
 
             'generalSetting' => Cache::get('general_config'),
             'currency' => Cache::get('currency'),
+
+            'displayCurrency' => function () {
+                try {
+                    return (new CurrencyResolverService())->resolve();
+                } catch (\Throwable $e) {
+                    return [
+                        'currency_id'     => null,
+                        'code'            => 'USD',
+                        'symbol'          => '$',
+                        'exchange_rate'   => 1.0,
+                        'rate_source'     => null,
+                        'rate_updated_at' => null,
+                        'is_fallback'     => true,
+                    ];
+                }
+            },
+
+            // Lazy: all active currencies with a usable exchange rate, for the
+            // currency-switcher dropdown. Cached 1 hour; invalidated by Currency model events.
+            'availableCurrencies' => function () {
+                try {
+                    return Cache::remember('available_currencies', 3600, function () {
+                        return \App\Models\Currency::where('exchange_rate', '>', 0)
+                            ->orderBy('name')
+                            ->with('country:id,name')
+                            ->get(['id', 'name', 'symbol', 'country_id', 'exchange_rate'])
+                            ->toArray();
+                    });
+                } catch (\Throwable $e) {
+                    return [];
+                }
+            },
+
             // 'googleMapSetting' => Cache::get('google_map_setting'),
 
             'asset' => asset(''),

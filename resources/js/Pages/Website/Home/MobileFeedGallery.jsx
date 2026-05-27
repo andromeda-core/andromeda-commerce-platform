@@ -1,37 +1,33 @@
-import React from 'react'
-import SmartphoneMobileFeedGallery from "./SmartphoneMobileFeedGallery";
+import React from 'react';
+import SmartphoneMobileFeedGallery from './SmartphoneMobileFeedGallery';
 import PostMobileFeedGallery from './PostMobileFeedGallery';
-const MobileFeedGallery = (
-    {
-        feedGallery,
-        setShowQrCode,
-        setLinkCopied,
-        auth,
-        currency,
-        navigateToHashtag,
-        placeholderImage,
-        generateURL,
-        __,
-        showErrorMessage,
-        showInfoMessage,
-        ErrorMessage,
-        InfoMessage,
-        setInfoMessage,
-        setShowInfoMessage,
-        setErrorMessage,
-        setShowErrorMessage,
-        setBookmarkStatusChanged,
-        isDarkMode,
-        setMobileFeedGalleryOpen,
-        generateSmartphoneURL,
-        shouldCleanupBrowserHistoryRef,
-        setSpatiotemporalInfoModal,
-        spatiotemporalInfoModal,
-        previous_url = null,
-    }
-
-) => {
-
+const MobileFeedGallery = ({
+    feedGallery,
+    setShowQrCode,
+    setLinkCopied,
+    auth,
+    currency,
+    navigateToHashtag,
+    placeholderImage,
+    generateURL,
+    __,
+    showErrorMessage,
+    showInfoMessage,
+    ErrorMessage,
+    InfoMessage,
+    setInfoMessage,
+    setShowInfoMessage,
+    setErrorMessage,
+    setShowErrorMessage,
+    setBookmarkStatusChanged,
+    isDarkMode,
+    setMobileFeedGalleryOpen,
+    generateSmartphoneURL,
+    shouldCleanupBrowserHistoryRef,
+    setSpatiotemporalInfoModal,
+    spatiotemporalInfoModal,
+    previous_url = null,
+}) => {
     return (
         <>
             {feedGallery?.type === 'smartphones' && (
@@ -58,11 +54,8 @@ const MobileFeedGallery = (
                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                     previous_url={previous_url}
                     __={__}
-
                 />
             )}
-
-
 
             {feedGallery?.type === 'posts' && (
                 <PostMobileFeedGallery
@@ -76,6 +69,7 @@ const MobileFeedGallery = (
                     isDarkMode={isDarkMode}
                     auth={auth}
                     __={__}
+                    shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
                     setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
@@ -83,7 +77,7 @@ const MobileFeedGallery = (
                 />
             )}
         </>
-    )
-}
+    );
+};
 
-export default MobileFeedGallery
+export default MobileFeedGallery;
