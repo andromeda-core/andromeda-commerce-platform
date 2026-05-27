@@ -220,6 +220,11 @@ class Order extends Model
         return $this->hasOne(AttributionReward::class);
     }
 
+    public function currencySnapshot(): HasOne
+    {
+        return $this->hasOne(OrderCurrencySnapshot::class, 'order_id', 'id');
+    }
+
 
     // Static Booting
     public static function booted()

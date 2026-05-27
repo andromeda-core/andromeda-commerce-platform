@@ -84,7 +84,7 @@ class NOWPaymentInvoiceStatusCheck extends Command
 
                     switch ($paymentStatus) {
                         case 'finished':
-                            DB::transaction(function () use ($order) {
+                            DB::transaction(function () use ($order, $data) {
                                 $order->update(['status' => 'paid', 'amount' => 0]);
                                 $order->payment()->update([
                                     'status' => 'confirmed',
@@ -106,6 +106,28 @@ class NOWPaymentInvoiceStatusCheck extends Command
                                             ]);
                                         }
                                     }
+                                }
+
+                                // Phase 2: persist the actual crypto coin the customer chose on
+                                // the NOWPayments hosted page. Only fills the field when empty
+                                // (i.e. crypto flow) — bank_transfer/points values are preserved.
+                                try {
+                                    if (
+                                        $order->currencySnapshot
+                                        && empty($order->currencySnapshot->selected_pay_currency)
+                                        && !empty($data['pay_currency'])
+                                    ) {
+                                        $order->currencySnapshot->update([
+                                            'selected_pay_currency' => strtoupper((string) $data['pay_currency']),
+                                        ]);
+                                    }
+                                } catch (\Throwable $e) {
+                                    \Log::error('OrderCurrencySnapshot Phase 2 update failed', [
+                                        'order_id' => $order->id,
+                                        'np_id'    => $order->np_id,
+                                        'error'    => $e->getMessage(),
+                                    ]);
+                                    // Swallow — payment flow must continue
                                 }
                             });
 

@@ -1420,6 +1420,87 @@ export default function show({ order, auth }) {
                                 }
                             />
 
+                            {/* Currency Snapshot (Audit) */}
+                            {order?.currency_snapshot && (
+                                <Card
+                                    Content={
+                                        <div className="p-6">
+                                            <div className="mb-4 flex items-center justify-between">
+                                                <h2 className="text-lg font-semibold text-gray-900 dark:text-white/90">
+                                                    Currency Snapshot (Audit)
+                                                </h2>
+                                                <span className="text-xs text-gray-500 dark:text-white/60">
+                                                    Internal record — not visible to customer
+                                                </span>
+                                            </div>
+                                            <div className="grid grid-cols-1 gap-3 text-sm md:grid-cols-2">
+                                                <div className="flex justify-between">
+                                                    <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                        Base Settlement
+                                                    </span>
+                                                    <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                        {order.currency_snapshot.base_currency}{' '}
+                                                        {Number(order.currency_snapshot.base_amount).toLocaleString('en-US', {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                        Customer Saw
+                                                    </span>
+                                                    <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                        {order.currency_snapshot.display_currency}{' '}
+                                                        {Number(order.currency_snapshot.display_amount).toLocaleString('en-US', {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                        Exchange Rate
+                                                    </span>
+                                                    <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                        1 {order.currency_snapshot.base_currency} ={' '}
+                                                        {Number(order.currency_snapshot.exchange_rate).toLocaleString('en-US', {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 4,
+                                                        })}{' '}
+                                                        {order.currency_snapshot.display_currency}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                        Rate Source
+                                                    </span>
+                                                    <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                        {order.currency_snapshot.rate_source || 'N/A'}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                        Rate Timestamp
+                                                    </span>
+                                                    <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                        {order.currency_snapshot.rate_timestamp_display}
+                                                    </span>
+                                                </div>
+                                                <div className="flex justify-between">
+                                                    <span className="text-sub-text-light dark:text-sub-text-dark">
+                                                        Paid In
+                                                    </span>
+                                                    <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                        {order.currency_snapshot.selected_pay_currency_display}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                />
+                            )}
+
                             {/* Addresses */}
                             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                                 {order?.shipping_address_line1 && (

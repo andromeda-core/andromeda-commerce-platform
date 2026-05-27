@@ -169,6 +169,7 @@ class OrderRepository implements IOrderRepository
                 'orderItems.smartphone.category.distributor.user',
                 'orderItems.color',
                 'orderItems.smartphoneAddons',
+                'currencySnapshot',
             ]
         )->find($id);
 
@@ -1178,6 +1179,8 @@ class OrderRepository implements IOrderRepository
                     throw new Exception($order['message']);
                 }
 
+                $this->createOrderCurrencySnapshot($order['order'], $order_data);
+
                 if (blank($sessionData)) {
                     $this->clearCartExistingItems($customer->id);
                     $this->clearExistingAddonItems($customer->id, $this->smartphone_cart_addon);
@@ -1196,6 +1199,10 @@ class OrderRepository implements IOrderRepository
                 ];
             } elseif ($payment_method === 'crypto') {
                 $order = $this->createOrderFromWebsite($order_data, $order_items, 'awaiting_payment', order_item_addons: $smartphone_addon_order_items, user: $user);
+
+                if (!empty($order['order'])) {
+                    $this->createOrderCurrencySnapshot($order['order'], $order_data);
+                }
 
                 $response = [];
 
@@ -1252,6 +1259,8 @@ class OrderRepository implements IOrderRepository
                 if ($order['status'] === false) {
                     throw new Exception($order['message']);
                 }
+
+                $this->createOrderCurrencySnapshot($order['order'], $order_data);
 
                 if (blank($sessionData)) {
                     $this->clearCartExistingItems($customer->id);
@@ -1503,6 +1512,108 @@ class OrderRepository implements IOrderRepository
                 'amount'       => $payload['full_amount'] ?? 0,
             ]);
         }
+    }
+
+    /**
+     * Create an audit-only currency snapshot for the placed order.
+     *
+     * Intentionally non-blocking — any failure is logged and swallowed.
+     * The order must succeed even if the snapshot cannot be persisted.
+     *
+     * selected_pay_currency follows a two-phase lifecycle:
+     *   Phase 1 (here): 'bank_transfer', 'points', or NULL (crypto unknown yet)
+     *   Phase 2: NOWPaymentInvoiceStatusCheck fills NULL with the actual coin
+     */
+    private function createOrderCurrencySnapshot(\App\Models\Order $order, array $order_data): void
+    {
+        try {
+            $resolved = app(\App\Services\CurrencyResolverService::class)->resolve();
+
+            $displayCode   = $resolved['code']            ?? 'USD';
+            $exchangeRate  = (float) ($resolved['exchange_rate'] ?? 1);
+            $rateSource    = $resolved['rate_source']      ?? null;
+            $rateTimestamp = $resolved['rate_updated_at']  ?? null;
+
+            $baseAmount    = (float) ($order->amount ?? 0);
+            $displayAmount = round($baseAmount * $exchangeRate, 2);
+
+            $payCurrency = $this->resolvePhaseOnePayCurrency(
+                $order,
+                $order_data['payment_method']           ?? null,
+                $order_data['secondary_payment_method'] ?? null
+            );
+
+            \App\Models\OrderCurrencySnapshot::create([
+                'order_id'              => $order->id,
+                'base_currency'         => 'USD',
+                'base_amount'           => $baseAmount,
+                'display_currency'      => $displayCode,
+                'display_amount'        => $displayAmount,
+                'exchange_rate'         => $exchangeRate,
+                'rate_source'           => $rateSource,
+                'rate_timestamp'        => $rateTimestamp,
+                'selected_pay_currency' => $payCurrency,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('OrderCurrencySnapshot creation failed', [
+                'order_id' => $order->id ?? null,
+                'error'    => $e->getMessage(),
+            ]);
+            // Swallow — never block order placement
+        }
+    }
+
+    /**
+     * Decide selected_pay_currency at Phase 1.
+     *
+     * Precedence rule 1 — if the order ended up fully paid by points
+     * (status='paid', amount=0, points_used>0), the effective settlement
+     * currency is 'points' regardless of which payment_method was originally
+     * selected. This handles the edge case where a customer chooses crypto
+     * but their points fully cover the order, so NOWPayments is never invoked
+     * and Phase 2 (NOWPaymentInvoiceStatusCheck) never runs.
+     *
+     * Precedence rule 2 — payment_method matrix fallback:
+     *   bank_transfer                          → 'bank_transfer'
+     *   crypto                                 → null  (Phase 2 fills it)
+     *   points only                            → 'points'
+     *   points + bank_transfer (secondary)     → 'bank_transfer'
+     *   points + crypto (secondary)            → null  (Phase 2 fills it)
+     */
+    private function resolvePhaseOnePayCurrency(
+        \App\Models\Order $order,
+        ?string $payment_method,
+        ?string $secondary_payment_method
+    ): ?string {
+        $orderStatus = (string) ($order->status ?? '');
+        $orderAmount = (float)  ($order->amount ?? 0);
+        $pointsUsed  = (float)  ($order->points_used ?? 0);
+
+        if ($orderStatus === 'paid' && $orderAmount == 0.0 && $pointsUsed > 0) {
+            return 'points';
+        }
+
+        if ($payment_method === 'bank_transfer') {
+            return 'bank_transfer';
+        }
+
+        if ($payment_method === 'crypto') {
+            return null;
+        }
+
+        if ($payment_method === 'points') {
+            if (empty($secondary_payment_method)) {
+                return 'points';
+            }
+            if ($secondary_payment_method === 'bank_transfer') {
+                return 'bank_transfer';
+            }
+            if ($secondary_payment_method === 'crypto') {
+                return null;
+            }
+        }
+
+        return null;
     }
 
     public function getCustomerOrders(Request $request)
