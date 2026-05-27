@@ -44,9 +44,32 @@ export default function index({ currencies }) {
                 badge: (value) => 'p-2 bg-blue-500 rounded-lg text-white',
             },
             {
+                label: 'Country',
+                render: (item) => item.country?.name ?? '—',
+            },
+            {
+                label: 'Exchange Rate (per 1 USD)',
+                render: (item) =>
+                    item.exchange_rate !== null &&
+                    item.exchange_rate !== undefined &&
+                    item.exchange_rate !== ''
+                        ? item.exchange_rate
+                        : '—',
+            },
+
+            {
+                label: 'Exchange Rate Source',
+                render: (item) =>
+                    item.rate_source !== null &&
+                    item.rate_source !== undefined &&
+                    item.rate_source !== ''
+                        ? item.rate_source
+                        : '—',
+            },
+            {
                 label: 'Currency Status',
                 render: (item) => {
-                    if (item.is_active === 1) {
+                    if (item.is_active) {
                         return (
                             <>
                                 <label className="inline-flex cursor-pointer items-center">
@@ -54,7 +77,7 @@ export default function index({ currencies }) {
                                         type="checkbox"
                                         value={item.is_active}
                                         onChange={() => toggleStatus(item.id)}
-                                        checked={item.is_active === 1}
+                                        checked={!!item.is_active}
                                         className="peer sr-only"
                                     />
                                     <div className="peer relative h-6 w-11 rounded-full bg-gray-200 after:absolute after:start-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-green-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 dark:border-gray-600 dark:bg-gray-700 dark:peer-checked:bg-green-500 dark:peer-focus:ring-green-800 rtl:peer-checked:after:-translate-x-full"></div>

@@ -1225,7 +1225,7 @@ class SettingRepository implements ISettingRepository
 
     public function getAllCurrencies()
     {
-        $currencies = $this->currency->latest()->paginate(10);
+        $currencies = $this->currency->with('country')->latest()->paginate(10);
 
         return $currencies;
     }
@@ -1240,8 +1240,11 @@ class SettingRepository implements ISettingRepository
     public function storeCurrency(Request $request)
     {
         $validated_req = $request->validate([
-            'name' => ['required', 'max:100', 'string', 'unique:currencies,name'],
-            'symbol' => ['required', 'max:10', 'string', 'unique:currencies,symbol'],
+            'name'          => ['required', 'max:100', 'string', 'unique:currencies,name'],
+            'symbol'        => ['required', 'max:10', 'string', 'unique:currencies,symbol'],
+            'country_id'    => ['nullable', 'exists:countries,id', 'unique:currencies,country_id'],
+            'exchange_rate' => ['required', 'numeric', 'min:0'],
+            'rate_source'   => ['nullable', 'string', 'max:100'],
         ], [
             'name.required' => 'Currency Name Is Required',
             'name.max' => 'Currency Name Must Not Exceed 100 Characters',
@@ -1253,9 +1256,16 @@ class SettingRepository implements ISettingRepository
             'symbol.string' => 'Currency Symbol Must Be String',
             'symbol.unique' => 'Currency Symbol Is Already Exists',
 
+            'country_id.exists'      => 'The selected country does not exist.',
+            'country_id.unique'      => 'This country is already linked to another currency. Each country can only be linked to one currency.',
+            'exchange_rate.required' => 'Exchange Rate Is Required',
+            'exchange_rate.numeric'  => 'Exchange Rate Must Be A Number',
+            'exchange_rate.min'      => 'Exchange Rate Cannot Be Negative',
         ]);
 
         try {
+
+            $validated_req['rate_updated_at'] = now();
 
             if ($this->currency->count() == 0) {
                 $validated_req['is_active'] = true;
@@ -1282,8 +1292,11 @@ class SettingRepository implements ISettingRepository
     public function updateCurrency(Request $request, string $id)
     {
         $validated_req = $request->validate([
-            'name' => ['required', 'max:100', 'string', 'unique:currencies,name,' . $id],
-            'symbol' => ['required', 'max:10', 'string', 'unique:currencies,symbol,' . $id],
+            'name'          => ['required', 'max:100', 'string', 'unique:currencies,name,' . $id],
+            'symbol'        => ['required', 'max:10', 'string', 'unique:currencies,symbol,' . $id],
+            'country_id'    => ['nullable', 'exists:countries,id', 'unique:currencies,country_id,' . $id],
+            'exchange_rate' => ['required', 'numeric', 'min:0'],
+            'rate_source'   => ['nullable', 'string', 'max:100'],
         ], [
             'name.required' => 'Currency Name Is Required',
             'name.max' => 'Currency Name Must Not Exceed 100 Characters',
@@ -1295,6 +1308,11 @@ class SettingRepository implements ISettingRepository
             'symbol.string' => 'Currency Symbol Must Be String',
             'symbol.unique' => 'Currency Symbol Is Already Exists',
 
+            'country_id.exists'      => 'The selected country does not exist.',
+            'country_id.unique'      => 'This country is already linked to another currency. Each country can only be linked to one currency.',
+            'exchange_rate.required' => 'Exchange Rate Is Required',
+            'exchange_rate.numeric'  => 'Exchange Rate Must Be A Number',
+            'exchange_rate.min'      => 'Exchange Rate Cannot Be Negative',
         ]);
 
         try {
@@ -1302,6 +1320,10 @@ class SettingRepository implements ISettingRepository
 
             if (empty($currency)) {
                 throw new Exception('Currency Not Found');
+            }
+
+            if ((string) $currency->exchange_rate !== (string) $validated_req['exchange_rate']) {
+                $validated_req['rate_updated_at'] = now();
             }
 
             $updated = $currency->update($validated_req);

@@ -827,7 +827,9 @@ class SettingController extends Controller implements HasMiddleware
 
     public function currencyCreate()
     {
-        return Inertia::render('Dashboard/Settings/Currencies/create');
+        $countries = $this->setting->getCountries();
+
+        return Inertia::render('Dashboard/Settings/Currencies/create', compact('countries'));
     }
 
     public function currencyStore(Request $request)
@@ -853,7 +855,9 @@ class SettingController extends Controller implements HasMiddleware
             return to_route('dashboard.settings.currencies.index')->with('error', 'Currency not found');
         }
 
-        return Inertia::render('Dashboard/Settings/Currencies/edit', compact('currency'));
+        $countries = $this->setting->getCountries();
+
+        return Inertia::render('Dashboard/Settings/Currencies/edit', compact('currency', 'countries'));
     }
 
     public function currencyUpdate(Request $request, ?string $id = null)
