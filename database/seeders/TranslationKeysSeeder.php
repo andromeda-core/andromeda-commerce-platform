@@ -342,6 +342,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Pay directly to our bank account', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Crypto Payment', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Pay with crypto currency', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Currency', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Use Points', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Points to use', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Enter points amount', 'created_at' => $now, 'updated_at' => $now],
