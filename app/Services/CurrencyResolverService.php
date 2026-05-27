@@ -131,7 +131,6 @@ class CurrencyResolverService
         }
 
         return Currency::where('country_id', $countryId)
-            ->where('is_active', true)
             ->first();
     }
 
@@ -180,7 +179,6 @@ class CurrencyResolverService
     {
         try {
             $usd = Currency::where('name', 'USD')
-                ->where('is_active', true)
                 ->first();
 
             if ($usd !== null) {

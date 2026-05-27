@@ -999,4 +999,28 @@ Route::post('/scanner/ai-decode', [OpenAiController::class, 'aiDecode'])
 
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
+// Route::get('/debug-currency', function () {
+//     $resolver = app(\App\Services\CurrencyResolverService::class);
+//     $displayCurrency = $resolver->resolve();
+
+//     return [
+//         'request_ip' => request()->ip(),
+//         'pricing_country_cookie' => request()->cookie('pricing_country_id'),
+//         'display_currency_cookie' => request()->cookie('display_currency_id'),
+//         'resolved_country_id' => \App\Services\IPResolverService::resolveCountryIDFromIP(),
+//         'display_currency' => $displayCurrency,
+//         'pakistan_currency' => \App\Models\Currency::where('country_id', 132)->first(),
+//         'all_currencies' => \App\Models\Currency::with('country')->get()->map(function ($c) {
+//             return [
+//                 'id' => $c->id,
+//                 'name' => $c->name,
+//                 'symbol' => $c->symbol,
+//                 'country_id' => $c->country_id,
+//                 'country_iso' => $c->country?->iso_code,
+//                 'exchange_rate' => $c->exchange_rate,
+//                 'is_active' => $c->is_active,
+//             ];
+//         }),
+//     ];
+// });
 require __DIR__ . '/auth.php';
