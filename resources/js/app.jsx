@@ -1,11 +1,25 @@
 import '../css/app.css';
 import './bootstrap';
 
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 
-
+router.on('before', () => {
+    try {
+        const current = window.location.pathname + window.location.search;
+        // Sirf shop/bookmarks origins store karo, feed/product/post nahi
+        if (current.includes('/shop') || current.includes('/bookmarks')) {
+            sessionStorage.setItem('andromeda_prev_url', current);
+        } else if (
+            current === '/' ||
+            current.startsWith('/post/') ||
+            current.startsWith('/product/')
+        ) {
+            sessionStorage.removeItem('andromeda_prev_url');
+        }
+    } catch (e) {}
+});
 function generateDeviceFingerprint() {
     const raw = [
         navigator.userAgent,
@@ -16,7 +30,6 @@ function generateDeviceFingerprint() {
 
     return btoa(raw).substring(0, 128);
 }
-
 
 createInertiaApp({
     title: (title) => {
@@ -47,16 +60,15 @@ createInertiaApp({
 
             const fingerprint = generateDeviceFingerprint();
 
-            axios.post(route('device-fingerprint.store'), { device_fingerprint: fingerprint })
-                .catch(() => {
-                });
+            axios
+                .post(route('device-fingerprint.store'), { device_fingerprint: fingerprint })
+                .catch(() => {});
         }
 
         root.render(<App {...props} />);
     },
     progress: {
-        color: "var(--primary-progress-color)",
+        color: 'var(--primary-progress-color)',
         showSpinner: true,
     },
 });
-

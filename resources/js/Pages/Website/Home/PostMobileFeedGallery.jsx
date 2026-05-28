@@ -128,6 +128,7 @@ const PostMobileFeedGallery = ({
                         <button
                             onClick={() => {
                                 if (previous_url) {
+                                    shouldCleanupBrowserHistoryRef.current = false;
                                     router.visit(previous_url);
                                 } else {
                                     setMobileFeedGalleryOpen(false);
@@ -163,14 +164,14 @@ const PostMobileFeedGallery = ({
                     </div>
 
                     {/* Scrollable Content Area */}
-                    <div className="flex-1 overflow-y-auto px-8 scrollbar-none">
+                    <div className="flex-1 px-8 overflow-y-auto scrollbar-none">
                         {mediaItems?.length > 0 && (
                             <div className="relative">
                                 {/* Horizontal Scroll Container - Swipeable */}
                                 <div
                                     ref={scrollContainerRef}
                                     onScroll={handleScroll}
-                                    className="flex snap-x snap-mandatory overflow-x-auto scrollbar-none"
+                                    className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none"
                                     style={{
                                         scrollbarWidth: 'none',
                                         msOverflowStyle: 'none',
@@ -182,13 +183,13 @@ const PostMobileFeedGallery = ({
                                     {mediaItems.map((item, index) => (
                                         <div
                                             key={index}
-                                            className="flex h-full w-full shrink-0 snap-center snap-always items-center justify-center"
+                                            className="flex items-center justify-center w-full h-full shrink-0 snap-center snap-always"
                                         >
                                             {item.type === 'image' ? (
                                                 <img
                                                     src={item.url || placeholderImage}
                                                     alt={`Media ${index}`}
-                                                    className="h-full max-h-full w-full max-w-full rounded-md object-cover"
+                                                    className="object-cover w-full h-full max-w-full max-h-full rounded-md"
                                                     loading="eager"
                                                     fetchpriority="high"
                                                     decoding="async"
@@ -197,12 +198,12 @@ const PostMobileFeedGallery = ({
                                                     }
                                                 />
                                             ) : (
-                                                <div className="flex h-full w-full items-center justify-center">
+                                                <div className="flex items-center justify-center w-full h-full">
                                                     <InstagramStyledVideoPlayer
                                                         thumbnail={
                                                             item?.thumbnail_url || placeholderImage
                                                         }
-                                                        className="h-full w-full object-cover"
+                                                        className="object-cover w-full h-full"
                                                         videoUrl={item.url}
                                                         Preload="metadata"
                                                         slug={item?.slug}
@@ -240,7 +241,7 @@ const PostMobileFeedGallery = ({
                                                     <img
                                                         src={mediaItem?.url || placeholderImage}
                                                         alt={`Thumbnail ${index + 1}`}
-                                                        className="h-full w-full object-cover"
+                                                        className="object-cover w-full h-full"
                                                         loading={
                                                             currentMediaIndex === index
                                                                 ? 'eager'
@@ -263,7 +264,7 @@ const PostMobileFeedGallery = ({
                                                             placeholderImage
                                                         }
                                                         alt={`Thumbnail ${index + 1}`}
-                                                        className="h-full w-full object-cover"
+                                                        className="object-cover w-full h-full"
                                                         loading={
                                                             currentMediaIndex === index
                                                                 ? 'eager'
@@ -288,9 +289,9 @@ const PostMobileFeedGallery = ({
                         </div>
 
                         {/* Full Content - Scrollable, No Truncation */}
-                        <div className="mb-10 mt-2">
+                        <div className="mt-2 mb-10">
                             {mediaItems.length > 0 && (
-                                <div className="mb-4 flex items-center justify-end">
+                                <div className="flex items-center justify-end mb-4">
                                     <div className="relative" ref={actionDropdownRef}>
                                         <button
                                             className="text-main-text-light dark:text-main-text-dark"
@@ -319,14 +320,14 @@ const PostMobileFeedGallery = ({
                                         </button>
 
                                         {actionDropdownOpen && (
-                                            <div className="absolute right-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                            <div className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
                                                 <div className="py-1">
                                                     <button
                                                         onClick={() => {
                                                             setShowQrCode(true);
                                                             setActionDropdownOpen(null);
                                                         }}
-                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -334,7 +335,7 @@ const PostMobileFeedGallery = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -385,7 +386,7 @@ const PostMobileFeedGallery = ({
                                                                     },
                                                                 );
                                                             }}
-                                                            className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -432,7 +433,7 @@ const PostMobileFeedGallery = ({
                                                             setLinkCopied(true);
                                                             setActionDropdownOpen(null);
                                                         }}
-                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -440,7 +441,7 @@ const PostMobileFeedGallery = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -461,7 +462,7 @@ const PostMobileFeedGallery = ({
                                                                     );
                                                                     setActionDropdownOpen(null);
                                                                 }}
-                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                             >
                                                                 <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -469,7 +470,7 @@ const PostMobileFeedGallery = ({
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={1.5}
                                                                     stroke="currentColor"
-                                                                    className="h-5 w-5"
+                                                                    className="w-5 h-5"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -489,7 +490,7 @@ const PostMobileFeedGallery = ({
                                                             </button>
                                                         )}
 
-                                                    <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
+                                                    <span className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark">
                                                         <span>
                                                             {__('Post Created')}:
                                                             <p>
@@ -540,7 +541,7 @@ const PostMobileFeedGallery = ({
                             </div>
 
                             {mediaItems.length === 0 && (
-                                <div className="mb-4 flex items-center justify-end">
+                                <div className="flex items-center justify-end mb-4">
                                     <div className="relative" ref={actionDropdownRef}>
                                         <button
                                             className="text-main-text-light dark:text-main-text-dark"
@@ -569,14 +570,14 @@ const PostMobileFeedGallery = ({
                                         </button>
 
                                         {actionDropdownOpen && (
-                                            <div className="absolute right-0 top-full z-50 w-56 rounded-md border border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                            <div className="absolute right-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark">
                                                 <div className="py-1">
                                                     <button
                                                         onClick={() => {
                                                             setShowQrCode(true);
                                                             setActionDropdownOpen(null);
                                                         }}
-                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -584,7 +585,7 @@ const PostMobileFeedGallery = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -635,7 +636,7 @@ const PostMobileFeedGallery = ({
                                                                     },
                                                                 );
                                                             }}
-                                                            className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                            className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                         >
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
@@ -682,7 +683,7 @@ const PostMobileFeedGallery = ({
                                                             setLinkCopied(true);
                                                             setActionDropdownOpen(null);
                                                         }}
-                                                        className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                     >
                                                         <svg
                                                             xmlns="http://www.w3.org/2000/svg"
@@ -690,7 +691,7 @@ const PostMobileFeedGallery = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="h-5 w-5"
+                                                            className="w-5 h-5"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -711,7 +712,7 @@ const PostMobileFeedGallery = ({
                                                                     );
                                                                     setActionDropdownOpen(null);
                                                                 }}
-                                                                className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-sm text-main-text-light transition-colors dark:text-main-text-dark"
+                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light dark:text-main-text-dark"
                                                             >
                                                                 <svg
                                                                     xmlns="http://www.w3.org/2000/svg"
@@ -719,7 +720,7 @@ const PostMobileFeedGallery = ({
                                                                     viewBox="0 0 24 24"
                                                                     strokeWidth={1.5}
                                                                     stroke="currentColor"
-                                                                    className="h-5 w-5"
+                                                                    className="w-5 h-5"
                                                                 >
                                                                     <path
                                                                         strokeLinecap="round"
@@ -739,7 +740,7 @@ const PostMobileFeedGallery = ({
                                                             </button>
                                                         )}
 
-                                                    <span className="flex w-full items-center gap-3 rounded-md px-4 py-3 text-xs text-main-text-light transition-colors dark:text-main-text-dark">
+                                                    <span className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark">
                                                         <span>
                                                             {__('Post Created')}:
                                                             <p>

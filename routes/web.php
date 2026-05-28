@@ -70,6 +70,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use Illuminate\Support\Str;
 
 // Home
 Route::get('/', [WebsiteHomeController::class, 'index'])->name('home');
@@ -99,7 +100,11 @@ Route::group(['as' => 'website.'], function () {
 
         // $url = url('/') . '?' . http_build_query($query);
 
-        $previous_url = null;
+        $previous_url = url()->previous();
+
+        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks')) {
+            $previous_url = null;
+        }
         return Inertia::render('Website/Home/index', [
             'previous_url' => $previous_url,
             'direct_post' => [
@@ -123,7 +128,11 @@ Route::group(['as' => 'website.'], function () {
 
         // $url = url('/') . '?' . http_build_query($query);
 
-        $previous_url = null;
+        $previous_url = url()->previous();
+
+        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks')) {
+            $previous_url = null;
+        }
         return Inertia::render('Website/Home/index', [
             'previous_url' => $previous_url,
             'direct_smartphone' => [

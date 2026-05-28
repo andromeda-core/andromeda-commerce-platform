@@ -49,7 +49,26 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
 
     const { currency, auth, smartphone_addon_items } = usePage().props;
 
-    const redirectedPreviousUrl = useRef(previous_url || null);
+    const resolveInitialPreviousUrl = () => {
+        // Priority 1: backend prop
+        if (previous_url) return previous_url;
+
+        // Priority 2: client-side stored origin
+        if (typeof window === 'undefined') return null;
+
+        try {
+            const stored = sessionStorage.getItem('andromeda_prev_url');
+
+            if (stored && (stored.includes('/shop') || stored.includes('/bookmarks'))) {
+                return stored;
+            }
+        } catch (e) {}
+
+        return null;
+    };
+
+    const redirectedPreviousUrl = useRef(resolveInitialPreviousUrl());
+    // console.log(redirectedPreviousUrl.current);
 
     useLayoutEffect(() => {
         if (!showFeedSkeleton) return;
@@ -1201,13 +1220,13 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                             </div>
 
                             {isFeedLoaded && feed.length === 0 && (
-                                <div className="flex items-center justify-center rounded-md bg-backgroundLight px-6 py-12 dark:bg-backgroundDark">
+                                <div className="flex items-center justify-center px-6 py-12 rounded-md bg-backgroundLight dark:bg-backgroundDark">
                                     <div className="flex flex-col items-center gap-4">
                                         {/* Custom No Content SVG */}
-                                        <div className="flex h-20 w-20 items-center justify-center">
+                                        <div className="flex items-center justify-center w-20 h-20">
                                             <svg
                                                 viewBox="0 0 120 120"
-                                                className="h-full w-full text-gray-400 dark:text-gray-500"
+                                                className="w-full h-full text-gray-400 dark:text-gray-500"
                                                 fill="none"
                                                 xmlns="http://www.w3.org/2000/svg"
                                             >
@@ -1505,7 +1524,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                         {/* QR + Copy Wrapper (KEY PART) */}
                                         <div className="mx-auto my-5 w-fit">
                                             {/* QR */}
-                                            <div className="rounded-md bg-main-text-dark p-3 dark:bg-surface-1-dark dark:text-main-text-light sm:p-2">
+                                            <div className="p-3 rounded-md bg-main-text-dark dark:bg-surface-1-dark dark:text-main-text-light sm:p-2">
                                                 <QRCode
                                                     id="qr-code-canvas"
                                                     className="size-40 sm:size-44 lg:size-60"
@@ -1560,7 +1579,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                             </button>
 
                                             {/* Download Button */}
-                                            <div className="mt-4 w-full">
+                                            <div className="w-full mt-4">
                                                 <button
                                                     onClick={handleDownloadQRCode}
                                                     disabled={isQrDownloading}
@@ -1572,7 +1591,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                                         <>
                                                             <svg
                                                                 xmlns="http://www.w3.org/2000/svg"
-                                                                className="h-6 w-6"
+                                                                className="w-6 h-6"
                                                                 fill="none"
                                                                 viewBox="0 0 24 24"
                                                                 stroke="currentColor"
