@@ -456,17 +456,15 @@ const MasonryFeedItem = memo(
 
                                 <div className="absolute inset-x-0 bottom-0 bg-transparent p-3">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
-                                        <p className="w-full truncate text-white">
-                                            {item.selling_info?.total_price ? (
-                                                <DisplayPrice
-                                                    usdAmount={item.selling_info.total_price}
-                                                    size="sm"
-                                                    className="w-full truncate text-white"
-                                                />
-                                            ) : (
-                                                ''
-                                            )}
-                                        </p>
+                                        {item.selling_info?.total_price ? (
+                                            <DisplayPrice
+                                                usdAmount={item.selling_info.total_price}
+                                                size="sm"
+                                                className="w-full truncate text-white"
+                                            />
+                                        ) : (
+                                            ''
+                                        )}
 
                                         <p className="w-full truncate text-white">
                                             {item.name} ({item.capacity})
@@ -533,16 +531,15 @@ const MasonryFeedItem = memo(
                             <>
                                 <div className="absolute inset-x-0 bottom-0 bg-transparent p-3">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
-                                        <p className="w-full truncate text-white">
-                                            {item.selling_info?.total_price ? (
-                                                <DisplayPrice
-                                                    usdAmount={item.selling_info.total_price}
-                                                    size="sm"
-                                                />
-                                            ) : (
-                                                ''
-                                            )}
-                                        </p>
+                                        {item.selling_info?.total_price ? (
+                                            <DisplayPrice
+                                                usdAmount={item.selling_info.total_price}
+                                                size="sm"
+                                                className="w-full truncate text-white"
+                                            />
+                                        ) : (
+                                            ''
+                                        )}
 
                                         <p className="w-full truncate text-white">
                                             {item.name} ({item.capacity})
@@ -574,16 +571,15 @@ const MasonryFeedItem = memo(
                             {/* PRICE bottom bar */}
                             <div className="absolute inset-x-0 bottom-0 bg-transparent text-main-text-light dark:text-main-text-dark">
                                 <div className="flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
-                                    <p className="w-full truncate">
-                                        {item.selling_info?.total_price ? (
-                                            <DisplayPrice
-                                                usdAmount={item.selling_info.total_price}
-                                                size="sm"
-                                            />
-                                        ) : (
-                                            ''
-                                        )}
-                                    </p>
+                                    {item.selling_info?.total_price ? (
+                                        <DisplayPrice
+                                            usdAmount={item.selling_info.total_price}
+                                            size="sm"
+                                            className="w-full truncate"
+                                        />
+                                    ) : (
+                                        ''
+                                    )}
                                 </div>
                             </div>
                         </div>

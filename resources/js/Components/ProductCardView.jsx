@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import DisplayPrice from '@/Components/DisplayPrice';
 import Spinner from '@/Components/Spinner';
-import Placeholder from 'asset/assets/images/product/placeholder.jpg';
+const PLACEHOLDER_IMAGE = '/assets/images/product/placeholder.jpg';
 import { useTranslation } from '@/Hooks/useTranslation';
 
 const ProductCardView = ({ publicId, slug = null }) => {
@@ -83,10 +83,10 @@ const ProductCardView = ({ publicId, slug = null }) => {
             {/* Image: 96x96 left */}
             <div className="h-24 w-24 flex-shrink-0 overflow-hidden bg-surface-2-light dark:bg-surface-3-dark">
                 <img
-                    src={preview.image_url || Placeholder}
+                    src={preview.image_url || PLACEHOLDER_IMAGE}
                     alt={preview.name}
                     className="h-full w-full object-cover"
-                    onError={(e) => { e.target.src = Placeholder; }}
+                    onError={(e) => { e.target.src = PLACEHOLDER_IMAGE; }}
                     loading="lazy"
                 />
             </div>

@@ -23,6 +23,10 @@ export const useProductCardHydration = (containerRef, contentKey) => {
 
                 if (!publicId || !publicId.startsWith('prd_')) return;
 
+                // Skip placeholders nested inside <p> or other inline contexts
+                // where block-level card content would produce invalid DOM nesting.
+                if (el.closest('p')) return;
+
                 // Clear placeholder content so the portal renders cleanly
                 el.innerHTML = '';
 
