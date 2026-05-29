@@ -1,4 +1,5 @@
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
+import useProductCardHydration from '@/Hooks/useProductCardHydration';
 import { router } from '@inertiajs/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -26,6 +27,8 @@ const PostMobileFeedGallery = ({
     const actionDropdownRef = useRef(null);
     const thumbnailContainerRef = useRef(null);
     const scrollContainerRef = useRef(null);
+    const postContentRef = useRef(null);
+    const productCardPortals = useProductCardHydration(postContentRef, post?.id || post?.slug);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -509,6 +512,7 @@ const PostMobileFeedGallery = ({
                             <div className="mb-4">
                                 {post?.content && (
                                     <div
+                                        ref={postContentRef}
                                         className="prose break-words text-[16px] font-medium leading-[22px] text-main-text-light dark:text-main-text-dark"
                                         dangerouslySetInnerHTML={{
                                             __html: post?.content,
@@ -760,6 +764,7 @@ const PostMobileFeedGallery = ({
                 </div>,
                 document.getElementById('modal-root') || document.body,
             )}
+            {productCardPortals}
 
             {spatiotemporalInfoModal && (
                 <SpatiotemporalInfoModal

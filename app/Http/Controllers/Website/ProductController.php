@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Website;
 use App\Helpers\Trans;
 use App\Http\Controllers\Controller;
 use App\Repositories\Products\Interface\IProductsRepository;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
@@ -46,5 +47,12 @@ class ProductController extends Controller
             'status' => true,
             'smartphone' => $data['smartphone'],
         ], 200);
+    }
+
+    public function getProductPreview(string $public_id): JsonResponse
+    {
+        $preview = $this->product->getProductPreview($public_id);
+
+        return response()->json($preview);
     }
 }

@@ -208,6 +208,7 @@ Route::group(['as' => 'website.'], function () {
     // Product Routes
     Route::controller(ProductController::class)->name('products.')->group(function () {
         Route::get('/products/get-single-smartphone/{public_id?}/{slug?}', 'getSingleSmartphone')->name('get-single-smartphone');
+        Route::get('/products/preview/{public_id}', 'getProductPreview')->name('preview');
     });
 
     // Cart Routes

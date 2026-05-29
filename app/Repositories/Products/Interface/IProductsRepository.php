@@ -14,4 +14,6 @@ interface IProductsRepository
     public function getAllSmartphoneTags(Request $request);
 
     public function filterCategories();
+
+    public function getProductPreview(string $public_id): array;
 }

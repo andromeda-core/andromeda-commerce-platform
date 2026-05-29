@@ -12,6 +12,7 @@ import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
 import SmartphoneDetailsAccordion from '@/Components/SmartphoneDetailsAccordion';
 import axios from 'axios';
 import DisplayPrice from '@/Components/DisplayPrice';
+import useProductCardHydration from '@/Hooks/useProductCardHydration';
 
 const DesktopFeed = ({
     feedGallery,
@@ -62,6 +63,21 @@ const DesktopFeed = ({
     const productRightPanelScrollRef = useRef(null);
     const shouldCleanupBrowserHistoryRef = useRef(true);
 
+    // Declared here (before postContentRef hooks) so isText is available for the hydration key
+    const [isText, setIsText] = useState(false);
+    useEffect(() => {
+        setIsText(mediaItems?.length === 0);
+    }, [mediaItems]);
+
+    const postContentRef1 = useRef(null);
+    const postContentRef2 = useRef(null);
+    const postContentRef3 = useRef(null);
+    // isText in key ensures re-hydration after the text-only rendering branch switches
+    const _postHydrationKey = `${feedGallery?.id || feedGallery?.slug}-${isText ? 't' : 'f'}`;
+    const productCardPortals1 = useProductCardHydration(postContentRef1, _postHydrationKey);
+    const productCardPortals2 = useProductCardHydration(postContentRef2, _postHydrationKey);
+    const productCardPortals3 = useProductCardHydration(postContentRef3, _postHydrationKey);
+
     // Zutsand Video AutoPlay State
     const videoAutoplay = useVideoStore((state) => state.autoplay);
     const initAutoplay = useVideoStore((state) => state.initAutoplay);
@@ -90,12 +106,6 @@ const DesktopFeed = ({
     useEffect(() => {
         initAutoplay();
     }, []);
-
-    const [isText, setIsText] = useState(false);
-
-    useEffect(() => {
-        setIsText(mediaItems?.length === 0);
-    }, [mediaItems]);
 
     const [arrowStates, setArrowStates] = useState({
         isLeftDisabled: true,
@@ -1480,11 +1490,13 @@ const DesktopFeed = ({
                                             {/* Post Content - Scrollable */}
                                             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
                                                 <div
+                                                    ref={postContentRef1}
                                                     className="prose prose-sm max-w-none whitespace-pre-line break-words pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                     dangerouslySetInnerHTML={{
                                                         __html: feedGallery?.content,
                                                     }}
                                                 />
+                                                {productCardPortals1}
                                             </div>
                                         </div>
                                     </div>
@@ -1658,11 +1670,13 @@ const DesktopFeed = ({
                                                     <div className="flex h-full w-full max-w-[520px] flex-col">
                                                         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
                                                             <div
+                                                                ref={postContentRef2}
                                                                 className="prose prose-sm max-w-none whitespace-pre-line break-words pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                                 dangerouslySetInnerHTML={{
                                                                     __html: feedGallery?.content,
                                                                 }}
                                                             />
+                                                            {productCardPortals2}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -3280,11 +3294,13 @@ const DesktopFeed = ({
 
                                                         {/* Post Content */}
                                                         <div
+                                                            ref={postContentRef3}
                                                             className="prose prose-sm max-w-none flex-1 overflow-y-auto whitespace-pre-line break-all pr-2 text-[14px] font-normal text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                             dangerouslySetInnerHTML={{
                                                                 __html: feedGallery?.content,
                                                             }}
                                                         />
+                                                        {productCardPortals3}
 
                                                         <div className="z-[90] my-4 flex items-center justify-start">
                                                             <div className="rounded-full bg-[#efefef] text-[#595959] transition-all duration-200 hover:scale-[1.02] hover:bg-[#e6e6e6] dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark">

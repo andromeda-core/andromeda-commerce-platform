@@ -11,6 +11,7 @@ import { Color } from '@tiptap/extension-color';
 import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Strike from '@tiptap/extension-strike';
+import ProductCardNode from './ProductCardNode';
 
 // const FontSizeTextStyle = TextStyle.extend({
 //     addAttributes() {
@@ -63,6 +64,7 @@ export default function TipTapEditor({ Label, Id, Action, Value, Required = fals
             Underline,
             Link.configure({ openOnClick: false, autolink: true }),
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
+            ProductCardNode,
         ],
         content: Value ?? '',
         editorProps: {

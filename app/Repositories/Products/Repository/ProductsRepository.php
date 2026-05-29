@@ -491,6 +491,31 @@ class ProductsRepository implements IProductsRepository
         ];
     }
 
+    public function getProductPreview(string $public_id): array
+    {
+        $smartphone = $this->smartphone
+            ->whereHas('selling_info')
+            ->with(['model_name', 'selling_info'])
+            ->where('public_id', $public_id)
+            ->first();
+
+        if (! $smartphone) {
+            return [
+                'exists'    => false,
+                'public_id' => $public_id,
+            ];
+        }
+
+        return [
+            'exists'    => true,
+            'public_id' => $smartphone->public_id,
+            'slug'      => $smartphone->slug,
+            'name'      => $smartphone->model_name?->name,
+            'image_url' => $smartphone->smartphone_image_urls[0] ?? null,
+            'price_usd' => (float) ($smartphone->selling_info?->total_price ?? 0),
+        ];
+    }
+
     public function filterCategories()
     {
         $price_ranges = $this->getPriceRanges();
