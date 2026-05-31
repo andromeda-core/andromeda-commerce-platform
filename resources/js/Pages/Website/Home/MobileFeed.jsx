@@ -6,6 +6,7 @@ import useDarkMode from '@/Hooks/useDarkMode';
 import Spinner from '@/Components/Spinner';
 import { useFilterStore } from '@/Hooks/useFilterStore';
 import { useVideoStore } from '@/Hooks/useVideoStore';
+import { useFeedCleanupStore } from '@/Hooks/useFeedCleanupStore';
 import { useHomeNavStore } from '@/Hooks/useHomeNavStore';
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
 import DisplayPrice from '@/Components/DisplayPrice';
@@ -1695,9 +1696,19 @@ const MobileFeed = ({
     // Cleanups
     useEffect(() => {
         return () => {
-            if (shouldCleanupBrowserHistoryRef.current) {
+            const refAllowsCleanup = shouldCleanupBrowserHistoryRef.current;
+            const storeAllowsCleanup = useFeedCleanupStore
+                .getState()
+                .shouldCleanupBrowserHistory;
+
+            if (refAllowsCleanup && storeAllowsCleanup) {
                 window.history.replaceState({}, '', '/');
             }
+
+            // Reset store flag for the next feed mount (defensive reset)
+            useFeedCleanupStore
+                .getState()
+                .setShouldCleanupBrowserHistory(true);
 
             setFeedGallery(null);
             setFeedOpen(false);

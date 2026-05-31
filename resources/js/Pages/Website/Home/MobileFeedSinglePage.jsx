@@ -1,6 +1,7 @@
 import React, { memo, useEffect, useRef } from 'react';
 import MobileFeedGallery from './MobileFeedGallery';
 import useDarkMode from '@/Hooks/useDarkMode';
+import { useFeedCleanupStore } from '@/Hooks/useFeedCleanupStore';
 
 const MobileFeedSinglePage = ({
     feedGallery,
@@ -46,9 +47,19 @@ const MobileFeedSinglePage = ({
 
     useEffect(() => {
         if (!MobileFeedGalleryOpen) {
-            if (shouldCleanupBrowserHistoryRef.current) {
+            const refAllowsCleanup = shouldCleanupBrowserHistoryRef.current;
+            const storeAllowsCleanup = useFeedCleanupStore
+                .getState()
+                .shouldCleanupBrowserHistory;
+
+            if (refAllowsCleanup && storeAllowsCleanup) {
                 window.history.replaceState({}, '', window.location.pathname);
             }
+
+            // Reset store flag for the next feed mount (defensive reset)
+            useFeedCleanupStore
+                .getState()
+                .setShouldCleanupBrowserHistory(true);
 
             setFeedGallery(null);
             setMediaItems([]);

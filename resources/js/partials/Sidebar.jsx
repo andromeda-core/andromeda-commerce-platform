@@ -278,8 +278,6 @@ export default function Sidebar({
                 <div
                     className={`flex items-center ${sidebarToggle ? 'justify-center' : 'justify-between'} sidebar-header gap-2 pb-7 pt-8`}
                 >
-                    <DesktopPwaBackButton __={__} />
-
                     <Link href={route('home')}>
                         <span className={`logo ${sidebarToggle ? 'hidden' : ''}`}>
                             <img
@@ -317,6 +315,8 @@ export default function Sidebar({
                         </svg>
                     </button>
                 </div>
+
+                <DesktopPwaBackButton __={__} />
 
                 <div className="no-scrollbar flex flex-1 flex-col overflow-y-auto duration-300 ease-linear">
                     <nav>
