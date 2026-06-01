@@ -35,12 +35,13 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'password' => ['required', 'min:8', 'max:50', 'confirmed', Rules\Password::defaults()],
-            'is_agreed_to_terms' => ['accepted'],
-        ],
+        $request->validate(
+            [
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+                'password' => ['required', 'min:8', 'max:50', 'confirmed', Rules\Password::defaults()],
+                'is_agreed_to_terms' => ['accepted'],
+            ],
             [
                 'name.required' => Trans::get('Please enter your full name.'),
                 'name.string' => Trans::get('Name must be a valid text.'),
@@ -58,12 +59,20 @@ class RegisteredUserController extends Controller
                 'password.confirmed' => Trans::get('The password confirmation does not match.'),
 
                 'is_agreed_to_terms.accepted' => Trans::get('Please accept the terms and conditions.'),
-            ]);
+            ]
+        );
+
+
+
+        $language_data = $request->cookies->get('language');
+        $language = json_decode($language_data, true);
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
+            'language_id' => $language['language_id'] ?? null,
+            'language_locale' => $language['language_locale'] ?? null,
             'password' => Hash::make($request->password),
             'is_agreed_to_terms' => $request->is_agreed_to_terms,
             'last_activity_at' => now(),
@@ -90,9 +99,9 @@ class RegisteredUserController extends Controller
         $newQuery = http_build_query($query);
 
         $finalRedirect =
-    ($parsedUrl['scheme'] ?? '').($parsedUrl['host'] ?? '').
-    ($parsedUrl['path'] ?? '').
-    '?'.$newQuery;
+            ($parsedUrl['scheme'] ?? '') . ($parsedUrl['host'] ?? '') .
+            ($parsedUrl['path'] ?? '') .
+            '?' . $newQuery;
         if ($finalRedirect && str_starts_with($finalRedirect, '/')) {
             return redirect()->to($finalRedirect);
         }
