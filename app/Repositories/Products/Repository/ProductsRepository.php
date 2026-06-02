@@ -565,7 +565,7 @@ class ProductsRepository implements IProductsRepository
     {
         return Cache::rememberForever('price_ranges', function () {
             return $this->priceRange::where('is_active', true)
-                ->orderBy('value')
+                ->orderBy('value', 'asc')
                 ->get(['id', 'value', 'type']);
         });
     }

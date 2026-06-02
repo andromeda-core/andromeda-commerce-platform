@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Website;
 
 use App\Http\Controllers\Controller;
-use App\Repositories\Categories\Interface\ICategoryRepository;
 use App\Repositories\Products\Interface\IProductsRepository;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -11,7 +10,6 @@ use Inertia\Inertia;
 class ShopController extends Controller
 {
     public function __construct(
-        private ICategoryRepository $category,
         private IProductsRepository $product
     ) {}
 
@@ -32,7 +30,10 @@ class ShopController extends Controller
         $categories = $smartphone_data['categories'];
 
         return Inertia::render('Website/Shop/index', compact(
-            'categories', 'products', 'nextPageUrl', 'smartphone_tags',
+            'categories',
+            'products',
+            'nextPageUrl',
+            'smartphone_tags',
             'filterCategories',
             'applied_filters'
 
