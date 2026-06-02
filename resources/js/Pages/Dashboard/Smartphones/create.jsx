@@ -668,6 +668,7 @@ export default function create({
                                                     Name={'created_at'}
                                                     Type={'datetime-local'}
                                                     Required={false}
+                                                    ClassName={'picker-full-click'}
                                                 />
 
                                                 <Input

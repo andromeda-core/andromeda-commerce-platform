@@ -484,6 +484,7 @@ export default function create({ floors, googleMapSettings }) {
                                                     Name={'created_at'}
                                                     Type={'datetime-local'}
                                                     Required={false}
+                                                    ClassName={'picker-full-click'}
                                                 />
 
                                                 <SelectInput

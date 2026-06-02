@@ -725,6 +725,7 @@ export default function edit({
                                                     Name={'created_at'}
                                                     Type={'datetime-local'}
                                                     Required={false}
+                                                    ClassName={'picker-full-click'}
                                                 />
 
                                                 <Input
