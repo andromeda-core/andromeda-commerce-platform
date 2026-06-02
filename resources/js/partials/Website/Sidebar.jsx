@@ -144,7 +144,7 @@ const Sidebar = ({
 
                 {/* Logo */}
                 <Link href={route('home')} data-sidebar-link="true">
-                    <div className={`flex items-center gap-2 px-6 py-6 transition-all`}>
+                    <div className={`flex items-center gap-2 px-4 py-6 transition-all`}>
                         {/* <div className="flex items-center justify-center w-12 h-12 rounded">
                             <div className="block dark:hidden">
                                 <img src={light_logo} alt="Logo" />
@@ -153,7 +153,7 @@ const Sidebar = ({
                                 <img src={dark_logo} alt="Logo" />
                             </div>
                         </div> */}
-                        <span className="font-['Space_Mono'] text-2xl font-bold text-main-text-light dark:text-main-text-dark">
+                        <span className="font-['Space_Mono'] text-xl font-bold text-main-text-light dark:text-main-text-dark">
                             {app_name}
                         </span>
                     </div>

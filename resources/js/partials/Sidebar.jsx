@@ -310,7 +310,7 @@ export default function Sidebar({
                                                     <img src={dark_logo} alt="Logo" />
                                                 </div>
                                             </div> */}
-                            <span className="font-['Space_Mono'] text-2xl font-bold text-main-text-light dark:text-main-text-dark">
+                            <span className="font-['Space_Mono'] text-xl font-bold text-main-text-light dark:text-main-text-dark">
                                 {app_name}
                             </span>
                         </div>
