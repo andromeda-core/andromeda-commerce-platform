@@ -762,7 +762,7 @@ const index = ({
                         </div>
                     )}
 
-                    {isLoadingMore && (
+                    {isLoadingMore && !nextPageUrlData && (
                         <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-[10px] text-main-text-light transition-all duration-100 dark:text-main-text-dark lg:text-[18px]">
                             <Spinner />
                             {__('Loading')}...
