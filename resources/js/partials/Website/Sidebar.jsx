@@ -153,7 +153,7 @@ const Sidebar = ({
                                 <img src={dark_logo} alt="Logo" />
                             </div>
                         </div> */}
-                        <span className="font-['Space_Mono'] text-xl font-bold text-main-text-light dark:text-main-text-dark">
+                        <span className="font-['Space_Mono'] text-sm font-bold text-main-text-light dark:text-main-text-dark sm:text-base md:text-lg">
                             {app_name}
                         </span>
                     </div>
