@@ -2,6 +2,7 @@ import { useTranslation } from '@/Hooks/useTranslation';
 import { BuildingLibraryIcon } from '@heroicons/react/24/solid';
 import { Link, usePage } from '@inertiajs/react';
 import DisplayPrice from './DisplayPrice';
+import { useFeedCleanupStore } from '@/Hooks/useFeedCleanupStore';
 
 const SmartphoneDetails = ({ currency, product, StockBadge }) => {
     const { generalSetting } = usePage().props;
@@ -133,6 +134,9 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                         smartphone_slug={product?.slug}
                         policy_slug={product?.return_policy?.slug}
                         return_policy={!!product?.return_policy}
+                        onClick={() =>
+                            useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false)
+                        }
                     />
                 )}
 
@@ -212,6 +216,9 @@ const DetailRow = ({
             {isLink ? (
                 return_policy ? (
                     <Link
+                        onClick={() =>
+                            useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false)
+                        }
                         href={route('website.return-policy.index', {
                             slug: policy_slug,
                             smartphone_slug: smartphone_slug,
@@ -226,6 +233,9 @@ const DetailRow = ({
                             {value}
                         </span>
                         <Link
+                            onClick={() =>
+                                useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false)
+                            }
                             href={route('website.shipping-policy.index', {
                                 slug: policy_slug,
                                 smartphone_slug: smartphone_slug,
