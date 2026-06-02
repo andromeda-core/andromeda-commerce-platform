@@ -151,9 +151,16 @@ const index = ({
 
     const scrollToTabIfNeeded = (tabKey) => {
         const container = tabsContainerRef.current;
-        const tabEl = tabRefs.current[tabKey];
+        if (!container) return;
 
-        if (!container || !tabEl || windowSize.width <= 1024) return;
+        // All clicked → always start (x=0)
+        if (tabKey === 'all') {
+            container.scrollTo({ left: 0, behavior: 'smooth' });
+            return;
+        }
+
+        const tabEl = tabRefs.current[tabKey];
+        if (!tabEl || windowSize.width <= 1024) return;
 
         const tabLeft = tabEl.offsetLeft;
         const tabRight = tabLeft + tabEl.offsetWidth;
