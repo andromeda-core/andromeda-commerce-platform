@@ -16,6 +16,8 @@ interface ISmartphoneRepository
 
     public function destroySmartphone(string $id);
 
+    public function toggleSoldOut(string $id);
+
     public function destroySmartphoneBySelection(Request $request);
 
     public function getColors();

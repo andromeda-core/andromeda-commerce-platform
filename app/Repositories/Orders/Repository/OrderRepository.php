@@ -1064,6 +1064,10 @@ class OrderRepository implements IOrderRepository
                 $smartphone = $cartItem->smartphone;
                 $quantity = $cartItem->quantity;
 
+                if ($smartphone->is_sold_out) {
+                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('This product is currently sold out')}");
+                }
+
                 // if ($smartphone->inventory_items->isEmpty()) {
                 //     throw new Exception(" {$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
                 // }

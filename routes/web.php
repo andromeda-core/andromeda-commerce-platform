@@ -437,6 +437,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/smartphones-edit/{id?}', 'edit')->name('edit');
             Route::put('/smartphones-update/{id?}', 'update')->name('update');
             Route::get('/smartphones-view/{id?}', 'show')->name('show');
+            Route::put('/smartphones-toggle-sold-out/{id?}', 'toggleSoldOut')->name('toggle-sold-out');
             Route::delete('/smartphones-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/smartphones-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
         });

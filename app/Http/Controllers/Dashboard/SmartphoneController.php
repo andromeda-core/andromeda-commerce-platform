@@ -22,6 +22,7 @@ class SmartphoneController extends Controller implements HasMiddleware
             new Middleware('permission:Smartphones Create', ['only' => 'store']),
             new Middleware('permission:Smartphones Edit', ['only' => 'edit']),
             new Middleware('permission:Smartphones Edit', ['only' => 'update']),
+            new Middleware('permission:Smartphones Edit', ['only' => 'toggleSoldOut']),
             new Middleware('permission:Smartphones Delete', ['only' => 'destroy']),
             new Middleware('permission:Smartphones Delete', ['only' => 'destroyBySelection']),
 
@@ -152,6 +153,17 @@ class SmartphoneController extends Controller implements HasMiddleware
         }
 
         return back()->with('success', $deleted['message']);
+    }
+
+    public function toggleSoldOut(?string $id = null)
+    {
+        if (empty($id)) {
+            return back()->with('error', 'SmartPhone Id not found');
+        }
+
+        $response = $this->smartphone->toggleSoldOut($id);
+
+        return back()->with($response['status'] ? 'success' : 'error', $response['message']);
     }
 
     public function destroyBySelection(Request $request)

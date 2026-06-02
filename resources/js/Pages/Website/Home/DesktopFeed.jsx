@@ -2388,15 +2388,22 @@ const DesktopFeed = ({
                                                                     <span className="font-medium text-left text-main-text-light dark:text-main-text-dark">
                                                                         {__('Total Price')}
                                                                     </span>
-                                                                    <DisplayPrice
-                                                                        usdAmount={
-                                                                            smartphoneTotalPrice[
-                                                                                feedGallery?.id
-                                                                            ]
-                                                                        }
-                                                                        showEstimatedLabel={false}
-                                                                        className="ml-auto text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark"
-                                                                    />
+                                                                    <div className="ml-auto flex items-center gap-2">
+                                                                        {feedGallery?.is_sold_out && (
+                                                                            <span className="inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                                                                                {__('Sold Out')}
+                                                                            </span>
+                                                                        )}
+                                                                        <DisplayPrice
+                                                                            usdAmount={
+                                                                                smartphoneTotalPrice[
+                                                                                    feedGallery?.id
+                                                                                ]
+                                                                            }
+                                                                            showEstimatedLabel={false}
+                                                                            className={`text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark ${feedGallery?.is_sold_out ? 'line-through' : ''}`}
+                                                                        />
+                                                                    </div>
                                                                 </div>
 
                                                                 {/* Buttons */}
@@ -2425,9 +2432,10 @@ const DesktopFeed = ({
                                                                                     );
                                                                                 }}
                                                                                 disabled={
-                                                                                    !canActionOnSmartphone
+                                                                                    !canActionOnSmartphone ||
+                                                                                    feedGallery?.is_sold_out
                                                                                 }
-                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-light bg-white text-center font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-light bg-white text-center font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${(!canActionOnSmartphone || feedGallery?.is_sold_out) && 'cursor-not-allowed opacity-50'}`}
                                                                             >
                                                                                 <div className="flex items-center justify-center">
                                                                                     {cartProcessing && (
@@ -2435,9 +2443,7 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {__(
-                                                                                            'Add to cart',
-                                                                                        )}
+                                                                                        {feedGallery?.is_sold_out ? __('Sold Out') : __('Add to cart')}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
@@ -2465,9 +2471,10 @@ const DesktopFeed = ({
                                                                                     )
                                                                                 }
                                                                                 disabled={
-                                                                                    !canActionOnSmartphone
+                                                                                    !canActionOnSmartphone ||
+                                                                                    feedGallery?.is_sold_out
                                                                                 }
-                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${(!canActionOnSmartphone || feedGallery?.is_sold_out) && 'cursor-not-allowed opacity-50'}`}
                                                                             >
                                                                                 <div className="flex items-center justify-center">
                                                                                     {buyNowProcessing && (
@@ -2475,9 +2482,7 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {__(
-                                                                                            'Buy now',
-                                                                                        )}
+                                                                                        {feedGallery?.is_sold_out ? __('Sold Out') : __('Buy now')}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
@@ -4312,15 +4317,22 @@ const DesktopFeed = ({
                                                                     <span className="font-medium text-left text-main-text-light dark:text-main-text-dark">
                                                                         {__('Total Price')}
                                                                     </span>
-                                                                    <DisplayPrice
-                                                                        usdAmount={
-                                                                            smartphoneTotalPrice[
-                                                                                feedGallery?.id
-                                                                            ]
-                                                                        }
-                                                                        showEstimatedLabel={false}
-                                                                        className="ml-auto text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark"
-                                                                    />
+                                                                    <div className="ml-auto flex items-center gap-2">
+                                                                        {feedGallery?.is_sold_out && (
+                                                                            <span className="inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                                                                                {__('Sold Out')}
+                                                                            </span>
+                                                                        )}
+                                                                        <DisplayPrice
+                                                                            usdAmount={
+                                                                                smartphoneTotalPrice[
+                                                                                    feedGallery?.id
+                                                                                ]
+                                                                            }
+                                                                            showEstimatedLabel={false}
+                                                                            className={`text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark ${feedGallery?.is_sold_out ? 'line-through' : ''}`}
+                                                                        />
+                                                                    </div>
                                                                 </div>
 
                                                                 {/* Buttons */}
@@ -4349,9 +4361,10 @@ const DesktopFeed = ({
                                                                                     );
                                                                                 }}
                                                                                 disabled={
-                                                                                    !canActionOnSmartphone
+                                                                                    !canActionOnSmartphone ||
+                                                                                    feedGallery?.is_sold_out
                                                                                 }
-                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-light bg-white text-center font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-light bg-white text-center font-semibold text-main-text-light transition hover:bg-main-text-dark/80 dark:border-main-text-dark dark:bg-main-text-dark dark:bg-main-text-dark/80 ${(!canActionOnSmartphone || feedGallery?.is_sold_out) && 'cursor-not-allowed opacity-50'}`}
                                                                             >
                                                                                 <div className="flex items-center justify-center">
                                                                                     {cartProcessing && (
@@ -4359,9 +4372,7 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {__(
-                                                                                            'Add to cart',
-                                                                                        )}
+                                                                                        {feedGallery?.is_sold_out ? __('Sold Out') : __('Add to cart')}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
@@ -4389,9 +4400,10 @@ const DesktopFeed = ({
                                                                                     )
                                                                                 }
                                                                                 disabled={
-                                                                                    !canActionOnSmartphone
+                                                                                    !canActionOnSmartphone ||
+                                                                                    feedGallery?.is_sold_out
                                                                                 }
-                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${!canActionOnSmartphone && 'cursor-not-allowed opacity-50'}`}
+                                                                                className={`text-md h-12 flex-1 rounded-md border border-main-text-dark bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-light dark:hover:bg-main-text-light/80 ${(!canActionOnSmartphone || feedGallery?.is_sold_out) && 'cursor-not-allowed opacity-50'}`}
                                                                             >
                                                                                 <div className="flex items-center justify-center">
                                                                                     {buyNowProcessing && (
@@ -4399,9 +4411,7 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {__(
-                                                                                            'Buy now',
-                                                                                        )}
+                                                                                        {feedGallery?.is_sold_out ? __('Sold Out') : __('Buy now')}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>

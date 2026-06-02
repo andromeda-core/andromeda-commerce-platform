@@ -1,5 +1,6 @@
 import DisplayPrice from '@/Components/DisplayPrice';
 import Spinner from '@/Components/Spinner';
+import { useTranslation } from '@/Hooks/useTranslation';
 import { router } from '@inertiajs/react';
 import React, { memo, useState } from 'react';
 
@@ -15,6 +16,8 @@ const MasonryFeedItem = memo(
         setBookmarkActionPost,
         windowSize,
     }) => {
+        const { __ } = useTranslation();
+
         const [loaded, setLoaded] = useState(false);
 
         const [unmarking, setUnmarking] = useState(false);
@@ -456,11 +459,17 @@ const MasonryFeedItem = memo(
 
                                 <div className="absolute inset-x-0 bottom-0 bg-transparent p-3">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
+                                        {item.is_sold_out && (
+                                            <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                                                {__('Sold Out')}
+                                            </span>
+                                        )}
+
                                         {item.selling_info?.total_price ? (
                                             <DisplayPrice
                                                 usdAmount={item.selling_info.total_price}
                                                 size="sm"
-                                                className="w-full truncate text-white"
+                                                className={`w-full truncate text-white ${item.is_sold_out ? 'line-through' : ''}`}
                                             />
                                         ) : (
                                             ''
@@ -531,11 +540,17 @@ const MasonryFeedItem = memo(
                             <>
                                 <div className="absolute inset-x-0 bottom-0 bg-transparent p-3">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
+                                        {item.is_sold_out && (
+                                            <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                                                {__('Sold Out')}
+                                            </span>
+                                        )}
+
                                         {item.selling_info?.total_price ? (
                                             <DisplayPrice
                                                 usdAmount={item.selling_info.total_price}
                                                 size="sm"
-                                                className="w-full truncate text-white"
+                                                className={`w-full truncate text-white ${item.is_sold_out ? 'line-through' : ''}`}
                                             />
                                         ) : (
                                             ''
@@ -571,11 +586,17 @@ const MasonryFeedItem = memo(
                             {/* PRICE bottom bar */}
                             <div className="absolute inset-x-0 bottom-0 bg-transparent text-main-text-light dark:text-main-text-dark">
                                 <div className="flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
+                                    {item.is_sold_out && (
+                                        <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                                            {__('Sold Out')}
+                                        </span>
+                                    )}
+
                                     {item.selling_info?.total_price ? (
                                         <DisplayPrice
                                             usdAmount={item.selling_info.total_price}
                                             size="sm"
-                                            className="w-full truncate"
+                                            className={`w-full truncate ${item.is_sold_out ? 'line-through' : ''}`}
                                         />
                                     ) : (
                                         ''

@@ -130,20 +130,28 @@ const SmartphoneContentAccordion = ({
     onToggle = null,
     scrollContainerRef = null,
 }) => {
-    const [isOpen, setIsOpen] = useState(defaultOpen);
+    // const [isOpen, setIsOpen] = useState(defaultOpen);
+    const [isOpen, setIsOpen] = useState(true);
+
     const accordionRef = useRef(null);
+    const shouldScrollRef = useRef(false);
 
     // Use content exactly as it is. No processing.
     const renderAsHtml = isHtml && containsHtml(content);
 
     const handleToggle = () => {
         const newState = !isOpen;
+        shouldScrollRef.current = newState;
         setIsOpen(newState);
         if (onToggle) onToggle(newState);
     };
 
     useEffect(() => {
         if (!isOpen || !accordionRef.current || !scrollContainerRef?.current) return;
+
+        if (!shouldScrollRef.current) return;
+        shouldScrollRef.current = false;
+
         const container = scrollContainerRef.current;
         const accordionEl = accordionRef.current;
         requestAnimationFrame(() => {

@@ -72,8 +72,16 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                 usdAmount={product.selling_info?.total_price}
                 showCode
                 showEstimatedLabel={false}
-                className="mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark xl:text-3xl"
+                className={`mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark xl:text-3xl ${product?.is_sold_out ? 'line-through' : ''}`}
             />
+
+            {product?.is_sold_out && (
+                <div className="-mt-3 mb-6">
+                    <span className="inline-block rounded bg-red-600 px-2.5 py-1 text-xs font-semibold text-white">
+                        {__('Sold Out')}
+                    </span>
+                </div>
+            )}
 
             <div className="space-y-4">
                 {/* Country/Region */}
@@ -213,7 +221,7 @@ const DetailRow = ({
                         {value}
                     </Link>
                 ) : shipping_policy ? (
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
                         <span className="block overflow-hidden text-sm text-sub-text-light dark:text-sub-text-dark">
                             {value}
                         </span>

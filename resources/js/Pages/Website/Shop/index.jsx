@@ -752,8 +752,14 @@ const index = ({
                                         usdAmount={product?.total_price}
                                         showCode
                                         showEstimatedLabel={false}
-                                        className="text-base font-semibold text-main-text-light dark:text-main-text-dark"
+                                        className={`text-base font-semibold text-main-text-light dark:text-main-text-dark ${product?.is_sold_out ? 'line-through' : ''}`}
                                     />
+
+                                    {product?.is_sold_out && (
+                                        <span className="inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                                            {__('Sold Out')}
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         ))}

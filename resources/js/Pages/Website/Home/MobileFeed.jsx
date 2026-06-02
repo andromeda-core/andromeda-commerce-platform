@@ -622,11 +622,27 @@ const MobileFeed = ({
                                 {isText ? (
                                     shouldShowMore && (
                                         <div className="flex items-center justify-between">
-                                            <DisplayPrice
-                                                usdAmount={item.selling_info?.total_price}
-                                                showEstimatedLabel={false}
-                                                className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark"
-                                            />
+                                            <div className="flex items-center gap-2">
+                                                <span
+                                                    className={
+                                                        item.is_sold_out
+                                                            ? 'text-main-text-light line-through decoration-2 dark:text-main-text-dark'
+                                                            : ''
+                                                    }
+                                                >
+                                                    <DisplayPrice
+                                                        usdAmount={item.selling_info?.total_price}
+                                                        showEstimatedLabel={false}
+                                                        className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark"
+                                                    />
+                                                </span>
+
+                                                {item.is_sold_out && (
+                                                    <span className="inline-flex items-center rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold leading-none text-white no-underline">
+                                                        {__('Sold Out')}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <button
                                                 onClick={() => {
                                                     setManualFeedGalleryItem(item);
@@ -668,11 +684,27 @@ const MobileFeed = ({
                                     )
                                 ) : (
                                     <div className="flex items-center justify-between">
-                                        <DisplayPrice
-                                            usdAmount={item.selling_info?.total_price}
-                                            showEstimatedLabel={false}
-                                            className="text-[20px] font-semibold"
-                                        />
+                                        <div className="flex items-center gap-2">
+                                            <span
+                                                className={
+                                                    item.is_sold_out
+                                                        ? 'text-main-text-light line-through decoration-2 dark:text-main-text-dark'
+                                                        : ''
+                                                }
+                                            >
+                                                <DisplayPrice
+                                                    usdAmount={item.selling_info?.total_price}
+                                                    showEstimatedLabel={false}
+                                                    className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark"
+                                                />
+                                            </span>
+
+                                            {item.is_sold_out && (
+                                                <span className="inline-flex items-center rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold leading-none text-white no-underline">
+                                                    {__('Sold Out')}
+                                                </span>
+                                            )}
+                                        </div>
                                         <button
                                             onClick={() => {
                                                 setManualFeedGalleryItem(item);
@@ -1697,18 +1729,14 @@ const MobileFeed = ({
     useEffect(() => {
         return () => {
             const refAllowsCleanup = shouldCleanupBrowserHistoryRef.current;
-            const storeAllowsCleanup = useFeedCleanupStore
-                .getState()
-                .shouldCleanupBrowserHistory;
+            const storeAllowsCleanup = useFeedCleanupStore.getState().shouldCleanupBrowserHistory;
 
             if (refAllowsCleanup && storeAllowsCleanup) {
                 window.history.replaceState({}, '', '/');
             }
 
             // Reset store flag for the next feed mount (defensive reset)
-            useFeedCleanupStore
-                .getState()
-                .setShouldCleanupBrowserHistory(true);
+            useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(true);
 
             setFeedGallery(null);
             setFeedOpen(false);

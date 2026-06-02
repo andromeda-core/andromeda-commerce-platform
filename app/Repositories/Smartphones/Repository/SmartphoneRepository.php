@@ -595,6 +595,32 @@ class SmartphoneRepository implements ISmartphoneRepository
         }
     }
 
+    public function toggleSoldOut(string $id)
+    {
+        try {
+            $smartphone = $this->smartphone->find($id);
+
+            if (empty($smartphone)) {
+                throw new Exception('Smartphone Not Found');
+            }
+
+            $smartphone->is_sold_out = ! $smartphone->is_sold_out;
+            $smartphone->save();
+
+            return [
+                'status' => true,
+                'message' => $smartphone->is_sold_out
+                    ? 'Product Marked As Sold Out'
+                    : 'Product Marked As Available',
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
     public function destroySmartphoneBySelection(Request $request)
     {
         try {

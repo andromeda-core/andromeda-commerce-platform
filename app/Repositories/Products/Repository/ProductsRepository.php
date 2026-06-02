@@ -141,6 +141,7 @@ class ProductsRepository implements IProductsRepository
                                 'slug' => $smartphone->slug,
                                 'public_id' => $smartphone->public_id,
                                 'tag' => $smartphone->tag,
+                                'is_sold_out' => $smartphone->is_sold_out,
                                 'content' => $smartphone->content,
                                 'type' => 'smartphones',
                                 'added_at' => $smartphone->added_at,
@@ -212,6 +213,7 @@ class ProductsRepository implements IProductsRepository
                         'slug' => $smartphone?->slug,
                         'public_id' => $smartphone?->public_id,
                         'tag' => $smartphone?->tag,
+                        'is_sold_out' => $smartphone?->is_sold_out,
                         'content' => $smartphone?->content,
                         'type' => 'smartphones',
                         'added_at' => $smartphone->added_at,
@@ -331,6 +333,7 @@ class ProductsRepository implements IProductsRepository
                 'color' => $smartphone?->colors[0]?->name,
                 'slug' => $smartphone?->slug,
                 'public_id' => $smartphone?->public_id,
+                'is_sold_out' => $smartphone?->is_sold_out,
             ];
         });
 

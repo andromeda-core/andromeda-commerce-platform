@@ -18,6 +18,8 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Setting', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Loading More', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Loading', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Sold Out', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Delivered Date', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Invalid post_preferences cookie. Using defaults.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Error fetching more posts', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'QR Code', 'created_at' => $now, 'updated_at' => $now],

@@ -31,6 +31,7 @@ class Smartphone extends Model
         'tag',
         'slug',
         'content',
+        'is_sold_out',
         'product_details',
         'floor_id',
         'videos',
@@ -197,5 +198,6 @@ class Smartphone extends Model
         'images' => 'array',
         'videos' => 'array',
         'product_details' => 'array',
+        'is_sold_out' => 'boolean',
     ];
 }

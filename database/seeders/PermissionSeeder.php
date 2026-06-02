@@ -1490,6 +1490,16 @@ class PermissionSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id' => 381,
+                'name' => 'toggleSoldOut',
+                'guard_name' => 'web',
+                'parent_name' => 'Products',
+                'alias' => null,
+                'icon' => 'ArchiveBoxIcon',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         // DB::table('permissions')->upsert(

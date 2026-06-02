@@ -168,6 +168,10 @@ class CartRepository implements ICartRepository
                         throw new Exception($this->trans->get('Wrong Product Selected Please Select Valid Product'));
                     }
 
+                    if ($smartphone->is_sold_out) {
+                        throw new Exception($this->trans->get('This product is currently sold out'));
+                    }
+
                     if ($already_items_in_cart->isNotEmpty()) {
                         $is_same_distributor = $this->checkIsSameDistributor($already_items_in_cart, $smartphone);
 
@@ -1007,6 +1011,10 @@ class CartRepository implements ICartRepository
                     'model_name',
                     'capacity',
                 ])->findOrFail($data['smartphone_id']);
+
+                if ($smartphoneModel->is_sold_out) {
+                    throw new Exception($this->trans->get('This product is currently sold out'));
+                }
 
                 $tempId = uniqid('cart_', true);
 
