@@ -51,6 +51,7 @@ export default function create({
         location_name: '',
         latitude: '',
         longitude: '',
+        created_at: '',
     });
 
     const [file_error, setFileError] = useState(null);
@@ -655,6 +656,17 @@ export default function create({
                                                     Id={'tag'}
                                                     Name={'tag'}
                                                     Type={'text'}
+                                                    Required={false}
+                                                />
+
+                                                <Input
+                                                    InputName={'Custom Date & Time (Optional)'}
+                                                    Error={errors.created_at}
+                                                    Value={data.created_at}
+                                                    Action={(e) => setData('created_at', e.target.value)}
+                                                    Id={'created_at'}
+                                                    Name={'created_at'}
+                                                    Type={'datetime-local'}
                                                     Required={false}
                                                 />
 

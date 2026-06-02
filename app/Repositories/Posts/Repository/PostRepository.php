@@ -259,6 +259,7 @@ class PostRepository implements IPostRepository
             'longitude' => ['nullable', 'numeric'],
             'location_name' => ['nullable', 'string'],
             'status' => ['required', 'boolean'],
+            'created_at' => ['nullable', 'date'],
         ], [
             'images.max' => 'The :attribute field must not exceed 35 files.',
             'videos.max' => 'The :attribute field must not exceed 5 files.',
@@ -315,6 +316,12 @@ class PostRepository implements IPostRepository
                 }
 
                 $validated_req['location_name'] = $response['place_name'] ?? 'No Location Name Found';
+            }
+
+            if ($request->filled('created_at')) {
+                $validated_req['created_at'] = $request->date('created_at');
+            } else {
+                unset($validated_req['created_at']);
             }
 
             $post = $this->post->create($validated_req);
@@ -403,6 +410,7 @@ class PostRepository implements IPostRepository
             'longitude' => ['nullable', 'numeric'],
             'location_name' => ['nullable', 'string'],
             'status' => ['required', 'boolean'],
+            'created_at' => ['nullable', 'date'],
         ], [
             'images.max' => 'The :attribute field must not exceed 35 files.',
             'videos.max' => 'The :attribute field must not exceed 5 files.',
@@ -564,11 +572,21 @@ class PostRepository implements IPostRepository
 
             // dd($validated_req);
 
+            if ($request->filled('created_at')) {
+                $validated_req['created_at'] = $request->date('created_at');
+            } else {
+                unset($validated_req['created_at']);
+            }
+
             $updated = $post->update($validated_req);
 
             if (! $updated) {
                 throw new Exception('Something Went Wrong While Updating Post');
             }
+
+
+
+
 
             if ($request->hasFile('new_images')) {
                 $paths = [];
@@ -840,7 +858,7 @@ class PostRepository implements IPostRepository
                         'floor:id,name',
                         'user:id,name',
                     ])
-                    ->orderBy('id', 'desc')
+                    ->orderBy('created_at', 'asc')
                     ->forPage($page, $perPage)
                     ->get();
 
@@ -1053,7 +1071,7 @@ class PostRepository implements IPostRepository
 
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
-                    ->orderBy('id', 'desc')
+                    ->orderBy('created_at', 'asc')
                     ->forPage($page, $perPage)
                     ->get();
 

@@ -28,6 +28,7 @@ class Post extends Model
         'floor_id',
         'event_id',
         'msap_uri',
+        'created_at',
     ];
 
     protected $appends = ['added_at', 'post_image_urls', 'post_video_urls', 'created_at_time', 'is_bookmarked'];

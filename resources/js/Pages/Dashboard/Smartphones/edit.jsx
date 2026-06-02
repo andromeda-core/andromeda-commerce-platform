@@ -53,6 +53,7 @@ export default function edit({
         location_name: smartphone?.location_name || '',
         floor_id: smartphone?.floor_id || '',
         product_details: smartphone?.product_details || [],
+        created_at: smartphone?.created_at ? smartphone.created_at.slice(0, 16) : '',
     });
 
     // Location Get Success state
@@ -712,6 +713,17 @@ export default function edit({
                                                     Id={'tag'}
                                                     Name={'tag'}
                                                     Type={'text'}
+                                                    Required={false}
+                                                />
+
+                                                <Input
+                                                    InputName={'Custom Date & Time (Optional)'}
+                                                    Error={errors.created_at}
+                                                    Value={data.created_at}
+                                                    Action={(e) => setData('created_at', e.target.value)}
+                                                    Id={'created_at'}
+                                                    Name={'created_at'}
+                                                    Type={'datetime-local'}
                                                     Required={false}
                                                 />
 

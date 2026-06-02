@@ -39,6 +39,7 @@ class Smartphone extends Model
         'location_name',
         'event_id',
         'msap_uri',
+        'created_at'
 
     ];
 

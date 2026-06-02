@@ -28,6 +28,7 @@ export default function create({ floors, googleMapSettings }) {
         post_type: '',
         status: 1,
         location_name: '',
+        created_at: '',
     });
 
     // Location Get Success state
@@ -471,6 +472,17 @@ export default function create({ floors, googleMapSettings }) {
                                                     Id={'tag'}
                                                     Name={'tag'}
                                                     Type={'text'}
+                                                    Required={false}
+                                                />
+
+                                                <Input
+                                                    InputName={'Custom Date & Time (Optional)'}
+                                                    Error={errors.created_at}
+                                                    Value={data.created_at}
+                                                    Action={(e) => setData('created_at', e.target.value)}
+                                                    Id={'created_at'}
+                                                    Name={'created_at'}
+                                                    Type={'datetime-local'}
                                                     Required={false}
                                                 />
 

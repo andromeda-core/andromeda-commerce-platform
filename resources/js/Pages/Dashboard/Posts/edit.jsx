@@ -28,6 +28,7 @@ export default function edit({ post, floors, googleMapSettings }) {
         tag: post?.tag || '',
         post_type: post?.post_type || '',
         status: post?.status ?? 1,
+        created_at: post?.created_at ? post.created_at.slice(0, 16) : '',
         deleted_images: [],
         deleted_videos: [],
         new_images: [],
@@ -533,6 +534,17 @@ export default function edit({ post, floors, googleMapSettings }) {
                                                     Id={'tag'}
                                                     Name={'tag'}
                                                     Type={'text'}
+                                                    Required={false}
+                                                />
+
+                                                <Input
+                                                    InputName={'Custom Date & Time (Optional)'}
+                                                    Error={errors.created_at}
+                                                    Value={data.created_at}
+                                                    Action={(e) => setData('created_at', e.target.value)}
+                                                    Id={'created_at'}
+                                                    Name={'created_at'}
+                                                    Type={'datetime-local'}
                                                     Required={false}
                                                 />
 

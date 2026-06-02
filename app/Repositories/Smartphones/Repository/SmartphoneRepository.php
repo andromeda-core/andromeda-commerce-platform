@@ -113,6 +113,7 @@ class SmartphoneRepository implements ISmartphoneRepository
                 }
             }],
             'content' => ['required', 'string', 'min:20'],
+            'created_at' => ['nullable', 'date'],
 
         ], [
             'color_ids.*.required' => 'Color Is Required ',
@@ -212,10 +213,18 @@ class SmartphoneRepository implements ISmartphoneRepository
                 $validated_req['product_details'] = $request->array('product_details');
             }
 
+            if ($request->filled('created_at')) {
+                $validated_req['created_at'] = $request->date('created_at');
+            } else {
+                unset($validated_req['created_at']);
+            }
+
             $smartphone = $this->smartphone->create($validated_req);
             if (empty($smartphone)) {
                 throw new Exception('Something Went Wrong While Creating Smartphone');
             }
+
+
 
             if ($request->has('addon_ids')) {
                 $smartphone->addons()->attach($request->array('addon_ids'));
@@ -306,6 +315,7 @@ class SmartphoneRepository implements ISmartphoneRepository
                 }
             }],
             'content' => ['required', 'string', 'min:20'],
+            'created_at' => ['nullable', 'date'],
         ], [
             'color_ids.*.required' => 'Color Is Required ',
             'color_ids.*.exists' => 'Given Color Are incorrect',
@@ -487,10 +497,18 @@ class SmartphoneRepository implements ISmartphoneRepository
                 }
             }
 
+            if ($request->filled('created_at')) {
+                $validated_req['created_at'] = $request->date('created_at');
+            } else {
+                unset($validated_req['created_at']);
+            }
+
             $updated = $smartphone->update($validated_req);
             if (! $updated) {
                 throw new Exception('Something Went Wrong While Updating Smartphone');
             }
+
+
 
             if ($request->hasFile('new_images')) {
                 $paths = [];
