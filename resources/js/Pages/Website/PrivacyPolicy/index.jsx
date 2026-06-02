@@ -54,34 +54,31 @@ const index = ({ privacy_policy }) => {
         const el = tocRef.current;
         if (!el) return;
 
-        const onWheel = (e) => {
-            const isScrollingDown = e.deltaY > 0;
-            const isScrollingUp = e.deltaY < 0;
+        let frame = null;
 
-            const atTop = window.scrollY === 0;
-            const atBottom =
-                window.innerHeight + window.scrollY >= document.body.scrollHeight;
+        const setMaxHeight = () => {
+            const stickyOffset = 96; // top-24 = 6rem = 96px
+            const top = el.getBoundingClientRect().top;
+            const effectiveTop = Math.max(top, stickyOffset);
+            el.style.height = `${window.innerHeight - effectiveTop - 16}px`;
+        };
 
-
-            if (
-                (isScrollingUp && atTop) ||
-                (isScrollingDown && atBottom)
-            ) {
-                return;
-            }
-
-            e.preventDefault();
-
-            window.scrollBy({
-                top: e.deltaY,
-                behavior: "auto",
+        const onScrollOrResize = () => {
+            if (frame) return;
+            frame = requestAnimationFrame(() => {
+                frame = null;
+                setMaxHeight();
             });
         };
 
-        el.addEventListener("wheel", onWheel, { passive: false });
+        setMaxHeight();
+        window.addEventListener('scroll', onScrollOrResize, { passive: true });
+        window.addEventListener('resize', onScrollOrResize);
 
         return () => {
-            el.removeEventListener("wheel", onWheel);
+            window.removeEventListener('scroll', onScrollOrResize);
+            window.removeEventListener('resize', onScrollOrResize);
+            if (frame) cancelAnimationFrame(frame);
         };
     }, []);
 
@@ -154,7 +151,7 @@ const index = ({ privacy_policy }) => {
                         {/* Sticky Table of Contents */}
                         <aside className="hidden shrink-0 lg:block lg:w-80">
                             <div className="sticky top-24">
-                                <div ref={tocRef} className="p-6 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl">
+                                <div ref={tocRef} className="h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain rounded-md bg-surface-1-light p-6 scrollbar-thin scrollbar-none dark:bg-surface-1-dark dark:backdrop-blur-xl">
                                     <h3 className="px-2 mb-4 font-semibold text-main-text-light text-md dark:text-main-text-dark">
                                         {__('Contents')}
                                     </h3>

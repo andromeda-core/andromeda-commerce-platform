@@ -26,20 +26,19 @@ const index = ({ terms_of_service }) => {
     };
 
     const dynamicSections = useMemo(() => {
-        return terms_of_service?.content?.map(section => ({
-            id: makeId(section.title),
-            title: section.title,
-            content: section.content,
-        })) || [];
+        return (
+            terms_of_service?.content?.map((section) => ({
+                id: makeId(section.title),
+                title: section.title,
+                content: section.content,
+            })) || []
+        );
     }, [terms_of_service]);
 
-
     const sections = [
-        ...dynamicSections.map(s => ({ id: s.id, title: s.title })),
+        ...dynamicSections.map((s) => ({ id: s.id, title: s.title })),
         { id: 'data_protection_officer', title: __('Data Protection Officer') },
-    ]
-
-
+    ];
 
     const scrollToSection = (id) => {
         isProgrammaticScroll.current = true;
@@ -52,57 +51,49 @@ const index = ({ terms_of_service }) => {
         const el = tocRef.current;
         if (!el) return;
 
-        const onWheel = (e) => {
-            const isScrollingDown = e.deltaY > 0;
-            const isScrollingUp = e.deltaY < 0;
+        let frame = null;
 
-            const atTop = window.scrollY === 0;
-            const atBottom =
-                window.innerHeight + window.scrollY >= document.body.scrollHeight;
+        const setMaxHeight = () => {
+            const stickyOffset = 96; // top-24 = 6rem = 96px
+            const top = el.getBoundingClientRect().top;
+            const effectiveTop = Math.max(top, stickyOffset);
+            el.style.height = `${window.innerHeight - effectiveTop - 16}px`;
+        };
 
-
-            if (
-                (isScrollingUp && atTop) ||
-                (isScrollingDown && atBottom)
-            ) {
-                return;
-            }
-
-            e.preventDefault();
-
-            window.scrollBy({
-                top: e.deltaY,
-                behavior: "auto",
+        const onScrollOrResize = () => {
+            if (frame) return;
+            frame = requestAnimationFrame(() => {
+                frame = null;
+                setMaxHeight();
             });
         };
 
-        el.addEventListener("wheel", onWheel, { passive: false });
+        setMaxHeight();
+        window.addEventListener('scroll', onScrollOrResize, { passive: true });
+        window.addEventListener('resize', onScrollOrResize);
 
         return () => {
-            el.removeEventListener("wheel", onWheel);
+            window.removeEventListener('scroll', onScrollOrResize);
+            window.removeEventListener('resize', onScrollOrResize);
+            if (frame) cancelAnimationFrame(frame);
         };
     }, []);
-
-
 
     return (
         <MainLayout>
             <Head title={__('Terms Of Service', true)} />
             <div className="sm:px-6 lg:px-8">
-                <div className={`px-6 lg:mt-6  mx-auto ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} lg:max-w-6xl sm:max-w-3xl`}>
-
-
-
+                <div
+                    className={`mx-auto px-6 lg:mt-6 ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} sm:max-w-3xl lg:max-w-6xl`}
+                >
                     {/* Hero Section */}
-                    <div className="relative overflow-hidden text-main-text-dark dark:text-main-text-light ">
+                    <div className="relative overflow-hidden text-main-text-dark dark:text-main-text-light">
                         <div className="absolute inset-0" />
 
-
-                        <div className="relative mx-auto my-2 lg:max-w-6xl sm:max-w-3xl ">
-
+                        <div className="relative mx-auto my-2 sm:max-w-3xl lg:max-w-6xl">
                             <button
                                 onClick={() => window.history.back()}
-                                className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
+                                className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-main-text-light transition-colors dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                             >
                                 <ChevronLeft />
                             </button>
@@ -111,32 +102,34 @@ const index = ({ terms_of_service }) => {
                                 {__('Terms Of Service')}
                             </h1>
 
-                            <p className="max-w-3xl mt-1 text-sm text-sub-text-light dark:sub-text-dark">
-
-                                {__('These Terms govern your access to and use of this website and all related services, including purchases, payments, and compliance obligations.')}
+                            <p className="dark:sub-text-dark mt-1 max-w-3xl text-sm text-sub-text-light">
+                                {__(
+                                    'These Terms govern your access to and use of this website and all related services, including purchases, payments, and compliance obligations.',
+                                )}
                             </p>
 
-                            <div className="flex flex-wrap gap-4 mt-5">
-                                <div className="flex items-center gap-2 rounded-full bg-surface-1-light dark:bg-surface-1-dark px-3 py-1.5">
-
-                                    <div className="w-2 h-2 bg-green-500 rounded-full" />
+                            <div className="mt-5 flex flex-wrap gap-4">
+                                <div className="flex items-center gap-2 rounded-full bg-surface-1-light px-3 py-1.5 dark:bg-surface-1-dark">
+                                    <div className="h-2 w-2 rounded-full bg-green-500" />
 
                                     <span className="text-sm font-medium text-sub-text-light dark:text-sub-text-dark">
                                         {__('Last Updated')}: {terms_of_service?.human_updated_at}
                                     </span>
                                 </div>
-
                             </div>
                         </div>
                     </div>
 
                     {/* Main Content */}
-                    <div className="mx-auto my-5 lg:max-w-6xl sm:max-w-3xl lg:flex lg:gap-8">
+                    <div className="mx-auto my-5 sm:max-w-3xl lg:flex lg:max-w-6xl lg:gap-8">
                         {/* Sticky Table of Contents */}
                         <aside className="hidden shrink-0 lg:block lg:w-80">
                             <div className="sticky top-24">
-                                <div ref={tocRef} className="p-6 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl">
-                                    <h3 className="px-2 mb-4 font-semibold text-main-text-light text-md dark:text-main-text-dark">
+                                <div
+                                    ref={tocRef}
+                                    className="h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain rounded-md bg-surface-1-light p-6 scrollbar-thin scrollbar-none dark:bg-surface-1-dark dark:backdrop-blur-xl"
+                                >
+                                    <h3 className="text-md mb-4 px-2 font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('Contents')}
                                     </h3>
                                     <nav className="space-y-1">
@@ -144,13 +137,15 @@ const index = ({ terms_of_service }) => {
                                             <button
                                                 key={section.id}
                                                 onClick={() => scrollToSection(section.id)}
-                                                className={`group flex w-full items-center gap-3 rounded-md px-4 py-3 text-left text-sm font-medium transition-all ${activeSection === section.id
-                                                    ? 'menu-sub-item-active'
-                                                    : 'menu-sub-item-inactive'
-                                                    }`}
+                                                className={`over group flex w-full items-center gap-3 rounded-md px-4 py-3 text-left text-sm font-medium transition-all ${
+                                                    activeSection === section.id
+                                                        ? 'menu-sub-item-active'
+                                                        : 'menu-sub-item-inactive'
+                                                }`}
                                             >
-
-                                                <span className="flex-1 break-all">{section.title}</span>
+                                                <span className="flex-1 break-all">
+                                                    {section.title}
+                                                </span>
                                                 <svg
                                                     className={`h-4 w-4 transition-transform ${activeSection === section.id ? 'translate-x-1' : ''}`}
                                                     fill="none"
@@ -172,20 +167,24 @@ const index = ({ terms_of_service }) => {
                         </aside>
 
                         {/* Content */}
-                        <main className="flex-1 space-y-6 ">
+                        <main className="flex-1 space-y-6">
                             {/* Company Info */}
-                            <section className="p-8 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl">
+                            <section className="rounded-md bg-surface-1-light p-8 dark:bg-surface-1-dark dark:backdrop-blur-xl">
                                 <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
-                                    {__('These Terms of Service (“Terms”) govern your access to and use of the website and services operated by')}
-                                    {terms_of_service?.company_name}, {__('a corporation organized under the laws of the State of')} {terms_of_service?.country},{terms_of_service?.state} {" "} ({__('“Company,” “we,” “us,” or “our”')}).
-                                    {__("By accessing this website, creating an account, or purchasing any products, you acknowledge that you have read, understood, and agree to be bound by these Terms, together with our Shipping Policy, Refund Policy, and all applicable compliance disclosures.")}
+                                    {__(
+                                        'These Terms of Service (“Terms”) govern your access to and use of the website and services operated by',
+                                    )}
+                                    {terms_of_service?.company_name},{' '}
+                                    {__('a corporation organized under the laws of the State of')}{' '}
+                                    {terms_of_service?.country},{terms_of_service?.state} (
+                                    {__('“Company,” “we,” “us,” or “our”')}).
+                                    {__(
+                                        'By accessing this website, creating an account, or purchasing any products, you acknowledge that you have read, understood, and agree to be bound by these Terms, together with our Shipping Policy, Refund Policy, and all applicable compliance disclosures.',
+                                    )}
                                 </p>
                             </section>
 
-                            <section
-                                className="w-auto p-8 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl"
-                            >
-
+                            <section className="w-auto rounded-md bg-surface-1-light p-8 dark:bg-surface-1-dark dark:backdrop-blur-xl">
                                 {dynamicSections?.map((section, index) => {
                                     return (
                                         <Fragment key={index}>
@@ -193,7 +192,7 @@ const index = ({ terms_of_service }) => {
                                                 key={section?.id}
                                                 id={section?.id}
                                                 data-section={section?.id}
-                                                className="mb-8 break-words break-all scroll-mt-32"
+                                                className="mb-8 scroll-mt-32 break-words break-all"
                                             >
                                                 <h2 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                                     {index + 1}. {section.title}
@@ -201,7 +200,7 @@ const index = ({ terms_of_service }) => {
 
                                                 {/* Content as List */}
                                                 {Array.isArray(section.content) && (
-                                                    <ul className="pl-5 space-y-2 text-sm list-[lower-alpha] text-sub-text-light dark:text-sub-text-dark">
+                                                    <ul className="list-[lower-alpha] space-y-2 pl-5 text-sm text-sub-text-light dark:text-sub-text-dark">
                                                         {section.content.map((item, idx) => (
                                                             <li key={idx}>{item}</li>
                                                         ))}
@@ -210,15 +209,13 @@ const index = ({ terms_of_service }) => {
 
                                                 {/* Content as Paragraph */}
                                                 {typeof section.content === 'string' && (
-                                                    <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark"
-                                                        dangerouslySetInnerHTML={{ __html: section.content }}
-                                                    >
-
-                                                    </p>
+                                                    <p
+                                                        className="leading-relaxed text-sub-text-light dark:text-sub-text-dark"
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: section.content,
+                                                        }}
+                                                    ></p>
                                                 )}
-
-
-
                                             </div>
 
                                             {index == dynamicSections.length - 1 && (
@@ -227,41 +224,54 @@ const index = ({ terms_of_service }) => {
                                                     <div
                                                         id="data_protection_officer"
                                                         data-section="data_protection_officer"
-                                                        className='scroll-mt-10'
+                                                        className="scroll-mt-10"
                                                     >
-                                                        <div
-                                                            className="flex items-center gap-4 mb-3">
-
-                                                            <h2
-                                                                className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
-                                                                {index + 2}. {__('Data Protection Officer (DPO)')}
+                                                        <div className="mb-3 flex items-center gap-4">
+                                                            <h2 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                {index + 2}.{' '}
+                                                                {__(
+                                                                    'Data Protection Officer (DPO)',
+                                                                )}
                                                             </h2>
                                                         </div>
 
                                                         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
-                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Name')}</p>
-                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{terms_of_service?.dpo_name}</p>
+                                                            <div className="break-words rounded-md bg-backgroundLight px-4 py-3 dark:bg-surface-2-dark">
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">
+                                                                    {__('Name')}
+                                                                </p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">
+                                                                    {terms_of_service?.dpo_name}
+                                                                </p>
                                                             </div>
 
-                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
-                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Email Address')}</p>
-                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{terms_of_service?.dpo_email}</p>
+                                                            <div className="break-words rounded-md bg-backgroundLight px-4 py-3 dark:bg-surface-2-dark">
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">
+                                                                    {__('Email Address')}
+                                                                </p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">
+                                                                    {terms_of_service?.dpo_email}
+                                                                </p>
                                                             </div>
 
-
-                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
-                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Phone Number')}</p>
-                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{terms_of_service?.dpo_phone}</p>
+                                                            <div className="break-words rounded-md bg-backgroundLight px-4 py-3 dark:bg-surface-2-dark">
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">
+                                                                    {__('Phone Number')}
+                                                                </p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">
+                                                                    {terms_of_service?.dpo_phone}
+                                                                </p>
                                                             </div>
-
-
                                                         </div>
 
-                                                        <div className="grid grid-cols-1 gap-3 mt-3">
-                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
-                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">{__('Address')}</p>
-                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">{terms_of_service?.dpo_address}</p>
+                                                        <div className="mt-3 grid grid-cols-1 gap-3">
+                                                            <div className="break-words rounded-md bg-backgroundLight px-4 py-3 dark:bg-surface-2-dark">
+                                                                <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">
+                                                                    {__('Address')}
+                                                                </p>
+                                                                <p className="mt-1 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">
+                                                                    {terms_of_service?.dpo_address}
+                                                                </p>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -270,23 +280,22 @@ const index = ({ terms_of_service }) => {
                                         </Fragment>
                                     );
                                 })}
-
                             </section>
 
-
-
                             {/* Footer CTA */}
-                            <section className="p-8 rounded-md bg-surface-1-light backdrop-blur-xl dark:bg-surface-1-dark">
+                            <section className="rounded-md bg-surface-1-light p-8 backdrop-blur-xl dark:bg-surface-1-dark">
                                 <div className="text-center">
                                     <h3 className="mb-4 text-xl font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('Have Questions About Your Privacy')}?
                                     </h3>
-                                    <p className="max-w-xl mx-auto mb-6 font-medium text-sub-text-light dark:text-sub-text-dark">
-                                        {__("We're here to help. Contact our Data Protection Ofﬁcer for any privacy-related inquiries.")}
+                                    <p className="mx-auto mb-6 max-w-xl font-medium text-sub-text-light dark:text-sub-text-dark">
+                                        {__(
+                                            "We're here to help. Contact our Data Protection Ofﬁcer for any privacy-related inquiries.",
+                                        )}
                                     </p>
                                     <Link
                                         href={route('website.contact.index')}
-                                        className="inline-flex items-center justify-center w-full px-6 py-3 font-semibold transition-all rounded-md lg:px-20 sm:w-auto text-main-text-dark bg-main-text-light dark:bg-main-text-dark dark:text-main-text-light hover:bg-main-text-light/80 dark:hover:bg-main-text-dark/80"
+                                        className="inline-flex w-full items-center justify-center rounded-md bg-main-text-light px-6 py-3 font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 sm:w-auto lg:px-20"
                                     >
                                         {__('Contact Us')}
                                     </Link>
