@@ -450,6 +450,7 @@ class Order extends Model
     // Casting
     protected $casts = [
         'shipping_date' => 'date:Y-m-d',
+        'delivered_at' => 'date:Y-m-d',
         'is_delivery_confirmed' => 'boolean',
         'is_purchase_confirmed' => 'boolean',
         'delivery_confirmed_at' => 'datetime',

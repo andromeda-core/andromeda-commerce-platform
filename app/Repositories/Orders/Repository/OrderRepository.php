@@ -98,7 +98,7 @@ class OrderRepository implements IOrderRepository
                 $query->where('status', $request->input('status'));
             })
 
-            ->latest()
+            ->latest('order_no')
             ->paginate(10)
             ->withQueryString();
 
@@ -2561,7 +2561,7 @@ class OrderRepository implements IOrderRepository
 
             $query->with(['order.orderItems', 'assignedBy', 'order.assignedSupplier', 'supplier.user']);
 
-            $orders = $query->latest()->paginate(10)->withQueryString();
+            $orders = $query->orderByDesc('order_id')->paginate(10)->withQueryString();
 
             $orders->getCollection()->transform(function ($order) {
 

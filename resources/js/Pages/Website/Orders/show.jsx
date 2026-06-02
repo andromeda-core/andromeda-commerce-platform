@@ -704,6 +704,12 @@ function CourierInfoCard({ order, __ }) {
                 <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Shipping Date')}: {order?.shipping_date || 'N/A'}
                 </p>
+
+                {order?.delivered_at && (
+                    <p className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
+                        {__('Delivered Date')}: {order?.delivered_at}
+                    </p>
+                )}
             </div>
         </div>
     );
