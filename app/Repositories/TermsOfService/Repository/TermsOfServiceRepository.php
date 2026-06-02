@@ -19,9 +19,21 @@ class TermsOfServiceRepository implements ITermsOfServiceRepository
             return null;
         }
 
-        return $this->terms_of_service
+        $terms_of_service = $this->terms_of_service
             ->where('is_active', true)
-            ->whereHas('language', fn ($q) => $q->where('code', $lang))
+            ->whereHas('language', fn($q) => $q->where('code', $lang))
             ->first();
+
+
+
+        if (!empty($terms_of_service)) {
+            return $terms_of_service;
+        }
+
+        $terms_of_service = $this->terms_of_service
+            ->where('is_active', true)
+            ->first();
+
+        return $terms_of_service;
     }
 }

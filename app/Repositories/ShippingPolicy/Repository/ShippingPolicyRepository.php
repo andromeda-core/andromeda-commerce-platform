@@ -15,14 +15,29 @@ class ShippingPolicyRepository implements IShippingPolicyRepository
     {
         $lang = app()->getLocale();
 
+
         if (empty($slug) && empty($lang)) {
             return null;
         }
 
-        return $this->shipping_policy
+        $shipping_policy =  $this->shipping_policy
             ->where('slug', $slug)
             ->where('is_active', true)
-            ->whereHas('language', fn ($q) => $q->where('code', $lang))
+            ->whereHas('language', fn($q) => $q->where('code', $lang))
             ->first();
+
+
+        if (!empty($shipping_policy)) {
+            return $shipping_policy;
+        }
+
+
+        $shipping_policy =  $this->shipping_policy
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->first();
+
+
+        return $shipping_policy;
     }
 }

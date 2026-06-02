@@ -19,10 +19,21 @@ class ReturnPolicyRepository implements IReturnPolicyRepository
             return null;
         }
 
-        return $this->return_policy
+        $return_policy = $this->return_policy
             ->where('slug', $slug)
             ->where('is_active', true)
-            ->whereHas('language', fn ($q) => $q->where('code', $lang))
+            ->whereHas('language', fn($q) => $q->where('code', $lang))
             ->first();
+
+        if (!empty($return_policy)) {
+            return $return_policy;
+        }
+
+        $return_policy = $this->return_policy
+            ->where('slug', $slug)
+            ->where('is_active', true)
+            ->first();
+
+        return $return_policy;
     }
 }
