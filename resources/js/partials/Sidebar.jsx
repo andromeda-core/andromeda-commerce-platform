@@ -12,6 +12,7 @@ export default function Sidebar({
     ApplicationLogoLight,
     ApplicationLogoDark,
     user,
+    app_name,
 }) {
     // For Managing Sidebar Navlinks Selection State
     const [selected, setSelected] = useState(null);
@@ -142,6 +143,7 @@ export default function Sidebar({
             'dashboard.settings.capacities.',
             'dashboard.settings.condition-settings.',
             'dashboard.settings.addon-settings.',
+            'dashboard.settings.price-ranges.',
             'dashboard.inventory-verifications.',
             'dashboard.internal-product-images.',
         ].some((prefix) => route().current().startsWith(prefix));
@@ -182,6 +184,7 @@ export default function Sidebar({
             'dashboard.settings.capacities.',
             'dashboard.settings.condition-settings.',
             'dashboard.settings.addon-settings.',
+            'dashboard.settings.price-ranges.',
         ].some((prefix) => route().current().startsWith(prefix));
 
         const isAttributionRoute = [
@@ -201,6 +204,7 @@ export default function Sidebar({
                 'dashboard.settings.capacities.',
                 'dashboard.settings.condition-settings.',
                 'dashboard.settings.addon-settings.',
+                'dashboard.settings.price-ranges.',
             ].some((prefix) => route().current().startsWith(prefix));
 
             if (isSetupRoute) {
@@ -253,6 +257,7 @@ export default function Sidebar({
             'Addon Items View',
             'Smartphone Country Price View',
             'Internal Product Images View',
+            'Price Ranges View',
         ]) ||
             (user?.role === 'Distributor'
                 ? can('Inventories Verification') &&
@@ -278,7 +283,7 @@ export default function Sidebar({
                 <div
                     className={`flex items-center ${sidebarToggle ? 'justify-center' : 'justify-between'} sidebar-header gap-2 pb-7 pt-8`}
                 >
-                    <Link href={route('home')}>
+                    {/* <Link href={route('home')}>
                         <span className={`logo ${sidebarToggle ? 'hidden' : ''}`}>
                             <img
                                 className="h-[80px] w-auto object-contain dark:hidden"
@@ -292,6 +297,23 @@ export default function Sidebar({
                                 alt="Logo"
                             />
                         </span>
+                    </Link> */}
+
+                    {/* Logo */}
+                    <Link href={route('home')} data-sidebar-link="true">
+                        <div className={`flex items-center gap-2 px-2 py-6 transition-all`}>
+                            {/* <div className="flex items-center justify-center w-12 h-12 rounded">
+                                                <div className="block dark:hidden">
+                                                    <img src={light_logo} alt="Logo" />
+                                                </div>
+                                                <div className="hidden dark:block">
+                                                    <img src={dark_logo} alt="Logo" />
+                                                </div>
+                                            </div> */}
+                            <span className="font-['Space_Mono'] text-2xl font-bold text-main-text-light dark:text-main-text-dark">
+                                {app_name}
+                            </span>
+                        </div>
                     </Link>
 
                     <button
@@ -657,6 +679,7 @@ export default function Sidebar({
                                                     'Conditions View',
                                                     'Model Names View',
                                                     'Addon Items View',
+                                                    'Price Ranges View',
                                                 ]) && (
                                                     <li>
                                                         <a
@@ -773,6 +796,19 @@ export default function Sidebar({
                                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.settings.addon-settings.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                                         >
                                                                             Add-on Items
+                                                                        </Link>
+                                                                    </li>
+                                                                )}
+
+                                                                {can('Price Ranges View') && (
+                                                                    <li>
+                                                                        <Link
+                                                                            href={route(
+                                                                                'dashboard.settings.price-ranges.index',
+                                                                            )}
+                                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.settings.price-ranges.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                                        >
+                                                                            Price Ranges
                                                                         </Link>
                                                                     </li>
                                                                 )}

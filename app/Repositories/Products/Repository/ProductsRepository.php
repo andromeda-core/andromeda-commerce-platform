@@ -7,6 +7,7 @@ use App\Models\Capacity;
 use App\Models\Color;
 use App\Models\Condition;
 use App\Models\Post;
+use App\Models\PriceRange;
 use App\Models\Smartphone;
 use App\Repositories\Categories\Interface\ICategoryRepository;
 use App\Repositories\Products\Interface\IProductsRepository;
@@ -24,6 +25,7 @@ class ProductsRepository implements IProductsRepository
         private Condition $condition,
         private ICategoryRepository $category,
         private Trans $trans,
+        private PriceRange $priceRange
     ) {}
 
     // Smartphone
@@ -252,11 +254,14 @@ class ProductsRepository implements IProductsRepository
             $category_id = $first_category->id;
         }
 
+        $priceRangeMap = $this->getActivePriceRanges()
+            ->keyBy(fn($r) => $r->type === 'less_than' ? 'under_' . $r->value : 'over_' . $r->value);
+
         $smartphones = $this->smartphone
             ->with(['condition', 'capacity', 'selling_info', 'model_name', 'category'])
             ->whereHas('selling_info')
             ->whereNotNull('slug')
-            ->when(! empty($request->input('tag')), function ($query) use ($request) {
+            ->when(! empty($request->input('tag')), function ($query) use ($request, $priceRangeMap) {
                 $query->where('tag', $request->input('tag'));
             })
             ->when(! empty($category_id), function ($query) use ($category_id) {
@@ -264,7 +269,7 @@ class ProductsRepository implements IProductsRepository
                     $query->where('id', $category_id);
                 });
             })
-            ->when(! blank($filters), function ($query) use ($filters) {
+            ->when(! blank($filters), function ($query) use ($filters, $priceRangeMap) {
                 $storage = isset($filters['storage']) ? $filters['storage'] : [];
                 $color = isset($filters['color']) ? $filters['color'] : [];
                 $condition = isset($filters['condition']) ? $filters['condition'] : [];
@@ -288,24 +293,22 @@ class ProductsRepository implements IProductsRepository
                         });
                     })
 
-                    ->when(! blank($price_range), function ($query) use ($price_range) {
-                        $query->whereHas('selling_info', function ($q) use ($price_range) {
+                    ->when(! blank($price_range), function ($query) use ($price_range, $priceRangeMap) {
+                        $query->whereHas('selling_info', function ($q) use ($price_range, $priceRangeMap) {
 
-                            $q->where(function ($priceQuery) use ($price_range) {
+                            $q->where(function ($priceQuery) use ($price_range, $priceRangeMap) {
 
-                                foreach ($price_range as $range) {
+                                foreach ($price_range as $range_key) {
 
-                                    if ($range === 'under_500') {
-                                        $priceQuery->orWhere('total_price', '<=', 500);
+                                    $range = $priceRangeMap->get($range_key);
+
+                                    if (! $range) {
+                                        continue;
                                     }
 
-                                    if ($range === 'under_1000') {
-                                        $priceQuery->orWhere('total_price', '<=', 1000);
-                                    }
+                                    $operator = $range->type === 'less_than' ? '<=' : '>=';
 
-                                    if ($range === 'over_1000') {
-                                        $priceQuery->orWhere('total_price', '>=', 1000);
-                                    }
+                                    $priceQuery->orWhere('total_price', $operator, $range->value);
                                 }
                             });
                         });
@@ -351,6 +354,10 @@ class ProductsRepository implements IProductsRepository
             $category_id = $first_category->id;
         }
 
+
+        $priceRangeMap = $this->getActivePriceRanges()
+            ->keyBy(fn($r) => $r->type === 'less_than' ? 'under_' . $r->value : 'over_' . $r->value);
+
         $query = \DB::table('smartphones')
             ->distinct()
             ->select('smartphones.tag')
@@ -390,35 +397,25 @@ class ProductsRepository implements IProductsRepository
                 });
             }
 
-            // PRICE RANGE (IMPORTANT FIX)
+            // PRICE RANGE (DYNAMIC)
             if (! empty($filters['price_range'] ?? [])) {
-                $query->where(function ($priceQuery) use ($filters) {
+                $query->where(function ($priceQuery) use ($filters, $priceRangeMap) {
 
-                    foreach ($filters['price_range'] as $range) {
+                    foreach ($filters['price_range'] as $range_key) {
 
-                        if ($range === 'under_500') {
-                            $priceQuery->orWhere(
-                                'smartphone_for_sales.total_price',
-                                '<=',
-                                500
-                            );
+                        $range = $priceRangeMap->get($range_key);
+
+                        if (! $range) {
+                            continue;
                         }
 
-                        if ($range === 'under_1000') {
-                            $priceQuery->orWhere(
-                                'smartphone_for_sales.total_price',
-                                '<=',
-                                1000
-                            );
-                        }
+                        $operator = $range->type === 'less_than' ? '<=' : '>=';
 
-                        if ($range === 'over_1000') {
-                            $priceQuery->orWhere(
-                                'smartphone_for_sales.total_price',
-                                '>=',
-                                1000
-                            );
-                        }
+                        $priceQuery->orWhere(
+                            'smartphone_for_sales.total_price',
+                            $operator,
+                            $range->value
+                        );
                     }
                 });
             }
@@ -482,13 +479,27 @@ class ProductsRepository implements IProductsRepository
         return $conditions;
     }
 
+    // private function getPriceRanges()
+    // {
+    //     return [
+    //         ['key' => 'under_500', 'label' => Trans::get('Under'), 'value' => 500],
+    //         ['key' => 'under_1000', 'label' => Trans::get('Under'), 'value' => 1000],
+    //         ['key' => 'over_1000', 'label' => Trans::get('Over'), 'value' => 1000],
+    //     ];
+    // }
+
     private function getPriceRanges()
     {
-        return [
-            ['key' => 'under_500', 'label' => Trans::get('Under'), 'value' => 500],
-            ['key' => 'under_1000', 'label' => Trans::get('Under'), 'value' => 1000],
-            ['key' => 'over_1000', 'label' => Trans::get('Over'), 'value' => 1000],
-        ];
+        return $this->getActivePriceRanges()
+            ->map(function ($range) {
+                return [
+                    'key' => $range->type === 'less_than' ? 'under_' . $range->value : ('over_' . $range->value),
+                    'label' => $range->type === 'less_than' ? Trans::get('Under') : Trans::get('Over'),
+                    'value' => (int) $range->value,
+                ];
+            })
+            ->values()
+            ->toArray();
     }
 
     public function getProductPreview(string $public_id): array
@@ -548,5 +559,14 @@ class ProductsRepository implements IProductsRepository
                 'options' => $conditions,
             ]] : []),
         ];
+    }
+
+    private function getActivePriceRanges()
+    {
+        return Cache::rememberForever('price_ranges', function () {
+            return $this->priceRange::where('is_active', true)
+                ->orderBy('value')
+                ->get(['id', 'value', 'type']);
+        });
     }
 }

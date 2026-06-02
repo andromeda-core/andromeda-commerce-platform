@@ -54,6 +54,8 @@ use App\Repositories\PackageRecordings\Interface\IPackageRecordingsRepository;
 use App\Repositories\PackageRecordings\Repository\PackageRecordingsRepository;
 use App\Repositories\Posts\Interface\IPostRepository;
 use App\Repositories\Posts\Repository\PostRepository;
+use App\Repositories\PriceRange\Interface\IPriceRangeRepository;
+use App\Repositories\PriceRange\Repository\PriceRangeRepository;
 use App\Repositories\PrivacyPolicy\Interface\IPrivacyPolicyRepository;
 use App\Repositories\PrivacyPolicy\Repository\PrivacyPolicyRepository;
 use App\Repositories\ProductLink\Interface\IProductLinkRepository;
@@ -155,6 +157,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IProductLinkRepository::class, ProductLinkRepository::class);
         $this->app->bind(IAttributionRewardRepository::class, AttributionRewardRepository::class);
         $this->app->bind(IInternalProductImageRepository::class, InternalProductImageRepository::class);
+        $this->app->bind(IPriceRangeRepository::class, PriceRangeRepository::class);
     }
 
     /**

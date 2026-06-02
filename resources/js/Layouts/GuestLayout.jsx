@@ -11,7 +11,6 @@ export default function GuestLayout({ children }) {
     // Global General Setting Prop
     const { generalSetting, asset, flash } = usePage().props;
 
-
     // Managing Dark Mode State
     const [darkMode, setDarkMode] = useState(false);
 
@@ -37,9 +36,6 @@ export default function GuestLayout({ children }) {
             setApplicationLogoDark(generalSetting.app_main_logo_dark);
         }
     }, []);
-
-
-
 
     // Toggle Mode Dark + Light
     useEffect(() => {
@@ -69,19 +65,16 @@ export default function GuestLayout({ children }) {
         localStorage.setItem('darkMode', JSON.stringify(darkMode));
     }, [darkMode]);
 
-
     // Global Language Zustand Store Sync
     const fetchLanguages = useLanguageStore((state) => state.fetchLanguages);
-    const setLanguageLocale = useLanguageStore(state => state.setLanguageLocale);
-    const setLanguageId = useLanguageStore(state => state.setLanguageId);
-    const isLoaded = useLanguageStore(state => state.isLoaded);
+    const setLanguageLocale = useLanguageStore((state) => state.setLanguageLocale);
+    const setLanguageId = useLanguageStore((state) => state.setLanguageId);
+    const isLoaded = useLanguageStore((state) => state.isLoaded);
 
     useEffect(() => {
-
         if (!isLoaded) {
             fetchLanguages();
         }
-
     }, [isLoaded]);
 
     useEffect(() => {
@@ -93,7 +86,7 @@ export default function GuestLayout({ children }) {
         }
 
         try {
-            const name = "language=";
+            const name = 'language=';
             const match = document.cookie.match(new RegExp('(^|;\\s*)' + name + '([^;]*)'));
 
             if (match) {
@@ -106,14 +99,12 @@ export default function GuestLayout({ children }) {
                     return;
                 }
             }
-            throw new Error("Invalid Cookie");
-
+            throw new Error('Invalid Cookie');
         } catch (e) {
             setLanguageLocale('en');
             setLanguageId(1);
         }
     }, []);
-
 
     return (
         <>
@@ -121,13 +112,10 @@ export default function GuestLayout({ children }) {
             <AppStatusManager />
             <Toast flash={flash} />
 
-            <div className="relative p-6 z-1 bg-slate-50 dark:bg-backgroundDark sm:p-0">
-
-                <div className="absolute top-0 left-0 right-0 z-30 hidden px-4 pt-3 pb-2 lg:flex lg:items-center lg:justify-between">
-                    <Link href={route('home')} data-sidebar-link="true" >
-                        <div
-                            className={`flex items-center gap-2 px-6 py-6 transition-all`}
-                        >
+            <div className="z-1 relative bg-slate-50 p-6 dark:bg-backgroundDark sm:p-0">
+                <div className="absolute left-0 right-0 top-0 z-30 hidden px-4 pb-2 pt-3 lg:flex lg:items-center lg:justify-between">
+                    <Link href={route('home')} data-sidebar-link="true">
+                        <div className={`flex items-center gap-2 px-6 py-6 transition-all`}>
                             {/* <div className="flex items-center justify-center w-12 h-12 rounded">
                             <div className="block dark:hidden">
                                 <img src={light_logo} alt="Logo" />
@@ -136,20 +124,19 @@ export default function GuestLayout({ children }) {
                                 <img src={dark_logo} alt="Logo" />
                             </div>
                         </div> */}
-                            <span className="text-2xl font-semibold text-main-text-light dark:text-main-text-dark">
+                            <span className="font-['Space_Mono'] text-2xl font-bold text-main-text-light dark:text-main-text-dark">
                                 {generalSetting?.app_name || 'Andromeda'}
                             </span>
                         </div>
                     </Link>
                 </div>
 
-                <div className="relative flex flex-col justify-center w-full min-h-screen overflow-y-auto dark:bg-backgroundDark sm:p-0 lg:flex-row">
+                <div className="relative flex min-h-screen w-full flex-col justify-center overflow-y-auto dark:bg-backgroundDark sm:p-0 lg:flex-row">
                     {children}
 
-
-                    <div className="fixed z-50 bottom-6 right-6">
+                    <div className="fixed bottom-6 right-6 z-50">
                         <button
-                            className="inline-flex items-center justify-center text-white transition-colors bg-black rounded-full dark:text-black dark:bg-white hover:bg-brand-600 size-14"
+                            className="hover:bg-brand-600 inline-flex size-14 items-center justify-center rounded-full bg-black text-white transition-colors dark:bg-white dark:text-black"
                             onClick={() => {
                                 setDarkMode(!darkMode);
                                 localStorage.setItem(

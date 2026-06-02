@@ -9,6 +9,7 @@ use App\Models\GeneralSetting;
 use App\Models\GoogleMapSetting;
 use App\Models\MetaSetting;
 use App\Models\NowPayment;
+use App\Models\PriceRange;
 use App\Models\SmtpSetting;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
@@ -54,7 +55,7 @@ class AppServiceProvider extends ServiceProvider
 
             if (Schema::hasTable('general_settings')) {
 
-                $general_setting = Cache::rememberForever('general_config', fn () => GeneralSetting::first() ?? null);
+                $general_setting = Cache::rememberForever('general_config', fn() => GeneralSetting::first() ?? null);
 
                 if (! empty($general_setting)) {
                     Config::set('app.name', $general_setting?->app_name);
@@ -62,7 +63,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if (Schema::hasTable('smtp_settings')) {
-                $smtp = Cache::rememberForever('smtp_config', fn () => SmtpSetting::first() ?? null);
+                $smtp = Cache::rememberForever('smtp_config', fn() => SmtpSetting::first() ?? null);
 
                 if (! empty($smtp)) {
                     Config::set([
@@ -79,11 +80,11 @@ class AppServiceProvider extends ServiceProvider
             }
 
             if (Schema::hasTable('currencies')) {
-                Cache::rememberForever('currency', fn () => Currency::where('is_active', true)->first() ?? null);
+                Cache::rememberForever('currency', fn() => Currency::where('is_active', true)->first() ?? null);
             }
 
             if (Schema::hasTable('aws_settings')) {
-                $aws_setting = Cache::rememberForever('aws_setting', fn () => AwsSetting::where('is_active', true)->first() ?? null);
+                $aws_setting = Cache::rememberForever('aws_setting', fn() => AwsSetting::where('is_active', true)->first() ?? null);
 
                 if (! empty($aws_setting)) {
                     Config::set([
@@ -97,22 +98,20 @@ class AppServiceProvider extends ServiceProvider
                         'services.ses.region' => $aws_setting?->aws_region,
                     ]);
                 }
-
             }
 
             if (Schema::hasTable('google_map_settings')) {
-                $google_map_setting = Cache::rememberForever('google_map_setting', fn () => GoogleMapSetting::where('is_active', true)->first() ?? null);
+                $google_map_setting = Cache::rememberForever('google_map_setting', fn() => GoogleMapSetting::where('is_active', true)->first() ?? null);
 
                 if (! empty($google_map_setting)) {
                     Config::set([
                         'services.google_maps_api_key' => $google_map_setting?->google_map_api_key,
                     ]);
                 }
-
             }
 
             if (Schema::hasTable('now_payments')) {
-                $now_payment_setting = Cache::rememberForever('now_payment_setting', fn () => NowPayment::where('is_active', true)->first() ?? null);
+                $now_payment_setting = Cache::rememberForever('now_payment_setting', fn() => NowPayment::where('is_active', true)->first() ?? null);
 
                 if (! empty($now_payment_setting)) {
                     Config::set([
@@ -121,22 +120,19 @@ class AppServiceProvider extends ServiceProvider
                         'services.now_payments.base_url' => $now_payment_setting?->now_payment_baseurl,
                     ]);
                 }
-
             }
 
             if (Schema::hasTable('meta_settings')) {
-                Cache::rememberForever('meta_setting', fn () => MetaSetting::where('is_active', true)->first() ?? null);
-
+                Cache::rememberForever('meta_setting', fn() => MetaSetting::where('is_active', true)->first() ?? null);
             }
 
             if (Schema::hasTable('countries')) {
-                Cache::rememberForever('countries', fn () => Country::where('is_active', true)->get());
+                Cache::rememberForever('countries', fn() => Country::where('is_active', true)->get());
             }
 
             if (Schema::hasTable('dormancy_settings')) {
-                Cache::rememberForever('dormancy_setting', fn () => DB::table('dormancy_settings')->first());
+                Cache::rememberForever('dormancy_setting', fn() => DB::table('dormancy_settings')->first());
             }
-
         } catch (Exception $e) {
             info($e->getMessage());
         }
@@ -144,6 +140,5 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user) {
             return $user->roles()->pluck('name')->implode('') === 'Admin' ? true : false;
         });
-
     }
 }

@@ -54,6 +54,24 @@
     src: url('https://cdn.andromeda.blue/fonts/DMSans-ExtraBold.ttf') format('truetype');
 }
 
+/* Space Mono Regular */
+@font-face {
+    font-family: 'Space Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('https://cdn.andromeda.blue/fonts/SpaceMono-Regular.ttf') format('truetype');
+}
+
+/* Space Mono Bold */
+@font-face {
+    font-family: 'Space Mono';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('https://cdn.andromeda.blue/fonts/SpaceMono-Bold.ttf') format('truetype');
+}
+
 /* global.css */
 .hide-y-scrollbar {
     scrollbar-width: none; /* Firefox */

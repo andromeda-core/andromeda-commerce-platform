@@ -553,17 +553,26 @@ namespace App\Models{
  * @property int $id
  * @property string $name
  * @property string $symbol
- * @property int $is_active
+ * @property int|null $country_id
+ * @property numeric $exchange_rate
+ * @property string|null $rate_source
+ * @property \Illuminate\Support\Carbon|null $rate_updated_at
+ * @property bool $is_active
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read mixed $added_at
+ * @property-read \App\Models\Country|null $country
+ * @property-read string|null $added_at
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereCountryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereExchangeRate($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereIsActive($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereRateSource($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereRateUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereSymbol($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency whereUpdatedAt($value)
  */
@@ -870,6 +879,66 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $public_id
+ * @property string $original_name
+ * @property string|null $file_name
+ * @property string $folder
+ * @property string|null $file_path
+ * @property string|null $file_url
+ * @property string|null $mime_type
+ * @property string|null $extension
+ * @property int|null $size
+ * @property string $upload_status
+ * @property int|null $uploaded_by
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read string|null $created_at_formatted
+ * @property-read string|null $human_size
+ * @property-read \App\Models\User|null $uploadedBy
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereExtension($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereFileName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereFilePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereFileUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereFolder($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereMimeType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereOriginalName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage wherePublicId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereSize($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereUploadStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImage whereUploadedBy($value)
+ */
+	class InternalProductImage extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property string $name
+ * @property int|null $created_by
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User|null $createdBy
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImageFolder newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImageFolder newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImageFolder query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImageFolder whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImageFolder whereCreatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImageFolder whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImageFolder whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|InternalProductImageFolder whereUpdatedAt($value)
+ */
+	class InternalProductImageFolder extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property int $smartphone_id
  * @property int $batch_id
  * @property int|null $storage_location_id
@@ -1139,10 +1208,12 @@ namespace App\Models{
  * @property-read \App\Models\Smartphone|null $attributedSmartphone
  * @property-read \App\Models\User|null $attributedToUser
  * @property-read \App\Models\ProductLink|null $attributionLink
+ * @property-read \App\Models\AttributionReward|null $attributionReward
  * @property-read \App\Models\OrderCancelationRequest|null $cancelationRequest
  * @property-read \App\Models\Collaborator|null $collaborator
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CollaboratorCommission> $collaboratorCommissions
  * @property-read int|null $collaborator_commissions_count
+ * @property-read \App\Models\OrderCurrencySnapshot|null $currencySnapshot
  * @property-read \App\Models\Customer|null $customer
  * @property-read mixed $added_at
  * @property-read mixed $address_change_request_status
@@ -1328,6 +1399,42 @@ namespace App\Models{
 /**
  * @property int $id
  * @property int $order_id
+ * @property string $base_currency
+ * @property numeric $base_amount
+ * @property string $display_currency
+ * @property numeric $display_amount
+ * @property numeric $exchange_rate
+ * @property string|null $rate_source
+ * @property \Illuminate\Support\Carbon|null $rate_timestamp
+ * @property string|null $selected_pay_currency
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read string $rate_timestamp_display
+ * @property-read string $selected_pay_currency_display
+ * @property-read \App\Models\Order $order
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereBaseAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereBaseCurrency($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereDisplayAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereDisplayCurrency($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereExchangeRate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereRateSource($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereRateTimestamp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereSelectedPayCurrency($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderCurrencySnapshot whereUpdatedAt($value)
+ */
+	class OrderCurrencySnapshot extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $order_id
  * @property int|null $color_id
  * @property int $smartphone_id
  * @property int|null $inventory_item_id
@@ -1378,6 +1485,10 @@ namespace App\Models{
  * @property string|null $return_packaging_video
  * @property string|null $scanned_code
  * @property string|null $refund_reference
+ * @property string|null $return_tracking_image
+ * @property string|null $return_tracking_uploaded_at
+ * @property \Illuminate\Support\Carbon|null $return_tracking_deadline_at
+ * @property bool $is_auto_rejected
  * @property string|null $note
  * @property numeric $refund_amount
  * @property string|null $requested_at
@@ -1389,6 +1500,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Customer $customer
  * @property-read mixed $added_at
+ * @property-read int|null $hours_remaining
+ * @property-read string|null $return_tracking_image_url
  * @property-read \App\Models\Order $order
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund newQuery()
@@ -1399,6 +1512,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereCustomerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereDefectEvidenceVideo($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereIsAutoRejected($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereNote($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRefundAmount($value)
@@ -1409,6 +1523,9 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRejectedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereRequestedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereReturnPackagingVideo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereReturnTrackingDeadlineAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereReturnTrackingImage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereReturnTrackingUploadedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereScannedCode($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|OrderRefund whereWithdrawnAt($value)
@@ -1623,6 +1740,29 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Post whereVideos($value)
  */
 	class Post extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $value
+ * @property string $type
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read mixed $added_at
+ * @property-read mixed $type_label
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PriceRange newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PriceRange newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PriceRange query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PriceRange whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PriceRange whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PriceRange whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PriceRange whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PriceRange whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|PriceRange whereValue($value)
+ */
+	class PriceRange extends \Eloquent {}
 }
 
 namespace App\Models{

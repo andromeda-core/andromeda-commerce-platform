@@ -97,6 +97,7 @@ export default function AuthenticatedLayout({ children, allHidden = false }) {
                         setSidebarToggle={setSidebarToggle}
                         ApplicationLogoLight={ApplicationLogoLight}
                         ApplicationLogoDark={ApplicationLogoDark}
+                        app_name={generalSetting?.app_name}
                         user={auth?.user}
                     />
                 )}

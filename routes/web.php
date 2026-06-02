@@ -22,6 +22,7 @@ use App\Http\Controllers\Dashboard\OrderAddressChangeRequestController;
 use App\Http\Controllers\Dashboard\OrderCancelationRequestController;
 use App\Http\Controllers\Dashboard\OrderController;
 use App\Http\Controllers\Dashboard\OrderCourierCompanyController;
+use App\Http\Controllers\Dashboard\PriceRangeController;
 use App\Http\Controllers\Dashboard\OrderRefundController;
 use App\Http\Controllers\Dashboard\PackageRecordingController;
 use App\Http\Controllers\Dashboard\PostController;
@@ -940,6 +941,18 @@ Route::middleware(['auth'])->group(function () {
                     Route::put('/addon-settings-toggle-status/{id?}', 'addonToggleStatus')->name('addon-settings.toggle-status');
                     Route::delete('/addon-settings-destroy/{id?}', 'addonDestroy')->name('addon-settings.destroy');
                     Route::delete('/addon-settings-destroy-by-selection', 'addonDestroyBySelection')->name('addon-settings.destroybyselection');
+
+                    // Price Range Routes
+                    Route::controller(PriceRangeController::class)->name('price-ranges.')->group(function () {
+                        Route::get('/price-ranges', 'index')->name('index');
+                        Route::get('/price-ranges-create', 'create')->name('create');
+                        Route::post('/price-ranges-store', 'store')->name('store');
+                        Route::get('/price-ranges-edit/{id?}', 'edit')->name('edit');
+                        Route::put('/price-ranges-update/{id?}', 'update')->name('update');
+                        Route::put('/price-ranges-toggle-status/{id?}', 'toggleStatus')->name('toggle-status');
+                        Route::delete('/price-ranges-destroy/{id?}', 'destroy')->name('destroy');
+                        Route::delete('/price-ranges-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+                    });
 
                     // Dormancy Setting Routes
                     Route::get('/dormancy-settings', 'dormancySettingIndex')->name('dormancy-setting.index');
