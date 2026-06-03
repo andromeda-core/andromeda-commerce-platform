@@ -21,30 +21,13 @@ const DesktopPwaBackButton = ({ __, CustomClassName }) => {
 
    const handleClick = () => {
     try {
-        const storedPrevUrl = sessionStorage.getItem('andromeda_prev_url');
-        console.log('DesktopPwaBackButton: storedPrevUrl from sessionStorage:', storedPrevUrl);
+        useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false);
+    } catch (e) {}
 
-        if (storedPrevUrl && storedPrevUrl.trim() !== '') {
-            useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false);
-            router.visit(storedPrevUrl);
-            return;
-        }
-    } catch (e) {
-        // sessionStorage access failed; fall through to native back
-    }
-
-    // Normal navigation: behave like the real browser back button.
-    // Home/index pushes a synthetic duplicate entry (same URL) on feed
-    // load, so a single history.back() can land on an identical-URL entry
-    // and appear to do nothing. If the URL did not actually change after
-    // going back, step back once more to reach the real previous page.
     const urlBefore = window.location.href;
 
     const onPop = () => {
         window.removeEventListener('popstate', onPop);
-
-        // If URL is unchanged, we landed on a synthetic same-URL entry.
-        // Step back one more time to reach the real previous page.
         if (window.location.href === urlBefore) {
             window.history.back();
         }
@@ -53,7 +36,6 @@ const DesktopPwaBackButton = ({ __, CustomClassName }) => {
     window.addEventListener('popstate', onPop);
     window.history.back();
 
-    // Safety: if no popstate fired (nothing to go back to), clean up.
     setTimeout(() => window.removeEventListener('popstate', onPop), 600);
 };
 

@@ -133,10 +133,10 @@ export default function index() {
         };
     }, [nextPageUrl]);
 
-    const handleOpenPost = (post) => {
-        const url = generateURL(post, true, true);
-        router.visit(route('home') + url, { replace: true });
-    };
+  const handleOpenPost = (post) => {
+    const url = generateURL(post, true, true);
+    router.visit(route('home') + url);
+};
 
     return (
         <MainLayout>
@@ -155,7 +155,7 @@ export default function index() {
             )}
 
             {!isLoaded && (
-                <div className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80">
+                <div className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80">
                     <Spinner />
                     {__('Please Wait While We Load Bookmarked Posts...')}
                 </div>
@@ -164,11 +164,11 @@ export default function index() {
             {/* Masonry Layout */}
             {isLoaded && (
                 <div className={`pb-20`}>
-                    <div className="max-w-8xl mx-auto px-6 lg:px-8">
+                    <div className="px-6 mx-auto max-w-8xl lg:px-8">
                         <div className="my-2 lg:my-7">
                             <button
                                 onClick={() => window.history.back()}
-                                className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-main-text-light transition-colors dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
+                                className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors text-main-text-light dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                             >
                                 <ChevronLeft />
                             </button>
@@ -177,7 +177,7 @@ export default function index() {
                             <h1 className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('Bookmark')}
                             </h1>
-                            <p className="dark:sub-text-dark mt-1 max-w-3xl text-sm text-sub-text-light">
+                            <p className="max-w-3xl mt-1 text-sm dark:sub-text-dark text-sub-text-light">
                                 {__(
                                     'Access and manage all your saved bookmarks in one convenient place.',
                                 )}
@@ -210,7 +210,7 @@ export default function index() {
                                         {__('No Bookmarks Found')}
                                     </h3>
 
-                                    <p className="mb-8 mt-2 max-w-md text-sm leading-relaxed text-gray-500 dark:text-gray-400">
+                                    <p className="max-w-md mt-2 mb-8 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
                                         {__(
                                             'Start bookmarking your favorite Posts to see them here',
                                         )}
@@ -232,7 +232,7 @@ export default function index() {
                                 {nextPageUrl && (
                                     <div
                                         ref={loaderRef}
-                                        className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 dark:text-white/80"
+                                        className="flex items-center justify-center gap-2 py-10 text-center text-gray-700 transition-all duration-100 animate-pulse dark:text-white/80"
                                     >
                                         <Spinner />
                                         {__('Loading more' + '...')}
