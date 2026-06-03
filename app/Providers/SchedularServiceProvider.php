@@ -17,6 +17,7 @@ use App\Console\Commands\MarkUserAsDormant;
 use App\Console\Commands\MetaPageTokenRefresh;
 use App\Console\Commands\NOWPaymentInvoiceStatusCheck;
 use App\Console\Commands\SendUnsettledAccountNotifications;
+use App\Console\Commands\SyncExchangeRates;
 use App\Console\Commands\WarmSitemapCache;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\ServiceProvider;
@@ -52,5 +53,6 @@ class SchedularServiceProvider extends ServiceProvider
         $schedule->command(ConfirmPurchaseOrders::class)->everyFifteenMinutes();
         $schedule->command(WarmSitemapCache::class)->daily();
         $schedule->command(AutoRejectRefundsMissingTracking::class)->everyFifteenMinutes()->withoutOverlapping();
+        $schedule->command(SyncExchangeRates::class)->everySixHours()->withoutOverlapping();
     }
 }
