@@ -117,7 +117,7 @@ const HtmlFrame = ({ html }) => {
             title="product-description"
             sandbox="allow-same-origin allow-scripts"
             className="w-full border-0"
-            style={{ height: `${height}px` }}
+            style={{ height: `${height}px`, pointerEvents: 'none' }}
         />
     );
 };
