@@ -457,7 +457,7 @@ const MasonryFeedItem = memo(
                                     </span>
                                 </div>
 
-                                <div className="absolute inset-x-0 bottom-0 bg-transparent p-3">
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-12">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                         {item.is_sold_out && (
                                             <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -538,7 +538,7 @@ const MasonryFeedItem = memo(
 
                         {loaded && (
                             <>
-                                <div className="absolute inset-x-0 bottom-0 bg-transparent p-3">
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-12">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                         {item.is_sold_out && (
                                             <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">

@@ -1,3 +1,4 @@
+import { useTranslation } from '@/Hooks/useTranslation';
 import { usePage } from '@inertiajs/react';
 
 /**
@@ -16,6 +17,7 @@ import { usePage } from '@inertiajs/react';
  * @param {boolean}         showCode            Prepend the currency code before the symbol ("USD $1,000" vs "$1,000"). (default: false)
  * @param {'sm'|'md'|'lg'}  size               Typography scale. (default: 'md')
  * @param {string}          className           Extra Tailwind classes for the outer wrapper. (default: '')
+ * @param {boolean}         paymentDisplay      Show USD prominently with an approximate local conversion and a "payment in USD" note. The approx line and note hide when the display currency equals the active currency. (default: false)
  */
 export default function DisplayPrice({
     usdAmount,
@@ -24,8 +26,11 @@ export default function DisplayPrice({
     showCode = false,
     size = 'md',
     className = '',
+    paymentDisplay = true,
 }) {
     const { displayCurrency } = usePage().props;
+
+    const { __ } = useTranslation();
 
     // ── Guard: invalid / zero / missing amount ────────────────────────────────
     // null, undefined, NaN, and 0 all render a dash — no price to show.
@@ -82,6 +87,43 @@ export default function DisplayPrice({
         maximumFractionDigits: 2,
     });
 
+    // ── Payment-style display (opt-in, additive) ──────────────────────────────
+    // USD shown prominently (payment is always processed in USD), with an
+    // approximate local conversion and a note. The approx line and note hide
+    // when there is no real conversion (display currency == active currency):
+    // detected dynamically via `isFallback` or a rate of 1, so it follows the
+    // globally active currency without hardcoding any currency code.
+    // When `paymentDisplay` is false (default), this branch is skipped and the
+    // component renders exactly as before.
+    if (paymentDisplay) {
+        const noConversion = isFallback || rate === 1;
+        const usdPaymentFormatted = parsedUsd.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+        });
+
+        return (
+            <div className={`flex flex-col gap-0 ${className}`.trim()}>
+                {/* USD base — the actual amount charged */}
+                <span className={priceClass}>{`$ ${usdPaymentFormatted}`}</span>
+
+                {/* Approximate local conversion — hidden when display == active currency */}
+                {!noConversion && (
+                    <span className={`${labelClass}`}>
+                        {`${__('Approx')}.${symbol} ${formatted}`}
+                    </span>
+                )}
+
+                {/* Payment currency note — hidden when display == active currency */}
+                {!noConversion && (
+                    <span className={`${labelClass}`}>
+                        {__('Final payment will be processed in USD.')}
+                    </span>
+                )}
+            </div>
+        );
+    }
+
     // ── Render ────────────────────────────────────────────────────────────────
     return (
         <div className={`flex flex-col gap-0 ${className}`.trim()}>
@@ -95,7 +137,7 @@ export default function DisplayPrice({
             {/* "Estimated" hint — shown when a real conversion took place */}
             {showEstimated && (
                 <span className={`${labelClass} text-sub-text-light dark:text-sub-text-dark`}>
-                    Estimated
+                    {__('Estimated')}
                 </span>
             )}
 

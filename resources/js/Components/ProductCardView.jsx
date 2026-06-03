@@ -139,6 +139,7 @@ const ProductCardView = ({ publicId, slug = null }) => {
                             size="sm"
                             showEstimatedLabel={false}
                             className="text-xs font-bold text-main-text-light dark:text-main-text-dark lg:text-sm"
+                            paymentDisplay={false}
                         />
                     </div>
                 </div>
