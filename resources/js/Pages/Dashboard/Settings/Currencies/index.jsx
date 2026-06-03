@@ -109,6 +109,7 @@ export default function index({ currencies }) {
                 },
             },
 
+            { key: 'formatted_exchange_rate_updated_at', label: 'Exchange Rate Updated At' },
             { key: 'added_at', label: 'Added At' },
         ];
 

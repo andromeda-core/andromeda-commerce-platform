@@ -562,6 +562,7 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Country|null $country
  * @property-read string|null $added_at
+ * @property-read string|null $formatted_exchange_rate_updated_at
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Currency query()
@@ -1192,7 +1193,7 @@ namespace App\Models{
  * @property string|null $payment_proof
  * @property int $is_cash_collected
  * @property array<array-key, mixed>|null $final_attachments
- * @property string|null $delivered_at
+ * @property \Illuminate\Support\Carbon|null $delivered_at
  * @property \Illuminate\Support\Carbon|null $delivery_confirmed_at
  * @property string|null $purchase_confirmed_at
  * @property string|null $expires_at
@@ -2109,6 +2110,7 @@ namespace App\Models{
  * @property string $upc
  * @property string|null $content
  * @property string|null $tag
+ * @property bool $is_sold_out
  * @property string|null $slug
  * @property array<array-key, mixed>|null $images
  * @property array<array-key, mixed>|null $videos
@@ -2159,6 +2161,7 @@ namespace App\Models{
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereFloorId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereImages($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereIsSoldOut($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereLatitude($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereLocationName($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Smartphone whereLongitude($value)

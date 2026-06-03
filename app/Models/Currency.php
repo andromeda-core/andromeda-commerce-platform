@@ -19,7 +19,7 @@ class Currency extends Model
         'rate_updated_at',
     ];
 
-    protected $appends = ['added_at'];
+    protected $appends = ['added_at', 'formatted_exchange_rate_updated_at'];
 
     /**
      * The attributes that should be cast.
@@ -42,7 +42,10 @@ class Currency extends Model
     {
         return ! empty($this->created_at) ? $this->created_at->format('Y-m-d') : null;
     }
-
+    public function getFormattedExchangeRateUpdatedAtAttribute(): ?string
+    {
+        return ! empty($this->rate_updated_at) ? $this->rate_updated_at->format('Y-m-d H:i:s') : null;
+    }
     // -------------------------------------------------------------------------
     // Relationships
     // -------------------------------------------------------------------------
