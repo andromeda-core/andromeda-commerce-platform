@@ -127,22 +127,23 @@ const ProductCardView = ({ publicId, slug = null }) => {
             </div>
 
             {/* Right column: text top, button bottom-right */}
-            <div className="flex min-w-0 flex-1 flex-col px-3 py-2">
-                <div className="min-w-0 flex-1">
-                    <h4 className="line-clamp-2 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+            <div className="flex min-w-0 flex-1 flex-col px-3 lg:py-2">
+                <div className="min-w-0 flex-1 text-xs lg:text-sm">
+                    <h4 className="line-clamp-2 font-semibold text-main-text-light dark:text-main-text-dark">
                         {preview.name}
                     </h4>
-                    <div className="mt-1">
+                    <div className="lg:mt-1">
                         <DisplayPrice
                             usdAmount={preview.price_usd}
                             showCode
+                            size="sm"
                             showEstimatedLabel={false}
-                            className="text-sm font-bold text-main-text-light dark:text-main-text-dark"
+                            className="text-xs font-bold text-main-text-light dark:text-main-text-dark lg:text-sm"
                         />
                     </div>
                 </div>
                 <div className="mb-1 mt-auto flex justify-end">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-main-text-light px-3 py-1.5 text-xs font-semibold text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-main-text-light px-1.5 py-1.5 text-xs font-semibold text-main-text-dark dark:bg-main-text-dark dark:text-main-text-light lg:px-3">
                         {t('View Product')}
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
