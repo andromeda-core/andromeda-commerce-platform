@@ -696,6 +696,7 @@ const MobileFeed = ({
                                                     usdAmount={item.selling_info?.total_price}
                                                     showEstimatedLabel={false}
                                                     className="text-[20px] font-semibold text-main-text-light dark:text-main-text-dark"
+                                                    MobileFeedPriceClass={'text-main-text-dark'}
                                                 />
                                             </span>
 

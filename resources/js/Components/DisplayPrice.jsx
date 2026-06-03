@@ -27,6 +27,7 @@ export default function DisplayPrice({
     size = 'md',
     className = '',
     paymentDisplay = true,
+    MobileFeedPriceClass = '',
 }) {
     const { displayCurrency } = usePage().props;
 
@@ -105,18 +106,20 @@ export default function DisplayPrice({
         return (
             <div className={`flex flex-col gap-0 ${className}`.trim()}>
                 {/* USD base — the actual amount charged */}
-                <span className={priceClass}>{`$ ${usdPaymentFormatted}`}</span>
+                <span
+                    className={`${priceClass} ${MobileFeedPriceClass}`}
+                >{`$ ${usdPaymentFormatted}`}</span>
 
                 {/* Approximate local conversion — hidden when display == active currency */}
                 {!noConversion && (
-                    <span className={`${labelClass}`}>
+                    <span className={`${labelClass} ${MobileFeedPriceClass}`}>
                         {`${__('Approx')}.${symbol} ${formatted}`}
                     </span>
                 )}
 
                 {/* Payment currency note — hidden when display == active currency */}
                 {!noConversion && (
-                    <span className={`${labelClass}`}>
+                    <span className={`${labelClass} ${MobileFeedPriceClass}`}>
                         {__('Final payment will be processed in USD.')}
                     </span>
                 )}
