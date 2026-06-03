@@ -1,6 +1,7 @@
 import DesktopPwaBackButton from '@/Components/DesktopPwaBackButton';
 import DropdownMenuItem from '@/Components/DropdownMenuItem';
 import useDarkMode from '@/Hooks/useDarkMode';
+import { useFeedCleanupStore } from '@/Hooks/useFeedCleanupStore';
 import { Link, router, usePage } from '@inertiajs/react';
 import React, { useEffect, useState } from 'react';
 
@@ -138,6 +139,9 @@ const Sidebar = ({
     return (
         <div className="flex min-h-screen">
             <aside
+                onClickCapture={() => {
+                    useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false);
+                }}
                 className={`flex h-screen w-[clamp(200px,15vw,256px)] shrink-0 flex-col overflow-y-auto bg-backgroundLight p-4 transition-all duration-300 scrollbar-none dark:bg-backgroundDark`}
             >
                 {showBackButton && <DesktopPwaBackButton CustomClassName="ml-2" __={__} />}

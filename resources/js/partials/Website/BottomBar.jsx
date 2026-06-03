@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useBottomBarStore } from '@/Hooks/useBottomBarStore';
 import gsap from 'gsap';
+import { useFeedCleanupStore } from '@/Hooks/useFeedCleanupStore';
 const BottomBar = ({
     darkMode,
     setDarkMode,
@@ -13,15 +14,13 @@ const BottomBar = ({
     // cartItemsCount,
     setActiveModal,
     activeModal,
-    __
+    __,
 }) => {
     const { user } = usePage().props.auth;
     const dropdownRef = useRef(null);
 
-
     const bottomBarRef = useRef(null);
     const { isVisible, setBarHeight } = useBottomBarStore();
-
 
     // Measure height
     useEffect(() => {
@@ -62,8 +61,6 @@ const BottomBar = ({
         }
     }, [isVisible]);
 
-
-
     //  Mode Dark + Light Storing
     useEffect(() => {
         const saved = localStorage.getItem('darkMode');
@@ -79,13 +76,12 @@ const BottomBar = ({
         }
     }, []);
 
-
     useEffect(() => {
         if (!moreDropdown) return;
         const handleClickOutside = (event) => {
             if (!moreDropdown) return;
             const dropdownEl = dropdownRef.current;
-            const buttonEl = document.getElementById("bottom-more-btn");
+            const buttonEl = document.getElementById('bottom-more-btn');
 
             if (dropdownEl.contains(event.target)) return;
 
@@ -94,7 +90,7 @@ const BottomBar = ({
             setMoreDropdown(false);
         };
 
-        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener('mousedown', handleClickOutside);
 
         const handlePopState = () => {
             if (moreDropdown) {
@@ -102,14 +98,13 @@ const BottomBar = ({
             }
         };
 
-        window.addEventListener("popstate", handlePopState);
+        window.addEventListener('popstate', handlePopState);
 
         return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-            window.removeEventListener("popstate", handlePopState);
+            document.removeEventListener('mousedown', handleClickOutside);
+            window.removeEventListener('popstate', handlePopState);
         };
     }, [moreDropdown]);
-
 
     // Toggeling Theme Mode On Mobile
     useEffect(() => {
@@ -125,14 +120,17 @@ const BottomBar = ({
         localStorage.setItem('darkMode', JSON.stringify(darkMode));
     }, [darkMode]);
 
-
-
-
-
     return (
-        <div id="bottom-bar" ref={bottomBarRef} className="fixed bottom-0 left-0 right-0 z-[70]">
+        <div
+            id="bottom-bar"
+            ref={bottomBarRef}
+            className="fixed bottom-0 left-0 right-0 z-[70]"
+            onClickCapture={() => {
+                useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false);
+            }}
+        >
             {/* Navigation bar */}
-            <nav className="rounded-sm shadow-md bg-backgroundLight backdrop-blur-lg dark:bg-backgroundDark">
+            <nav className="rounded-sm bg-backgroundLight shadow-md backdrop-blur-lg dark:bg-backgroundDark">
                 <div className="flex items-center justify-around px-4 py-2">
                     {/* Home */}
                     <button
@@ -143,90 +141,137 @@ const BottomBar = ({
                             router.visit(route('home'), {
                                 onFinish: () => {
                                     useHomeNavStore.getState().endHomeNavigation();
-                                }
+                                },
                             });
                         }}
-                        className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${route().current() === 'home' ? 'menu-item-active' : 'menu-item-inactive'
-                            }`}
-
+                        className={`flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
+                            route().current() === 'home' ? 'menu-item-active' : 'menu-item-inactive'
+                        }`}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className={`size-8 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" /><circle cx="12" cy="12" r="10" /></svg>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`size-8 text-main-text-light dark:text-main-text-dark`}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.25"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="m16.24 7.76-1.804 5.411a2 2 0 0 1-1.265 1.265L7.76 16.24l1.804-5.411a2 2 0 0 1 1.265-1.265z" />
+                            <circle cx="12" cy="12" r="10" />
+                        </svg>
                     </button>
 
                     {/* Search */}
                     <Link
                         href={route('website.global-search.index')}
-                        className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${route().current() === 'website.global-search.index'
-                            ? 'menu-item-active'
-                            : 'menu-item-inactive'
-                            }`}
-
+                        className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
+                            route().current() === 'website.global-search.index'
+                                ? 'menu-item-active'
+                                : 'menu-item-inactive'
+                        }`}
                     >
-
-
-                        <svg xmlns="http://www.w3.org/2000/svg" className={`size-8 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="m21 21-4.34-4.34" /><circle cx="11" cy="11" r="8" /></svg>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`size-8 text-main-text-light dark:text-main-text-dark`}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.25"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="m21 21-4.34-4.34" />
+                            <circle cx="11" cy="11" r="8" />
+                        </svg>
                     </Link>
-
 
                     {/* Shop */}
                     <Link
                         href={route('website.shop.index')}
-                        className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${route().current() === 'website.shop.index'
-                            ? 'menu-item-active'
-                            : 'menu-item-inactive'
-                            }`}
-
-
+                        className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
+                            route().current() === 'website.shop.index'
+                                ? 'menu-item-active'
+                                : 'menu-item-inactive'
+                        }`}
                     >
-
-                        <svg xmlns="http://www.w3.org/2000/svg" className={`size-8 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="M16 10a4 4 0 0 1-8 0" /><path d="M3.103 6.034h17.794" /><path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" /></svg>
-
-
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`size-8 text-main-text-light dark:text-main-text-dark`}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.25"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M16 10a4 4 0 0 1-8 0" />
+                            <path d="M3.103 6.034h17.794" />
+                            <path d="M3.4 5.467a2 2 0 0 0-.4 1.2V20a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6.667a2 2 0 0 0-.4-1.2l-2-2.667A2 2 0 0 0 17 2H7a2 2 0 0 0-1.6.8z" />
+                        </svg>
                     </Link>
-
 
                     {user && (
                         <Link
                             href={route('website.profile.index')}
-                            className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${route().current() === 'website.profile.index'
-                                ? 'menu-item-active'
-                                : 'menu-item-inactive'
-                                }`}
-
+                            className={`relative flex flex-col items-center justify-center rounded-lg p-2 transition-all duration-200 ${
+                                route().current() === 'website.profile.index'
+                                    ? 'menu-item-active'
+                                    : 'menu-item-inactive'
+                            }`}
                         >
-                            <svg xmlns="http://www.w3.org/2000/svg" className={`size-8 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className={`size-8 text-main-text-light dark:text-main-text-dark`}
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.25"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            >
+                                <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
+                                <circle cx="12" cy="7" r="4" />
+                            </svg>
                         </Link>
                     )}
 
-
-
-
-
                     <button
-                        id='bottom-more-btn'
+                        id="bottom-more-btn"
                         className={`flex cursor-pointer items-center rounded-lg p-2 text-white/80 ${moreDropdown ? 'menu-item-active' : 'menu-item-inactive'}`}
                         ref={moreDropdownRef}
                         onClick={() => {
                             setMoreDropdown(!moreDropdown);
                         }}
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className={`size-8 text-main-text-light dark:text-main-text-dark`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" strokeLinejoin="round"><path d="M4 5h16" /><path d="M4 12h16" /><path d="M4 19h16" /></svg>
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className={`size-8 text-main-text-light dark:text-main-text-dark`}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.25"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        >
+                            <path d="M4 5h16" />
+                            <path d="M4 12h16" />
+                            <path d="M4 19h16" />
+                        </svg>
                     </button>
 
                     {moreDropdown &&
                         createPortal(
                             <div
                                 ref={dropdownRef}
-                                className={`absolute bottom-[155px] right-9 z-[9999] border border-surface-3-light dark:border-surface-3-dark max-h-[200px] w-56 overflow-y-auto overscroll-contain rounded-md bg-backgroundLight p-2  transition-transform duration-300 ease-in-out dark:bg-surface-1-dark`}
+                                className={`absolute bottom-[155px] right-9 z-[9999] max-h-[200px] w-56 overflow-y-auto overscroll-contain rounded-md border border-surface-3-light bg-backgroundLight p-2 transition-transform duration-300 ease-in-out dark:border-surface-3-dark dark:bg-surface-1-dark`}
                                 style={{
                                     position: 'fixed',
                                     transform: 'translateY(83px)',
                                 }}
                             >
                                 <ul className="flex flex-col">
-
-
-
                                     {user && (
                                         <>
                                             {user?.role !== 'Customer' && (
@@ -235,7 +280,6 @@ const BottomBar = ({
                                                         href={route('dashboard')}
                                                         className={`menu-sub-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                     >
-
                                                         <span>{__('Dashboard')}</span>
                                                     </Link>
                                                 </li>
@@ -261,7 +305,7 @@ const BottomBar = ({
                                                             d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
                                                         />
                                                     </svg> */}
-                                                    {__('Notifications')} {' '}
+                                                    {__('Notifications')}{' '}
                                                     {/* {cartItemsCount > 0 && (
                                                         <span className="relative ml-auto">
                                                             <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-500 rounded-full animate-pulse">
@@ -274,7 +318,6 @@ const BottomBar = ({
                                                     )} */}
                                                 </Link>
                                             </li>
-
 
                                             <li>
                                                 <Link
@@ -296,7 +339,7 @@ const BottomBar = ({
                                                             d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"
                                                         />
                                                     </svg> */}
-                                                    {__('Cart')} {' '}
+                                                    {__('Cart')}{' '}
                                                     {/* {cartItemsCount > 0 && (
                                                         <span className="relative ml-auto">
                                                             <span className="flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-indigo-500 rounded-full animate-pulse">
@@ -337,7 +380,6 @@ const BottomBar = ({
                                                 <Link
                                                     href={route('website.bookmarks.index')}
                                                     className={`${route().current() === 'website.bookmarks.index' ? 'menu-sub-item-active' : 'menu-sub-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-
                                                 >
                                                     {/* <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -356,8 +398,6 @@ const BottomBar = ({
                                                     {__('Bookmark')}
                                                 </Link>
                                             </li>
-
-
                                         </>
                                     )}
 
@@ -387,9 +427,6 @@ const BottomBar = ({
                                     )}
 
                                     <li>
-
-
-
                                         <button
                                             className={`${activeModal === 'global-filters' ? 'menu-sub-item-active' : 'menu-sub-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                             onClick={() => {
@@ -437,14 +474,9 @@ const BottomBar = ({
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896.061 1.785.147 2.666.257m-4.589 8.495a18.023 18.023 0 0 1-3.827-5.802" />
                                             </svg> */}
 
-
-
                                             <span>{__('Language')}</span>
                                         </button>
                                     </li>
-
-
-
 
                                     {/* Currency switcher — display only */}
                                     <li>
@@ -468,7 +500,6 @@ const BottomBar = ({
                                             prefetch
                                             href={route('website.terms-of-service.index')}
                                             className={`${route().current() === 'website.terms-of-service.index' ? 'menu-sub-item-active' : 'menu-sub-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-
                                         >
                                             {/* <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -488,13 +519,11 @@ const BottomBar = ({
                                         </Link>
                                     </li>
 
-
                                     <li>
                                         <Link
                                             prefetch
                                             href={route('website.privacy-policy.index')}
                                             className={`${route().current() === 'website.privacy-policy.index' ? 'menu-sub-item-active' : 'menu-sub-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
-
                                         >
                                             {/* <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -513,10 +542,6 @@ const BottomBar = ({
                                             {__('Privacy Policy')}
                                         </Link>
                                     </li>
-
-
-
-
 
                                     <li>
                                         <Link
@@ -545,12 +570,8 @@ const BottomBar = ({
                                         <button
                                             className={`menu-sub-item-inactive flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                             onClick={() => {
-
-
                                                 setDarkMode(!darkMode);
                                                 localStorage.setItem('darkMode', !darkMode);
-
-
                                             }}
                                         >
                                             {/* <svg
@@ -579,16 +600,20 @@ const BottomBar = ({
                                                     fill="currentColor"
                                                 />
                                             </svg> */}
-                                            <div className="hidden dark:block">{__('Light Mode')}</div>
+                                            <div className="hidden dark:block">
+                                                {__('Light Mode')}
+                                            </div>
 
-                                            <div className="block dark:hidden">{__('Dark Mode')}</div>
+                                            <div className="block dark:hidden">
+                                                {__('Dark Mode')}
+                                            </div>
                                         </button>
                                     </li>
 
                                     {user && (
                                         <li>
                                             <button
-                                                className={`flex w-full items-center gap-3 rounded-sm px-2 py-2 text-sm logout-menu-item-button transition-colors`}
+                                                className={`logout-menu-item-button flex w-full items-center gap-3 rounded-sm px-2 py-2 text-sm transition-colors`}
                                                 onClick={() => {
                                                     router.post(route('logout'), {
                                                         onFinish: () => {
