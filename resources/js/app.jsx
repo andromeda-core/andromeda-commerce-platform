@@ -5,17 +5,21 @@ import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 
-router.on('before', () => {
+router.on('before', (event) => {
     try {
-        const current = window.location.pathname + window.location.search;
-        // Sirf shop/bookmarks origins store karo, feed/product/post nahi
-        if (current.includes('/shop') || current.includes('/bookmarks')) {
-            sessionStorage.setItem('andromeda_prev_url', current);
-        } else if (
-            current === '/' ||
-            current.startsWith('/post/') ||
-            current.startsWith('/product/')
-        ) {
+        const origin = window.location.pathname + window.location.search;
+        const target = event.detail?.visit?.url?.pathname || '';
+
+        const originIsShopOrBookmarks =
+            origin.includes('/shop') || origin.includes('/bookmarks');
+
+        const targetIsFeedItem =
+            target.startsWith('/post/') || target.startsWith('/product/');
+
+
+        if (originIsShopOrBookmarks && targetIsFeedItem) {
+            sessionStorage.setItem('andromeda_prev_url', origin);
+        } else {
             sessionStorage.removeItem('andromeda_prev_url');
         }
     } catch (e) {}

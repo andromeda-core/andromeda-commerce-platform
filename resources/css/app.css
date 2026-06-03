@@ -145,7 +145,7 @@
 
     /* Chrome, Edge, Safari */
     ::-webkit-scrollbar {
-        @apply h-2 w-2;
+        @apply w-2 h-2;
     }
 
     ::-webkit-scrollbar-track {
@@ -153,7 +153,7 @@
     }
 
     ::-webkit-scrollbar-thumb {
-        @apply rounded-full bg-gray-400 dark:bg-zinc-600;
+        @apply bg-gray-400 rounded-full dark:bg-zinc-600;
     }
 
     ::-webkit-scrollbar-thumb:hover {
@@ -205,12 +205,12 @@
 
     /* Menu Item Utility */
     .menu-item {
-        @apply text-theme-sm relative flex items-center gap-3 rounded-lg px-3 py-2;
+        @apply relative flex items-center gap-3 px-3 py-2 rounded-lg text-theme-sm;
     }
 
     /* Menu Item Active State */
     .menu-item-active {
-        @apply bg-sidebar-active-light font-medium text-black dark:bg-surface-2-dark dark:text-white;
+        @apply font-medium text-black bg-sidebar-active-light dark:bg-surface-2-dark dark:text-white;
     }
 
     /* Menu Item Inactive State */
@@ -219,7 +219,7 @@
     }
 
     .menu-sub-item-active {
-        @apply bg-sidebar-active-light font-normal text-black dark:bg-surface-2-dark dark:text-white;
+        @apply font-normal text-black bg-sidebar-active-light dark:bg-surface-2-dark dark:text-white;
     }
 
     /* Menu Item Inactive State */
@@ -303,7 +303,7 @@
         @apply rounded-full;
     }
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        @apply rounded-full bg-gray-200;
+        @apply bg-gray-200 rounded-full;
     }
 
     .dark .custom-scrollbar::-webkit-scrollbar-thumb {

@@ -19,25 +19,43 @@ const DesktopPwaBackButton = ({ __, CustomClassName }) => {
         return null;
     }
 
-    const handleClick = () => {
-        try {
-            const storedPrevUrl = sessionStorage.getItem('andromeda_prev_url');
+   const handleClick = () => {
+    try {
+        const storedPrevUrl = sessionStorage.getItem('andromeda_prev_url');
+        console.log('DesktopPwaBackButton: storedPrevUrl from sessionStorage:', storedPrevUrl);
 
-            if (storedPrevUrl && storedPrevUrl.trim() !== '') {
-                // Disable feed cleanup BEFORE navigating, so any open
-                // feed modal's unmount cleanup does not reset the URL
-                // that we are about to navigate to.
-                useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false);
-                router.visit(storedPrevUrl);
-                return;
-            }
-        } catch (e) {
-            // sessionStorage access failed; fall through to default
+        if (storedPrevUrl && storedPrevUrl.trim() !== '') {
+            useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false);
+            router.visit(storedPrevUrl);
+            return;
         }
+    } catch (e) {
+        // sessionStorage access failed; fall through to native back
+    }
 
-        // Default fallback: browser back
-        window.history.back();
+    // Normal navigation: behave like the real browser back button.
+    // Home/index pushes a synthetic duplicate entry (same URL) on feed
+    // load, so a single history.back() can land on an identical-URL entry
+    // and appear to do nothing. If the URL did not actually change after
+    // going back, step back once more to reach the real previous page.
+    const urlBefore = window.location.href;
+
+    const onPop = () => {
+        window.removeEventListener('popstate', onPop);
+
+        // If URL is unchanged, we landed on a synthetic same-URL entry.
+        // Step back one more time to reach the real previous page.
+        if (window.location.href === urlBefore) {
+            window.history.back();
+        }
     };
+
+    window.addEventListener('popstate', onPop);
+    window.history.back();
+
+    // Safety: if no popstate fired (nothing to go back to), clean up.
+    setTimeout(() => window.removeEventListener('popstate', onPop), 600);
+};
 
     return (
         <button
