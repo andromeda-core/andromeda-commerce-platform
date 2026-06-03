@@ -860,7 +860,8 @@ const SmartphoneMobileGalleryModal = ({
                                 <div className="mb-4">
                                     {smartphone?.content && (
                                         <div
-                                            className="prose break-words text-[16px] font-medium leading-[22px] text-main-text-light dark:text-main-text-dark"
+                                            // className="prose break-words text-[16px] font-medium leading-[22px] text-main-text-light dark:text-main-text-dark"
+                                            className="prose prose-sm max-w-none flex-1 overflow-y-auto whitespace-pre-line break-all pr-2 text-[14px] font-normal text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                             dangerouslySetInnerHTML={{
                                                 __html: smartphone?.content,
                                             }}
