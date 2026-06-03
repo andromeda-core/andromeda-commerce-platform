@@ -242,6 +242,37 @@ export default function index({
         }
     };
 
+    // Guided "add shipping address" flow: when the customer has no saved shipping
+    // address, direct them to the shipping-address page (carrying the came-from-checkout
+    // intent and the buy-now context) instead of showing the old profile message.
+    const promptAddShippingAddress = async () => {
+        const res = await confirm({
+            title: __('Add a shipping address'),
+            text: __('Please add a shipping address'),
+            confirmButtonText: __('Add Shipping Address'),
+            cancelButtonText: __('Cancel'),
+            icon: 'info',
+        });
+
+        if (res?.isConfirmed) {
+            router.visit(
+                route('website.shipping-addresses.index', {
+                    from: 'checkout',
+                    modal: 'create-shipping-address',
+                    ...(buy_now ? { buy_now: 1 } : {}),
+                }),
+            );
+        }
+    };
+
+    // Proactively prompt on load when there is no shipping address at checkout.
+    useEffect(() => {
+        if (!shipping_address) {
+            promptAddShippingAddress();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const handlePlaceOrder = async () => {
         if (pointsError !== '') {
             setErrorMessage(__('Please Adjust Your Points Before Placing An Order'));
@@ -281,8 +312,9 @@ export default function index({
         const emptyFields = requiredFields.filter((field) => !shippingInfo[field]);
 
         if (emptyFields.length > 0) {
-            setInfoMessage(__('Please Complete Your Profile Before Placing An Order'));
-            setShowInfoMessage(true);
+            // No usable shipping address: guide the customer to add one instead of
+            // the old (incorrect) "complete your profile" message.
+            promptAddShippingAddress();
             return;
         }
 

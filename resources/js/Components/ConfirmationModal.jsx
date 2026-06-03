@@ -45,7 +45,7 @@ export default function ConfirmationModal({
             />
 
             {/* Modal */}
-            <div className="relative z-10 w-full max-w-sm px-8 py-6 rounded-md bg-backgroundLight animate-scale-in dark:bg-surface-1-dark">
+            <div className="relative z-10 w-full max-w-md px-8 py-6 rounded-md bg-backgroundLight animate-scale-in dark:bg-surface-1-dark">
                 <div className="flex flex-col items-center text-center">
 
 

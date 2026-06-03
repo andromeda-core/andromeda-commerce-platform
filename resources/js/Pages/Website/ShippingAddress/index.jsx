@@ -11,10 +11,13 @@ import { createPortal } from 'react-dom';
 import PrimaryButton from '@/Components/PrimaryButton';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { ChevronLeft, Trash2 } from 'lucide-react';
+import { useConfirm } from '@/Hooks/useConfirm';
 
-const index = ({ shipping_addresses, countries }) => {
+const index = ({ shipping_addresses, countries, show_continue_checkout = false, continue_checkout_buy_now = false }) => {
 
     const { auth } = usePage().props;
+
+    const { confirm, ConfirmDialog } = useConfirm();
 
     const [infoMessage, setInfoMessage] = useState('');
     const [showInfoMessage, setShowInfoMessage] = useState(false);
@@ -54,6 +57,35 @@ const index = ({ shipping_addresses, countries }) => {
     const [isEditShippingAddressModalOpen, setIsEditShippingAddressModalOpen] = useState(false);
 
     const windowSize = useWindowSize();
+
+    // Guided checkout flow: after the address is saved (and only when the customer
+    // arrived from checkout), offer to continue checkout. This one-shot signal is
+    // sent by the controller via a prop, so direct/profile visits never trigger it.
+    useEffect(() => {
+        if (!show_continue_checkout) return;
+
+        setIsCreateShippingAddressModalOpen(false);
+
+        (async () => {
+            const res = await confirm({
+                title: __('Shipping address added'),
+                text: __('Your shipping address has been saved and set as default.'),
+                confirmButtonText: __('Continue checkout'),
+                cancelButtonText: __('Stay here'),
+                icon: 'success',
+            });
+
+            if (res?.isConfirmed) {
+                router.visit(
+                    route(
+                        'website.checkout.index',
+                        continue_checkout_buy_now ? { buy_now: 1 } : {},
+                    ),
+                );
+            }
+        })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [show_continue_checkout]);
 
     // Auto Opening Modal If Query Exists
     useEffect(() => {
@@ -366,6 +398,8 @@ const index = ({ shipping_addresses, countries }) => {
                     }}
                 />
             )}
+
+            <ConfirmDialog />
 
 
             <div className="sm:px-6 lg:px-8">

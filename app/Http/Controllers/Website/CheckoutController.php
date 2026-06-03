@@ -31,6 +31,12 @@ class CheckoutController extends Controller
             return to_route('login');
         }
 
+        // The customer is at checkout, so any pending "go add a shipping address and
+        // come back" intent is resolved — clear it so it can't leak into later visits
+        // (e.g. if they used the back button instead of saving the address).
+        $request->session()->forget('return_to_checkout');
+        $request->session()->forget('return_to_checkout_buy_now');
+
         $buy_now = $request->has('buy_now');
 
         $data = [];

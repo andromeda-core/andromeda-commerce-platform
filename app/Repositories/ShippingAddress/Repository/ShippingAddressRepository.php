@@ -132,6 +132,30 @@ class ShippingAddressRepository implements IShippingAddressRepository
                 throw new Exception($this->trans->get('Failed to create shipping address.'));
             }
 
+            // Guided checkout flow: when the customer reached this page from checkout,
+            // make this address the default ship-to (mirrors toggleShippingAddress)
+            // and sync it onto the customer profile (the fields profileCompletionCheck
+            // validates) so checkout can proceed right after saving.
+            $from_checkout = (bool) $request->session()->get('return_to_checkout', false);
+
+            if ($from_checkout) {
+                $this->shipping_address
+                    ->where('customer_id', $user->customer->id)
+                    ->where('id', '!=', $created->id)
+                    ->update(['is_active' => false]);
+
+                $created->update(['is_active' => true]);
+
+                $user->customer->update([
+                    'country_id' => $validated_req['country_id'],
+                    'state' => $validated_req['state'],
+                    'city' => $validated_req['city'],
+                    'postal_code' => $validated_req['postal_code'],
+                    'address_line1' => $validated_req['address_line1'],
+                    'address_line2' => $validated_req['address_line2'] ?? null,
+                ]);
+            }
+
             DB::commit();
 
             $user->notify(new ShippingAddressChangeNotification(
@@ -143,6 +167,7 @@ class ShippingAddressRepository implements IShippingAddressRepository
             return [
                 'status' => true,
                 'message' => $this->trans->get('Shipping address created successfully.'),
+                'from_checkout' => $from_checkout,
             ];
         } catch (Exception $e) {
             DB::rollBack();
@@ -474,9 +499,18 @@ class ShippingAddressRepository implements IShippingAddressRepository
                 $user_agent
             ));
 
+            // Guided checkout flow: surface the "came from checkout" intent so the
+            // controller can show the one-shot "Continue checkout" popup and redirect
+            // back to checkout — mirroring the Add Address (store) path. This is always
+            // the first shipping address (the guard above forbids using the profile
+            // address when one already exists), so it is created as the default ship-to
+            // and no re-toggle is needed here.
+            $from_checkout = (bool) $request->session()->get('return_to_checkout', false);
+
             return [
                 'status' => true,
                 'message' => $this->trans->get('Shipping address Saved successfully.'),
+                'from_checkout' => $from_checkout,
             ];
 
         } catch (Exception $e) {
