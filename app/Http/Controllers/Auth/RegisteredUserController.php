@@ -71,8 +71,12 @@ class RegisteredUserController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
-            'language_id' => $language['language_id'] ?? null,
-            'language_locale' => $language['language_locale'] ?? null,
+            ...(is_array($language)
+                ? [
+                    'language_id' => $language['language_id'] ?? 1,
+                    'language_locale' => $language['language_locale'] ?? 'en',
+                ]
+                : []),
             'password' => Hash::make($request->password),
             'is_agreed_to_terms' => $request->is_agreed_to_terms,
             'last_activity_at' => now(),
