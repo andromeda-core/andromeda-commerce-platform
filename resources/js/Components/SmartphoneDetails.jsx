@@ -10,43 +10,47 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
     const { __ } = useTranslation();
 
     const calculateShippingCost = () => {
-        if (!product?.selling_info?.shipping_fee) return __('Free');
 
-        const { value_type, default_value } = product?.selling_info?.shipping_fee;
+        return __("Shipping cost may apply at checkout");
 
-        if (!default_value || default_value === 0) return __('Free');
+        // if (!product?.selling_info?.shipping_fee) return __('Free');
 
-        if (value_type === 'fixed') {
-            return `${currency?.symbol}${Number(default_value).toLocaleString('en-US')}`;
-        }
+        // const { value_type, default_value } = product?.selling_info?.shipping_fee;
 
-        if (value_type === 'percentage') {
-            const shippingCost = (product.selling_info?.total_price * default_value) / 100;
-            return `${currency?.symbol}${Number(shippingCost).toLocaleString('en-US')} (${default_value}%)`;
-        }
+        // if (!default_value || default_value === 0) return __('Free');
 
-        return __('Free');
+        // if (value_type === 'fixed') {
+        //     return `${currency?.symbol}${Number(default_value).toLocaleString('en-US')}`;
+        // }
+
+        // if (value_type === 'percentage') {
+        //     const shippingCost = (product.selling_info?.total_price * default_value) / 100;
+        //     return `${currency?.symbol}${Number(shippingCost).toLocaleString('en-US')} (${default_value}%)`;
+        // }
+
+        // return __('Free');
     };
 
     const calculateImportCost = () => {
         const noTaxMessage = __('Import fees may apply on delivery');
-
-        if (!product?.selling_info?.import_tax) return noTaxMessage;
-
-        const { value_type, default_value } = product?.selling_info?.import_tax;
-
-        if (!default_value || default_value === 0) return noTaxMessage;
-
-        if (value_type === 'fixed') {
-            return `${currency?.symbol}${Number(default_value).toLocaleString('en-US')}`;
-        }
-
-        if (value_type === 'percentage') {
-            const shippingCost = (product.selling_info?.total_price * default_value) / 100;
-            return `${currency?.symbol}${Number(shippingCost).toLocaleString('en-US')} (${default_value}%)`;
-        }
-
         return noTaxMessage;
+
+        // if (!product?.selling_info?.import_tax) return noTaxMessage;
+
+        // const { value_type, default_value } = product?.selling_info?.import_tax;
+
+        // if (!default_value || default_value === 0) return noTaxMessage;
+
+        // if (value_type === 'fixed') {
+        //     return `${currency?.symbol}${Number(default_value).toLocaleString('en-US')}`;
+        // }
+
+        // if (value_type === 'percentage') {
+        //     const shippingCost = (product.selling_info?.total_price * default_value) / 100;
+        //     return `${currency?.symbol}${Number(shippingCost).toLocaleString('en-US')} (${default_value}%)`;
+        // }
+
+        // return noTaxMessage;
     };
 
     // const calculateDeliveryEstimate = (deliveryDays) => {
@@ -77,7 +81,7 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
             />
 
             {product?.is_sold_out && (
-                <div className="-mt-3 mb-6">
+                <div className="mb-6 -mt-3">
                     <span className="inline-block rounded bg-red-600 px-2.5 py-1 text-xs font-semibold text-white">
                         {__('Sold Out')}
                     </span>
@@ -117,10 +121,10 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                 />
 
                 {/* Courier */}
-                <DetailRow
+                {/*<DetailRow
                     label={__('Courier')}
                     value={product?.courier_company?.courier_name || 'N/A'}
-                />
+                />*/}
 
                 {/* Stock */}
                 {/* <DetailRow label={__("Stock")} value={StockBadge || "N/A"} /> */}
@@ -149,11 +153,11 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                                 <div className="flex flex-wrap items-center gap-4">
                                     {/* Crypto */}
                                     <div className="flex items-center gap-1.5">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2-light dark:bg-surface-3-dark">
+                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
                                             <svg
                                                 viewBox="0 0 256 256"
                                                 xmlns="http://www.w3.org/2000/svg"
-                                                className="h-5 w-5 fill-main-text-light dark:fill-main-text-dark"
+                                                className="w-5 h-5 fill-main-text-light dark:fill-main-text-dark"
                                             >
                                                 <path d="M128 0C57.3 0 0 57.3 0 128s57.3 128 128 128 128-57.3 128-128S198.7 0 128 0zm62 91h-46v24.3c37.6 1.9 66 10 66 19.7 0 9.7-28.4 17.8-66 19.7V201h-32v-46.3c-37.6-1.9-66-10-66-19.7 0-9.7 28.4-17.8 66-19.7V91H66V63h124v28zm-78 35.2v25.2c-33.6-1.6-58-6.6-58-12.6 0-6 24.4-11 58-12.6zm32 25.2v-25.2c33.6 1.6 58 6.6 58 12.6 0 6-24.4 11-58 12.6z" />
                                             </svg>
@@ -165,8 +169,8 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
 
                                     {/* Bank Transfer */}
                                     <div className="flex items-center gap-1.5">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2-light dark:bg-surface-3-dark">
-                                            <BuildingLibraryIcon className="h-6 w-6 fill-main-text-light dark:fill-main-text-dark" />
+                                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
+                                            <BuildingLibraryIcon className="w-6 h-6 fill-main-text-light dark:fill-main-text-dark" />
                                         </div>
                                         <span className="text-xs font-normal text-sub-text-light dark:text-sub-text-dark">
                                             {__('Bank Transfer')}
@@ -175,9 +179,9 @@ const SmartphoneDetails = ({ currency, product, StockBadge }) => {
                                 </div>
                                 {/* Points */}
                                 <div className="mt-2 flex items-center gap-1.5">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2-light dark:bg-surface-3-dark">
+                                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-surface-2-light dark:bg-surface-3-dark">
                                         <svg
-                                            className="h-6 w-6 fill-main-text-light dark:fill-main-text-dark"
+                                            className="w-6 h-6 fill-main-text-light dark:fill-main-text-dark"
                                             viewBox="0 0 24 24"
                                         >
                                             <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27z" />
@@ -209,10 +213,10 @@ const DetailRow = ({
     shipping_policy,
 }) => (
     <div className="flex items-start gap-10 sm:gap-10 md:gap-10 xl:gap-12">
-        <span className="w-20 flex-shrink-0 text-sm font-normal text-main-text-light dark:text-main-text-dark sm:w-24 md:w-28">
+        <span className="flex-shrink-0 w-20 text-sm font-normal text-main-text-light dark:text-main-text-dark sm:w-24 md:w-28">
             {label}
         </span>
-        <div className="min-w-0 flex-1">
+        <div className="flex-1 min-w-0">
             {isLink ? (
                 return_policy ? (
                     <Link
@@ -229,10 +233,10 @@ const DetailRow = ({
                     </Link>
                 ) : shipping_policy ? (
                     <div className="flex flex-col items-start gap-1 sm:flex-row sm:items-center sm:gap-2">
-                        <span className="block overflow-hidden text-sm text-sub-text-light dark:text-sub-text-dark">
+                       <span className="block overflow-hidden text-sm text-sub-text-light dark:text-sub-text-dark">
                             {value}
-                        </span>
-                        <Link
+
+                             <Link
                             onClick={() =>
                                 useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false)
                             }
@@ -244,6 +248,8 @@ const DetailRow = ({
                         >
                             {LinkText}
                         </Link>
+                        </span>
+
                     </div>
                 ) : (
                     <span className="block overflow-hidden text-sm text-sub-text-light dark:text-sub-text-dark">

@@ -35,6 +35,11 @@ class SmartphoneForSale extends Model
         return $this->hasMany(SmartphoneCountryPrice::class, 'smartphone_for_sale_id', 'id');
     }
 
+    public function countryShippings(): HasMany
+    {
+        return $this->hasMany(SmartphoneCountryShipping::class, 'smartphone_for_sale_id', 'id');
+    }
+
     // Attributes
     public function getAddedAtAttribute()
     {

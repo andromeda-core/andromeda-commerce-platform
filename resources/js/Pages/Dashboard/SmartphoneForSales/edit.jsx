@@ -6,6 +6,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
+import CountryShippingRepeater from '@/Components/CountryShippingRepeater';
 import SelectInput from '@/Components/SelectInput';
 import Swal from 'sweetalert2';
 import { useScanner } from '@/Hooks/useScanner';
@@ -15,6 +16,7 @@ export default function edit({
     shipping_fee_lists,
     import_tax_lists,
     smartphones,
+    countries,
 }) {
     // Edit Data Form Data
     const { data, setData, put, processing, errors } = useForm({
@@ -22,6 +24,15 @@ export default function edit({
         selling_price: smartphone_for_sale.selling_price || '',
         shipping_fee_id: smartphone_for_sale.shipping_fee_id || '',
         import_tax_id: smartphone_for_sale.import_tax_id || '',
+        country_shippings: (
+            smartphone_for_sale.country_shippings ??
+            smartphone_for_sale.countryShippings ??
+            []
+        ).map((row) => ({
+            country_id: row.country_id ?? '',
+            shipping_fee_id: row.shipping_fee_id ?? '',
+            import_tax_id: row.import_tax_id ?? '',
+        })),
     });
 
     const { currency } = usePage().props;
@@ -418,6 +429,15 @@ export default function edit({
                                                 </div>
                                             )}
 
+                                            <CountryShippingRepeater
+                                                data={data}
+                                                setData={setData}
+                                                countries={countries}
+                                                shipping_fee_lists={shipping_fee_lists}
+                                                import_tax_lists={import_tax_lists}
+                                                errors={errors}
+                                            />
+
                                             <PrimaryButton
                                                 Text={'Update Smartphone For Sale'}
                                                 Type={'submit'}
@@ -429,7 +449,10 @@ export default function edit({
                                                     data.selling_price === '' ||
                                                     (additionalFees &&
                                                         data.shipping_fee_id === '' &&
-                                                        data.import_tax_id === '')
+                                                        data.import_tax_id === '') ||
+                                                    data.country_shippings.some(
+                                                        (row) => row.country_id === '',
+                                                    )
                                                 }
                                                 Spinner={processing}
                                                 Icon={

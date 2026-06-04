@@ -6,17 +6,19 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
+import CountryShippingRepeater from '@/Components/CountryShippingRepeater';
 import SelectInput from '@/Components/SelectInput';
 import Swal from 'sweetalert2';
 import { useScanner } from '@/Hooks/useScanner';
 import NativeScannerPreview from '@/Components/NativeScannerPreview';
-export default function create({ smartphones, shipping_fee_lists, import_tax_lists }) {
+export default function create({ smartphones, shipping_fee_lists, import_tax_lists, countries }) {
     // Create Data Form Data
     const { data, setData, post, processing, errors } = useForm({
         smartphone_id: '',
         selling_price: '',
         shipping_fee_id: '',
         import_tax_id: '',
+        country_shippings: [],
     });
 
     const { currency } = usePage().props;
@@ -413,6 +415,15 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                                                 </div>
                                             )}
 
+                                            <CountryShippingRepeater
+                                                data={data}
+                                                setData={setData}
+                                                countries={countries}
+                                                shipping_fee_lists={shipping_fee_lists}
+                                                import_tax_lists={import_tax_lists}
+                                                errors={errors}
+                                            />
+
                                             <PrimaryButton
                                                 Text={'Create Smartphone For Sale'}
                                                 Type={'submit'}
@@ -424,7 +435,10 @@ export default function create({ smartphones, shipping_fee_lists, import_tax_lis
                                                     data.selling_price === '' ||
                                                     (additionalFees &&
                                                         data.shipping_fee_id === '' &&
-                                                        data.import_tax_id === '')
+                                                        data.import_tax_id === '') ||
+                                                    data.country_shippings.some(
+                                                        (row) => row.country_id === '',
+                                                    )
                                                 }
                                                 Spinner={processing}
                                                 Icon={

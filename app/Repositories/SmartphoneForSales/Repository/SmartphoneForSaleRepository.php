@@ -8,6 +8,7 @@ use App\Repositories\SmartphoneForSales\Interface\ISmartphoneForSaleRepository;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
 {
@@ -32,36 +33,73 @@ class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
         return $smartphone_for_sales;
     }
 
-    public function getSingleSmartphoneForSale(string $id)
+    public function getSingleSmartphoneForSale(string $id, array $with = [])
     {
-        $smartphone_for_sale = $this->smartphone_for_sale->find($id);
+        $smartphone_for_sale = $this->smartphone_for_sale->with($with)->find($id);
 
         return $smartphone_for_sale;
     }
 
+    private function countryShippingValidationRules(): array
+    {
+        return [
+            [
+                'country_shippings' => ['nullable', 'array'],
+                'country_shippings.*.country_id' => ['required', 'distinct', 'exists:countries,id'],
+                'country_shippings.*.shipping_fee_id' => ['nullable', 'exists:additional_fee_lists,id'],
+                'country_shippings.*.import_tax_id' => ['nullable', 'exists:additional_fee_lists,id'],
+            ],
+            [
+                'country_shippings.*.country_id.required' => 'Country is required for each country based shipping row',
+                'country_shippings.*.country_id.distinct' => 'The same country cannot be added more than once',
+                'country_shippings.*.country_id.exists' => 'The selected country is not valid',
+            ],
+        ];
+    }
+
     public function storeSmartphoneForSale(Request $request)
     {
+        [$country_shipping_rules, $country_shipping_messages] = $this->countryShippingValidationRules();
+
         $validated_req = $request->validate([
             'smartphone_id' => ['required', 'exists:smartphones,id', 'unique:smartphone_for_sales,smartphone_id'],
             'selling_price' => ['required', 'numeric', 'min:1'],
             'shipping_fee_id' => ['nullable', 'exists:additional_fee_lists,id'],
             'import_tax_id' => ['nullable', 'exists:additional_fee_lists,id'],
 
+            ...$country_shipping_rules,
+
         ], [
             'smartphone_id.required' => 'Smartphone is required',
             'smartphone_id.exists' => 'Smartphone is not valid',
             'smartphone_id.unique' => 'Smartphone is already Exists',
+
+            ...$country_shipping_messages,
         ]);
 
         try {
 
-            $total_price = (float) $validated_req['selling_price'];
-            $validated_req['total_price'] = $total_price;
+            DB::transaction(function () use ($validated_req) {
+                $country_shippings = $validated_req['country_shippings'] ?? [];
+                unset($validated_req['country_shippings']);
 
-            $created = $this->smartphone_for_sale->create($validated_req);
-            if (empty($created)) {
-                throw new Exception('Something Went Wrong While Creating Smartphone For Sale');
-            }
+                $total_price = (float) $validated_req['selling_price'];
+                $validated_req['total_price'] = $total_price;
+
+                $created = $this->smartphone_for_sale->create($validated_req);
+                if (empty($created)) {
+                    throw new Exception('Something Went Wrong While Creating Smartphone For Sale');
+                }
+
+                foreach ($country_shippings as $row) {
+                    $created->countryShippings()->create([
+                        'country_id' => $row['country_id'],
+                        'shipping_fee_id' => $row['shipping_fee_id'] ?? null,
+                        'import_tax_id' => $row['import_tax_id'] ?? null,
+                        'is_active' => true,
+                    ]);
+                }
+            });
 
             return [
                 'status' => true,
@@ -77,16 +115,22 @@ class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
 
     public function updateSmartphoneForSale(Request $request, string $id)
     {
+        [$country_shipping_rules, $country_shipping_messages] = $this->countryShippingValidationRules();
+
         $validated_req = $request->validate([
             'smartphone_id' => ['required', 'exists:smartphones,id', 'unique:smartphone_for_sales,smartphone_id,'.$id],
             'selling_price' => ['required', 'numeric', 'min:1'],
             'shipping_fee_id' => ['nullable', 'exists:additional_fee_lists,id'],
             'import_tax_id' => ['nullable', 'exists:additional_fee_lists,id'],
 
+            ...$country_shipping_rules,
+
         ], [
             'smartphone_id.required' => 'Smartphone ID is required',
             'smartphone_id.exists' => 'Smartphone ID is not valid',
             'smartphone_id.unique' => 'Smartphone ID is already used',
+
+            ...$country_shipping_messages,
         ]);
 
         try {
@@ -97,20 +141,36 @@ class SmartphoneForSaleRepository implements ISmartphoneForSaleRepository
                 throw new Exception('Smartphone For Sale Not Found');
             }
 
-            $total_price = (float) $validated_req['selling_price'];
+            DB::transaction(function () use ($validated_req, $smartphone_for_sale) {
+                $country_shippings = $validated_req['country_shippings'] ?? [];
+                unset($validated_req['country_shippings']);
 
-            if (isset($validated_req['additional_fee'])) {
-                foreach ($validated_req['additional_fee'] as $fee) {
-                    $total_price += (float) $fee['amount'];
+                $total_price = (float) $validated_req['selling_price'];
+
+                if (isset($validated_req['additional_fee'])) {
+                    foreach ($validated_req['additional_fee'] as $fee) {
+                        $total_price += (float) $fee['amount'];
+                    }
                 }
-            }
 
-            $validated_req['total_price'] = $total_price;
+                $validated_req['total_price'] = $total_price;
 
-            $updated = $smartphone_for_sale->update($validated_req);
-            if (! $updated) {
-                throw new Exception('Something Went Wrong While Updating Smartphone For Sale');
-            }
+                $updated = $smartphone_for_sale->update($validated_req);
+                if (! $updated) {
+                    throw new Exception('Something Went Wrong While Updating Smartphone For Sale');
+                }
+
+                $smartphone_for_sale->countryShippings()->delete();
+
+                foreach ($country_shippings as $row) {
+                    $smartphone_for_sale->countryShippings()->create([
+                        'country_id' => $row['country_id'],
+                        'shipping_fee_id' => $row['shipping_fee_id'] ?? null,
+                        'import_tax_id' => $row['import_tax_id'] ?? null,
+                        'is_active' => true,
+                    ]);
+                }
+            });
 
             return [
                 'status' => true,

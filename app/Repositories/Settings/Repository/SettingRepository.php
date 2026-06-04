@@ -33,6 +33,7 @@ use App\Models\ReturnPolicy;
 use App\Models\RewardSetting;
 use App\Models\Role;
 use App\Models\ShippingPolicy;
+use App\Models\SmartphoneCountryShipping;
 use App\Models\SmtpSetting;
 use App\Models\SpecialCountry;
 use App\Models\StorageLocation;
@@ -64,6 +65,7 @@ class SettingRepository implements ISettingRepository
         private CommissionSetting $commission_setting,
         private Country $country,
         private SpecialCountry $special_country,
+        private SmartphoneCountryShipping $smartphone_country_shipping,
         private AwsSetting $aws_setting,
         private GoogleMapSetting $google_map_setting,
         private MetaSetting $meta_setting,
@@ -2001,6 +2003,27 @@ class SettingRepository implements ISettingRepository
     {
         return $this->country
             ->where('is_active', true)
+            ->orderBy('name', 'asc')
+            ->get();
+    }
+
+    public function getCountriesForSaleForm(?int $smartphoneForSaleId = null)
+    {
+        $referenced_country_ids = ! empty($smartphoneForSaleId)
+            ? $this->smartphone_country_shipping
+                ->where('smartphone_for_sale_id', $smartphoneForSaleId)
+                ->pluck('country_id')
+                ->all()
+            : [];
+
+        return $this->country
+            ->where(function ($query) use ($referenced_country_ids) {
+                $query->where('is_active', true);
+
+                if (! empty($referenced_country_ids)) {
+                    $query->orWhereIn('id', $referenced_country_ids);
+                }
+            })
             ->orderBy('name', 'asc')
             ->get();
     }

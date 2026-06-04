@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Repositories\Settings\Interface\ISettingRepository;
 use App\Repositories\SmartphoneForSales\Interface\ISmartphoneForSaleRepository;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
 use Illuminate\Http\Request;
@@ -28,6 +29,7 @@ class SmartphoneForSaleController extends Controller implements HasMiddleware
     public function __construct(
         private ISmartphoneForSaleRepository $smartphone_for_sale,
         private ISmartphoneRepository $smartphone,
+        private ISettingRepository $setting,
 
     ) {}
 
@@ -45,8 +47,9 @@ class SmartphoneForSaleController extends Controller implements HasMiddleware
         $smartphones = $this->smartphone->getSmartphones();
         $shipping_fee_lists = $this->smartphone_for_sale->getAllShippingFeeLists();
         $import_tax_lists = $this->smartphone_for_sale->getAllImportTaxFeeLists();
+        $countries = $this->setting->getCountriesForSaleForm();
 
-        return Inertia::render('Dashboard/SmartphoneForSales/create', compact('smartphones', 'shipping_fee_lists', 'import_tax_lists'));
+        return Inertia::render('Dashboard/SmartphoneForSales/create', compact('smartphones', 'shipping_fee_lists', 'import_tax_lists', 'countries'));
     }
 
     public function store(Request $request)
@@ -67,7 +70,7 @@ class SmartphoneForSaleController extends Controller implements HasMiddleware
             return to_route('dashboard.smartphone-for-sales.index')->with('error', 'Smartphone For Sale ID Not Found');
         }
 
-        $smartphone_for_sale = $this->smartphone_for_sale->getSingleSmartphoneForSale($id);
+        $smartphone_for_sale = $this->smartphone_for_sale->getSingleSmartphoneForSale($id, ['countryShippings']);
 
         if (empty($smartphone_for_sale)) {
             return to_route('dashboard.smartphone-for-sales.index')->with('error', 'Smartphone For Sale Not Found');
@@ -77,8 +80,9 @@ class SmartphoneForSaleController extends Controller implements HasMiddleware
 
         $shipping_fee_lists = $this->smartphone_for_sale->getAllShippingFeeLists();
         $import_tax_lists = $this->smartphone_for_sale->getAllImportTaxFeeLists();
+        $countries = $this->setting->getCountriesForSaleForm($smartphone_for_sale->id);
 
-        return Inertia::render('Dashboard/SmartphoneForSales/edit', compact('smartphones', 'smartphone_for_sale', 'shipping_fee_lists', 'import_tax_lists'));
+        return Inertia::render('Dashboard/SmartphoneForSales/edit', compact('smartphones', 'smartphone_for_sale', 'shipping_fee_lists', 'import_tax_lists', 'countries'));
     }
 
     public function update(Request $request, ?string $id = null)

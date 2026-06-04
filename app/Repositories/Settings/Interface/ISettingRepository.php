@@ -174,6 +174,8 @@ interface ISettingRepository
 
     public function getCountries();
 
+    public function getCountriesForSaleForm(?int $smartphoneForSaleId = null);
+
     // AWS Settings
     public function getAllAwsSettings();
 

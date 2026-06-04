@@ -8,7 +8,7 @@ interface ISmartphoneForSaleRepository
 {
     public function getAllSmartphoneForSales(Request $request);
 
-    public function getSingleSmartphoneForSale(string $id);
+    public function getSingleSmartphoneForSale(string $id, array $with = []);
 
     public function storeSmartphoneForSale(Request $request);
 
