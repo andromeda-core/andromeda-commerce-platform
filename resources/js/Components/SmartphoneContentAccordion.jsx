@@ -16,6 +16,14 @@ const buildFrameCss = (textColor) => `
         margin: 0 !important;
         padding: 0 !important;
         background: transparent !important;
+        scrollbar-width: none;        /* Firefox */
+        -ms-overflow-style: none;     /* IE / old Edge */
+    }
+    html::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+        display: none;                /* Chrome / Safari / WebKit */
+        width: 0;
+        height: 0;
     }
     body {
         color: ${textColor};
@@ -25,9 +33,27 @@ const buildFrameCss = (textColor) => `
         overflow-wrap: break-word;
         overflow-x: hidden;
         -webkit-text-size-adjust: 100%;
+        text-align: center;
+        padding: 12px !important;
+    }
+    body, p, h1, h2, h3, h4, h5, h6, span, div, li, td, blockquote, section, article {
+        text-align: center !important;
     }
     * { box-sizing: border-box; max-width: 100%; }
-    img, video, iframe, table, canvas, svg { max-width: 100% !important; height: auto; }
+    video, iframe, table, canvas, svg { max-width: 100% !important; height: auto; }
+    /* Center + make responsive every description image by default.
+       Seller HTML lives inside this isolated iframe, so this is the only
+       place a rule can actually reach the images. !important is limited to
+       the centering props (display / margins / float) so it overrides
+       inline styles + float utilities while staying scoped to the iframe. */
+    img {
+        display: block !important;
+        max-width: 100% !important;
+        height: auto !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        float: none !important;
+    }
     table { display: block; overflow-x: auto; }
     pre { white-space: pre-wrap !important; word-break: break-word; }
     a { color: #3b82f6; word-break: break-word; }
@@ -139,6 +165,14 @@ const SmartphoneContentAccordion = ({
     // Use content exactly as it is. No processing.
     const renderAsHtml = isHtml && containsHtml(content);
 
+    // console.log(
+    //     'IS HTML?',
+    //     isHtml,
+    //     'CONTAINS HTML?',
+    //     containsHtml(content),
+    //     'RENDER AS HTML?',
+    //     renderAsHtml,
+    // );
     const handleToggle = () => {
         const newState = !isOpen;
         shouldScrollRef.current = newState;
