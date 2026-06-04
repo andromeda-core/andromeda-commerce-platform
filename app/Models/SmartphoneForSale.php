@@ -40,6 +40,80 @@ class SmartphoneForSale extends Model
         return $this->hasMany(SmartphoneCountryShipping::class, 'smartphone_for_sale_id', 'id');
     }
 
+    /**
+     * Resolve the shipping fee for a destination country.
+     *
+     * Country-based override: if an active SmartphoneCountryShipping row exists
+     * for the given country and has a shipping_fee_id set, that fee is used.
+     * Otherwise the single default shipping_fee on this sale is used.
+     *
+     * Parameter-based only (never reads IP/request) so it is safe for
+     * checkout/order placement where the destination is the shipping address.
+     */
+    public function resolveShippingFee(?int $countryId): ?AdditionalFeeList
+    {
+        if (empty($countryId)) {
+            return $this->shipping_fee;
+        }
+
+        $countryRow = null;
+
+        if ($this->relationLoaded('countryShippings')) {
+            $countryRow = $this->countryShippings
+                ->where('country_id', $countryId)
+                ->where('is_active', true)
+                ->first();
+        } else {
+            $countryRow = $this->countryShippings()
+                ->where('country_id', $countryId)
+                ->where('is_active', true)
+                ->first();
+        }
+
+        if (! empty($countryRow) && ! empty($countryRow->shipping_fee_id)) {
+            return $countryRow->shippingFee;
+        }
+
+        return $this->shipping_fee;
+    }
+
+    /**
+     * Resolve the import tax for a destination country.
+     *
+     * Country-based override: if an active SmartphoneCountryShipping row exists
+     * for the given country and has an import_tax_id set, that fee is used.
+     * Otherwise the single default import_tax on this sale is used.
+     *
+     * Resolved independently from shipping (a country row may set one but not
+     * the other). Parameter-based only (never reads IP/request).
+     */
+    public function resolveImportTax(?int $countryId): ?AdditionalFeeList
+    {
+        if (empty($countryId)) {
+            return $this->import_tax;
+        }
+
+        $countryRow = null;
+
+        if ($this->relationLoaded('countryShippings')) {
+            $countryRow = $this->countryShippings
+                ->where('country_id', $countryId)
+                ->where('is_active', true)
+                ->first();
+        } else {
+            $countryRow = $this->countryShippings()
+                ->where('country_id', $countryId)
+                ->where('is_active', true)
+                ->first();
+        }
+
+        if (! empty($countryRow) && ! empty($countryRow->import_tax_id)) {
+            return $countryRow->importTax;
+        }
+
+        return $this->import_tax;
+    }
+
     // Attributes
     public function getAddedAtAttribute()
     {

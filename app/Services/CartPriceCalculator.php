@@ -6,9 +6,8 @@ use Illuminate\Support\Collection;
 
 class CartPriceCalculator
 {
-    public function calculate(Collection $cart, Collection $addons): array
+    public function calculate(Collection $cart, Collection $addons, ?int $destinationCountryId = null): array
     {
-
         $cartSubtotal = 0.00;
         $addonsSubtotal = 0.00;
         $shippingTotal = 0.00;
@@ -20,6 +19,8 @@ class CartPriceCalculator
             return (float) $item->unit_price * $item->quantity;
         });
 
+
+
         if ($addons->isNotEmpty()) {
             $addonsSubtotal += $addons->sum(function ($addon) {
                 return (float) $addon->unit_price * $addon->quantity;
@@ -29,13 +30,13 @@ class CartPriceCalculator
         // Calculating Total From Cart For Taxes and Additional COSTS
         foreach ($cart as $item) {
 
-            $shipping_fee = $item->smartphone->selling_info->shipping_fee;
+            $shipping_fee = $item->smartphone->selling_info->resolveShippingFee($destinationCountryId);
             if (! empty($shipping_fee)) {
                 $shippingTotal += (float)
                     $this->calculateShippingCost($shipping_fee, $item->smartphone) * $item->quantity;
             }
 
-            $import_tax = $item->smartphone->selling_info->import_tax;
+            $import_tax = $item->smartphone->selling_info->resolveImportTax($destinationCountryId);
             if (! empty($import_tax)) {
                 $importTaxTotal +=
                    (float) $this->calculateImportCost($import_tax, $item->smartphone);

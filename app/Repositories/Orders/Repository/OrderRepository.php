@@ -1027,6 +1027,9 @@ class OrderRepository implements IOrderRepository
                     'smartphone.category.distributor',
                     'smartphone.selling_info.shipping_fee',
                     'smartphone.selling_info.import_tax',
+                    'smartphone.selling_info.countryShippings',
+                    'smartphone.selling_info.countryShippings.shippingFee',
+                    'smartphone.selling_info.countryShippings.importTax',
                 ]);
             }
 
@@ -1058,7 +1061,7 @@ class OrderRepository implements IOrderRepository
                 }
             }
 
-            $calculation = $this->cart_price_calculator->calculate($cart_items, $smartphone_addon_cart_items);
+            $calculation = $this->cart_price_calculator->calculate($cart_items, $smartphone_addon_cart_items, $shipping_address->country_id);
 
             foreach ($cart_items as $index => $cartItem) {
                 $smartphone = $cartItem->smartphone;
@@ -1084,8 +1087,29 @@ class OrderRepository implements IOrderRepository
                     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Dont have Selling Price Please Check')}");
                 }
 
-                $shipping_cost = $this->calculateShippingCost($smartphone->selling_info->shipping_fee, $smartphone, $quantity);
-                $import_cost = $this->calculateImportCost($smartphone->selling_info->import_tax, $smartphone);
+
+
+
+                $countryPriceExists = $smartphone->selling_info
+                    ->territory_prices()
+                    ->where('country_id', $shipping_address->country_id)
+                    ->exists();
+
+                if (! $countryPriceExists) {
+                    throw new Exception("{$smartphone->model_name->name}: {$this->trans::get('This product is not currently available for delivery to your country')}");
+                }
+
+
+
+                if($smartphone->selling_info?->total_price != $cartItem->unit_price){
+                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Please Re-add the product to cart because the price has been changed')}");
+                }
+
+                $resolvedShippingFee = $smartphone->selling_info->resolveShippingFee($shipping_address->country_id);
+                $resolvedImportTax = $smartphone->selling_info->resolveImportTax($shipping_address->country_id);
+
+                $shipping_cost = $this->calculateShippingCost($resolvedShippingFee, $smartphone, $quantity);
+                $import_cost = $this->calculateImportCost($resolvedImportTax, $smartphone);
                 $unit_price = $cartItem->unit_price;
                 $product_total = $unit_price * $quantity;
                 $item_total = $product_total + $shipping_cost + $import_cost;

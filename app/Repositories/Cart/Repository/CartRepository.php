@@ -382,8 +382,11 @@ class CartRepository implements ICartRepository
                     ];
                 }
 
-                // Recalculate totals
-                $total_summary = $this->price_calculator->calculate($updatedCartItems, $updatedAddonItems);
+                // Recalculate totals. Buy-now is a checkout context, so resolve fees
+                // against the active shipping address country (display must match charge).
+                $destinationCountryId = optional($customer->active_shipping_address)->country_id;
+
+                $total_summary = $this->price_calculator->calculate($updatedCartItems, $updatedAddonItems, $destinationCountryId);
 
                 // Save updated collections to session
                 session()->put($sessionKey, [
@@ -483,9 +486,13 @@ class CartRepository implements ICartRepository
                     2
                 );
 
+
+                $destinationCountryId = optional($customer->active_shipping_address)->country_id;
+
                 $total_summary = $this->price_calculator->calculate(
                     $cartItems,
-                    $sessionData['addon_items'] ?? collect()
+                    $sessionData['addon_items'] ?? collect(),
+                    $destinationCountryId
                 );
 
                 session()->put($sessionKey, [
@@ -629,10 +636,14 @@ class CartRepository implements ICartRepository
                     return $cartItem;
                 });
 
-                // Recalculate totals
+                // Recalculate totals. Buy-now is a checkout context, so resolve fees
+                // against the active shipping address country (display must match charge).
+                $destinationCountryId = optional($customer->active_shipping_address)->country_id;
+
                 $total_summary = $this->price_calculator->calculate(
                     $updatedCartItems,
-                    $updatedAddonItems
+                    $updatedAddonItems,
+                    $destinationCountryId
                 );
 
                 session()->put($sessionKey, [
@@ -778,10 +789,14 @@ class CartRepository implements ICartRepository
                 return $cartItem;
             });
 
-            // Recalculate totals
+            // Recalculate totals. Buy-now is a checkout context, so resolve fees
+            // against the active shipping address country (display must match charge).
+            $destinationCountryId = optional($customer->active_shipping_address)->country_id;
+
             $total_summary = $this->price_calculator->calculate(
                 $updatedCartItems,
-                $updatedAddonItems
+                $updatedAddonItems,
+                $destinationCountryId
             );
 
             // Save updated collections to session
@@ -1075,9 +1090,14 @@ class CartRepository implements ICartRepository
                 $allAddonItems = $allAddonItems->merge($addonItems);
             }
 
+            // Buy-now is a checkout context, so resolve fees against the active
+            // shipping address country so the stored summary matches the charge.
+            $destinationCountryId = optional($customer->active_shipping_address)->country_id;
+
             $total_summary = $this->price_calculator->calculate(
                 $allCartItems,
-                $allAddonItems
+                $allAddonItems,
+                $destinationCountryId
             );
 
             // Store in session
