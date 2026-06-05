@@ -10,12 +10,9 @@ router.on('before', (event) => {
         const origin = window.location.pathname + window.location.search;
         const target = event.detail?.visit?.url?.pathname || '';
 
-        const originIsShopOrBookmarks =
-            origin.includes('/shop') || origin.includes('/bookmarks');
+        const originIsShopOrBookmarks = origin.includes('/shop') || origin.includes('/bookmarks');
 
-        const targetIsFeedItem =
-            target.startsWith('/post/') || target.startsWith('/product/');
-
+        const targetIsFeedItem = target.startsWith('/post/') || target.startsWith('/product/');
 
         if (originIsShopOrBookmarks && targetIsFeedItem) {
             sessionStorage.setItem('andromeda_prev_url', origin);
@@ -51,7 +48,7 @@ createInertiaApp({
             }
         }
 
-        return `${title} - ${appName}`;
+        return `${appName} - ${title}`;
     },
     resolve: (name) =>
         resolvePageComponent(`./Pages/${name}.jsx`, import.meta.glob('./Pages/**/*.jsx')),
