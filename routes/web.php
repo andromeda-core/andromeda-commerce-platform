@@ -284,6 +284,14 @@ Route::group(['as' => 'website.'], function () {
         Route::post('/contact-store', 'store')->name('store');
     });
 
+    // Collaborator application (public, native page, emails to verification@andromeda.blue)
+    Route::get('/collaborator-application', [\App\Http\Controllers\Website\CollaboratorApplicationController::class, 'index'])
+        ->name('collaborator-application.index');
+
+    Route::post('/collaborator-application', [\App\Http\Controllers\Website\CollaboratorApplicationController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('collaborator-application.store');
+
     // Notification Routes
     Route::controller(NotificationController::class)->middleware('auth')->name('notifications.')->group(function () {
         Route::get('/notifications', 'index')->name('index');
