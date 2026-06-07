@@ -19,6 +19,7 @@ use App\Models\ShippingPolicy;
 use App\Models\Smartphone;
 use App\Models\SmartphoneForSale;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
+use App\Services\ContentTranslationService;
 use App\Services\GoogleGeoCoderService;
 use Exception;
 use Illuminate\Http\Request;
@@ -45,6 +46,7 @@ class SmartphoneRepository implements ISmartphoneRepository
         private ShippingPolicy $shipping_policy,
         private Addon $addon,
         private GoogleGeoCoderService $googleGeoCoderService,
+        private ContentTranslationService $contentTranslationService,
     ) {}
 
     public function getAllSmartphones(Request $request)
@@ -173,6 +175,20 @@ class SmartphoneRepository implements ISmartphoneRepository
             ]);
         }
 
+        // Light, non-breaking validation for optional manual content translations (Phase 1).
+        // Validated separately so the `translations` key never leaks into create() under strict mode.
+        $translationsValidator = Validator::make($request->all(), [
+            'translations' => ['sometimes', 'array'],
+            'translations.*.language_id' => ['required_with:translations', 'integer', 'exists:languages,id'],
+            'translations.*.fields' => ['sometimes', 'array'],
+        ]);
+
+        if ($translationsValidator->fails()) {
+            throw ValidationException::withMessages([
+                'translation_error' => $translationsValidator->errors()->first(),
+            ]);
+        }
+
         try {
 
             $validated_req = array_filter($validated_req, function ($value, $key) {
@@ -260,6 +276,12 @@ class SmartphoneRepository implements ISmartphoneRepository
 
                 dispatch(new CompressSmartphoneVideoWithFFMEG($tempPaths, $smartphone, 'store'))->onQueue('video');
             }
+
+            // No-op unless a `translations` payload is sent (Phase 2 dashboard form).
+            $this->contentTranslationService->syncTranslations(
+                $smartphone,
+                (array) ($request->input('translations') ?? [])
+            );
 
             $hasMedia = ($request->hasFile('videos') || $request->hasFile('images'));
 
@@ -368,6 +390,20 @@ class SmartphoneRepository implements ISmartphoneRepository
         if ($productDetailValidator->fails()) {
             throw ValidationException::withMessages([
                 'file_error' => $productDetailValidator->errors()->first(),
+            ]);
+        }
+
+        // Light, non-breaking validation for optional manual content translations (Phase 1).
+        // Validated separately so the `translations` key never leaks into update() under strict mode.
+        $translationsValidator = Validator::make($request->all(), [
+            'translations' => ['sometimes', 'array'],
+            'translations.*.language_id' => ['required_with:translations', 'integer', 'exists:languages,id'],
+            'translations.*.fields' => ['sometimes', 'array'],
+        ]);
+
+        if ($translationsValidator->fails()) {
+            throw ValidationException::withMessages([
+                'translation_error' => $translationsValidator->errors()->first(),
             ]);
         }
 
@@ -540,6 +576,12 @@ class SmartphoneRepository implements ISmartphoneRepository
 
                 dispatch(new CompressSmartphoneVideoWithFFMEG($tempPaths, $smartphone, 'update'))->onQueue('video');
             }
+
+            // No-op unless a `translations` payload is sent (Phase 2 dashboard form).
+            $this->contentTranslationService->syncTranslations(
+                $smartphone,
+                (array) ($request->input('translations') ?? [])
+            );
 
             $hasMedia = ($request->hasFile('new_videos') || $request->hasFile('new_images'));
 

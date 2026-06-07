@@ -9,11 +9,13 @@ import React, { useEffect, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import TipTapEditor from '@/Components/TipTapEditor';
+import TranslationsRepeater from '@/Components/TranslationsRepeater';
+import { areTranslationsComplete } from '@/Hooks/useTranslationsComplete';
 import Toast from '@/Components/Toast';
 import Swal from 'sweetalert2';
 import { Loader } from '@googlemaps/js-api-loader';
 
-export default function edit({ post, floors, googleMapSettings }) {
+export default function edit({ post, floors, googleMapSettings, languages, existingTranslations }) {
     // EDIT Data Form Data
     const { data, setData, reset } = useForm({
         _method: 'PUT',
@@ -33,6 +35,7 @@ export default function edit({ post, floors, googleMapSettings }) {
         deleted_videos: [],
         new_images: [],
         new_videos: [],
+        translations: existingTranslations ?? [],
     });
 
 
@@ -403,6 +406,9 @@ export default function edit({ post, floors, googleMapSettings }) {
         });
     }, [googleMapLocatioModalOpen]);
 
+    // Frontend guard: disable submit while any open translation block is incomplete.
+    const translationsOk = areTranslationsComplete(data.translations, ['title', 'content', 'tag']);
+
     return (
         <>
             <AuthenticatedLayout>
@@ -632,6 +638,17 @@ export default function edit({ post, floors, googleMapSettings }) {
                                                 />
                                             </div>
 
+                                            <TranslationsRepeater
+                                                languages={languages}
+                                                value={data.translations}
+                                                onChange={(next) => setData('translations', next)}
+                                                fields={[
+                                                    { key: 'title', label: 'Title', type: 'text' },
+                                                    { key: 'content', label: 'Content', type: 'richtext' },
+                                                    { key: 'tag', label: 'Tag', type: 'text' },
+                                                ]}
+                                            />
+
                                             <PrimaryButton
                                                 Text={'Update Post'}
                                                 Type={'submit'}
@@ -641,7 +658,8 @@ export default function edit({ post, floors, googleMapSettings }) {
                                                     data.title.trim() === '' ||
                                                     data.content.trim() === '' ||
                                                     data.post_type.trim() === '' ||
-                                                    data.status === ''
+                                                    data.status === '' ||
+                                                    !translationsOk
                                                 }
                                                 Spinner={processing}
                                                 Icon={

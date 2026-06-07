@@ -13,6 +13,8 @@ import { useScanner } from '@/Hooks/useScanner';
 import Swal from 'sweetalert2';
 import { Loader } from '@googlemaps/js-api-loader';
 import NativeScannerPreview from '@/Components/NativeScannerPreview';
+import TranslationsRepeater from '@/Components/TranslationsRepeater';
+import { areTranslationsComplete } from '@/Hooks/useTranslationsComplete';
 
 export default function edit({
     colors,
@@ -28,6 +30,8 @@ export default function edit({
     addons,
     googleMapSettings,
     floors,
+    languages,
+    existingTranslations,
 }) {
     // Edit Data Form Data
     const { data, setData, reset } = useForm({
@@ -54,6 +58,7 @@ export default function edit({
         floor_id: smartphone?.floor_id || '',
         product_details: smartphone?.product_details || [],
         created_at: smartphone?.created_at ? smartphone.created_at.slice(0, 16) : '',
+        translations: existingTranslations ?? [],
     });
 
     // Location Get Success state
@@ -553,6 +558,9 @@ export default function edit({
             });
         });
     }, [googleMapLocatioModalOpen]);
+    // Frontend guard: disable submit while any open translation block is incomplete.
+    const translationsOk = areTranslationsComplete(data.translations, ['content', 'tag']);
+
     return (
         <>
             <AuthenticatedLayout>
@@ -1150,6 +1158,17 @@ export default function edit({
                                                 )}
                                             </div>
 
+                                            <TranslationsRepeater
+                                                languages={languages}
+                                                value={data.translations}
+                                                onChange={(next) => setData('translations', next)}
+                                                fields={[
+                                                    { key: 'content', label: 'About This Product', type: 'textarea' },
+                                                    { key: 'tag', label: 'Tag', type: 'text' },
+                                                    { key: 'product_details', label: 'Product Details', type: 'keyvalue' },
+                                                ]}
+                                            />
+
                                             <PrimaryButton
                                                 Text={'Update Smart Phone'}
                                                 Type={'submit'}
@@ -1173,7 +1192,8 @@ export default function edit({
                                                             (detail) =>
                                                                 detail.title === '' ||
                                                                 detail.value === '',
-                                                        ))
+                                                        )) ||
+                                                    !translationsOk
                                                 }
                                                 Spinner={processing}
                                                 Icon={

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasContentTranslations;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,6 +12,10 @@ use Str;
 
 class Post extends Model
 {
+    use HasContentTranslations;
+
+    protected array $translatableFields = ['title', 'content', 'tag'];
+
     protected $fillable = [
         'public_id',
         'user_id',

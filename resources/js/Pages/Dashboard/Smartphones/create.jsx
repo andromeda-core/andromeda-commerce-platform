@@ -13,6 +13,8 @@ import { Loader } from '@googlemaps/js-api-loader';
 import Swal from 'sweetalert2';
 import { useScanner } from '@/Hooks/useScanner';
 import NativeScannerPreview from '@/Components/NativeScannerPreview';
+import TranslationsRepeater from '@/Components/TranslationsRepeater';
+import { areTranslationsComplete } from '@/Hooks/useTranslationsComplete';
 
 export default function create({
     colors,
@@ -27,6 +29,7 @@ export default function create({
     addons,
     floors,
     googleMapSettings,
+    languages,
 }) {
     // Create Data Form Data
     const { data, setData, post, processing, errors } = useForm({
@@ -52,6 +55,7 @@ export default function create({
         latitude: '',
         longitude: '',
         created_at: '',
+        translations: [],
     });
 
     const [file_error, setFileError] = useState(null);
@@ -493,6 +497,9 @@ export default function create({
             setShowProgressModal(false);
         }
     }, [processing, data?.images, data?.videos]);
+
+    // Frontend guard: disable submit while any open translation block is incomplete.
+    const translationsOk = areTranslationsComplete(data.translations, ['content', 'tag']);
 
     return (
         <>
@@ -1093,6 +1100,17 @@ export default function create({
                                                 )}
                                             </div>
 
+                                            <TranslationsRepeater
+                                                languages={languages}
+                                                value={data.translations}
+                                                onChange={(next) => setData('translations', next)}
+                                                fields={[
+                                                    { key: 'content', label: 'About This Product', type: 'textarea' },
+                                                    { key: 'tag', label: 'Tag', type: 'text' },
+                                                    { key: 'product_details', label: 'Product Details', type: 'keyvalue' },
+                                                ]}
+                                            />
+
                                             <PrimaryButton
                                                 Text={'Create Smart Phone'}
                                                 Type={'submit'}
@@ -1116,7 +1134,8 @@ export default function create({
                                                             (detail) =>
                                                                 detail.title === '' ||
                                                                 detail.value === '',
-                                                        ))
+                                                        )) ||
+                                                    !translationsOk
                                                 }
                                                 Spinner={processing}
                                                 Icon={

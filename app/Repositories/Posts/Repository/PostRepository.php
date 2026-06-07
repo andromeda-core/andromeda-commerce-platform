@@ -11,6 +11,7 @@ use App\Models\Floor;
 use App\Models\Post;
 use App\Models\Smartphone;
 use App\Repositories\Posts\Interface\IPostRepository;
+use App\Services\ContentTranslationService;
 use App\Services\GoogleGeoCoderService;
 use Exception;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ class PostRepository implements IPostRepository
         private GoogleGeoCoderService $googleGeoCoderService,
         private Smartphone $smartphone,
         private Trans $trans,
+        private ContentTranslationService $contentTranslationService,
     ) {}
 
     public function getAllPosts(Request $request)
@@ -297,6 +299,20 @@ class PostRepository implements IPostRepository
             ]);
         }
 
+        // Light, non-breaking validation for optional manual content translations (Phase 1).
+        // Validated separately so the `translations` key never leaks into create() under strict mode.
+        $translationsValidator = Validator::make($request->all(), [
+            'translations' => ['sometimes', 'array'],
+            'translations.*.language_id' => ['required_with:translations', 'integer', 'exists:languages,id'],
+            'translations.*.fields' => ['sometimes', 'array'],
+        ]);
+
+        if ($translationsValidator->fails()) {
+            throw ValidationException::withMessages([
+                'translation_error' => $translationsValidator->errors()->first(),
+            ]);
+        }
+
         try {
 
             $validated_req = array_filter($validated_req, function ($value, $key) {
@@ -362,6 +378,12 @@ class PostRepository implements IPostRepository
 
                 dispatch(new CompressPostVideoWithFFMPEG($tempPaths, $post, 'store'))->onQueue('video');
             }
+
+            // No-op unless a `translations` payload is sent (Phase 2 dashboard form).
+            $this->contentTranslationService->syncTranslations(
+                $post,
+                (array) ($request->input('translations') ?? [])
+            );
 
             $hasMedia = ($request->hasFile('videos') || $request->hasFile('images'));
 
@@ -447,6 +469,21 @@ class PostRepository implements IPostRepository
                 'file_error' => $validator->errors()->first(),
             ]);
         }
+
+        // Light, non-breaking validation for optional manual content translations (Phase 1).
+        // Validated separately so the `translations` key never leaks into update() under strict mode.
+        $translationsValidator = Validator::make($request->all(), [
+            'translations' => ['sometimes', 'array'],
+            'translations.*.language_id' => ['required_with:translations', 'integer', 'exists:languages,id'],
+            'translations.*.fields' => ['sometimes', 'array'],
+        ]);
+
+        if ($translationsValidator->fails()) {
+            throw ValidationException::withMessages([
+                'translation_error' => $translationsValidator->errors()->first(),
+            ]);
+        }
+
         try {
 
             $post = $this->post->where('slug', $slug)->where('status', true)->first();
@@ -621,6 +658,12 @@ class PostRepository implements IPostRepository
             }
 
             $post->refresh();
+
+            // No-op unless a `translations` payload is sent (Phase 2 dashboard form).
+            $this->contentTranslationService->syncTranslations(
+                $post,
+                (array) ($request->input('translations') ?? [])
+            );
 
             $hasMedia = ($request->hasFile('new_videos') || $request->hasFile('new_images'));
 

@@ -9,12 +9,14 @@ import React, { useEffect, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import TipTapEditor from '@/Components/TipTapEditor';
+import TranslationsRepeater from '@/Components/TranslationsRepeater';
+import { areTranslationsComplete } from '@/Hooks/useTranslationsComplete';
 import Toast from '@/Components/Toast';
 import Swal from 'sweetalert2';
 import axios from 'axios';
 import { Loader } from '@googlemaps/js-api-loader';
 
-export default function create({ floors, googleMapSettings }) {
+export default function create({ floors, googleMapSettings, languages }) {
     // Create Data Form Data
     const { data, setData, post, processing, errors, reset } = useForm({
         title: '',
@@ -29,6 +31,7 @@ export default function create({ floors, googleMapSettings }) {
         status: 1,
         location_name: '',
         created_at: '',
+        translations: [],
     });
 
     // Location Get Success state
@@ -338,6 +341,9 @@ export default function create({ floors, googleMapSettings }) {
         });
     }, [googleMapLocatioModalOpen]);
 
+    // Frontend guard: disable submit while any open translation block is incomplete.
+    const translationsOk = areTranslationsComplete(data.translations, ['title', 'content', 'tag']);
+
     return (
         <>
             <AuthenticatedLayout>
@@ -567,6 +573,17 @@ export default function create({ floors, googleMapSettings }) {
                                                 />
                                             </div>
 
+                                            <TranslationsRepeater
+                                                languages={languages}
+                                                value={data.translations}
+                                                onChange={(next) => setData('translations', next)}
+                                                fields={[
+                                                    { key: 'title', label: 'Title', type: 'text' },
+                                                    { key: 'content', label: 'Content', type: 'richtext' },
+                                                    { key: 'tag', label: 'Tag', type: 'text' },
+                                                ]}
+                                            />
+
                                             <PrimaryButton
                                                 Text={'Create Post'}
                                                 Type={'submit'}
@@ -576,7 +593,8 @@ export default function create({ floors, googleMapSettings }) {
                                                     data.title.trim() === '' ||
                                                     data.content.trim() === '' ||
                                                     data.post_type.trim() === '' ||
-                                                    data.status === ''
+                                                    data.status === '' ||
+                                                    !translationsOk
                                                 }
                                                 Spinner={processing}
                                                 Icon={

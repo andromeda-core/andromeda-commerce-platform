@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasContentTranslations;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,6 +14,10 @@ use Str;
 
 class Smartphone extends Model
 {
+    use HasContentTranslations;
+
+    protected array $translatableFields = ['content', 'tag', 'product_details'];
+
     protected $fillable = [
         'public_id',
         'model_name_id',

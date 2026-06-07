@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Language;
 use App\Repositories\Floors\Interface\IFloorRepostitory;
 use App\Repositories\Posts\Interface\IPostRepository;
 use Illuminate\Http\Request;
@@ -48,8 +49,9 @@ class PostController extends Controller implements HasMiddleware
 
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
+        $languages = Language::orderBy('name')->get(['id', 'name', 'code']);
 
-        return Inertia::render('Dashboard/Posts/create', compact('floors', 'googleMapSettings'));
+        return Inertia::render('Dashboard/Posts/create', compact('floors', 'googleMapSettings', 'languages'));
     }
 
     public function store(Request $request)
@@ -92,8 +94,31 @@ class PostController extends Controller implements HasMiddleware
 
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
+        $languages = Language::orderBy('name')->get(['id', 'name', 'code']);
 
-        return Inertia::render('Dashboard/Posts/edit', compact('post', 'floors', 'googleMapSettings'));
+        $post->load('contentTranslations');
+
+        $existingTranslations = $post->contentTranslations
+            ->groupBy('language_id')
+            ->map(function ($rows, $languageId) {
+                $fields = [];
+                foreach ($rows as $row) {
+                    if ($row->field === 'product_details') {
+                        $decoded = json_decode($row->value, true);
+                        $fields['product_details'] = is_array($decoded) ? $decoded : [];
+                    } else {
+                        $fields[$row->field] = $row->value;
+                    }
+                }
+
+                return [
+                    'language_id' => (int) $languageId,
+                    'fields' => $fields,
+                ];
+            })
+            ->values();
+
+        return Inertia::render('Dashboard/Posts/edit', compact('post', 'floors', 'googleMapSettings', 'languages', 'existingTranslations'));
     }
 
     public function update(Request $request, ?string $slug = null)

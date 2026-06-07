@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Language;
 use App\Repositories\Floors\Interface\IFloorRepostitory;
 use App\Repositories\Posts\Interface\IPostRepository;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
@@ -60,8 +61,9 @@ class SmartphoneController extends Controller implements HasMiddleware
         $addons = $this->smartphone->getAddons();
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
+        $languages = Language::orderBy('name')->get(['id', 'name', 'code']);
 
-        return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'floors', 'conditions', 'googleMapSettings', 'courier_companies', 'return_policies', 'addons'));
+        return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'floors', 'conditions', 'googleMapSettings', 'courier_companies', 'return_policies', 'addons', 'languages'));
     }
 
     public function store(Request $request)
@@ -117,8 +119,31 @@ class SmartphoneController extends Controller implements HasMiddleware
 
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
+        $languages = Language::orderBy('name')->get(['id', 'name', 'code']);
 
-        return Inertia::render('Dashboard/Smartphones/edit', compact('colors', 'floors', 'googleMapSettings', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'smartphone', 'addons'));
+        $smartphone->load('contentTranslations');
+
+        $existingTranslations = $smartphone->contentTranslations
+            ->groupBy('language_id')
+            ->map(function ($rows, $languageId) {
+                $fields = [];
+                foreach ($rows as $row) {
+                    if ($row->field === 'product_details') {
+                        $decoded = json_decode($row->value, true);
+                        $fields['product_details'] = is_array($decoded) ? $decoded : [];
+                    } else {
+                        $fields[$row->field] = $row->value;
+                    }
+                }
+
+                return [
+                    'language_id' => (int) $languageId,
+                    'fields' => $fields,
+                ];
+            })
+            ->values();
+
+        return Inertia::render('Dashboard/Smartphones/edit', compact('colors', 'floors', 'googleMapSettings', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'smartphone', 'addons', 'languages', 'existingTranslations'));
     }
 
     public function update(Request $request, ?string $id = null)
