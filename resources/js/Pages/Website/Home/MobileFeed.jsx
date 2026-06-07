@@ -462,7 +462,7 @@ const MobileFeed = ({
                             }}
                             className="text-[18px] font-semibold"
                         >
-                            {item.tag}
+                            {item.tag_display ?? item.tag}
                         </button>
                     </div>
 

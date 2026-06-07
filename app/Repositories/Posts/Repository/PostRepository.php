@@ -53,7 +53,7 @@ class PostRepository implements IPostRepository
         $show_posts = ! empty($request) ? ($request->has('show_posts') ? $request->boolean('show_posts') : true) : null;
         $show_products = ! empty($request) ? ($request->has('show_products') ? $request->boolean('show_products') : true) : null;
 
-        $post = $this->post->with(['floor', 'user'])
+        $post = $this->post->with(['floor', 'user', 'contentTranslations'])
             ->where(function ($q) use ($identifier) {
                 $q->where('public_id', $identifier)
                     ->orWhere('slug', $identifier);
@@ -135,11 +135,14 @@ class PostRepository implements IPostRepository
                 // })
                 ->where('tag', $post->tag)
                 ->where('status', true)
-                ->with(['floor', 'user'])
+                ->with(['floor', 'user', 'contentTranslations'])
                 ->limit(5)
                 ->get()
                 ->map(function ($post) {
                     $post->type = 'posts';
+                    $post->title = $post->translatedValue('title');
+                    $post->content = $post->translatedValue('content');
+                    $post->tag_display = $post->translatedValue('tag');
 
                     return $post;
                 });
@@ -172,7 +175,7 @@ class PostRepository implements IPostRepository
                     })
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
-                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug'])
+                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
                     ->where('tag', $post->tag)
                     ->withCount([
                         'inventory_items' => function ($query) {
@@ -211,18 +214,22 @@ class PostRepository implements IPostRepository
                             'slug' => $smartphone->slug,
                             'public_id' => $smartphone->public_id,
                             'tag' => $smartphone->tag,
+                            'tag_display' => $smartphone->translatedValue('tag'),
                             'is_sold_out' => $smartphone->is_sold_out,
-                            'content' => $smartphone->content,
+                            'content' => $smartphone->translatedValue('content'),
                             'type' => 'smartphones',
                             'added_at' => $smartphone->added_at,
                             'created_at_time' => $smartphone->created_at_time,
-                            'product_details' => $smartphone->product_details,
+                            'product_details' => $smartphone->translatedValue('product_details'),
                         ];
                     });
             }
 
             $post->related = collect([...$related_posts, ...$related_smartphones])->shuffle();
             $post->type = 'posts';
+            $post->title = $post->translatedValue('title');
+            $post->content = $post->translatedValue('content');
+            $post->tag_display = $post->translatedValue('tag');
         }
 
         return $post;
@@ -857,7 +864,7 @@ class PostRepository implements IPostRepository
             "page:{$page}",
         ];
 
-        $cacheKey = implode(':', $cacheTags);
+        $cacheKey = app()->getLocale() . ':' . implode(':', $cacheTags);
 
         return Cache::tags(['feed'])->rememberForever($cacheKey, function () use ($images, $videos, $text, $show_products, $show_posts, $page, $perPage) {
 
@@ -901,6 +908,7 @@ class PostRepository implements IPostRepository
                     ->with([
                         'floor:id,name',
                         'user:id,name',
+                        'contentTranslations',
                     ])
                     ->orderBy('created_at', 'asc')
                     ->forPage($page, $perPage)
@@ -948,12 +956,15 @@ class PostRepository implements IPostRepository
                                 });
                             }
                         })
-                        ->with(['floor:id,name', 'user:id,name'])
+                        ->with(['floor:id,name', 'user:id,name', 'contentTranslations'])
                         ->limit(50)
                         ->get()
                         ->map(function ($post) {
 
                             $post->type = 'posts';
+                            $post->title = $post->translatedValue('title');
+                            $post->content = $post->translatedValue('content');
+                            $post->tag_display = $post->translatedValue('tag');
 
                             return $post;
                         });
@@ -990,7 +1001,7 @@ class PostRepository implements IPostRepository
                         ->whereNotNull('slug')
                         ->whereHas('selling_info')
                         ->whereIn('tag', $allHashtags)
-                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug'])
+                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
                         ->withCount([
                             'inventory_items' => function ($query) {
                                 $query->where('status', 'in_stock');
@@ -1028,12 +1039,13 @@ class PostRepository implements IPostRepository
                                 'slug' => $smartphone->slug,
                                 'public_id' => $smartphone->public_id,
                                 'tag' => $smartphone->tag,
+                                'tag_display' => $smartphone->translatedValue('tag'),
                                 'is_sold_out' => $smartphone->is_sold_out,
-                                'content' => $smartphone->content,
+                                'content' => $smartphone->translatedValue('content'),
                                 'type' => 'smartphones',
                                 'added_at' => $smartphone->added_at,
                                 'created_at_time' => $smartphone->created_at_time,
-                                'product_details' => $smartphone->product_details,
+                                'product_details' => $smartphone->translatedValue('product_details'),
                             ];
                         });
                 }
@@ -1065,6 +1077,9 @@ class PostRepository implements IPostRepository
                         ->values();
 
                     $post->type = 'posts';
+                    $post->title = $post->translatedValue('title');
+                    $post->content = $post->translatedValue('content');
+                    $post->tag_display = $post->translatedValue('tag');
                 }
 
                 $hasMore = $hasMore || ($posts->count() === $perPage);
@@ -1107,6 +1122,7 @@ class PostRepository implements IPostRepository
                         'courier_company:id,courier_name',
                         'return_policy:id,slug',
                         'shipping_policy:id,slug',
+                        'contentTranslations',
                     ])
                     ->withCount([
                         'inventory_items' => function ($query) {
@@ -1160,7 +1176,7 @@ class PostRepository implements IPostRepository
                         ->whereNotNull('slug')
                         ->whereHas('selling_info')
                         ->whereIn('tag', $allHashtags)
-                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug'])
+                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
                         ->withCount([
                             'inventory_items' => function ($query) {
                                 $query->where('status', 'in_stock');
@@ -1197,12 +1213,13 @@ class PostRepository implements IPostRepository
                                 'slug' => $smartphone->slug,
                                 'public_id' => $smartphone->public_id,
                                 'tag' => $smartphone->tag,
+                                'tag_display' => $smartphone->translatedValue('tag'),
                                 'is_sold_out' => $smartphone->is_sold_out,
-                                'content' => $smartphone->content,
+                                'content' => $smartphone->translatedValue('content'),
                                 'type' => 'smartphones',
                                 'added_at' => $smartphone->added_at,
                                 'created_at_time' => $smartphone->created_at_time,
-                                'product_details' => $smartphone->product_details,
+                                'product_details' => $smartphone->translatedValue('product_details'),
                             ];
                         });
                 }
@@ -1242,11 +1259,14 @@ class PostRepository implements IPostRepository
                                 });
                             }
                         })
-                        ->with(['floor:id,name', 'user:id,name'])
+                        ->with(['floor:id,name', 'user:id,name', 'contentTranslations'])
                         ->limit(50)
                         ->get()
                         ->map(function ($post) {
                             $post->type = 'posts';
+                            $post->title = $post->translatedValue('title');
+                            $post->content = $post->translatedValue('content');
+                            $post->tag_display = $post->translatedValue('tag');
 
                             return $post;
                         });
@@ -1300,12 +1320,13 @@ class PostRepository implements IPostRepository
                         'slug' => $sp->slug,
                         'public_id' => $sp->public_id,
                         'tag' => $sp->tag,
+                        'tag_display' => $sp->translatedValue('tag'),
                         'is_sold_out' => $sp->is_sold_out,
-                        'content' => $sp->content,
+                        'content' => $sp->translatedValue('content'),
                         'type' => 'smartphones',
                         'added_at' => $sp->added_at,
                         'created_at_time' => $sp->created_at_time,
-                        'product_details' => $sp->product_details,
+                        'product_details' => $sp->translatedValue('product_details'),
                         'related' => collect()
                             ->merge($spRelatedPosts->values())
                             ->merge($spRelatedSmartphones->values())
@@ -1476,12 +1497,15 @@ class PostRepository implements IPostRepository
                     })
                     ->where('tag', $hashtag)
                     ->where('status', true)
-                    ->with(['floor', 'user'])
+                    ->with(['floor', 'user', 'contentTranslations'])
                     ->forPage($page, $perPage)
                     ->latest()
                     ->get()
                     ->map(function ($post) {
                         $post->type = 'posts';
+                        $post->title = $post->translatedValue('title');
+                        $post->content = $post->translatedValue('content');
+                        $post->tag_display = $post->translatedValue('tag');
 
                         return $post;
                     });
@@ -1523,7 +1547,7 @@ class PostRepository implements IPostRepository
                     })
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
-                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug'])
+                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
                     ->withCount([
                         'inventory_items' => function ($query) {
                             $query->where('status', 'in_stock');
@@ -1561,12 +1585,13 @@ class PostRepository implements IPostRepository
                             'slug' => $smartphone->slug,
                             'public_id' => $smartphone->public_id,
                             'tag' => $smartphone->tag,
+                            'tag_display' => $smartphone->translatedValue('tag'),
                             'is_sold_out' => $smartphone->is_sold_out,
-                            'content' => $smartphone->content,
+                            'content' => $smartphone->translatedValue('content'),
                             'type' => 'smartphones',
                             'added_at' => $smartphone->added_at,
                             'created_at_time' => $smartphone->created_at_time,
-                            'product_details' => $smartphone->product_details,
+                            'product_details' => $smartphone->translatedValue('product_details'),
 
                         ];
                     });
@@ -1668,14 +1693,16 @@ class PostRepository implements IPostRepository
                 //         });
                 //     }
                 // })
-                ->with(['floor', 'user'])
+                ->with(['floor', 'user', 'contentTranslations'])
                 ->latest()
                 ->forPage($page, $perPage)
                 ->get()
                 ->map(function ($post) {
+                    $translatedTitle = $post->translatedValue('title');
+
                     return [
                         'id' => $post->id,
-                        'title' => Str::length($post->title) > 30 ? Str::limit($post->title, 30, '...') : $post->title,
+                        'title' => Str::length($translatedTitle) > 30 ? Str::limit($translatedTitle, 30, '...') : $translatedTitle,
                         'slug' => $post->slug,
                         'public_id' => $post->public_id,
                         'location_name' => $post->location_name,
@@ -1683,8 +1710,9 @@ class PostRepository implements IPostRepository
                         'longitude' => $post->longitude,
                         'image' => $post->post_image_urls && count($post->post_image_urls) > 0 ? $post->post_image_urls[0] : null,
                         'video_thumbnail' => $post->post_video_urls && count($post->post_video_urls) > 0 ? $post->post_video_urls[0]['thumbnail_url'] : null,
-                        'content' => $post->content,
+                        'content' => $post->translatedValue('content'),
                         'tag' => $post->tag,
+                        'tag_display' => $post->translatedValue('tag'),
                         'floor' => $post?->floor?->name,
                         'created_at' => $post->created_at->format('Y-m-d g:i A '),
                         'timestamp' => $post->created_at->timestamp,
@@ -1725,7 +1753,7 @@ class PostRepository implements IPostRepository
                 //     }
                 // })
                 ->where('tag', $hashtag)
-                ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug'])
+                ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
                 ->withCount([
                     'inventory_items' => function ($query) {
                         $query->where('status', 'in_stock');
@@ -1757,18 +1785,19 @@ class PostRepository implements IPostRepository
                         'courier_company' => $smartphone?->courier_company,
                         'return_policy' => $smartphone?->return_policy,
                         'shipping_policy' => $smartphone?->shipping_policy,
-                        'content' => $smartphone->content,
+                        'content' => $smartphone->translatedValue('content'),
                         'slug' => $smartphone->slug,
                         'public_id' => $smartphone->public_id,
                         'addons' => $smartphone?->addons,
                         'tag' => $smartphone->tag,
+                        'tag_display' => $smartphone->translatedValue('tag'),
                         'is_sold_out' => $smartphone->is_sold_out,
                         'type' => 'smartphones',
                         'created_at' => $smartphone->created_at->format('Y-m-d g:i A '),
                         'timestamp' => $smartphone->created_at->timestamp,
                         'added_at' => $smartphone->added_at,
                         'created_at_time' => $smartphone->created_at_time,
-                        'product_details' => $smartphone->product_details,
+                        'product_details' => $smartphone->translatedValue('product_details'),
 
                     ];
                 });
@@ -1792,9 +1821,19 @@ class PostRepository implements IPostRepository
             $prevParams = $queryParams;
             $prevParams['page'] = max(1, $page - 1);
 
+            // Translated display value for the hashtag header (display-only).
+            // The original $hashtag stays canonical for matching/navigation.
+            $sourceModel = $this->post->where('tag', $hashtag)->first()
+                ?? $this->smartphone->where('tag', $hashtag)->first();
+
+            $hashtagDisplay = $sourceModel
+                ? $sourceModel->translatedValue('tag')
+                : $hashtag;
+
             return [
                 'status' => true,
                 'data' => $data,
+                'hashtag_display' => $hashtagDisplay,
                 'pagination' => [
                     'current_page' => (int) $page,
                     'per_page' => (int) $perPage,

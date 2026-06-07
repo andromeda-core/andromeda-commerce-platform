@@ -177,11 +177,13 @@ class PostController extends Controller
 
         $results = collect($posts)->merge($smartphones);
         $next_page_url = $data['pagination']['next_page_url'];
+        $hashtag_display = $data['hashtag_display'] ?? $hashtag;
 
         return response()->json([
             'status' => true,
             'backend_retuned_results' => $results,
             'backend_retuned_next_page_url' => $next_page_url,
+            'hashtag_display' => $hashtag_display,
         ]);
 
         return Inertia::render('Website/Home/hashtagPosts', compact('results', 'next_page_url', 'hashtag'));

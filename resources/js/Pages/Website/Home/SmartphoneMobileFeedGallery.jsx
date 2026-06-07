@@ -722,7 +722,7 @@ const SmartphoneMobileGalleryModal = ({
                             }}
                             className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark"
                         >
-                            {smartphone.tag}
+                            {smartphone.tag_display ?? smartphone.tag}
                         </button>
                     </div>
 

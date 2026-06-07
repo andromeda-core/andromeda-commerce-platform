@@ -165,13 +165,16 @@ class BookmarkRepository implements IBookmarkRepository
             //         });
             //     }
             // })
-            ->with(['floor'])
+            ->with(['floor', 'contentTranslations'])
             ->latest()
             ->paginate(10);
 
         if ($bookmarks->isNotEmpty()) {
             $bookmarks->getCollection()->transform(function ($bookmark) {
                 $bookmark->type = 'posts';
+                $bookmark->title = $bookmark->translatedValue('title');
+                $bookmark->content = $bookmark->translatedValue('content');
+                $bookmark->tag_display = $bookmark->translatedValue('tag');
 
                 return $bookmark;
             });

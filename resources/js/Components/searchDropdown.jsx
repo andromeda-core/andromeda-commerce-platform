@@ -164,10 +164,10 @@ function SearchDropdown({
 
                                     <div>
                                         <h4 className="text-xs font-semibold text-gray-800 group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-400">
-                                            {item.title}
+                                            {item.title_display ?? item.title}
                                         </h4>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                                            {item.tag}
+                                            {item.tag_display ?? item.tag}
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
                                             {item.location_name} {item.floor}
@@ -320,10 +320,10 @@ function SearchDropdown({
 
                                                             <div>
                                                                 <h4 className="text-xs font-semibold text-gray-800 group-hover:text-blue-600 dark:text-gray-100 dark:group-hover:text-blue-400">
-                                                                    {item.title}
+                                                                    {item.title_display ?? item.title}
                                                                 </h4>
                                                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                                                    {item.tag}
+                                                                    {item.tag_display ?? item.tag}
                                                                 </p>
                                                                 <p className="text-xs text-gray-500 dark:text-gray-400">
                                                                     {item.location_name}{' '}

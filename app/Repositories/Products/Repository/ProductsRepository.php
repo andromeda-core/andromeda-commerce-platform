@@ -64,7 +64,7 @@ class ProductsRepository implements IProductsRepository
                 //         });
                 //     }
                 // })
-                ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug'])
+                ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
                 ->withCount([
                     'inventory_items' => function ($query) {
                         $query->where('status', 'in_stock');
@@ -108,7 +108,7 @@ class ProductsRepository implements IProductsRepository
                         //     }
                         // })
 
-                        ->with(['model_name', 'capacity', 'selling_info', 'floor', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug'])
+                        ->with(['model_name', 'capacity', 'selling_info', 'floor', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
                         ->where('tag', $smartphone->tag)
                         ->withCount([
                             'inventory_items' => function ($query) {
@@ -141,8 +141,9 @@ class ProductsRepository implements IProductsRepository
                                 'slug' => $smartphone->slug,
                                 'public_id' => $smartphone->public_id,
                                 'tag' => $smartphone->tag,
+                                'tag_display' => $smartphone->translatedValue('tag'),
                                 'is_sold_out' => $smartphone->is_sold_out,
-                                'content' => $smartphone->content,
+                                'content' => $smartphone->translatedValue('content'),
                                 'type' => 'smartphones',
                                 'added_at' => $smartphone->added_at,
                                 'created_at_time' => $smartphone->created_at_time,
@@ -179,12 +180,15 @@ class ProductsRepository implements IProductsRepository
                             })
                             ->where('tag', $smartphone->tag)
                             ->where('status', true)
-                            ->with(['floor', 'user'])
+                            ->with(['floor', 'user', 'contentTranslations'])
                             ->take(5)
                             ->get()
                             ->map(function ($post) {
 
                                 $post->type = 'posts';
+                                $post->title = $post->translatedValue('title');
+                                $post->content = $post->translatedValue('content');
+                                $post->tag_display = $post->translatedValue('tag');
 
                                 return $post;
                             });
@@ -213,8 +217,9 @@ class ProductsRepository implements IProductsRepository
                         'slug' => $smartphone?->slug,
                         'public_id' => $smartphone?->public_id,
                         'tag' => $smartphone?->tag,
+                        'tag_display' => $smartphone?->translatedValue('tag'),
                         'is_sold_out' => $smartphone?->is_sold_out,
-                        'content' => $smartphone?->content,
+                        'content' => $smartphone?->translatedValue('content'),
                         'type' => 'smartphones',
                         'added_at' => $smartphone->added_at,
                         'created_at_time' => $smartphone->created_at_time,
@@ -260,7 +265,7 @@ class ProductsRepository implements IProductsRepository
             ->keyBy(fn($r) => $r->type === 'less_than' ? 'under_' . $r->value : 'over_' . $r->value);
 
         $smartphones = $this->smartphone
-            ->with(['condition', 'capacity', 'selling_info', 'model_name', 'category'])
+            ->with(['condition', 'capacity', 'selling_info', 'model_name', 'category', 'contentTranslations'])
             ->whereHas('selling_info')
             ->whereNotNull('slug')
             ->when(! empty($request->input('tag')), function ($query) use ($request, $priceRangeMap) {
@@ -327,7 +332,7 @@ class ProductsRepository implements IProductsRepository
                 'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
                 'video_thumbnail' => $smartphone->smartphone_video_urls && count($smartphone->smartphone_video_urls) > 0 ? $smartphone->smartphone_video_urls[0]['thumbnail_url'] : null,
                 'condition' => $smartphone?->condition?->name,
-                'content' => $smartphone?->content,
+                'content' => $smartphone?->translatedValue('content'),
                 'capacity' => $smartphone?->capacity?->name,
                 'total_price' => $smartphone?->selling_info?->total_price,
                 'color' => $smartphone?->colors[0]?->name,

@@ -162,7 +162,7 @@ const PostMobileFeedGallery = ({
                             }}
                             className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark"
                         >
-                            {post.tag}
+                            {post.tag_display ?? post.tag}
                         </button>
                     </div>
 

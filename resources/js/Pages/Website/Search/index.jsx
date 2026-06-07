@@ -68,13 +68,13 @@ const ResultItem = memo(
 
                     {/* Info */}
                     <div className="min-w-0 flex-1">
-                        <h3 className="truncate font-medium">{item.title || item.name}</h3>
+                        <h3 className="truncate font-medium">{(item.title_display ?? item.title) || item.name}</h3>
                         <p className="truncate text-xs text-main-text-light dark:text-main-text-dark">
                             {item.type === 'posts' ? item.location_name || '' : item.capacity || ''}
                         </p>
                         {item.tag && (
                             <p className="truncate text-xs text-sub-text-light dark:text-sub-text-dark">
-                                {item.tag}
+                                {item.tag_display ?? item.tag}
                             </p>
                         )}
                         <p className="truncate text-xs text-sub-text-light dark:text-sub-text-dark">
@@ -173,7 +173,7 @@ const ResultItem = memo(
 
                         <div className="absolute left-3 top-3">
                             <span className="text-[14px] font-semibold text-white">
-                                {item?.tag}
+                                {item?.tag_display ?? item?.tag}
                             </span>
                         </div>
 
@@ -208,7 +208,7 @@ const ResultItem = memo(
                                         <span
                                             className="line-clamp-2 break-words"
                                             dangerouslySetInnerHTML={{
-                                                __html: item?.content
+                                                __html: (item?.content_display ?? item?.content)
                                                     ?.replace(/<[^>]*>/g, ' ')
                                                     .replace(/\s+/g, ' ')
                                                     .trim(),
@@ -224,7 +224,7 @@ const ResultItem = memo(
                         {/* Tag - Top Left */}
                         <div className="absolute left-4 top-3 z-10">
                             <span className="text-[14px] font-semibold text-black dark:text-white">
-                                {item?.tag}
+                                {item?.tag_display ?? item?.tag}
                             </span>
                         </div>
 
@@ -236,7 +236,7 @@ const ResultItem = memo(
                                     <p className="line-clamp-[12] whitespace-pre-line break-words text-[14px] leading-relaxed opacity-90">
                                         <span
                                             dangerouslySetInnerHTML={{
-                                                __html: item?.content.trim(),
+                                                __html: (item?.content_display ?? item?.content)?.trim(),
                                             }}
                                         ></span>
                                     </p>
@@ -249,7 +249,7 @@ const ResultItem = memo(
                                         <p className="line-clamp-[10] whitespace-pre-line break-words text-[14px] leading-relaxed opacity-90">
                                             <span
                                                 dangerouslySetInnerHTML={{
-                                                    __html: item?.content.trim(),
+                                                    __html: (item?.content_display ?? item?.content)?.trim(),
                                                 }}
                                             ></span>
                                         </p>

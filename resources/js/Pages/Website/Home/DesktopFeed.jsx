@@ -1493,7 +1493,7 @@ const DesktopFeed = ({
                                                             }}
                                                             className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                         >
-                                                            {feedGallery?.tag}
+                                                            {feedGallery?.tag_display ?? feedGallery?.tag}
                                                         </button>
                                                     )}
                                                 </div>
@@ -2072,7 +2072,7 @@ const DesktopFeed = ({
                                                                         }}
                                                                         className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
-                                                                        {feedGallery?.tag}
+                                                                        {feedGallery?.tag_display ?? feedGallery?.tag}
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -3303,7 +3303,7 @@ const DesktopFeed = ({
                                                                         }}
                                                                         className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
-                                                                        {feedGallery?.tag}
+                                                                        {feedGallery?.tag_display ?? feedGallery?.tag}
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -4001,7 +4001,7 @@ const DesktopFeed = ({
                                                                         }}
                                                                         className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
-                                                                        {feedGallery?.tag}
+                                                                        {feedGallery?.tag_display ?? feedGallery?.tag}
                                                                     </button>
                                                                 )}
                                                             </div>

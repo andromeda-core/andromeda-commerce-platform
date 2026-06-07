@@ -90,7 +90,7 @@ const MasonryFeedItem = memo(
                                 <>
                                     <div className="absolute left-3 top-3">
                                         <span className="text-[13px] font-semibold leading-[17px] text-white lg:text-[14px]">
-                                            {item?.tag}
+                                            {item?.tag_display ?? item?.tag}
                                         </span>
                                     </div>
 
@@ -226,7 +226,7 @@ const MasonryFeedItem = memo(
                                 <>
                                     <div className="absolute left-3 top-3">
                                         <span className="text-[13px] font-semibold leading-[17px] text-white lg:text-[14px]">
-                                            {item?.tag}
+                                            {item?.tag_display ?? item?.tag}
                                         </span>
                                     </div>
 
@@ -311,7 +311,7 @@ const MasonryFeedItem = memo(
                         >
                             <div className="absolute left-4 top-3">
                                 <span className="text-[13px] font-semibold leading-[17px] text-black dark:text-white lg:text-[14px]">
-                                    {item?.tag}
+                                    {item?.tag_display ?? item?.tag}
                                 </span>
                             </div>
 
@@ -453,7 +453,7 @@ const MasonryFeedItem = memo(
                             <>
                                 <div className="absolute left-3 top-3">
                                     <span className="text-[13px] font-semibold leading-[17px] text-white lg:text-[14px]">
-                                        {item?.tag}
+                                        {item?.tag_display ?? item?.tag}
                                     </span>
                                 </div>
 
@@ -570,21 +570,25 @@ const MasonryFeedItem = memo(
                     >
                         <div className="absolute left-4 top-3">
                             <span className="text-[13px] font-semibold leading-[17px] text-black dark:text-white lg:text-[14px]">
-                                {item?.tag}
+                                {item?.tag_display ?? item?.tag}
                             </span>
                         </div>
 
-                        <div className="relative mt-10 pb-[42px]">
-                            <p className="leading-[17px]] line-clamp-6 whitespace-pre-line break-all text-[13px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
+                        <div className="mt-10 flex flex-1 flex-col">
+                            <p className="line-clamp-6 whitespace-pre-line break-words text-[13px] leading-[20px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
                                 <span
                                     dangerouslySetInnerHTML={{
-                                        __html: item?.content.trim(),
+                                        __html: (
+                                            item?.content_display ??
+                                            item?.content ??
+                                            ''
+                                        ).trim(),
                                     }}
                                 ></span>
                             </p>
 
-                            {/* PRICE bottom bar */}
-                            <div className="absolute inset-x-0 bottom-0 bg-transparent text-main-text-light dark:text-main-text-dark">
+                            {/* PRICE - normal flow, pushed to bottom (no overlap) */}
+                            <div className="mt-auto pt-4 text-main-text-light dark:text-main-text-dark">
                                 <div className="flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                     {item.is_sold_out && (
                                         <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">

@@ -268,6 +268,15 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
             $new_search_history = null;
 
+            // Locale-scoped translation matching/display (additive; default locale untouched).
+            $locale = app()->getLocale();
+            $defaultLocale = config('app.fallback_locale', 'en');
+            $isTranslatable = $locale !== $defaultLocale;
+            $activeLangId = $isTranslatable
+                ? \App\Models\Language::where('code', $locale)->value('id')
+                : null;
+            $isTranslatable = $isTranslatable && ! empty($activeLangId);
+
             if ((! empty($query) || (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])))) {
                 $posts = $this->post::query();
 
@@ -316,10 +325,19 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
                 if ($request->filled('query')) {
 
-                    $posts = $posts->where(function ($q) use ($query) {
+                    $posts = $posts->where(function ($q) use ($query, $isTranslatable, $activeLangId) {
                         if (Str::startsWith($query, '#')) {
                             // Hashtag search
-                            $q->where('tag', '=', $query);
+                            $q->where(function ($inner) use ($query, $isTranslatable, $activeLangId) {
+                                $inner->where('tag', '=', $query);
+                                if ($isTranslatable) {
+                                    $inner->orWhereHas('contentTranslations', function ($t) use ($query, $activeLangId) {
+                                        $t->where('language_id', $activeLangId)
+                                            ->where('field', 'tag')
+                                            ->where('value', $query);
+                                    });
+                                }
+                            });
                         } elseif (Str::startsWith($query, 'http://') || Str::startsWith($query, 'https://')) {
 
                             $encodedQuery = e($query);
@@ -343,9 +361,16 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                             });
                         } else {
 
-                            $q->where(function ($sub) use ($query) {
+                            $q->where(function ($sub) use ($query, $isTranslatable, $activeLangId) {
                                 $sub->where('title', 'LIKE', '%' . $query . '%')
                                     ->orWhere('content', 'LIKE', '%' . $query . '%');
+                                if ($isTranslatable) {
+                                    $sub->orWhereHas('contentTranslations', function ($t) use ($query, $activeLangId) {
+                                        $t->where('language_id', $activeLangId)
+                                            ->whereIn('field', ['title', 'content'])
+                                            ->where('value', 'LIKE', '%' . $query . '%');
+                                    });
+                                }
                             });
                         }
                     });
@@ -378,7 +403,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 // });
 
                 // info(json_encode($posts->get()->toArray()));
-                $posts = $posts->with(['floor'])
+                $posts = $posts->with(['floor', 'contentTranslations'])
                     // its For restricting The Text Only Posts -> Not needed Now
                     // ->where(function ($sub) {
                     //     $sub->whereRaw('JSON_LENGTH(images) > 0')
@@ -387,7 +412,9 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     ->latest()
                     ->forPage($page, $perPage)
                     ->get()
-                    ->map(function ($post) use ($query) {
+                    ->map(function ($post) use ($query, $isTranslatable) {
+
+                        $translatedTitle = $isTranslatable ? $post->translatedValue('title') : $post->title;
 
                         $matchType = null;
                         if (! empty($query)) {
@@ -403,15 +430,18 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                         return [
                             'id' => $post->id,
                             'title' => Str::length($post->title) > 30 ? Str::limit($post->title, 30, '...') : $post->title,
+                            'title_display' => Str::length($translatedTitle) > 30 ? Str::limit($translatedTitle, 30, '...') : $translatedTitle,
                             'slug' => $post->slug,
                             'public_id' => $post->public_id,
                             'location_name' => $post->location_name,
                             'latitude' => $post->latitude,
                             'longitude' => $post->longitude,
                             'content' => $post->content,
+                            'content_display' => $isTranslatable ? $post->translatedValue('content') : $post->content,
                             'image' => $post->post_image_urls && count($post->post_image_urls) > 0 ? $post->post_image_urls[0] : null,
                             'video_thumbnail' => $post->post_video_urls && count($post->post_video_urls) > 0 ? $post->post_video_urls[0]['thumbnail_url'] : null,
                             'tag' => $post->tag,
+                            'tag_display' => $isTranslatable ? $post->translatedValue('tag') : $post->tag,
                             'floor' => $post?->floor?->name,
                             'created_at' => $post->created_at->format('Y-m-d g:i A '),
                             'type' => 'posts',
@@ -480,7 +510,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
                     $searchQuery = $request->input('query');
 
-                    $smartphones = $smartphones->where(function ($query) use ($searchQuery) {
+                    $smartphones = $smartphones->where(function ($query) use ($searchQuery, $isTranslatable, $activeLangId) {
 
                         $query->where('model_searchable_name', 'LIKE', '%' . $searchQuery . '%')
                             ->orWhere('content', 'LIKE', '%' . $searchQuery . '%')
@@ -488,6 +518,20 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                                 $subQQ->where('name', 'LIKE', '%' . $searchQuery . '%');
                             })
                             ->orWhere('tag', '=', $searchQuery);
+
+                        if ($isTranslatable) {
+                            $query->orWhereHas('contentTranslations', function ($t) use ($searchQuery, $activeLangId) {
+                                $t->where('language_id', $activeLangId)
+                                    ->where(function ($f) use ($searchQuery) {
+                                        $f->where(function ($a) use ($searchQuery) {
+                                            $a->whereIn('field', ['content'])
+                                                ->where('value', 'LIKE', '%' . $searchQuery . '%');
+                                        })->orWhere(function ($b) use ($searchQuery) {
+                                            $b->where('field', 'tag')->where('value', $searchQuery);
+                                        });
+                                    });
+                            });
+                        }
                     });
                 }
 
@@ -517,13 +561,13 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 //     }
                 // });
 
-                $smartphones = $smartphones->with(['capacity', 'selling_info', 'floor'])
+                $smartphones = $smartphones->with(['capacity', 'selling_info', 'floor', 'contentTranslations'])
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
                     ->latest()
                     ->forPage($page, $perPage)
                     ->get()
-                    ->map(function ($smartphone) use ($query) {
+                    ->map(function ($smartphone) use ($query, $isTranslatable) {
 
                         $matchType = null;
                         if (! empty($query)) {
@@ -543,9 +587,11 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                             'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
                             'video_thumbnail' => $smartphone->smartphone_video_urls && count($smartphone->smartphone_video_urls) > 0 ? $smartphone->smartphone_video_urls[0]['thumbnail_url'] : null,
                             'tag' => $smartphone->tag,
+                            'tag_display' => $isTranslatable ? $smartphone->translatedValue('tag') : $smartphone->tag,
                             'type' => 'smartphones',
                             'floor' => $smartphone->floor,
                             'content' => $smartphone->content,
+                            'content_display' => $isTranslatable ? $smartphone->translatedValue('content') : $smartphone->content,
                             'selling_info' => $smartphone->selling_info,
                             'slug' => $smartphone->slug,
                             'public_id' => $smartphone->public_id,
@@ -689,14 +735,18 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                             'slug' => $result->slug ?? null,
                             'public_id' => $result?->public_id ?? null,
                             'title' => $result->title ?? null,
+                            // Frozen store-time display value (language the search was made in); no re-translation on replay.
+                            'title_display' => $result->title_display ?? $result->title ?? null,
                             'name' => $result->name ?? null,
                             'image' => $result->image ?? null,
                             'video_thumbnail' => $result?->video_thumbnail ?? null,
                             'selling_info' => $result->selling_info ?? null,
                             'location_name' => $result->location_name ?? null,
                             'content' => $result->content ?? null,
+                            'content_display' => $result->content_display ?? $result->content ?? null,
                             'capacity' => $result->capacity ?? null,
                             'tag' => $result->tag ?? null,
+                            'tag_display' => $result->tag_display ?? $result->tag ?? null,
                             'created_at' => $result->created_at ?? null,
                             'matchType' => $result->matchType ?? null,
                             'latitude' => $result->latitude ?? null,

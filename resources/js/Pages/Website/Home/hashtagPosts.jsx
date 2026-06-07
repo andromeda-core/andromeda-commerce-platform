@@ -74,7 +74,7 @@ const ResultItem = memo(
                         </p>
                         {item.tag && (
                             <p className="truncate text-xs text-sub-text-light dark:text-sub-text-dark">
-                                {item.tag}
+                                {item.tag_display ?? item.tag}
                             </p>
                         )}
                         <p className="truncate text-xs text-sub-text-light dark:text-sub-text-dark">
@@ -172,7 +172,7 @@ const ResultItem = memo(
 
                         <div className="absolute left-3 top-3">
                             <span className="text-[14px] font-semibold text-white">
-                                {item?.tag}
+                                {item?.tag_display ?? item?.tag}
                             </span>
                         </div>
 
@@ -223,7 +223,7 @@ const ResultItem = memo(
                         {/* Tag - Top Left */}
                         <div className="absolute left-4 top-3 z-10">
                             <span className="text-[14px] font-semibold text-black dark:text-white">
-                                {item?.tag}
+                                {item?.tag_display ?? item?.tag}
                             </span>
                         </div>
 
@@ -286,6 +286,9 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
 
     const [linkCopied, setLinkCopied] = useState(false);
 
+    // Display-only translated hashtag for the header; original `hashtag` stays canonical.
+    const [hashtagDisplay, setHashtagDisplay] = useState(hashtag);
+
     // Translation Hook
     const { __ } = useTranslation();
 
@@ -345,6 +348,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
             if (res.data.status) {
                 setAllResults(res.data.backend_retuned_results);
                 setNextPageUrl(res.data.backend_retuned_next_page_url);
+                setHashtagDisplay(res.data.hashtag_display ?? hashtag);
                 setIsLoaded(true);
             } else {
                 setErrorMessage(res.data.message);
@@ -489,7 +493,7 @@ const hashtagPosts = ({ hashtag, google_map_api_key }) => {
                                 </div>
                             </button>
                             <div className="border-gray-5 group relative mb-3 flex items-center justify-between rounded-md px-2 py-2 text-sm text-main-text-light transition-all dark:text-main-text-dark">
-                                <div className="flex flex-wrap items-center gap-x-2">{hashtag}</div>
+                                <div className="flex flex-wrap items-center gap-x-2">{hashtagDisplay}</div>
                             </div>
                         </div>
 
