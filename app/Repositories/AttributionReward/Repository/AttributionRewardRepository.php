@@ -15,7 +15,23 @@ class AttributionRewardRepository implements IAttributionRewardRepository
 
     public function getAllAttributionRewards(Request $request)
     {
-        return $this->attribution_reward->with(['productLink', 'rewardedTo', 'smartphone.model_name', 'order'])->latest()->paginate(10);
+        $rewards = $this->attribution_reward
+            ->with(['productLink', 'rewardedTo', 'smartphone.model_name', 'smartphone.model_name.contentTranslations', 'order'])
+            ->latest()
+            ->paginate(10);
+
+        // Locale-aware model name (Phase 3c): display-only in-memory translation.
+        // Default locale short-circuits (no change, no extra queries).
+        // if (app()->getLocale() !== config('app.fallback_locale', 'en')) {
+        //     $rewards->getCollection()->each(function ($reward) {
+        //         $modelName = $reward->smartphone?->model_name;
+        //         if ($modelName) {
+        //             $modelName->name = $modelName->translatedValue('name');
+        //         }
+        //     });
+        // }
+
+        return $rewards;
     }
     public function updateAttributionReward(Request $request, string $id)
     {

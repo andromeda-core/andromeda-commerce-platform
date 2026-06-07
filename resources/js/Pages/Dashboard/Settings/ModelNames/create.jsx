@@ -7,11 +7,14 @@ import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 import SelectInput from '@/Components/SelectInput';
-export default function create() {
+import TranslationsRepeater from '@/Components/TranslationsRepeater';
+import { areTranslationsComplete } from '@/Hooks/useTranslationsComplete';
+export default function create({ languages }) {
     // Create Data Form Data
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         is_active: 1,
+        translations: [],
     });
 
     // Create Data Form Request
@@ -19,6 +22,9 @@ export default function create() {
         e.preventDefault();
         post(route('dashboard.settings.model_names.store'));
     };
+
+    // Frontend guard: disable submit while any open translation block is incomplete.
+    const translationsOk = areTranslationsComplete(data.translations, ['name']);
 
     return (
         <>
@@ -92,6 +98,15 @@ export default function create() {
                                                 />
                                             </div>
 
+                                            <TranslationsRepeater
+                                                languages={languages}
+                                                value={data.translations}
+                                                onChange={(next) => setData('translations', next)}
+                                                fields={[
+                                                    { key: 'name', label: 'Name', type: 'text' },
+                                                ]}
+                                            />
+
                                             <PrimaryButton
                                                 Text={'Create Model Name'}
                                                 Type={'submit'}
@@ -99,7 +114,8 @@ export default function create() {
                                                 Disabled={
                                                     processing ||
                                                     data.name.trim() === '' ||
-                                                    data.is_active === ''
+                                                    data.is_active === '' ||
+                                                    !translationsOk
                                                 }
                                                 Spinner={processing}
                                                 Icon={

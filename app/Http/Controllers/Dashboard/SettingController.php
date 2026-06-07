@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
+use App\Models\Language;
 use App\Repositories\Settings\Interface\ISettingRepository;
 use App\Repositories\TranslationSystem\Language\Interface\ILanguageRepository;
 use Artisan;
@@ -588,7 +589,9 @@ class SettingController extends Controller implements HasMiddleware
 
     public function modelNameCreate()
     {
-        return Inertia::render('Dashboard/Settings/ModelNames/create');
+        $languages = Language::where('code', '!=', config('app.fallback_locale', 'en'))->orderBy('name')->get(['id', 'name', 'code']);
+
+        return Inertia::render('Dashboard/Settings/ModelNames/create', compact('languages'));
     }
 
     public function modelNameStore(Request $request)
@@ -614,7 +617,26 @@ class SettingController extends Controller implements HasMiddleware
             return to_route('dashboard.settings.model_names.index')->with('error', 'Model Name not found');
         }
 
-        return Inertia::render('Dashboard/Settings/ModelNames/edit', compact('model_name'));
+        $languages = Language::where('code', '!=', config('app.fallback_locale', 'en'))->orderBy('name')->get(['id', 'name', 'code']);
+
+        $model_name->load('contentTranslations');
+
+        $existingTranslations = $model_name->contentTranslations
+            ->groupBy('language_id')
+            ->map(function ($rows, $languageId) {
+                $fields = [];
+                foreach ($rows as $row) {
+                    $fields[$row->field] = $row->value;
+                }
+
+                return [
+                    'language_id' => (int) $languageId,
+                    'fields' => $fields,
+                ];
+            })
+            ->values();
+
+        return Inertia::render('Dashboard/Settings/ModelNames/edit', compact('model_name', 'languages', 'existingTranslations'));
     }
 
     public function modelNameUpdate(Request $request, ?string $id = null)

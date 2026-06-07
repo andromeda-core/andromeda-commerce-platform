@@ -40,10 +40,12 @@ use App\Models\StorageLocation;
 use App\Models\TermsOfService;
 use App\Models\UnsettledAccountNotificationSetting;
 use App\Repositories\Settings\Interface\ISettingRepository;
+use App\Services\ContentTranslationService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Intervention\Image\ImageManager;
 use Str;
@@ -79,7 +81,8 @@ class SettingRepository implements ISettingRepository
         private PrivacyPolicy $privacy_policy,
         private DormancySetting $dormancy_setting,
         private UnsettledAccountNotificationSetting $unsettled_account_notification_setting,
-        private AttributionRewardSetting $attribution_reward_setting
+        private AttributionRewardSetting $attribution_reward_setting,
+        private ContentTranslationService $contentTranslationService
 
     ) {}
 
@@ -821,12 +824,33 @@ class SettingRepository implements ISettingRepository
             'is_active.boolean' => 'Status Must Be Active Or In-Active',
         ]);
 
+        // Light, non-breaking validation for optional manual name translations.
+        // Validated separately so the `translations` key never leaks into create() under strict mode.
+        $translationsValidator = Validator::make($request->all(), [
+            'translations' => ['sometimes', 'array'],
+            'translations.*.language_id' => ['required_with:translations', 'integer', 'exists:languages,id'],
+            'translations.*.fields' => ['sometimes', 'array'],
+            'translations.*.fields.name' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if ($translationsValidator->fails()) {
+            throw ValidationException::withMessages([
+                'translation_error' => $translationsValidator->errors()->first(),
+            ]);
+        }
+
         try {
             $created = $this->model_name->create($validated_req);
 
             if (empty($created)) {
                 throw new Exception('Something Went Wrong While Creating Model Name');
             }
+
+            // No-op unless a `translations` payload is sent.
+            $this->contentTranslationService->syncTranslations(
+                $created,
+                (array) ($request->input('translations') ?? [])
+            );
 
             return [
                 'status' => true,
@@ -854,6 +878,21 @@ class SettingRepository implements ISettingRepository
             'is_active.boolean' => 'Status Must Be Active Or In-Active',
         ]);
 
+        // Light, non-breaking validation for optional manual name translations.
+        // Validated separately so the `translations` key never leaks into update() under strict mode.
+        $translationsValidator = Validator::make($request->all(), [
+            'translations' => ['sometimes', 'array'],
+            'translations.*.language_id' => ['required_with:translations', 'integer', 'exists:languages,id'],
+            'translations.*.fields' => ['sometimes', 'array'],
+            'translations.*.fields.name' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if ($translationsValidator->fails()) {
+            throw ValidationException::withMessages([
+                'translation_error' => $translationsValidator->errors()->first(),
+            ]);
+        }
+
         try {
             $model_name = $this->getSingleModelName($id);
 
@@ -866,6 +905,12 @@ class SettingRepository implements ISettingRepository
             if (! $updated) {
                 throw new Exception('Something Went Wrong While Updating Model Name');
             }
+
+            // No-op unless a `translations` payload is sent.
+            $this->contentTranslationService->syncTranslations(
+                $model_name,
+                (array) ($request->input('translations') ?? [])
+            );
 
             return [
                 'status' => true,

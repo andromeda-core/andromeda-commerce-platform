@@ -175,7 +175,7 @@ class PostRepository implements IPostRepository
                     })
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
-                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
+                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations', 'model_name.contentTranslations'])
                     ->where('tag', $post->tag)
                     ->withCount([
                         'inventory_items' => function ($query) {
@@ -190,7 +190,7 @@ class PostRepository implements IPostRepository
 
                         return [
                             'id' => $smartphone->id,
-                            'name' => $smartphone->model_searchable_name,
+                            'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
                             'capacity' => $smartphone->capacity->name,
                             'images' => $smartphone->images,
                             'smartphone_image_urls' => $smartphone->smartphone_image_urls,
@@ -1001,7 +1001,7 @@ class PostRepository implements IPostRepository
                         ->whereNotNull('slug')
                         ->whereHas('selling_info')
                         ->whereIn('tag', $allHashtags)
-                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
+                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations', 'model_name.contentTranslations'])
                         ->withCount([
                             'inventory_items' => function ($query) {
                                 $query->where('status', 'in_stock');
@@ -1015,7 +1015,7 @@ class PostRepository implements IPostRepository
                             return (object) [
                                 '_key' => 'sp_' . $smartphone->id,
                                 'id' => $smartphone->id,
-                                'name' => $smartphone->model_searchable_name,
+                                'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
                                 'capacity' => $smartphone->capacity->name,
                                 'images' => $smartphone->images,
                                 'smartphone_image_urls' => $smartphone->smartphone_image_urls,
@@ -1123,6 +1123,7 @@ class PostRepository implements IPostRepository
                         'return_policy:id,slug',
                         'shipping_policy:id,slug',
                         'contentTranslations',
+                        'model_name.contentTranslations',
                     ])
                     ->withCount([
                         'inventory_items' => function ($query) {
@@ -1176,7 +1177,7 @@ class PostRepository implements IPostRepository
                         ->whereNotNull('slug')
                         ->whereHas('selling_info')
                         ->whereIn('tag', $allHashtags)
-                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
+                        ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations', 'model_name.contentTranslations'])
                         ->withCount([
                             'inventory_items' => function ($query) {
                                 $query->where('status', 'in_stock');
@@ -1189,7 +1190,7 @@ class PostRepository implements IPostRepository
                             return (object) [
                                 '_key' => 'sp_' . $smartphone->id,
                                 'id' => $smartphone->id,
-                                'name' => $smartphone->model_searchable_name,
+                                'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
                                 'capacity' => $smartphone->capacity->name,
                                 'images' => $smartphone->images,
                                 'smartphone_image_urls' => $smartphone->smartphone_image_urls,
@@ -1296,7 +1297,7 @@ class PostRepository implements IPostRepository
                     $sp->structured = [
                         '_key' => 'sp_' . $sp->id,
                         'id' => $sp->id,
-                        'name' => $sp->model_searchable_name,
+                        'name' => optional($sp->model_name)->translatedValue('name') ?? $sp->model_searchable_name,
                         'capacity' => $sp->capacity->name,
                         'images' => $sp->images,
                         'smartphone_image_urls' => $sp->smartphone_image_urls,
@@ -1547,7 +1548,7 @@ class PostRepository implements IPostRepository
                     })
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
-                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
+                    ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations', 'model_name.contentTranslations'])
                     ->withCount([
                         'inventory_items' => function ($query) {
                             $query->where('status', 'in_stock');
@@ -1561,7 +1562,7 @@ class PostRepository implements IPostRepository
                     ->map(function ($smartphone) {
                         return [
                             'id' => $smartphone->id,
-                            'name' => $smartphone->model_searchable_name,
+                            'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
                             'capacity' => $smartphone->capacity->name,
                             'images' => $smartphone->images,
                             'smartphone_image_urls' => $smartphone->smartphone_image_urls,
@@ -1753,7 +1754,7 @@ class PostRepository implements IPostRepository
                 //     }
                 // })
                 ->where('tag', $hashtag)
-                ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
+                ->with(['capacity:id,name', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations', 'model_name.contentTranslations'])
                 ->withCount([
                     'inventory_items' => function ($query) {
                         $query->where('status', 'in_stock');
@@ -1767,7 +1768,7 @@ class PostRepository implements IPostRepository
                 ->map(function ($smartphone) {
                     return [
                         'id' => $smartphone->id,
-                        'name' => $smartphone->model_searchable_name,
+                        'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
                         'capacity' => $smartphone->capacity->name,
                         'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
                         'video_thumbnail' => $smartphone->smartphone_video_urls && count($smartphone->smartphone_video_urls) > 0 ? $smartphone->smartphone_video_urls[0]['thumbnail_url'] : null,

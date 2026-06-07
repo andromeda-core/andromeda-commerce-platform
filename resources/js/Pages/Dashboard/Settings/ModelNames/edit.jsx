@@ -7,11 +7,14 @@ import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 import SelectInput from '@/Components/SelectInput';
-export default function edit({ model_name }) {
+import TranslationsRepeater from '@/Components/TranslationsRepeater';
+import { areTranslationsComplete } from '@/Hooks/useTranslationsComplete';
+export default function edit({ model_name, languages, existingTranslations }) {
     // Edit Data Form Data
     const { data, setData, put, processing, errors } = useForm({
         name: model_name.name || '',
         is_active: model_name.is_active ?? 1,
+        translations: existingTranslations ?? [],
     });
 
     // Edit Data Form Request
@@ -19,6 +22,9 @@ export default function edit({ model_name }) {
         e.preventDefault();
         put(route('dashboard.settings.model_names.update', model_name.id));
     };
+
+    // Frontend guard: disable submit while any open translation block is incomplete.
+    const translationsOk = areTranslationsComplete(data.translations, ['name']);
 
     return (
         <>
@@ -92,6 +98,15 @@ export default function edit({ model_name }) {
                                                 />
                                             </div>
 
+                                            <TranslationsRepeater
+                                                languages={languages}
+                                                value={data.translations}
+                                                onChange={(next) => setData('translations', next)}
+                                                fields={[
+                                                    { key: 'name', label: 'Name', type: 'text' },
+                                                ]}
+                                            />
+
                                             <PrimaryButton
                                                 Text={'Update Model Name'}
                                                 Type={'submit'}
@@ -99,7 +114,8 @@ export default function edit({ model_name }) {
                                                 Disabled={
                                                     processing ||
                                                     data.name.trim() === '' ||
-                                                    data.is_active === ''
+                                                    data.is_active === '' ||
+                                                    !translationsOk
                                                 }
                                                 Spinner={processing}
                                                 Icon={

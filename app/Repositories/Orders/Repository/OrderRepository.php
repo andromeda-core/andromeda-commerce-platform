@@ -1068,23 +1068,23 @@ class OrderRepository implements IOrderRepository
                 $quantity = $cartItem->quantity;
 
                 if ($smartphone->is_sold_out) {
-                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('This product is currently sold out')}");
+                    throw new Exception("{$this->displaySmartphoneModelName($smartphone)} {$this->trans::get('This product is currently sold out')}");
                 }
 
                 // if ($smartphone->inventory_items->isEmpty()) {
-                //     throw new Exception(" {$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
+                //     throw new Exception(" {$this->displaySmartphoneModelName($smartphone)} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
                 // }
 
                 // if ($smartphone->inventory_items()->where('status', 'in_stock')->doesntExist()) {
-                //     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
+                //     throw new Exception("{$this->displaySmartphoneModelName($smartphone)} {$this->trans::get('Smartphone Is Out Of Stock Please Check')}");
                 // }
 
                 // if ($smartphone->inventory_items()->where('status', 'in_stock')->count() < $quantity) {
-                //     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
+                //     throw new Exception("{$this->displaySmartphoneModelName($smartphone)} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
                 // }
 
                 if (empty($smartphone->selling_info)) {
-                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Dont have Selling Price Please Check')}");
+                    throw new Exception("{$this->displaySmartphoneModelName($smartphone)} {$this->trans::get('Smartphone Dont have Selling Price Please Check')}");
                 }
 
 
@@ -1096,13 +1096,13 @@ class OrderRepository implements IOrderRepository
                     ->exists();
 
                 if (! $countryPriceExists) {
-                    throw new Exception("{$smartphone->model_name->name}: {$this->trans::get('This product is not currently available for delivery to your country')}");
+                    throw new Exception("{$this->displaySmartphoneModelName($smartphone)}: {$this->trans::get('This product is not currently available for delivery to your country')}");
                 }
 
 
 
-                if($smartphone->selling_info?->total_price != $cartItem->unit_price){
-                    throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Please Re-add the product to cart because the price has been changed')}");
+                if ($smartphone->selling_info?->total_price != $cartItem->unit_price) {
+                    throw new Exception("{$this->displaySmartphoneModelName($smartphone)} {$this->trans::get('Please Re-add the product to cart because the price has been changed')}");
                 }
 
                 $resolvedShippingFee = $smartphone->selling_info->resolveShippingFee($shipping_address->country_id);
@@ -1123,7 +1123,7 @@ class OrderRepository implements IOrderRepository
                     ->get();
 
                 // if ($backend_inventoryItems->isEmpty()) {
-                //     throw new Exception("{$smartphone->model_name->name} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
+                //     throw new Exception("{$this->displaySmartphoneModelName($smartphone)} {$this->trans::get('Smartphone Has Less Stock But You Have Selected More Quantity Please Check')}");
                 // }
 
                 foreach ($backend_inventoryItems as $inventoryItem) {
@@ -1666,7 +1666,7 @@ class OrderRepository implements IOrderRepository
         $customer = $user->customer;
 
         $orders = $this->order
-            ->with(['orderItems', 'orderItems.smartphone.capacity', 'orderItems.smartphone.model_name'])
+            ->with(['orderItems', 'orderItems.smartphone.capacity', 'orderItems.smartphone.model_name', 'orderItems.smartphone.model_name.contentTranslations'])
             ->withCount('orderItems')
             ->where('customer_id', $customer->id)
             ->latest()
@@ -1677,6 +1677,17 @@ class OrderRepository implements IOrderRepository
                 $order->order_placed_date = $order->created_at->format('M d, Y');
                 $order->delivery_confirmed_at = optional($order->delivery_confirmed_at)?->toIso8601String();
                 $order->refund_expires_at = optional($order->delivery_confirmed_at)?->copy()?->addHours(72)->toIso8601String();
+
+                // Locale-aware model name (Phase 3c): translate the eager-loaded model_name
+                // in memory for display only. Default locale short-circuits (no change).
+                if (app()->getLocale() !== config('app.fallback_locale', 'en')) {
+                    foreach ($order->orderItems as $oItem) {
+                        $modelName = $oItem->smartphone?->model_name;
+                        if ($modelName) {
+                            $modelName->name = $modelName->translatedValue('name');
+                        }
+                    }
+                }
 
                 return $order;
             })
@@ -1715,6 +1726,18 @@ class OrderRepository implements IOrderRepository
 
         if (! empty($order)) {
             $order->order_placed_date = $order->created_at->format('M d, Y');
+
+            // Locale-aware model name (Phase 3c): display-only in-memory translation.
+            // Default locale short-circuits (no change, no extra queries).
+            if (app()->getLocale() !== config('app.fallback_locale', 'en')) {
+                $order->loadMissing('orderItems.smartphone.model_name.contentTranslations');
+                foreach ($order->orderItems as $oItem) {
+                    $modelName = $oItem->smartphone?->model_name;
+                    if ($modelName) {
+                        $modelName->name = $modelName->translatedValue('name');
+                    }
+                }
+            }
         }
 
         return $order;
@@ -2506,7 +2529,7 @@ class OrderRepository implements IOrderRepository
             $smartphones = [
                 'buy_now' => true,
             ];
-            $orderItems = $order->orderItems()->with(['smartphone.model_name', 'smartphone.capacity', 'smartphoneAddons', 'color'])->get();
+            $orderItems = $order->orderItems()->with(['smartphone.model_name', 'smartphone.model_name.contentTranslations', 'smartphone.capacity', 'smartphoneAddons', 'color'])->get();
 
             foreach ($orderItems as $orderItem) {
                 $addons = $orderItem->smartphoneAddons->map(function ($addon) {
@@ -2521,7 +2544,7 @@ class OrderRepository implements IOrderRepository
                 })->toArray();
                 $smartphones[] = [
                     'smartphone_id' => $orderItem->smartphone->id,
-                    'name' => $orderItem->smartphone->model_name->name,
+                    'name' => optional($orderItem->smartphone->model_name)->translatedValue('name') ?? $orderItem->smartphone->model_searchable_name,
                     'color_id' => $orderItem->color->id,
                     'color_name' => $orderItem->color->name,
                     'capacity' => $orderItem->smartphone->capacity->name,
@@ -3365,5 +3388,13 @@ class OrderRepository implements IOrderRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    private function displaySmartphoneModelName($smartphone): string
+    {
+        return optional($smartphone->model_name)->translatedValue('name')
+            ?? $smartphone->model_searchable_name
+            ?? optional($smartphone->model_name)->name
+            ?? '';
     }
 }

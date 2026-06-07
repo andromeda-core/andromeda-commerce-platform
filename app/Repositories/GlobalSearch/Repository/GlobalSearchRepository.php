@@ -531,6 +531,14 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                                         });
                                     });
                             });
+
+                            // Additive: match the active language's translated model name
+                            // (original model_searchable_name LIKE above always runs as the fallback).
+                            $query->orWhereHas('model_name.contentTranslations', function ($t) use ($searchQuery, $activeLangId) {
+                                $t->where('language_id', $activeLangId)
+                                    ->where('field', 'name')
+                                    ->where('value', 'LIKE', '%' . $searchQuery . '%');
+                            });
                         }
                     });
                 }
@@ -561,7 +569,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 //     }
                 // });
 
-                $smartphones = $smartphones->with(['capacity', 'selling_info', 'floor', 'contentTranslations'])
+                $smartphones = $smartphones->with(['capacity', 'selling_info', 'floor', 'contentTranslations', 'model_name.contentTranslations'])
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
                     ->latest()
@@ -582,7 +590,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
 
                         return [
                             'id' => $smartphone->id,
-                            'name' => $smartphone->model_searchable_name,
+                            'name' => $isTranslatable ? (optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name) : $smartphone->model_searchable_name,
                             'capacity' => $smartphone->capacity->name,
                             'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
                             'video_thumbnail' => $smartphone->smartphone_video_urls && count($smartphone->smartphone_video_urls) > 0 ? $smartphone->smartphone_video_urls[0]['thumbnail_url'] : null,

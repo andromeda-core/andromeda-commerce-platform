@@ -64,7 +64,7 @@ class ProductsRepository implements IProductsRepository
                 //         });
                 //     }
                 // })
-                ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
+                ->with(['model_name', 'capacity', 'selling_info', 'selling_info.shipping_fee', 'floor', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations', 'model_name.contentTranslations'])
                 ->withCount([
                     'inventory_items' => function ($query) {
                         $query->where('status', 'in_stock');
@@ -108,7 +108,7 @@ class ProductsRepository implements IProductsRepository
                         //     }
                         // })
 
-                        ->with(['model_name', 'capacity', 'selling_info', 'floor', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations'])
+                        ->with(['model_name', 'capacity', 'selling_info', 'floor', 'selling_info.shipping_fee', 'selling_info.import_tax', 'country:id,name', 'condition:id,name', 'courier_company:id,courier_name', 'return_policy:id,slug', 'shipping_policy:id,slug', 'contentTranslations', 'model_name.contentTranslations'])
                         ->where('tag', $smartphone->tag)
                         ->withCount([
                             'inventory_items' => function ($query) {
@@ -121,7 +121,7 @@ class ProductsRepository implements IProductsRepository
                         ->map(function ($smartphone) {
                             return [
                                 'id' => $smartphone->id,
-                                'name' => $smartphone?->model_name->name,
+                                'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
                                 'capacity' => $smartphone?->capacity->name,
                                 'images' => $smartphone->images,
                                 'smartphone_image_urls' => $smartphone->smartphone_image_urls,
@@ -196,7 +196,7 @@ class ProductsRepository implements IProductsRepository
 
                     return [
                         'id' => $smartphone?->id,
-                        'name' => $smartphone?->model_name?->name,
+                        'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
                         'capacity' => $smartphone?->capacity->name,
                         'images' => $smartphone->images,
                         'smartphone_image_urls' => $smartphone->smartphone_image_urls,
@@ -265,7 +265,7 @@ class ProductsRepository implements IProductsRepository
             ->keyBy(fn($r) => $r->type === 'less_than' ? 'under_' . $r->value : 'over_' . $r->value);
 
         $smartphones = $this->smartphone
-            ->with(['condition', 'capacity', 'selling_info', 'model_name', 'category', 'contentTranslations'])
+            ->with(['condition', 'capacity', 'selling_info', 'model_name', 'category', 'contentTranslations', 'model_name.contentTranslations'])
             ->whereHas('selling_info')
             ->whereNotNull('slug')
             ->when(! empty($request->input('tag')), function ($query) use ($request, $priceRangeMap) {
@@ -328,7 +328,7 @@ class ProductsRepository implements IProductsRepository
         $smartphones->getCollection()->transform(function ($smartphone) {
             return [
                 'id' => $smartphone->id,
-                'name' => $smartphone?->model_name->name,
+                'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
                 'image' => $smartphone->smartphone_image_urls && count($smartphone->smartphone_image_urls) > 0 ? $smartphone->smartphone_image_urls[0] : null,
                 'video_thumbnail' => $smartphone->smartphone_video_urls && count($smartphone->smartphone_video_urls) > 0 ? $smartphone->smartphone_video_urls[0]['thumbnail_url'] : null,
                 'condition' => $smartphone?->condition?->name,
@@ -514,7 +514,7 @@ class ProductsRepository implements IProductsRepository
     {
         $smartphone = $this->smartphone
             ->whereHas('selling_info')
-            ->with(['model_name', 'selling_info'])
+            ->with(['model_name', 'model_name.contentTranslations', 'selling_info'])
             ->where('public_id', $public_id)
             ->first();
 
@@ -529,7 +529,7 @@ class ProductsRepository implements IProductsRepository
             'exists'    => true,
             'public_id' => $smartphone->public_id,
             'slug'      => $smartphone->slug,
-            'name'      => $smartphone->model_name?->name,
+            'name'      => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
             'image_url' => $smartphone->smartphone_image_urls[0] ?? null,
             'price_usd' => (float) ($smartphone->selling_info?->total_price ?? 0),
         ];

@@ -62,6 +62,7 @@ class CartRepository implements ICartRepository
                     'smartphoneAddonItems.addon',
                     'smartphone.selling_info',
                     'smartphone.model_name',
+                    'smartphone.model_name.contentTranslations',
                     'smartphone.capacity',
                     'color',
                     'smartphone.selling_info.shipping_fee',
@@ -76,6 +77,18 @@ class CartRepository implements ICartRepository
                 ])
 
             ->get();
+
+        // Locale-aware model name (Phase 3c): translate the eager-loaded model_name in
+        // memory for display only (cart page + cart drawer + regular checkout). Default
+        // locale short-circuits (no change, no extra queries).
+        if (app()->getLocale() !== config('app.fallback_locale', 'en')) {
+            foreach ($items as $cartItem) {
+                $modelName = $cartItem->smartphone?->model_name;
+                if ($modelName) {
+                    $modelName->name = $modelName->translatedValue('name');
+                }
+            }
+        }
 
         $addon_items = $items->flatMap(function ($item) {
             return $item->smartphoneAddonItems;

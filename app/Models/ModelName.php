@@ -2,12 +2,17 @@
 
 namespace App\Models;
 
+use App\Traits\HasContentTranslations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Cache;
 
 class ModelName extends Model
 {
+    use HasContentTranslations;
+
+    protected array $translatableFields = ['name'];
+
     protected $fillable = ['name', 'is_active'];
 
     protected $appends = ['added_at'];

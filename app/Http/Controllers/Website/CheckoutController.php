@@ -61,6 +61,18 @@ class CheckoutController extends Controller
             return to_route('home');
         }
 
+        // Locale-aware model name (Phase 3c) for the buy-now session items. Regular cart
+        // items arrive already translated from CartRepository::getCartItems; this covers
+        // the buy-now branch. Default locale short-circuits (no change).
+        if ($buy_now && app()->getLocale() !== config('app.fallback_locale', 'en')) {
+            foreach ($cart_items as $cartItem) {
+                $modelName = $cartItem->smartphone?->model_name;
+                if ($modelName) {
+                    $modelName->name = $modelName->translatedValue('name');
+                }
+            }
+        }
+
         $meta_usernames = [];
         $meta_setting = Cache::get('meta_setting');
 
