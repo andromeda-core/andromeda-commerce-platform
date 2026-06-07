@@ -34,9 +34,17 @@ class ContentTranslationService
             return;
         }
 
+        // Default language is authored in the original columns; never persist a translation for it.
+        $defaultLanguageId = \App\Models\Language::where('code', config('app.fallback_locale', 'en'))->value('id');
+
         foreach ($payload as $block) {
             $languageId = $block['language_id'] ?? null;
             if (! $languageId) {
+                continue;
+            }
+
+            // Defensive: skip the default language even if a payload somehow includes it.
+            if ($defaultLanguageId && (int) $languageId === (int) $defaultLanguageId) {
                 continue;
             }
 

@@ -61,7 +61,7 @@ class SmartphoneController extends Controller implements HasMiddleware
         $addons = $this->smartphone->getAddons();
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
-        $languages = Language::orderBy('name')->get(['id', 'name', 'code']);
+        $languages = Language::where('code', '!=', config('app.fallback_locale', 'en'))->orderBy('name')->get(['id', 'name', 'code']);
 
         return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'floors', 'conditions', 'googleMapSettings', 'courier_companies', 'return_policies', 'addons', 'languages'));
     }
@@ -119,7 +119,7 @@ class SmartphoneController extends Controller implements HasMiddleware
 
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
-        $languages = Language::orderBy('name')->get(['id', 'name', 'code']);
+        $languages = Language::where('code', '!=', config('app.fallback_locale', 'en'))->orderBy('name')->get(['id', 'name', 'code']);
 
         $smartphone->load('contentTranslations');
 

@@ -49,7 +49,7 @@ class PostController extends Controller implements HasMiddleware
 
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
-        $languages = Language::orderBy('name')->get(['id', 'name', 'code']);
+        $languages = Language::where('code', '!=', config('app.fallback_locale', 'en'))->orderBy('name')->get(['id', 'name', 'code']);
 
         return Inertia::render('Dashboard/Posts/create', compact('floors', 'googleMapSettings', 'languages'));
     }
@@ -94,7 +94,7 @@ class PostController extends Controller implements HasMiddleware
 
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
-        $languages = Language::orderBy('name')->get(['id', 'name', 'code']);
+        $languages = Language::where('code', '!=', config('app.fallback_locale', 'en'))->orderBy('name')->get(['id', 'name', 'code']);
 
         $post->load('contentTranslations');
 
