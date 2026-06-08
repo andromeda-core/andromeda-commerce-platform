@@ -18,6 +18,7 @@ use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\InventoryController;
 use App\Http\Controllers\Dashboard\InventoryVerificationController;
 use App\Http\Controllers\Dashboard\LanguageController;
+use App\Http\Controllers\Dashboard\LodgingProductController;
 use App\Http\Controllers\Dashboard\OrderAddressChangeRequestController;
 use App\Http\Controllers\Dashboard\OrderCancelationRequestController;
 use App\Http\Controllers\Dashboard\OrderController;
@@ -448,6 +449,23 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/smartphones-toggle-sold-out/{id?}', 'toggleSoldOut')->name('toggle-sold-out');
             Route::delete('/smartphones-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/smartphones-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+        });
+
+        // Lodging Product Routes
+        Route::controller(LodgingProductController::class)->name('lodging-products.')->group(function () {
+
+            Route::get('/lodging-products', 'index')->name('index');
+            Route::get('/lodging-products-create', 'create')->name('create');
+            Route::post('/lodging-products-store', 'store')->name('store');
+            Route::get('/lodging-products-edit/{id?}', 'edit')->name('edit');
+            Route::put('/lodging-products-update/{id?}', 'update')->name('update');
+            Route::get('/lodging-products-view/{id?}', 'show')->name('show');
+            Route::delete('/lodging-products-destroy/{id?}', 'destroy')->name('destroy');
+            Route::delete('/lodging-products-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+
+            // Google Location Routes For Lodging Products (delegate to the shared GoogleGeoCoderService)
+            Route::post('/lodging-products-google-location-autocomplete', 'googleLocationAutocomplete')->name('google.location.autocomplete');
+            Route::post('/lodging-products-google-location-place-details', 'googleLocationPlaceDetails')->name('google.location.placedetails');
         });
 
         // Batch Routes

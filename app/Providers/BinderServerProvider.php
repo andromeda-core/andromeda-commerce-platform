@@ -38,6 +38,8 @@ use App\Repositories\Inventories\Interface\IInventoryRepository;
 use App\Repositories\Inventories\Repository\InventoryRepository;
 use App\Repositories\InventoryVerification\Interface\IInventoryVerificationRepository;
 use App\Repositories\InventoryVerification\Repository\InventoryVerificationRepository;
+use App\Repositories\Lodging\Interface\ILodgingProductRepository;
+use App\Repositories\Lodging\Repository\LodgingProductRepository;
 use App\Repositories\Notifications\Interface\INotificationRepository;
 use App\Repositories\Notifications\Repository\NotificationRepository;
 use App\Repositories\OrderAddressChangeRequest\Interface\IOrderAddressChangeRequestRepository;
@@ -158,6 +160,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IAttributionRewardRepository::class, AttributionRewardRepository::class);
         $this->app->bind(IInternalProductImageRepository::class, InternalProductImageRepository::class);
         $this->app->bind(IPriceRangeRepository::class, PriceRangeRepository::class);
+        $this->app->bind(ILodgingProductRepository::class, LodgingProductRepository::class);
     }
 
     /**

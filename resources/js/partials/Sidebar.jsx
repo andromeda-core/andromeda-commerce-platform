@@ -148,6 +148,10 @@ export default function Sidebar({
             'dashboard.internal-product-images.',
         ].some((prefix) => route().current().startsWith(prefix));
 
+        const isLodgingRoute = ['dashboard.lodging-products.'].some((prefix) =>
+            route().current().startsWith(prefix),
+        );
+
         const isUsersRoute = ['dashboard.customers.', 'dashboard.reward-points.'].some((prefix) =>
             route().current().startsWith(prefix),
         );
@@ -210,6 +214,8 @@ export default function Sidebar({
             if (isSetupRoute) {
                 setSelectedSubMenu('Setup');
             }
+        } else if (isLodgingRoute) {
+            setSelected('Lodging');
         } else if (isUsersRoute) {
             setSelected('Users');
         } else if (isFinanceRoute) {
@@ -814,6 +820,66 @@ export default function Sidebar({
                                                                 )}
                                                             </ul>
                                                         </div>
+                                                    </li>
+                                                )}
+                                            </ul>
+                                        </div>
+                                    </li>
+                                )}
+
+                                {/* Lodging */}
+                                {can('Lodging Products View') && (
+                                    <li>
+                                        <a
+                                            onClick={() => {
+                                                if (selected === 'Lodging') {
+                                                    setSelected(null);
+                                                } else {
+                                                    setSelected('Lodging');
+                                                }
+                                            }}
+                                            className={`menu-item group cursor-pointer ${selected === 'Lodging' ? 'menu-item-active' : 'menu-item-inactive'} `}
+                                        >
+                                            <span
+                                                className={`menu-item-text ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                            >
+                                                Lodging
+                                            </span>
+
+                                            <svg
+                                                className={`menu-item-arrow absolute right-2.5 top-1/2 -translate-y-1/2 stroke-current ${selected === 'Lodging' && 'menu-item-arrow-active'} ${sidebarToggle ? 'lg:hidden' : ''}`}
+                                                width="20"
+                                                height="20"
+                                                viewBox="0 0 20 20"
+                                                fill="none"
+                                                xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <path
+                                                    d="M4.79175 7.39584L10.0001 12.6042L15.2084 7.39585"
+                                                    stroke=""
+                                                    strokeWidth="1.5"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                />
+                                            </svg>
+                                        </a>
+
+                                        <div
+                                            className={`translate transform overflow-hidden ${selected === 'Lodging' ? 'block' : 'hidden'}`}
+                                        >
+                                            <ul
+                                                className={`menu-dropdown mt-2 flex flex-col gap-1 pl-3 ${sidebarToggle ? 'lg:hidden' : 'flex'} `}
+                                            >
+                                                {can('Lodging Products View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.lodging-products.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current()?.startsWith('dashboard.lodging-products.') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Lodging Products
+                                                        </Link>
                                                     </li>
                                                 )}
                                             </ul>
