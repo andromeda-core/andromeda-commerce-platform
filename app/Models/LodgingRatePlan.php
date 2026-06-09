@@ -13,6 +13,11 @@ class LodgingRatePlan extends Model
     protected $fillable = [
         'lodging_room_id',
         'name',
+        'stay_type',
+        'minimum_nights',
+        'maximum_nights',
+        'booking_cutoff_time',
+        'same_day_booking_allowed',
         'original_price',
         'sale_price',
         'discount_rate',
@@ -63,5 +68,8 @@ class LodgingRatePlan extends Model
         'consecutive_nights_allowed' => 'boolean',
         'is_bookable' => 'boolean',
         'is_active' => 'boolean',
+        'same_day_booking_allowed' => 'boolean',
+        'minimum_nights' => 'integer',
+        'maximum_nights' => 'integer',
     ];
 }

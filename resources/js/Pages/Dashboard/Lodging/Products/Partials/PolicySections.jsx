@@ -179,6 +179,30 @@ export default function PolicySections({ data, setData, errors, enums }) {
                         checked={checkin.id_verification_required}
                         onChange={(v) => updatePolicy('checkin_policy', 'id_verification_required', v)}
                     />
+                    <ToggleField
+                        id={'front_desk_available'}
+                        label={'Front Desk Available'}
+                        checked={checkin.front_desk_available}
+                        onChange={(v) => updatePolicy('checkin_policy', 'front_desk_available', v)}
+                    />
+                    <ToggleField
+                        id={'self_checkin_available'}
+                        label={'Self Check-in Available'}
+                        checked={checkin.self_checkin_available}
+                        onChange={(v) => updatePolicy('checkin_policy', 'self_checkin_available', v)}
+                    />
+                    <ToggleField
+                        id={'contactless_checkin_available'}
+                        label={'Contactless Check-in Available'}
+                        checked={checkin.contactless_checkin_available}
+                        onChange={(v) => updatePolicy('checkin_policy', 'contactless_checkin_available', v)}
+                    />
+                    <ToggleField
+                        id={'host_meet_checkin_available'}
+                        label={'Host-meet Check-in Available'}
+                        checked={checkin.host_meet_checkin_available}
+                        onChange={(v) => updatePolicy('checkin_policy', 'host_meet_checkin_available', v)}
+                    />
                 </div>
 
                 <div className="mt-4 grid grid-cols-1 gap-4">
@@ -223,12 +247,20 @@ export default function PolicySections({ data, setData, errors, enums }) {
                         Action={(e) => updatePolicy('checkin_policy', 'mixed_gender_policy', e.target.value)}
                     />
                     <Textarea
-                        InputName={'Noise / Party Restriction'}
+                        InputName={'Noise Policy'}
                         Id={'noise_party_restriction'}
                         Name={'noise_party_restriction'}
                         Value={checkin.noise_party_restriction}
                         Error={errors['checkin_policy.noise_party_restriction']}
                         Action={(e) => updatePolicy('checkin_policy', 'noise_party_restriction', e.target.value)}
+                    />
+                    <Textarea
+                        InputName={'Party Policy'}
+                        Id={'party_policy'}
+                        Name={'party_policy'}
+                        Value={checkin.party_policy}
+                        Error={errors['checkin_policy.party_policy']}
+                        Action={(e) => updatePolicy('checkin_policy', 'party_policy', e.target.value)}
                     />
                     <Textarea
                         InputName={'Check-in Instruction Message'}
@@ -359,12 +391,28 @@ export default function PolicySections({ data, setData, errors, enums }) {
                         Action={(e) => updatePolicy('parking_policy', 'full_lot_policy', e.target.value)}
                     />
                     <Textarea
-                        InputName={'Large Vehicle Restrictions'}
+                        InputName={'Large Vehicle Restriction'}
                         Id={'large_vehicle_restrictions'}
                         Name={'large_vehicle_restrictions'}
                         Value={parking.large_vehicle_restrictions}
                         Error={errors['parking_policy.large_vehicle_restrictions']}
                         Action={(e) => updatePolicy('parking_policy', 'large_vehicle_restrictions', e.target.value)}
+                    />
+                    <Textarea
+                        InputName={'Modified Vehicle Restriction'}
+                        Id={'modified_vehicle_restriction'}
+                        Name={'modified_vehicle_restriction'}
+                        Value={parking.modified_vehicle_restriction}
+                        Error={errors['parking_policy.modified_vehicle_restriction']}
+                        Action={(e) => updatePolicy('parking_policy', 'modified_vehicle_restriction', e.target.value)}
+                    />
+                    <Textarea
+                        InputName={'Supercar Restriction'}
+                        Id={'supercar_restriction'}
+                        Name={'supercar_restriction'}
+                        Value={parking.supercar_restriction}
+                        Error={errors['parking_policy.supercar_restriction']}
+                        Action={(e) => updatePolicy('parking_policy', 'supercar_restriction', e.target.value)}
                     />
                 </div>
             </Accordion>

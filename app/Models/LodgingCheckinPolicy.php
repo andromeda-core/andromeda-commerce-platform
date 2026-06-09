@@ -18,6 +18,10 @@ class LodgingCheckinPolicy extends Model
         'late_checkout_available',
         'late_checkout_fee',
         'checkin_method',
+        'front_desk_available',
+        'self_checkin_available',
+        'contactless_checkin_available',
+        'host_meet_checkin_available',
         'instructions_sent_when',
         'same_day_booking_notice',
         'early_entry_penalty',
@@ -26,6 +30,7 @@ class LodgingCheckinPolicy extends Model
         'minor_policy',
         'mixed_gender_policy',
         'noise_party_restriction',
+        'party_policy',
         'checkin_instruction_message',
     ];
 
@@ -40,5 +45,9 @@ class LodgingCheckinPolicy extends Model
         'early_checkin_available' => 'boolean',
         'late_checkout_available' => 'boolean',
         'id_verification_required' => 'boolean',
+        'front_desk_available' => 'boolean',
+        'self_checkin_available' => 'boolean',
+        'contactless_checkin_available' => 'boolean',
+        'host_meet_checkin_available' => 'boolean',
     ];
 }

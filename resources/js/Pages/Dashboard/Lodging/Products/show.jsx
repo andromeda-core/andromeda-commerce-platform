@@ -3,6 +3,7 @@ import LinkButton from '@/Components/LinkButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head } from '@inertiajs/react';
+import { Fragment } from 'react';
 
 const Field = ({ label, value }) => (
     <div className="flex flex-col">
@@ -174,15 +175,53 @@ export default function show({ lodging_product }) {
                                                 </thead>
                                                 <tbody>
                                                     {room.rate_plans.map((plan) => (
-                                                        <tr key={plan.id} className="text-main-text-light dark:text-main-text-dark">
-                                                            <td className="border p-2 dark:border-gray-700">{plan.name}</td>
-                                                            <td className="border p-2 dark:border-gray-700">{plan.sale_price}</td>
-                                                            <td className="border p-2 dark:border-gray-700">{plan.original_price ?? 'N/A'}</td>
-                                                            <td className="border p-2 dark:border-gray-700">{Number(plan.discount_rate) > 0 ? `${Number(plan.discount_rate)}%` : '—'}</td>
-                                                            <td className="border p-2 dark:border-gray-700">{plan.is_bookable ? 'Yes' : 'No'}</td>
-                                                            <td className="border p-2 dark:border-gray-700">{plan.is_cancellable ? 'Yes' : 'No'}</td>
-                                                            <td className="border p-2 dark:border-gray-700">{plan.is_active ? 'Yes' : 'No'}</td>
-                                                        </tr>
+                                                        <Fragment key={plan.id}>
+                                                            <tr className="text-main-text-light dark:text-main-text-dark">
+                                                                <td className="border p-2 dark:border-gray-700">{plan.name}</td>
+                                                                <td className="border p-2 dark:border-gray-700">{plan.sale_price}</td>
+                                                                <td className="border p-2 dark:border-gray-700">{plan.original_price ?? 'N/A'}</td>
+                                                                <td className="border p-2 dark:border-gray-700">{Number(plan.discount_rate) > 0 ? `${Number(plan.discount_rate)}%` : '—'}</td>
+                                                                <td className="border p-2 dark:border-gray-700">{plan.is_bookable ? 'Yes' : 'No'}</td>
+                                                                <td className="border p-2 dark:border-gray-700">{plan.is_cancellable ? 'Yes' : 'No'}</td>
+                                                                <td className="border p-2 dark:border-gray-700">{plan.is_active ? 'Yes' : 'No'}</td>
+                                                            </tr>
+                                                            <tr className="text-main-text-light dark:text-main-text-dark">
+                                                                <td colSpan={7} className="border p-2 dark:border-gray-700">
+                                                                    <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs text-gray-500">
+                                                                        <span>
+                                                                            Stay Type:{' '}
+                                                                            <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                {plan.stay_type || 'N/A'}
+                                                                            </span>
+                                                                        </span>
+                                                                        <span>
+                                                                            Min Nights:{' '}
+                                                                            <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                {plan.minimum_nights ?? 'N/A'}
+                                                                            </span>
+                                                                        </span>
+                                                                        <span>
+                                                                            Max Nights:{' '}
+                                                                            <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                {plan.maximum_nights ?? 'N/A'}
+                                                                            </span>
+                                                                        </span>
+                                                                        <span>
+                                                                            Booking Cutoff:{' '}
+                                                                            <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                {plan.booking_cutoff_time || 'N/A'}
+                                                                            </span>
+                                                                        </span>
+                                                                        <span>
+                                                                            Same Day Booking:{' '}
+                                                                            <span className="text-main-text-light dark:text-main-text-dark">
+                                                                                {plan.same_day_booking_allowed ? 'Yes' : 'No'}
+                                                                            </span>
+                                                                        </span>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </Fragment>
                                                     ))}
                                                 </tbody>
                                             </table>
@@ -201,6 +240,16 @@ export default function show({ lodging_product }) {
                                 <Field label={'Late Check-out Fee'} value={checkin.late_checkout_fee} />
                                 <Field label={'Instructions Sent When'} value={checkin.instructions_sent_when} />
                             </div>
+                            <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2 md:grid-cols-3">
+                                <Bool label={'Front Desk Available'} value={checkin.front_desk_available} />
+                                <Bool label={'Self Check-in Available'} value={checkin.self_checkin_available} />
+                                <Bool label={'Contactless Check-in Available'} value={checkin.contactless_checkin_available} />
+                                <Bool label={'Host-meet Check-in Available'} value={checkin.host_meet_checkin_available} />
+                            </div>
+                            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <Field label={'Noise Policy'} value={checkin.noise_party_restriction} />
+                                <Field label={'Party Policy'} value={checkin.party_policy} />
+                            </div>
                         </Section>
 
                         <Section title={'Parking Policy'}>
@@ -210,6 +259,11 @@ export default function show({ lodging_product }) {
                                 <Field label={'Extra Parking Fee'} value={parking.extra_parking_fee} />
                                 <Field label={'Vehicle Height Limit'} value={parking.vehicle_height_limit} />
                                 <Field label={'Availability Time'} value={parking.parking_availability_time} />
+                            </div>
+                            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <Field label={'Large Vehicle Restriction'} value={parking.large_vehicle_restrictions} />
+                                <Field label={'Modified Vehicle Restriction'} value={parking.modified_vehicle_restriction} />
+                                <Field label={'Supercar Restriction'} value={parking.supercar_restriction} />
                             </div>
                         </Section>
 
@@ -221,6 +275,24 @@ export default function show({ lodging_product }) {
                                 <Field label={'Cleaning Fee'} value={cancellation.cleaning_fee} />
                                 <Field label={'Tax Amount'} value={cancellation.tax_amount} />
                                 <Field label={'Security Deposit'} value={cancellation.security_deposit} />
+                                <Field label={'Extra Guest Fee'} value={cancellation.extra_guest_fee} />
+                                <Field label={'Child Fee'} value={cancellation.child_fee} />
+                                <Field label={'Pet Fee'} value={cancellation.pet_fee} />
+                                <Field label={'Extension Fee'} value={cancellation.extension_fee} />
+                                <Field label={'On-site Payment Amount'} value={cancellation.onsite_payment_amount} />
+                                <Field label={'Damage Fee'} value={cancellation.damage_fee} />
+                                <Field label={'Minibar / Incidental Fee'} value={cancellation.minibar_incidental_fee} />
+                                <Field label={'On-site Tax'} value={cancellation.onsite_tax} />
+                            </div>
+                            <div className="mt-4 grid grid-cols-1 gap-x-6 gap-y-1 sm:grid-cols-2 md:grid-cols-3">
+                                <Bool label={'Service Fee Online'} value={cancellation.service_fee_online} />
+                                <Bool label={'Cleaning Fee Online'} value={cancellation.cleaning_fee_online} />
+                                <Bool label={'Tax Online'} value={cancellation.tax_online} />
+                            </div>
+                            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <Field label={'No-show Policy'} value={cancellation.no_show_policy} />
+                                <Field label={'Rejection Refund Policy'} value={cancellation.rejection_refund_policy} />
+                                <Field label={'Non-refundable Reasons'} value={cancellation.non_refundable_reasons} />
                             </div>
                         </Section>
 

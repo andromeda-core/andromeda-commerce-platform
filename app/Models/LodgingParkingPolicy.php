@@ -23,6 +23,8 @@ class LodgingParkingPolicy extends Model
         'fee_paid_by_guest',
         'vehicle_height_limit',
         'large_vehicle_restrictions',
+        'modified_vehicle_restriction',
+        'supercar_restriction',
         'ev_charging_available',
         'refund_if_no_parking',
         'extra_parking_fee',

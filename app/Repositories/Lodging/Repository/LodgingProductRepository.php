@@ -43,6 +43,9 @@ class LodgingProductRepository implements ILodgingProductRepository
     // Not DB enums; curated option lists for the json columns (bed_types / payment_methods).
     private const BED_TYPES = ['single', 'super_single', 'double', 'queen', 'king', 'bunk', 'sofa_bed', 'floor_bedding'];
 
+    // Rate-plan stay type (nullable). Not a DB enum — single source of truth here + Rule::in.
+    private const STAY_TYPES = ['room_only', 'breakfast_included', 'non_refundable_special', 'late_checkin_special', 'no_consecutive_nights', 'member_special'];
+
 
     // private const PAYMENT_METHODS = ['card', 'crypto', 'bank_transfer', 'onsite'];
     // For Launch Safe
@@ -127,13 +130,14 @@ class LodgingProductRepository implements ILodgingProductRepository
                 'policy_name' => self::CANCELLATION_POLICY_NAMES,
                 'evidence_role' => self::EVIDENCE_ROLES,
                 'payment_methods' => self::PAYMENT_METHODS,
+                'stay_type' => self::STAY_TYPES,
             ],
         ];
     }
 
     public function storeLodgingProduct(Request $request)
     {
-        $validated = $request->validate($this->rules(false));
+        $validated = $request->validate($this->rules(false), $this->validationMessages());
 
         $this->validateMediaFiles($request, false);
 
@@ -211,7 +215,7 @@ class LodgingProductRepository implements ILodgingProductRepository
 
     public function updateLodgingProduct(Request $request, string $id)
     {
-        $validated = $request->validate($this->rules(true));
+        $validated = $request->validate($this->rules(true), $this->validationMessages());
 
         $this->validateMediaFiles($request, true);
 
@@ -567,6 +571,16 @@ class LodgingProductRepository implements ILodgingProductRepository
         }
     }
 
+    private function validationMessages(): array
+    {
+        return [
+            'rooms.required' => 'At least one room is required.',
+            'rooms.min' => 'At least one room is required.',
+            'rooms.*.rate_plans.required' => 'Each room must have at least one rate plan.',
+            'rooms.*.rate_plans.min' => 'Each room must have at least one rate plan.',
+        ];
+    }
+
     private function rules(bool $isUpdate): array
     {
         $rules = [
@@ -589,7 +603,7 @@ class LodgingProductRepository implements ILodgingProductRepository
             'amenity_ids' => ['nullable', 'array'],
             'amenity_ids.*' => ['exists:lodging_amenities,id'],
 
-            'rooms' => ['nullable', 'array'],
+            'rooms' => ['required', 'array', 'min:1'],
             'rooms.*.room_name' => ['required', 'string', 'max:255'],
             'rooms.*.room_type' => ['required', Rule::in(self::ROOM_TYPES)],
             'rooms.*.standard_guests' => ['nullable', 'integer', 'min:1'],
@@ -619,7 +633,7 @@ class LodgingProductRepository implements ILodgingProductRepository
             'rooms.*.amenity_ids' => ['nullable', 'array'],
             'rooms.*.amenity_ids.*' => ['exists:lodging_amenities,id'],
 
-            'rooms.*.rate_plans' => ['nullable', 'array'],
+            'rooms.*.rate_plans' => ['required', 'array', 'min:1'],
             'rooms.*.rate_plans.*.name' => ['required', 'string', 'max:255'],
             'rooms.*.rate_plans.*.original_price' => ['nullable', 'numeric', 'min:0'],
             'rooms.*.rate_plans.*.sale_price' => ['required', 'numeric', 'min:0'],
@@ -638,6 +652,17 @@ class LodgingProductRepository implements ILodgingProductRepository
             'rooms.*.rate_plans.*.remaining_room_count' => ['nullable', 'integer', 'min:0'],
             'rooms.*.rate_plans.*.is_bookable' => ['nullable', 'boolean'],
             'rooms.*.rate_plans.*.is_active' => ['nullable', 'boolean'],
+            'rooms.*.rate_plans.*.stay_type' => ['nullable', Rule::in(self::STAY_TYPES)],
+            'rooms.*.rate_plans.*.minimum_nights' => ['nullable', 'integer', 'min:0'],
+            'rooms.*.rate_plans.*.maximum_nights' => ['nullable', 'integer', 'min:0', function ($attribute, $value, $fail) {
+                // maximum_nights >= minimum_nights when both are present (same rate plan / index).
+                $min = data_get(request()->all(), str_replace('maximum_nights', 'minimum_nights', $attribute));
+                if ($value !== null && $value !== '' && $min !== null && $min !== '' && (int) $value < (int) $min) {
+                    $fail('The maximum nights must be greater than or equal to the minimum nights.');
+                }
+            }],
+            'rooms.*.rate_plans.*.booking_cutoff_time' => ['nullable', 'string', 'max:50'],
+            'rooms.*.rate_plans.*.same_day_booking_allowed' => ['nullable', 'boolean'],
             'rooms.*.rate_plans.*.external_rate_plan_id' => ['nullable', 'string', 'max:255'],
 
             'checkin_policy' => ['nullable', 'array'],
@@ -648,6 +673,10 @@ class LodgingProductRepository implements ILodgingProductRepository
             'checkin_policy.late_checkout_available' => ['nullable', 'boolean'],
             'checkin_policy.late_checkout_fee' => ['nullable', 'numeric', 'min:0'],
             'checkin_policy.checkin_method' => ['nullable', Rule::in(self::CHECKIN_METHODS)],
+            'checkin_policy.front_desk_available' => ['nullable', 'boolean'],
+            'checkin_policy.self_checkin_available' => ['nullable', 'boolean'],
+            'checkin_policy.contactless_checkin_available' => ['nullable', 'boolean'],
+            'checkin_policy.host_meet_checkin_available' => ['nullable', 'boolean'],
             'checkin_policy.instructions_sent_when' => ['nullable', 'string', 'max:255'],
             'checkin_policy.same_day_booking_notice' => ['nullable', 'string'],
             'checkin_policy.early_entry_penalty' => ['nullable', 'string'],
@@ -656,6 +685,7 @@ class LodgingProductRepository implements ILodgingProductRepository
             'checkin_policy.minor_policy' => ['nullable', 'string'],
             'checkin_policy.mixed_gender_policy' => ['nullable', 'string'],
             'checkin_policy.noise_party_restriction' => ['nullable', 'string'],
+            'checkin_policy.party_policy' => ['nullable', 'string'],
             'checkin_policy.checkin_instruction_message' => ['nullable', 'string'],
 
             'parking_policy' => ['nullable', 'array'],
@@ -671,6 +701,8 @@ class LodgingProductRepository implements ILodgingProductRepository
             'parking_policy.fee_paid_by_guest' => ['nullable', 'boolean'],
             'parking_policy.vehicle_height_limit' => ['nullable', 'string', 'max:100'],
             'parking_policy.large_vehicle_restrictions' => ['nullable', 'string'],
+            'parking_policy.modified_vehicle_restriction' => ['nullable', 'string'],
+            'parking_policy.supercar_restriction' => ['nullable', 'string'],
             'parking_policy.ev_charging_available' => ['nullable', 'boolean'],
             'parking_policy.refund_if_no_parking' => ['nullable', 'boolean'],
             'parking_policy.extra_parking_fee' => ['nullable', 'numeric', 'min:0'],

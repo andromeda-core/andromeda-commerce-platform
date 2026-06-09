@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
+import Input from '@/Components/Input';
 
 // Map an enum string array (from the `enums` prop) into SelectInput-friendly options.
 export const toOptions = (arr) => (Array.isArray(arr) ? arr.map((v) => ({ id: v, name: v })) : []);
@@ -16,6 +19,67 @@ const BED_TYPE_LABELS = {
 };
 export const bedTypeOptions = (arr) =>
     Array.isArray(arr) ? arr.map((v) => ({ id: v, name: BED_TYPE_LABELS[v] ?? v })) : [];
+
+// Generic snake_case -> Title Case for option labels (stored value stays the raw key).
+const titleize = (v) =>
+    String(v)
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+export const stayTypeOptions = (arr) =>
+    Array.isArray(arr) ? arr.map((v) => ({ id: v, name: titleize(v) })) : [];
+
+// Reusable flatpickr time-only picker (same options as the base check-in/out fields).
+// Designed for dynamic, tab-hidden repeated rows: one flatpickr instance per mounted
+// row, destroyed on unmount. The instance is created once but always calls the LATEST
+// onChange (via a ref) so a stale closure can never write the wrong row, and it resyncs
+// when the Value prop changes externally (e.g. an index-keyed row is reused on remove).
+export function FlatpickrTimeInput({ InputName, Id, Name, Value, Error, onChange, Placeholder, Required = false }) {
+    const inputRef = useRef(null);
+    const fpRef = useRef(null);
+    const onChangeRef = useRef(onChange);
+    onChangeRef.current = onChange;
+
+    useEffect(() => {
+        fpRef.current = flatpickr(inputRef.current, {
+            enableTime: true,
+            noCalendar: true,
+            dateFormat: 'H:i',
+            time_24hr: true,
+            disableMobile: true,
+            defaultDate: Value || null,
+            onChange: (selectedDates, dateStr) => onChangeRef.current(dateStr),
+        });
+        return () => {
+            fpRef.current?.destroy();
+            fpRef.current = null;
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    // Keep the picker in sync if the value changes from outside (row reuse / reset).
+    useEffect(() => {
+        const fp = fpRef.current;
+        if (fp && (Value || '') !== (fp.input?.value || '')) {
+            fp.setDate(Value || null, false);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [Value]);
+
+    return (
+        <Input
+            InputName={InputName}
+            Id={Id}
+            Name={Name}
+            Type={'text'}
+            Required={Required}
+            Placeholder={Placeholder}
+            Value={Value}
+            Error={Error}
+            InputRef={inputRef}
+            Action={() => {}}
+        />
+    );
+}
 
 // Deep-convert JS booleans to 1/0 so Laravel's `boolean` rule accepts them under
 // multipart (FormData) submissions. File/Blob instances are preserved untouched so
@@ -52,6 +116,11 @@ export const blankRatePlan = () => ({
     remaining_room_count: '',
     is_bookable: true,
     is_active: true,
+    stay_type: '',
+    minimum_nights: '',
+    maximum_nights: '',
+    booking_cutoff_time: '',
+    same_day_booking_allowed: true,
 });
 
 export const blankRoom = () => ({
@@ -90,6 +159,10 @@ export const defaultCheckinPolicy = () => ({
     late_checkout_available: false,
     late_checkout_fee: '',
     checkin_method: '',
+    front_desk_available: false,
+    self_checkin_available: false,
+    contactless_checkin_available: false,
+    host_meet_checkin_available: false,
     instructions_sent_when: '',
     same_day_booking_notice: '',
     early_entry_penalty: '',
@@ -98,6 +171,7 @@ export const defaultCheckinPolicy = () => ({
     minor_policy: '',
     mixed_gender_policy: '',
     noise_party_restriction: '',
+    party_policy: '',
     checkin_instruction_message: '',
 });
 
@@ -114,6 +188,8 @@ export const defaultParkingPolicy = () => ({
     fee_paid_by_guest: false,
     vehicle_height_limit: '',
     large_vehicle_restrictions: '',
+    modified_vehicle_restriction: '',
+    supercar_restriction: '',
     ev_charging_available: false,
     refund_if_no_parking: false,
     extra_parking_fee: '',

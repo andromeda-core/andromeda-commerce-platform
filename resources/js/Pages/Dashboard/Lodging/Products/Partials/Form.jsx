@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
@@ -152,8 +152,36 @@ export default function Form({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Single form organized into tabs (panels stay mounted via `hidden` so flatpickr,
+    // refs and validation errors survive tab switches). Modular for a future split.
+    const TABS = [
+        { key: 'property', label: 'Property' },
+        { key: 'rooms', label: 'Rooms' },
+        { key: 'rate_plans', label: 'Rate Plans' },
+        { key: 'amenities', label: 'Amenities' },
+        { key: 'policies', label: 'Policies' },
+        { key: 'media', label: 'Media' },
+        { key: 'msap', label: 'MSAP / Future' },
+    ];
+    const [activeTab, setActiveTab] = useState('property');
+    const [submitAttempted, setSubmitAttempted] = useState(false);
+
+    // Frontend required UX (backend unchanged): at least one room, and at least one
+    // rate plan per room.
+    const noRooms = (data.rooms?.length ?? 0) === 0;
+    const roomsMissingPlans = (data.rooms ?? []).some((r) => (r.rate_plans?.length ?? 0) === 0);
+
     const submit = (e) => {
         e.preventDefault();
+        setSubmitAttempted(true);
+        if (noRooms) {
+            setActiveTab('rooms');
+            return;
+        }
+        if (roomsMissingPlans) {
+            setActiveTab('rate_plans');
+            return;
+        }
         if (isEdit) {
             post(route('dashboard.lodging-products.update', lodging_product.id));
         } else {
@@ -213,6 +241,30 @@ export default function Form({
                             <Card
                                 Content={
                                     <>
+                                        {/* Tab navigation */}
+                                        <div className="mb-6 flex flex-wrap gap-6 overflow-auto border-b border-gray-200 dark:border-gray-700">
+                                            {TABS.map((t) => {
+                                                const isActive = activeTab === t.key;
+                                                return (
+                                                    <button
+                                                        key={t.key}
+                                                        type="button"
+                                                        onClick={() => setActiveTab(t.key)}
+                                                        aria-current={isActive ? 'page' : undefined}
+                                                        className={`relative -mb-px border-b-2 pb-3 text-sm font-semibold transition-colors duration-200 ${
+                                                            isActive
+                                                                ? 'border-black text-black dark:border-white dark:text-white'
+                                                                : 'border-transparent text-gray-600 hover:border-black hover:text-black dark:text-white/60 dark:hover:border-white dark:hover:text-white'
+                                                        }`}
+                                                    >
+                                                        {t.label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+
+                                        {/* Property */}
+                                        <div className={activeTab === 'property' ? '' : 'hidden'}>
                                         {/* Property details */}
                                         <h3 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                             Property Details
@@ -341,8 +393,47 @@ export default function Form({
                                             />
                                         </div>
 
-                                        {/* Product amenities */}
-                                        <div className="mt-6">
+                                        </div>
+
+                                        {/* Rooms */}
+                                        <div className={activeTab === 'rooms' ? '' : 'hidden'}>
+                                            {submitAttempted && noRooms && (
+                                                <p className="mb-3 text-sm text-red-500">
+                                                    At least one room is required.
+                                                </p>
+                                            )}
+                                            <RoomsRepeater
+                                                section={'rooms'}
+                                                data={data}
+                                                setData={setData}
+                                                errors={errors}
+                                                enums={enums}
+                                                amenities={amenities}
+                                            />
+                                        </div>
+
+                                        {/* Rate Plans */}
+                                        <div className={activeTab === 'rate_plans' ? '' : 'hidden'}>
+                                            {submitAttempted && !noRooms && roomsMissingPlans && (
+                                                <p className="mb-3 text-sm text-red-500">
+                                                    Each room must have at least one rate plan.
+                                                </p>
+                                            )}
+                                            <RoomsRepeater
+                                                section={'rate_plans'}
+                                                data={data}
+                                                setData={setData}
+                                                errors={errors}
+                                                enums={enums}
+                                                amenities={amenities}
+                                            />
+                                        </div>
+
+                                        {/* Amenities */}
+                                        <div className={activeTab === 'amenities' ? '' : 'hidden'}>
+                                            <h3 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                                Property Amenities
+                                            </h3>
                                             <SelectInput
                                                 InputName={'Property Amenities'}
                                                 Id={'amenity_ids'}
@@ -356,28 +447,66 @@ export default function Form({
                                             />
                                         </div>
 
-                                        <RoomsRepeater
-                                            data={data}
-                                            setData={setData}
-                                            errors={errors}
-                                            enums={enums}
-                                            amenities={amenities}
-                                        />
+                                        {/* Policies */}
+                                        <div className={activeTab === 'policies' ? '' : 'hidden'}>
+                                            <PolicySections
+                                                data={data}
+                                                setData={setData}
+                                                errors={errors}
+                                                enums={enums}
+                                            />
+                                        </div>
 
-                                        <PolicySections
-                                            data={data}
-                                            setData={setData}
-                                            errors={errors}
-                                            enums={enums}
-                                        />
+                                        {/* Media */}
+                                        <div className={activeTab === 'media' ? '' : 'hidden'}>
+                                            <MediaSection
+                                                mode={mode}
+                                                data={data}
+                                                setData={setData}
+                                                errors={errors}
+                                                existingMedia={lodging_product?.media ?? []}
+                                            />
+                                        </div>
 
-                                        <MediaSection
-                                            mode={mode}
-                                            data={data}
-                                            setData={setData}
-                                            errors={errors}
-                                            existingMedia={lodging_product?.media ?? []}
-                                        />
+                                        {/* MSAP / Future Integration */}
+                                        <div className={activeTab === 'msap' ? '' : 'hidden'}>
+                                            <h3 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                                MSAP / Future Integration
+                                            </h3>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                These fields are reserved for future MSAP / external booking
+                                                integration and are managed by the system. No manual input is
+                                                required at launch.
+                                            </p>
+                                            {isEdit && (
+                                                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                                                    <div className="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700">
+                                                        <span className="block text-xs text-gray-400">Booking Source</span>
+                                                        <span className="text-main-text-light dark:text-main-text-dark">
+                                                            {lodging_product?.booking_source ?? 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700">
+                                                        <span className="block text-xs text-gray-400">Source Of Truth</span>
+                                                        <span className="text-main-text-light dark:text-main-text-dark">
+                                                            {lodging_product?.source_of_truth ?? 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700">
+                                                        <span className="block text-xs text-gray-400">Sync Status</span>
+                                                        <span className="text-main-text-light dark:text-main-text-dark">
+                                                            {lodging_product?.sync_status ?? 'N/A'}
+                                                        </span>
+                                                    </div>
+                                                    <div className="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700">
+                                                        <span className="block text-xs text-gray-400">MSAP Ready</span>
+                                                        <span className="text-main-text-light dark:text-main-text-dark">
+                                                            {lodging_product?.msap_ready ? 'Yes' : 'No'}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
 
                                         <div className="mt-8">
                                             <PrimaryButton
