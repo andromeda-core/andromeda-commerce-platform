@@ -10,7 +10,9 @@ use App\Console\Commands\ConfirmPurchaseOrders;
 use App\Console\Commands\DestroyDeactiveAccounts;
 use App\Console\Commands\DestroyLast24HoursActionLogs;
 use App\Console\Commands\DetectUnSettledAccounts;
+use App\Console\Commands\ExpireLodgingReservations;
 use App\Console\Commands\ExpireOldEmailChangeRequests;
+use App\Console\Commands\LodgingReservationPaymentStatusCheck;
 use App\Console\Commands\MarkExpireOldAccountRiskSignal;
 use App\Console\Commands\MarkingOrdersAsDeliveryConfirmedAfterSevenDays;
 use App\Console\Commands\MarkUserAsDormant;
@@ -41,6 +43,10 @@ class SchedularServiceProvider extends ServiceProvider
         $schedule->command(ClearPreviousOrderPackageRecordings::class)->daily();
         $schedule->command(NOWPaymentInvoiceStatusCheck::class)->everyMinute()->withoutOverlapping();
         $schedule->command(AutoMarkingOrderExpiredIfNotPaid::class)->everyFiveMinutes()->withoutOverlapping();
+
+        // Lodging (Stage 2.4) — isolated from the order crons above.
+        $schedule->command(LodgingReservationPaymentStatusCheck::class)->everyMinute()->withoutOverlapping();
+        $schedule->command(ExpireLodgingReservations::class)->everyFiveMinutes()->withoutOverlapping();
         $schedule->command(MetaPageTokenRefresh::class)->daily();
         $schedule->command(MarkUserAsDormant::class)->daily();
         $schedule->command(DestroyDeactiveAccounts::class)->daily();

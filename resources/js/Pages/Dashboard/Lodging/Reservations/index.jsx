@@ -132,7 +132,7 @@ export default function index({ lodging_reservations }) {
                 render: (item) => fmtDate(item?.created_at),
             },
             {
-                // Doc 2 sec 7 — approval deadline. NULL for now (no-response window is Stage 2.4).
+                // Doc 2 sec 7 — operator no-response deadline (now+24h, set on creation in Stage 2.4).
                 label: 'Approval Deadline',
                 render: (item) => fmtDate(item?.hotel_response_deadline),
             },

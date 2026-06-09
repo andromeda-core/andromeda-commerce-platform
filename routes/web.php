@@ -262,6 +262,9 @@ Route::group(['as' => 'website.'], function () {
     // Lodging Reservation Routes (customer-facing). No UI here — Stage 3 wires the product page.
     Route::controller(WebsiteLodgingReservationController::class)->middleware('auth')->name('lodging-reservations.')->group(function () {
         Route::post('/lodging-reservations-store', 'store')->name('store');
+
+        // Stage 2.4 Fix 2 — NOWPayments success_url landing (read-only, status-aware).
+        Route::get('/lodging-reservations/payment-success/{reservation_no?}', 'paymentSuccess')->name('payment-success');
     });
 
     // Profile Routes

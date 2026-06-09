@@ -1599,6 +1599,43 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Your reservation has been approved.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'A payment link has been created. Please complete your crypto payment before it expires to confirm your booking.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Your reservation request was not approved by the property.', 'created_at' => $now, 'updated_at' => $now],
+
+            // Lodging reservation confirmation / expiry / failure notifications (customer-facing) - Stage 2.4. Clean ASCII keys.
+            ['key' => 'Hi', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Reservation Number', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'If you have any questions or need assistance, feel free to contact our support team.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'You are welcome to submit a new reservation request anytime.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your Reservation Is Approved', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Complete Payment', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your Reservation Is Confirmed', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Great news! Your payment has been confirmed and your reservation is now confirmed.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'We look forward to hosting you.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your Reservation Request Was Declined', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your Reservation Has Expired', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your reservation request expired because the property did not respond in time.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your reservation expired because the payment was not completed in time.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your Reservation Payment Failed', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your reservation payment could not be completed.', 'created_at' => $now, 'updated_at' => $now],
+
+            // Lodging payment success page (customer-facing) - Stage 2.4 Fix 2. Clean ASCII keys.
+            ['key' => 'Reservation Payment', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Back', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Payment Confirmed', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your payment is confirmed and your reservation is confirmed.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Payment Received', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'We have received your payment and are confirming it. You will get an email once your reservation is confirmed.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Reservation Expired', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'This reservation has expired.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Payment Failed', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your payment could not be completed.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Processing', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'We are processing your reservation.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Property', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Room', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Check-in', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Check-out', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Amount', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Go to My Reservations', 'created_at' => $now, 'updated_at' => $now],
         ];
 
         $existingKeys = \DB::table('translation_keys')

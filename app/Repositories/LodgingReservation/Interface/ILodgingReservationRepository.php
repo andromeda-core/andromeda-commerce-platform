@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 /**
  * Stage 2.2: reservation creation (customer) + operator dashboard visibility.
  * Stage 2.3: operator approve/reject/suggest/note + auto NOWPayments invoice on approval.
- * Payment confirmation (webhook/IPN), expiry crons, and notifications are Stage 2.4.
+ * Stage 2.4: payment confirmation (polling only, no IPN), expiry crons, PAYMENT_FAILED, notifications.
  */
 interface ILodgingReservationRepository
 {
@@ -31,4 +31,16 @@ interface ILodgingReservationRepository
 
     // Dashboard (operator): store an internal note.
     public function addInternalNote(string $identifier, Request $request);
+
+    // Stage 2.4 — re-query a payment by NOWPayments payment id and finalize (polling path).
+    public function reconcilePaymentById(string $paymentId);
+
+    // Stage 2.4 Fix 2 — resolve a payment id from the invoice id, then finalize (self-contained poll).
+    public function reconcilePaymentByInvoiceId(string $invoiceId);
+
+    // Stage 2.4 — expire both deadlines (24h no-response, 60min approved-unpaid).
+    public function expireStaleReservations();
+
+    // Stage 2.4 Fix 2 — customer-scoped, READ-ONLY reservation load for the payment success page.
+    public function getCustomerReservation(Request $request, string $reservationNo);
 }

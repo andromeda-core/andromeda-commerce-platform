@@ -7,6 +7,13 @@ use App\Models\Currency;
 use App\Models\LodgingRatePlan;
 use App\Models\LodgingReservation;
 use App\Models\LodgingReservationPayment;
+use App\Models\User;
+use App\Notifications\Lodging\LodgingReservationApproved;
+use App\Notifications\Lodging\LodgingReservationConfirmed;
+use App\Notifications\Lodging\LodgingReservationExpired;
+use App\Notifications\Lodging\LodgingReservationPaymentFailed;
+use App\Notifications\Lodging\LodgingReservationRejected;
+use App\Notifications\Lodging\LodgingReservationRequestedAdmin;
 use App\Repositories\LodgingReservation\Interface\ILodgingReservationRepository;
 use App\Services\LodgingReservationPaymentService;
 use Carbon\Carbon;
@@ -148,8 +155,10 @@ class LodgingReservationRepository implements ILodgingReservationRepository
             // Create the reservation. Operator/approval fields keep their 2.1 DB defaults
             // (requires_hotel_approval=true, availability_mode=HOTEL_MANUAL_CONFIRMATION,
             //  payment_timing=AFTER_HOTEL_APPROVAL, approval_source=DASHBOARD_MANUAL).
-            // hotel_response_deadline is intentionally left NULL — the no-response window
-            // duration is not specified by Joseph yet (its cron is Stage 2.4).
+            // hotel_response_deadline = now()+24h — the operator no-response window (Joseph: 24 hours).
+            // It is a plain mass-assignable timestamp (in $fillable, NOT a status-authority field),
+            // so it is set here directly; only `status` goes through transitionStatus. The 2.4 expiry
+            // cron reads this deadline (with a created_at+24h fallback when null on older rows).
             // Identity (public_id rsv_<uuid> / reservation_no RSV-<id>) is set in the model booted().
             $reservation = $this->lodging_reservation->create([
                 'customer_id'             => $customer->id,
@@ -167,6 +176,7 @@ class LodgingReservationRepository implements ILodgingReservationRepository
                 'nights'                  => $nights,
                 'online_amount'           => $onlineAmount,
                 'currency_code'           => $currencyCode,
+                'hotel_response_deadline' => now()->addHours(24),
             ]);
 
             if (empty($reservation)) {
@@ -177,6 +187,9 @@ class LodgingReservationRepository implements ILodgingReservationRepository
             // The model default status is REQUESTED, so this records previous_status = REQUESTED
             // and moves the reservation to HOTEL_REVIEW_PENDING (Doc 2: submit -> HOTEL_REVIEW_PENDING).
             $this->transitionStatus($reservation, 'HOTEL_REVIEW_PENDING');
+
+            // Stage 2.4 — notify operators/admins (dashboard + email) that a request needs review.
+            $this->notifyAdminsOfNewRequest($reservation);
 
             return [
                 'status'      => true,
@@ -241,6 +254,25 @@ class LodgingReservationRepository implements ILodgingReservationRepository
             ->first();
 
         return $reservation;
+    }
+
+    /**
+     * Customer-scoped, READ-ONLY reservation load for the lodging payment success page (Fix 2).
+     *
+     * Returns the reservation only if it belongs to the authenticated customer. Changes NOTHING
+     * (no status write, no confirmation) — the page is pure UX; the poll command confirms.
+     */
+    public function getCustomerReservation(Request $request, string $reservationNo)
+    {
+        $customerId = $request->user()?->customer?->id;
+        if (empty($customerId)) {
+            return null;
+        }
+
+        return $this->lodging_reservation
+            ->where('reservation_no', $reservationNo)
+            ->where('customer_id', $customerId)
+            ->first();
     }
 
     // ---------------------------------------------------------------------
@@ -370,10 +402,16 @@ class LodgingReservationRepository implements ILodgingReservationRepository
         $reservation = $reservation->fresh(['payments']);
 
         if ($result['status'] === true) {
+            // Stage 2.4 — deliver the approved + payment-link notification to the customer.
+            // Only when a NEW link was just created (idempotent re-approves must NOT re-notify).
+            if (empty($result['idempotent']) && ! empty($result['payment_url'])) {
+                $this->notifyCustomer($reservation, new LodgingReservationApproved($reservation, $result['payment_url']));
+            }
+
             return [
                 'status'           => true,
                 'message'          => $result['message'],
-                // Customer-facing text (translated) — delivery/notification is Stage 2.4.
+                // Customer-facing text (translated) — also delivered via the notification above.
                 'customer_message' => Trans::get('Your reservation has been approved.') . ' '
                     . Trans::get('A payment link has been created. Please complete your crypto payment before it expires to confirm your booking.'),
                 'payment_url'      => $result['payment_url'] ?? null,
@@ -417,12 +455,17 @@ class LodgingReservationRepository implements ILodgingReservationRepository
         }
         $this->transitionStatus($reservation, 'HOTEL_REJECTED');
 
+        $fresh = $reservation->fresh(['payments']);
+
+        // Stage 2.4 — deliver the rejection notification to the customer.
+        $this->notifyCustomer($fresh, new LodgingReservationRejected($fresh));
+
         return [
             'status'           => true,
             'message'          => 'Reservation rejected.',
             // Customer-facing notice (translated); the operator reason/note stay as typed.
             'customer_message' => Trans::get('Your reservation request was not approved by the property.'),
-            'reservation'      => $reservation->fresh(['payments']),
+            'reservation'      => $fresh,
         ];
     }
 
@@ -487,6 +530,184 @@ class LodgingReservationRepository implements ILodgingReservationRepository
     }
 
     // ---------------------------------------------------------------------
+    // Stage 2.4 — payment confirmation (POLLING ONLY), expiry, PAYMENT_FAILED.
+    // Confirmation mirrors the order NOWPaymentInvoiceStatusCheck flow: a scheduled command
+    // re-queries NOWPayments by payment id (getPaymentStatus) and converges on
+    // applyRemotePaymentOutcome() — idempotent, lock-guarded, expired-link-safe. No IPN/webhook.
+    // ---------------------------------------------------------------------
+
+    /**
+     * Re-query NOWPayments for a given payment id and finalize the reservation (the poll path).
+     *
+     * Called by the polling command for each in-progress reservation. The server-side status is
+     * authoritative; the shared core applies it idempotently and refuses to confirm an expired
+     * link (point 5).
+     */
+    public function reconcilePaymentById(string $paymentId): array
+    {
+        $payment = $this->lodging_reservation_payment
+            ->with('lodgingReservation')
+            ->where('nowpayments_payment_id', $paymentId)
+            ->latest('id')
+            ->first();
+
+        if (empty($payment) || empty($payment->lodgingReservation)) {
+            return ['status' => false, 'message' => 'No lodging payment found for the given payment id.'];
+        }
+
+        $remote = $this->lodging_reservation_payment_service->getPaymentStatus($paymentId);
+        if ($remote['status'] === false) {
+            return ['status' => false, 'message' => $remote['message'] ?? 'Unable to fetch payment status.'];
+        }
+
+        $data         = $remote['data'];
+        $remoteStatus = (string) ($data['payment_status'] ?? '');
+
+        $result = $this->applyRemotePaymentOutcome((int) $payment->lodging_reservation_id, (int) $payment->id, $remoteStatus, $data);
+        $this->dispatchOutcomeNotification($result);
+
+        return ['status' => true] + $result;
+    }
+
+    /**
+     * Self-contained poll entry: resolve a payment id from the INVOICE id we always have,
+     * then finalize through the shared core (the poll command calls this per in-progress row).
+     *
+     * We only ever store nowpayments_invoice_id at approval (NOWPayments issues a payment id once
+     * the customer starts paying). This lists payments for the invoice; if none exists yet, it is a
+     * safe no-op (the 60-min expiry cron handles never-paid links). When a payment exists it seeds
+     * the id onto the row and delegates to reconcilePaymentById() — the idempotent, expired-link-safe
+     * finalize path is reused UNCHANGED.
+     */
+    public function reconcilePaymentByInvoiceId(string $invoiceId): array
+    {
+        $payment = $this->lodging_reservation_payment
+            ->with('lodgingReservation')
+            ->where('nowpayments_invoice_id', $invoiceId)
+            ->latest('id')
+            ->first();
+
+        if (empty($payment) || empty($payment->lodgingReservation)) {
+            return ['status' => false, 'message' => 'No lodging payment found for the given invoice id.'];
+        }
+
+        $found = $this->lodging_reservation_payment_service->getPaymentsByInvoiceId($invoiceId);
+        if (($found['status'] ?? false) === false) {
+            return ['status' => false, 'message' => $found['message'] ?? 'Unable to list payments by invoice.'];
+        }
+
+        $chosen = $found['data'] ?? null;
+        if (empty($chosen) || empty($chosen['payment_id'])) {
+            // Not started yet — skip safely (expiry cron covers never-paid links).
+            return ['status' => true, 'pending' => true, 'message' => 'No payment started yet for this invoice.'];
+        }
+
+        $paymentId = (string) $chosen['payment_id'];
+
+        // Seed the resolved payment id (records it for visibility; idempotent if already set).
+        if (empty($payment->nowpayments_payment_id)) {
+            $payment->nowpayments_payment_id = $paymentId;
+            $payment->saveQuietly();
+        }
+
+        // Reuse the unchanged finalize path (authoritative re-query by id + idempotent + expired-safe).
+        return $this->reconcilePaymentById($paymentId);
+    }
+
+    /**
+     * Expire stale reservations — BOTH deadlines, lodging-only (Stage 2.4 cron).
+     *
+     *   (1) Operator no-response (24h): HOTEL_REVIEW_PENDING past hotel_response_deadline
+     *       (or created_at + 24h when the deadline is null) -> EXPIRED_NO_RESPONSE.
+     *   (2) Approved-but-unpaid (60min): the approved/awaiting-payment family past
+     *       approval_expires_at -> PAYMENT_EXPIRED (and the active payment link -> expired).
+     *
+     * Each transition re-locks + re-checks the row inside a transaction, so it never collides
+     * with a confirm that landed in the same tick (already-CONFIRMED rows are skipped). Customer
+     * notifications are dispatched AFTER commit (a rollback never notifies).
+     */
+    public function expireStaleReservations(): array
+    {
+        $noResponseExpired = 0;
+        $paymentExpired    = 0;
+
+        // (1) Operator no-response (24h).
+        $this->lodging_reservation
+            ->where('status', 'HOTEL_REVIEW_PENDING')
+            ->with('customer.user')
+            ->chunkById(100, function ($reservations) use (&$noResponseExpired) {
+                foreach ($reservations as $reservation) {
+                    $deadline = ! empty($reservation->hotel_response_deadline)
+                        ? Carbon::parse($reservation->hotel_response_deadline)
+                        : Carbon::parse($reservation->created_at)->addHours(24);
+
+                    if (now()->lessThan($deadline)) {
+                        continue;
+                    }
+
+                    $changed = DB::transaction(function () use ($reservation) {
+                        $locked = $this->lodging_reservation->whereKey($reservation->id)->lockForUpdate()->first();
+                        // Skip if it raced with an approve/reject and is no longer review-pending.
+                        if (empty($locked) || $locked->status !== 'HOTEL_REVIEW_PENDING') {
+                            return false;
+                        }
+                        $this->transitionStatus($locked, 'EXPIRED_NO_RESPONSE');
+                        return true;
+                    });
+
+                    if ($changed) {
+                        $noResponseExpired++;
+                        $this->notifyCustomer($reservation, new LodgingReservationExpired($reservation, 'no_response'));
+                    }
+                }
+            });
+
+        // (2) Approved-but-unpaid (60min).
+        $this->lodging_reservation
+            ->whereIn('status', ['HOTEL_APPROVED_AWAITING_PAYMENT', 'PAYMENT_LINK_CREATED', 'PAYMENT_PENDING'])
+            ->whereNotNull('approval_expires_at')
+            ->where('approval_expires_at', '<=', now())
+            ->with('customer.user')
+            ->chunkById(100, function ($reservations) use (&$paymentExpired) {
+                foreach ($reservations as $reservation) {
+                    $changed = DB::transaction(function () use ($reservation) {
+                        $locked = $this->lodging_reservation->whereKey($reservation->id)->lockForUpdate()->first();
+                        if (empty($locked)) {
+                            return false;
+                        }
+                        // Skip if it confirmed in the same tick (or otherwise left the pending family).
+                        if (! in_array($locked->status, ['HOTEL_APPROVED_AWAITING_PAYMENT', 'PAYMENT_LINK_CREATED', 'PAYMENT_PENDING'], true)) {
+                            return false;
+                        }
+                        if (empty($locked->approval_expires_at) || now()->lessThanOrEqualTo(Carbon::parse($locked->approval_expires_at))) {
+                            return false;
+                        }
+
+                        // Expire any active (non-terminal) payment link too.
+                        $this->lodging_reservation_payment
+                            ->where('lodging_reservation_id', $locked->id)
+                            ->whereIn('status', ['created', 'pending'])
+                            ->update(['status' => 'expired']);
+
+                        $this->transitionStatus($locked, 'PAYMENT_EXPIRED');
+                        return true;
+                    });
+
+                    if ($changed) {
+                        $paymentExpired++;
+                        $this->notifyCustomer($reservation, new LodgingReservationExpired($reservation, 'payment'));
+                    }
+                }
+            });
+
+        return [
+            'status'              => true,
+            'no_response_expired' => $noResponseExpired,
+            'payment_expired'     => $paymentExpired,
+        ];
+    }
+
+    // ---------------------------------------------------------------------
     // Private helpers
     // ---------------------------------------------------------------------
 
@@ -508,5 +729,154 @@ class LodgingReservationRepository implements ILodgingReservationRepository
         $reservation->previous_status = $reservation->status;
         $reservation->status = $newStatus;
         $reservation->save();
+    }
+
+    /**
+     * The single idempotent, lock-guarded core both confirmation paths (IPN + poll) call.
+     *
+     * Returns an 'outcome' string so the caller can dispatch the right notification AFTER commit:
+     *   confirmed | failed | failed_recorded | expired_no_confirm | already_confirmed |
+     *   already_failed | pending | not_found | no_payment
+     *
+     * Guarantees:
+     *  - IDEMPOTENT (point 4): a row already CONFIRMED / payment confirmed is a no-op (no double
+     *    confirm, no double notify). Re-processing the same signal changes nothing.
+     *  - EXPIRED LINK NEVER CONFIRMS (point 5): if the reservation is already PAYMENT_EXPIRED, or
+     *    the payment's 60-min window has passed, a late "finished" is RECORDED on the payment row
+     *    but the reservation is left expired (no CONFIRMED transition).
+     *  - Lock on the reservation row serializes with the expiry cron, so confirm-vs-expire in the
+     *    same tick cannot both win.
+     */
+    private function applyRemotePaymentOutcome(int $reservationId, int $paymentId, string $remoteStatus, array $remote = []): array
+    {
+        $status = strtolower(trim($remoteStatus));
+        $paid   = in_array($status, ['finished'], true);
+        $failed = in_array($status, ['failed', 'expired', 'refunded'], true);
+
+        return DB::transaction(function () use ($reservationId, $paymentId, $status, $paid, $failed, $remote) {
+            $reservation = $this->lodging_reservation->whereKey($reservationId)->lockForUpdate()->first();
+            if (empty($reservation)) {
+                return ['outcome' => 'not_found'];
+            }
+
+            $payment = $this->lodging_reservation_payment->whereKey($paymentId)->first();
+            if (empty($payment)) {
+                return ['outcome' => 'no_payment'];
+            }
+
+            // Idempotency: already finalized -> no-op.
+            if ($reservation->status === 'CONFIRMED' || $payment->status === 'confirmed') {
+                return ['outcome' => 'already_confirmed', 'reservation_no' => $reservation->reservation_no];
+            }
+
+            // Always record what NOWPayments last reported (visibility on the payment row).
+            $payment->nowpayments_payment_status  = $status;
+            $payment->nowpayments_ipn_received_at = now();
+            if (! empty($remote['pay_currency'])) {
+                $payment->pay_currency = strtoupper((string) $remote['pay_currency']);
+            }
+            if (! empty($remote['payment_id'])) {
+                $payment->nowpayments_payment_id = (string) $remote['payment_id'];
+            }
+            if (! empty($remote['payin_hash'])) {
+                $payment->tx_hash = (string) $remote['payin_hash'];
+            }
+
+            if ($paid) {
+                // Expired-link guard (point 5): a late payment must NOT confirm an expired booking.
+                $windowPassed   = ! empty($payment->payment_expires_at) && now()->greaterThan(Carbon::parse($payment->payment_expires_at));
+                $alreadyExpired = in_array($reservation->status, ['PAYMENT_EXPIRED', 'EXPIRED_NO_RESPONSE'], true);
+
+                if ($alreadyExpired || $windowPassed) {
+                    $payment->save(); // record the outcome only; leave the reservation expired.
+                    return ['outcome' => 'expired_no_confirm', 'reservation_no' => $reservation->reservation_no];
+                }
+
+                // Valid + within window -> confirm: PAYMENT_PENDING -> PAYMENT_CONFIRMED -> CONFIRMED.
+                $payment->status               = 'confirmed';
+                $payment->payment_confirmed_at = now();
+                $payment->save();
+
+                $this->transitionStatus($reservation, 'PAYMENT_CONFIRMED');
+                $this->transitionStatus($reservation, 'CONFIRMED');
+
+                return ['outcome' => 'confirmed', 'reservation_no' => $reservation->reservation_no];
+            }
+
+            if ($failed) {
+                if ($payment->status === 'failed' && $reservation->status === 'PAYMENT_FAILED') {
+                    $payment->save();
+                    return ['outcome' => 'already_failed', 'reservation_no' => $reservation->reservation_no];
+                }
+
+                $payment->status    = 'failed';
+                $payment->failed_at = now();
+                $payment->save();
+
+                if (in_array($reservation->status, ['PAYMENT_PENDING', 'PAYMENT_LINK_CREATED', 'HOTEL_APPROVED_AWAITING_PAYMENT'], true)) {
+                    $this->transitionStatus($reservation, 'PAYMENT_FAILED');
+                    return ['outcome' => 'failed', 'reservation_no' => $reservation->reservation_no];
+                }
+
+                return ['outcome' => 'failed_recorded', 'reservation_no' => $reservation->reservation_no];
+            }
+
+            // In-progress (waiting / confirming / sending / partially_paid): record only, no transition.
+            $payment->save();
+            return ['outcome' => 'pending', 'reservation_no' => $reservation->reservation_no];
+        });
+    }
+
+    /** Map a confirmation outcome to the customer notification (confirmed / failed only). */
+    private function dispatchOutcomeNotification(array $result): void
+    {
+        $outcome = $result['outcome'] ?? null;
+        if (! in_array($outcome, ['confirmed', 'failed'], true)) {
+            return;
+        }
+
+        $reservationNo = $result['reservation_no'] ?? null;
+        if (empty($reservationNo)) {
+            return;
+        }
+
+        $reservation = $this->lodging_reservation->with('customer.user')
+            ->where('reservation_no', $reservationNo)->first();
+        if (empty($reservation)) {
+            return;
+        }
+
+        if ($outcome === 'confirmed') {
+            $this->notifyCustomer($reservation, new LodgingReservationConfirmed($reservation));
+        } elseif ($outcome === 'failed') {
+            $this->notifyCustomer($reservation, new LodgingReservationPaymentFailed($reservation));
+        }
+    }
+
+    /** Send a notification to the reservation's customer user (safe if any link is missing). */
+    private function notifyCustomer(LodgingReservation $reservation, $notification): void
+    {
+        try {
+            $reservation->loadMissing('customer.user');
+            $user = $reservation->customer?->user;
+            if (! empty($user)) {
+                $user->notify($notification);
+            }
+        } catch (Exception $e) {
+            // A notification failure must never break the payment/expiry flow.
+        }
+    }
+
+    /** Notify operator/admin users that a new reservation request needs review (dashboard + email). */
+    private function notifyAdminsOfNewRequest(LodgingReservation $reservation): void
+    {
+        try {
+            $admins = User::whereHas('roles', fn ($query) => $query->where('name', 'Admin'))->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new LodgingReservationRequestedAdmin($reservation));
+            }
+        } catch (Exception $e) {
+            // Notification failure must never break reservation creation.
+        }
     }
 }
