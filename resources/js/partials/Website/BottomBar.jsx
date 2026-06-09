@@ -378,6 +378,15 @@ const BottomBar = ({
 
                                             <li>
                                                 <Link
+                                                    href={route('website.lodging-reservations.index')}
+                                                    className={`${route().current() === 'website.lodging-reservations.index' ? 'menu-sub-item-active' : 'menu-sub-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
+                                                >
+                                                    {__('Reservations')}
+                                                </Link>
+                                            </li>
+
+                                            <li>
+                                                <Link
                                                     href={route('website.bookmarks.index')}
                                                     className={`${route().current() === 'website.bookmarks.index' ? 'menu-sub-item-active' : 'menu-sub-item-inactive'} flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-sm`}
                                                 >

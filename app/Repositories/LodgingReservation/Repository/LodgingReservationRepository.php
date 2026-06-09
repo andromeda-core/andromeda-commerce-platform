@@ -275,6 +275,96 @@ class LodgingReservationRepository implements ILodgingReservationRepository
             ->first();
     }
 
+    /**
+     * Stage 3.1 — customer-facing My Reservations LIST (paginated, customer-scoped, READ-ONLY).
+     *
+     * Mirrors the order list contract (getCustomerOrders): paginate(35), latest first, returning
+     * the page items + next_page_url for the infinite-scroll list. STRICTLY scoped to the
+     * authenticated customer's own rows — another customer's reservations can never appear. Each
+     * card carries only the snapshot/display fields the list needs (member_price is never part of a
+     * reservation and is never exposed). The latest payment's url is attached so the customer can
+     * resume an unpaid crypto invoice. Changes NOTHING (no status write, no side effects).
+     */
+    public function getCustomerReservations(Request $request)
+    {
+        $user = $request->user();
+        if (empty($user)) {
+            return ['status' => false, 'message' => Trans::get('Please Login First')];
+        }
+
+        $customerId = $user->customer?->id;
+        if (empty($customerId)) {
+            // A logged-in non-customer owns no reservations (never expose another customer's data).
+            return ['status' => true, 'reservations' => [], 'next_page_url' => null];
+        }
+
+        $reservations = $this->lodging_reservation
+            ->where('customer_id', $customerId)
+            ->with(['payments' => fn ($query) => $query->latest('id')])
+            ->latest()
+            ->paginate(35);
+
+        $reservations->setCollection(
+            $reservations->getCollection()->map(function ($reservation) {
+                $latestPayment = $reservation->payments->first();
+
+                return [
+                    'id'                      => $reservation->id,
+                    'reservation_no'          => $reservation->reservation_no,
+                    'public_id'               => $reservation->public_id,
+                    'property_name_snapshot'  => $reservation->property_name_snapshot,
+                    'room_name_snapshot'      => $reservation->room_name_snapshot,
+                    'rate_plan_name_snapshot' => $reservation->rate_plan_name_snapshot,
+                    'checkin_date'            => optional($reservation->checkin_date)->toDateString(),
+                    'checkout_date'           => optional($reservation->checkout_date)->toDateString(),
+                    'nights'                  => (int) $reservation->nights,
+                    'guest_count'             => (int) $reservation->guest_count,
+                    'online_amount'           => $reservation->online_amount,
+                    'currency_code'           => $reservation->currency_code,
+                    'status'                  => $reservation->status,
+                    'created_at'              => optional($reservation->created_at)->format('M d, Y'),
+                    'payment_url'             => $latestPayment?->nowpayments_payment_url,
+                ];
+            })
+        );
+
+        return [
+            'status'        => true,
+            'reservations'  => $reservations->items(),
+            'next_page_url' => $reservations->nextPageUrl(),
+        ];
+    }
+
+    /**
+     * Stage 3.1 — customer-facing single reservation DETAIL (customer-scoped, READ-ONLY).
+     *
+     * Looked up by reservation_no ONLY (the canonical URL identifier, mirroring order_no for
+     * orders) and ALWAYS constrained to the authenticated customer's own rows, so one customer can
+     * never load another's reservation (returns null -> the controller 404s). Eager-loads the
+     * lodging relations + all payments + customer.user so the detail page has everything it needs.
+     * member_price is a future-only field and is never surfaced (the controller shapes an explicit
+     * safe payload). Changes NOTHING.
+     */
+    public function getCustomerSingleReservation(Request $request, string $reservation_no)
+    {
+        $customerId = $request->user()?->customer?->id;
+        if (empty($customerId)) {
+            return null;
+        }
+
+        return $this->lodging_reservation
+            ->with([
+                'lodgingProduct',
+                'lodgingRoom',
+                'lodgingRatePlan',
+                'payments' => fn ($query) => $query->latest('id'),
+                'customer.user:id,name,email',
+            ])
+            ->where('customer_id', $customerId)
+            ->where('reservation_no', $reservation_no)
+            ->first();
+    }
+
     // ---------------------------------------------------------------------
     // Stage 2.3 — operator actions (dashboard side; operator messages = English).
     // ---------------------------------------------------------------------

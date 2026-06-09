@@ -1636,6 +1636,28 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Check-out', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Amount', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Go to My Reservations', 'created_at' => $now, 'updated_at' => $now],
+
+            // My Reservations list + detail (customer-facing) - Stage 3.1. Clean ASCII keys.
+            ['key' => 'Reservations', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'My Reservations', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Reservation', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Reservation Details', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Reservation date', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Awaiting Review', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Confirmed', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Completed', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Rejected', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Cancelled', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Nights', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Guests', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Rate Plan', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Request Message', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Rejection Reason', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Suggested Alternative Room', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Suggested Alternative Dates', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'You have no reservations yet.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your reservations will appear here once you book a stay.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Contact our support team if you have any questions about your reservation.', 'created_at' => $now, 'updated_at' => $now],
         ];
 
         $existingKeys = \DB::table('translation_keys')

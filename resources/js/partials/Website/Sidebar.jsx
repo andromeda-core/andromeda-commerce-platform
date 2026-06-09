@@ -83,6 +83,9 @@ const Sidebar = ({
         const profileRoute = route().current() === 'website.profile.index';
         const ShippingAddressRoute = route().current() === 'website.shipping-addresses.index';
         const NotificationRoute = route().current() === 'website.notifications.index';
+        const reservationsRoute =
+            route().current() === 'website.lodging-reservations.index' ||
+            route().current() === 'website.lodging-reservations.show';
 
         if (
             profileRoute ||
@@ -90,7 +93,8 @@ const Sidebar = ({
             ordersRoute ||
             cartRoute ||
             bookmarkRoute ||
-            NotificationRoute
+            NotificationRoute ||
+            reservationsRoute
         ) {
             setSelectedNavLink(__('My Page'));
         }
@@ -406,6 +410,13 @@ const Sidebar = ({
                                         label: __('Orders'),
                                         href: route('website.orders.index'),
                                         routeName: 'website.orders.index',
+                                        type: 'link',
+                                    },
+
+                                    {
+                                        label: __('Reservations'),
+                                        href: route('website.lodging-reservations.index'),
+                                        routeName: 'website.lodging-reservations.index',
                                         type: 'link',
                                     },
 

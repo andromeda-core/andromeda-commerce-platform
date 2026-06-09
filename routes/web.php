@@ -265,6 +265,10 @@ Route::group(['as' => 'website.'], function () {
 
         // Stage 2.4 Fix 2 — NOWPayments success_url landing (read-only, status-aware).
         Route::get('/lodging-reservations/payment-success/{reservation_no?}', 'paymentSuccess')->name('payment-success');
+
+        // Stage 3.1 — customer My Reservations (list + detail). Read-only, customer-scoped.
+        Route::get('/reservations', 'index')->name('index');
+        Route::get('/reservations/{reservation_no}', 'show')->name('show');
     });
 
     // Profile Routes

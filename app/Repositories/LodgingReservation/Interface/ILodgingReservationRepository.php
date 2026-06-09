@@ -43,4 +43,10 @@ interface ILodgingReservationRepository
 
     // Stage 2.4 Fix 2 — customer-scoped, READ-ONLY reservation load for the payment success page.
     public function getCustomerReservation(Request $request, string $reservationNo);
+
+    // Stage 3.1 — customer My Reservations LIST (paginated, customer-scoped, read-only).
+    public function getCustomerReservations(Request $request);
+
+    // Stage 3.1 — customer single reservation DETAIL by reservation_no / public_id (customer-scoped, read-only).
+    public function getCustomerSingleReservation(Request $request, string $reservation_no);
 }
