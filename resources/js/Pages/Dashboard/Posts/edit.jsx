@@ -8,7 +8,7 @@ import { Head, router, useForm } from '@inertiajs/react';
 import React, { useEffect, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import FileUploaderInput from '@/Components/FileUploaderInput';
-import TipTapEditor from '@/Components/TipTapEditor';
+import RawHtmlContentInput from '@/Components/RawHtmlContentInput';
 import TranslationsRepeater from '@/Components/TranslationsRepeater';
 import { areTranslationsComplete } from '@/Hooks/useTranslationsComplete';
 import Toast from '@/Components/Toast';
@@ -624,17 +624,13 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
                                             </div>
 
                                             <div className="grid grid-cols-1 gap-4">
-                                                <TipTapEditor
+                                                <RawHtmlContentInput
                                                     Label={'Content'}
                                                     Id={'content'}
                                                     Required={true}
                                                     Error={errors?.content}
                                                     Value={data.content}
-                                                    Action={(value) => {
-                                                        if (value == '<p></p>')
-                                                            setData('content', '');
-                                                        else setData('content', value);
-                                                    }}
+                                                    Action={(e) => setData('content', e.target.value)}
                                                 />
                                             </div>
 
@@ -644,7 +640,7 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
                                                 onChange={(next) => setData('translations', next)}
                                                 fields={[
                                                     { key: 'title', label: 'Title', type: 'text' },
-                                                    { key: 'content', label: 'Content', type: 'richtext' },
+                                                    { key: 'content', label: 'Content', type: 'textarea' },
                                                     { key: 'tag', label: 'Tag', type: 'text' },
                                                 ]}
                                             />

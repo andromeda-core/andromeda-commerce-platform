@@ -17,6 +17,7 @@ import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Spinner from '@/Components/Spinner';
 import useDarkMode from '@/Hooks/useDarkMode';
 import useProductCardHydration from '@/Hooks/useProductCardHydration';
+import RawHtmlContentFrame from '@/Components/RawHtmlContentFrame';
 export default function view({ post }) {
     const { generalSetting } = usePage().props;
     const isDarkMode = useDarkMode();
@@ -460,12 +461,11 @@ export default function view({ post }) {
                                             {post?.title}
                                         </p>
 
-                                        <div
+                                        <RawHtmlContentFrame
                                             ref={postContentRef}
+                                            content={post?.content_display ?? post?.content}
                                             className="prose max-w-none break-words text-gray-800 dark:prose-invert dark:text-white/80"
-                                            dangerouslySetInnerHTML={{
-                                                __html: post?.content,
-                                            }}
+                                            interactive
                                         />
                                         {productCardPortals}
 

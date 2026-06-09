@@ -4,6 +4,7 @@ import useDarkMode from '@/Hooks/useDarkMode';
 import Spinner from '@/Components/Spinner';
 import { AnimatePresence, motion } from 'framer-motion';
 import SmartphoneDetails from '@/Components/SmartphoneDetails';
+import RawHtmlContentFrame from '@/Components/RawHtmlContentFrame';
 import SmartphoneContentAccordion from '@/Components/SmartphoneContentAccordion';
 import ProductSelectInput from '@/Components/ProductSelectInput';
 import { useVideoStore } from '@/Hooks/useVideoStore';
@@ -1501,12 +1502,11 @@ const DesktopFeed = ({
 
                                             {/* Post Content - Scrollable */}
                                             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
-                                                <div
+                                                <RawHtmlContentFrame
                                                     ref={postContentRef1}
+                                                    content={feedGallery?.content_display ?? feedGallery?.content}
                                                     className="prose prose-sm max-w-none whitespace-pre-line break-words pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: feedGallery?.content,
-                                                    }}
+                                                    interactive
                                                 />
                                                 {productCardPortals1}
                                             </div>
@@ -1681,12 +1681,11 @@ const DesktopFeed = ({
                                                 <div className="relative flex h-full w-full justify-center lg:w-[50%] xl:w-[50%]">
                                                     <div className="flex h-full w-full max-w-[520px] flex-col">
                                                         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
-                                                            <div
+                                                            <RawHtmlContentFrame
                                                                 ref={postContentRef2}
+                                                                content={feedGallery?.content_display ?? feedGallery?.content}
                                                                 className="prose prose-sm max-w-none whitespace-pre-line break-words pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
-                                                                dangerouslySetInnerHTML={{
-                                                                    __html: feedGallery?.content,
-                                                                }}
+                                                                interactive
                                                             />
                                                             {productCardPortals2}
                                                         </div>
@@ -3310,12 +3309,11 @@ const DesktopFeed = ({
                                                         </div>
 
                                                         {/* Post Content */}
-                                                        <div
+                                                        <RawHtmlContentFrame
                                                             ref={postContentRef3}
+                                                            content={feedGallery?.content_display ?? feedGallery?.content}
                                                             className="prose prose-sm max-w-none flex-1 overflow-y-auto whitespace-pre-line break-all pr-2 text-[14px] font-normal text-main-text-light dark:prose-invert dark:text-main-text-dark"
-                                                            dangerouslySetInnerHTML={{
-                                                                __html: feedGallery?.content,
-                                                            }}
+                                                            interactive
                                                         />
                                                         {productCardPortals3}
 
