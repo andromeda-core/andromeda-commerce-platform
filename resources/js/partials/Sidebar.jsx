@@ -148,9 +148,10 @@ export default function Sidebar({
             'dashboard.internal-product-images.',
         ].some((prefix) => route().current().startsWith(prefix));
 
-        const isLodgingRoute = ['dashboard.lodging-products.'].some((prefix) =>
-            route().current().startsWith(prefix),
-        );
+        const isLodgingRoute = [
+            'dashboard.lodging-products.',
+            'dashboard.lodging-reservations.',
+        ].some((prefix) => route().current().startsWith(prefix));
 
         const isUsersRoute = ['dashboard.customers.', 'dashboard.reward-points.'].some((prefix) =>
             route().current().startsWith(prefix),
@@ -828,7 +829,8 @@ export default function Sidebar({
                                 )}
 
                                 {/* Lodging */}
-                                {can('Lodging Products View') && (
+                                {(can('Lodging Products View') ||
+                                    can('Lodging Reservations View')) && (
                                     <li>
                                         <a
                                             onClick={() => {
@@ -879,6 +881,19 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current()?.startsWith('dashboard.lodging-products.') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Lodging Products
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can('Lodging Reservations View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.lodging-reservations.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current()?.startsWith('dashboard.lodging-reservations.') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Lodging Reservations
                                                         </Link>
                                                     </li>
                                                 )}

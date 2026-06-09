@@ -19,6 +19,7 @@ use App\Http\Controllers\Dashboard\InventoryController;
 use App\Http\Controllers\Dashboard\InventoryVerificationController;
 use App\Http\Controllers\Dashboard\LanguageController;
 use App\Http\Controllers\Dashboard\LodgingProductController;
+use App\Http\Controllers\Dashboard\LodgingReservationController;
 use App\Http\Controllers\Dashboard\OrderAddressChangeRequestController;
 use App\Http\Controllers\Dashboard\OrderCancelationRequestController;
 use App\Http\Controllers\Dashboard\OrderController;
@@ -59,6 +60,7 @@ use App\Http\Controllers\Website\HomeController as WebsiteHomeController;
 use App\Http\Controllers\Website\NotificationController;
 use App\Http\Controllers\Website\OrderCancelationRequestController as WebsiteOrderCancelationRequestController;
 use App\Http\Controllers\Website\OrderController as WebsiteOrderController;
+use App\Http\Controllers\Website\LodgingReservationController as WebsiteLodgingReservationController;
 use App\Http\Controllers\Website\PostController as WebsitePostController;
 use App\Http\Controllers\Website\PrivacyPolicyController;
 use App\Http\Controllers\Website\ProductController;
@@ -255,6 +257,11 @@ Route::group(['as' => 'website.'], function () {
         Route::post('/orders/re-order', 'reOrder')->name('re-order');
         Route::post('/orders/verify-imei', 'verifyOrderProduct')->name('verify');
         Route::post('/orders/{order_no}/refund/upload-tracking-slip',  'uploadReturnTrackingSlip')->name('refund.upload-tracking-slip');
+    });
+
+    // Lodging Reservation Routes (customer-facing). No UI here — Stage 3 wires the product page.
+    Route::controller(WebsiteLodgingReservationController::class)->middleware('auth')->name('lodging-reservations.')->group(function () {
+        Route::post('/lodging-reservations-store', 'store')->name('store');
     });
 
     // Profile Routes
@@ -466,6 +473,12 @@ Route::middleware(['auth'])->group(function () {
             // Google Location Routes For Lodging Products (delegate to the shared GoogleGeoCoderService)
             Route::post('/lodging-products-google-location-autocomplete', 'googleLocationAutocomplete')->name('google.location.autocomplete');
             Route::post('/lodging-products-google-location-place-details', 'googleLocationPlaceDetails')->name('google.location.placedetails');
+        });
+
+        // Lodging Reservation Routes (operator visibility — list + detail). Approve/reject is Stage 2.3.
+        Route::controller(LodgingReservationController::class)->name('lodging-reservations.')->group(function () {
+            Route::get('/lodging-reservations', 'index')->name('index');
+            Route::get('/lodging-reservations-view/{identifier?}', 'show')->name('show');
         });
 
         // Batch Routes

@@ -1540,6 +1540,28 @@ class PermissionSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            // Lodging Reservations — operator visibility (View) now; Edit reserved for Stage 2.3
+            // approve/reject. Create/Delete intentionally omitted (reservations are customer-created).
+            [
+                'id' => 386,
+                'name' => 'Lodging Reservations View',
+                'guard_name' => 'web',
+                'parent_name' => 'Lodging Reservations',
+                'alias' => null,
+                'icon' => 'HomeModernIcon',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 387,
+                'name' => 'Lodging Reservations Edit',
+                'guard_name' => 'web',
+                'parent_name' => 'Lodging Reservations',
+                'alias' => null,
+                'icon' => 'HomeModernIcon',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         // DB::table('permissions')->upsert(

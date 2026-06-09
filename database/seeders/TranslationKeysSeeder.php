@@ -1577,6 +1577,23 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'WhatsApp', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Telegram', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'iPhone', 'created_at' => $now, 'updated_at' => $now],
+
+            // Lodging reservation creation flow (customer-facing) - Stage 2.2. Clean ASCII keys.
+            ['key' => 'Only customers can make a reservation.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Selected rate plan was not found.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Selected rate plan does not belong to the chosen room.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Selected room does not belong to the chosen property.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'This property is not currently open for reservations.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'The selected room is not available.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'The selected rate plan is not available for booking.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'The selected rate plan does not have a valid price.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Guest count exceeds the room\'s maximum of', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Check-out must be at least one night after check-in.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'This rate plan requires a minimum of', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'This rate plan allows a maximum of', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'night(s).', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Something went wrong while creating the reservation.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your reservation request has been submitted and is awaiting hotel review.', 'created_at' => $now, 'updated_at' => $now],
         ];
 
         $existingKeys = \DB::table('translation_keys')
