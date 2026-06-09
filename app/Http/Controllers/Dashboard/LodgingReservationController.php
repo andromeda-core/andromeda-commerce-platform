@@ -11,7 +11,8 @@ use Inertia\Inertia;
 
 /**
  * Stage 2.2 — operator dashboard visibility for lodging reservations (list + detail).
- * Approve/reject actions come in Stage 2.3 (gated on 'Lodging Reservations Edit').
+ * Stage 2.3 — operator approve/reject/suggest/note (gated on 'Lodging Reservations Edit'),
+ *             approval auto-creates a NOWPayments invoice (lodging_reservation_payments).
  */
 class LodgingReservationController extends Controller implements HasMiddleware
 {
@@ -20,6 +21,10 @@ class LodgingReservationController extends Controller implements HasMiddleware
         return [
             new Middleware('permission:Lodging Reservations View', ['only' => 'index']),
             new Middleware('permission:Lodging Reservations View', ['only' => 'show']),
+            new Middleware('permission:Lodging Reservations Edit', ['only' => 'approve']),
+            new Middleware('permission:Lodging Reservations Edit', ['only' => 'reject']),
+            new Middleware('permission:Lodging Reservations Edit', ['only' => 'suggestAlternative']),
+            new Middleware('permission:Lodging Reservations Edit', ['only' => 'addNote']),
         ];
     }
 
@@ -49,5 +54,65 @@ class LodgingReservationController extends Controller implements HasMiddleware
         }
 
         return Inertia::render('Dashboard/Lodging/Reservations/show', compact('lodging_reservation'));
+    }
+
+    public function approve(Request $request, ?string $identifier = null)
+    {
+        if (empty($identifier)) {
+            return back()->with('error', 'Reservation identifier not found');
+        }
+
+        $response = $this->lodgingReservation->approveReservation($identifier, $request);
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function reject(Request $request, ?string $identifier = null)
+    {
+        if (empty($identifier)) {
+            return back()->with('error', 'Reservation identifier not found');
+        }
+
+        $response = $this->lodgingReservation->rejectReservation($identifier, $request);
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function suggestAlternative(Request $request, ?string $identifier = null)
+    {
+        if (empty($identifier)) {
+            return back()->with('error', 'Reservation identifier not found');
+        }
+
+        $response = $this->lodgingReservation->suggestAlternative($identifier, $request);
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
+    }
+
+    public function addNote(Request $request, ?string $identifier = null)
+    {
+        if (empty($identifier)) {
+            return back()->with('error', 'Reservation identifier not found');
+        }
+
+        $response = $this->lodgingReservation->addInternalNote($identifier, $request);
+
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
     }
 }

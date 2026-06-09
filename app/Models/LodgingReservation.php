@@ -37,17 +37,16 @@ class LodgingReservation extends Model
         'online_amount',
         'currency_code',
 
-        // Status lifecycle
-        'status',
-        'previous_status',
+        // Status lifecycle + approval authority are INTENTIONALLY NOT mass-assignable
+        // (Stage 2.3 Fix / Point 7 — controlled transitions). status, previous_status,
+        // hotel_approval_status, hotel_approved_by and hotel_approved_at are set ONLY via the
+        // controlled operator actions (approveReservation / rejectReservation -> transitionStatus),
+        // never from user-supplied input. Do NOT add them back to $fillable.
 
         // Operator / approval
         'availability_mode',
         'requires_hotel_approval',
         'assigned_dashboard_user_id',
-        'hotel_approval_status',
-        'hotel_approved_by',
-        'hotel_approved_at',
         'hotel_rejected_reason',
         'hotel_rejection_note',
         'alternative_room_suggestion',

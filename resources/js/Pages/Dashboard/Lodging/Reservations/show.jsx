@@ -1,8 +1,10 @@
 import Card from '@/Components/Card';
 import LinkButton from '@/Components/LinkButton';
+import PrimaryButton from '@/Components/PrimaryButton';
+import Textarea from '@/Components/Textarea';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 
 const Field = ({ label, value }) => (
     <div className="flex flex-col">
@@ -73,6 +75,40 @@ export default function show({ lodging_reservation }) {
     const guest = r.customer?.user ?? {};
     const payments = r.payments ?? [];
 
+    // Approve / Reject are only valid while the reservation awaits hotel review.
+    const canReview = r.status === 'HOTEL_REVIEW_PENDING';
+    const paymentLink = payments.find((p) => p.nowpayments_payment_url)?.nowpayments_payment_url ?? null;
+
+    const approveForm = useForm({});
+    const rejectForm = useForm({ hotel_rejected_reason: '', hotel_rejection_note: '' });
+    const suggestForm = useForm({ alternative_room_suggestion: '', alternative_date_suggestion: '' });
+    const noteForm = useForm({ note: '' });
+
+    const submitApprove = (e) => {
+        e.preventDefault();
+        approveForm.post(route('dashboard.lodging-reservations.approve', r.reservation_no), {
+            preserveScroll: true,
+        });
+    };
+    const submitReject = (e) => {
+        e.preventDefault();
+        rejectForm.post(route('dashboard.lodging-reservations.reject', r.reservation_no), {
+            preserveScroll: true,
+        });
+    };
+    const submitSuggest = (e) => {
+        e.preventDefault();
+        suggestForm.post(route('dashboard.lodging-reservations.suggest', r.reservation_no), {
+            preserveScroll: true,
+        });
+    };
+    const submitNote = (e) => {
+        e.preventDefault();
+        noteForm.post(route('dashboard.lodging-reservations.note', r.reservation_no), {
+            preserveScroll: true,
+        });
+    };
+
     return (
         <AuthenticatedLayout>
             <Head title="Lodging Reservation" />
@@ -93,6 +129,186 @@ export default function show({ lodging_reservation }) {
                                 URL={route('dashboard.lodging-reservations.index')}
                             />
                         </div>
+
+                        {/* Operator Actions (Stage 2.3) — operator-facing, English. */}
+                        <Section title={'Operator Actions'}>
+                            {paymentLink && (
+                                <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950/30">
+                                    <span className="text-xs uppercase text-gray-400">
+                                        Customer Payment Link (NOWPayments)
+                                    </span>
+                                    <div className="mt-1 break-all">
+                                        <a
+                                            href={paymentLink}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-sm text-blue-600 underline dark:text-blue-400"
+                                        >
+                                            {paymentLink}
+                                        </a>
+                                    </div>
+                                    <p className="mt-1 text-xs text-gray-400">
+                                        Delivering this link to the customer (notification) is handled
+                                        in a later stage.
+                                    </p>
+                                </div>
+                            )}
+
+                            {canReview ? (
+                                <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                                    <form
+                                        onSubmit={submitApprove}
+                                        className="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
+                                    >
+                                        <h4 className="mb-2 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                            Approve
+                                        </h4>
+                                        <p className="mb-3 text-xs text-gray-400">
+                                            Approves the request and automatically creates a
+                                            NOWPayments crypto invoice. A 60-minute payment window is
+                                            started.
+                                        </p>
+                                        <PrimaryButton
+                                            Type={'submit'}
+                                            Text={'Approve & Create Payment Link'}
+                                            Spinner={approveForm.processing}
+                                            Disabled={approveForm.processing}
+                                            CustomClass={
+                                                'bg-green-600 lg:hover:bg-green-700 text-white w-full '
+                                            }
+                                        />
+                                    </form>
+
+                                    <form
+                                        onSubmit={submitReject}
+                                        className="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
+                                    >
+                                        <h4 className="mb-2 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                            Reject
+                                        </h4>
+                                        <Textarea
+                                            InputName={'Rejection Reason'}
+                                            Id={'hotel_rejected_reason'}
+                                            Name={'hotel_rejected_reason'}
+                                            Required={true}
+                                            Rows={2}
+                                            Value={rejectForm.data.hotel_rejected_reason}
+                                            Action={(e) =>
+                                                rejectForm.setData(
+                                                    'hotel_rejected_reason',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            Error={rejectForm.errors.hotel_rejected_reason}
+                                            Placeholder={'Reason for the rejection'}
+                                        />
+                                        <Textarea
+                                            InputName={'Internal Note (optional)'}
+                                            Id={'hotel_rejection_note'}
+                                            Name={'hotel_rejection_note'}
+                                            Rows={2}
+                                            Value={rejectForm.data.hotel_rejection_note}
+                                            Action={(e) =>
+                                                rejectForm.setData(
+                                                    'hotel_rejection_note',
+                                                    e.target.value,
+                                                )
+                                            }
+                                            Error={rejectForm.errors.hotel_rejection_note}
+                                            Placeholder={'Operator-only note'}
+                                        />
+                                        <PrimaryButton
+                                            Type={'submit'}
+                                            Text={'Reject Reservation'}
+                                            Spinner={rejectForm.processing}
+                                            Disabled={rejectForm.processing}
+                                            CustomClass={
+                                                'bg-red-600 lg:hover:bg-red-700 text-white w-full '
+                                            }
+                                        />
+                                    </form>
+                                </div>
+                            ) : (
+                                <p className="mb-4 text-sm text-gray-500">
+                                    Approve / Reject are only available while the reservation is
+                                    awaiting hotel review (current status:{' '}
+                                    <span className="font-semibold">{humanize(r.status)}</span>).
+                                </p>
+                            )}
+
+                            <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+                                <form
+                                    onSubmit={submitSuggest}
+                                    className="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
+                                >
+                                    <h4 className="mb-2 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                        Suggest Alternative
+                                    </h4>
+                                    <Textarea
+                                        InputName={'Alternative Room Suggestion'}
+                                        Id={'alternative_room_suggestion'}
+                                        Name={'alternative_room_suggestion'}
+                                        Rows={2}
+                                        Value={suggestForm.data.alternative_room_suggestion}
+                                        Action={(e) =>
+                                            suggestForm.setData(
+                                                'alternative_room_suggestion',
+                                                e.target.value,
+                                            )
+                                        }
+                                        Error={suggestForm.errors.alternative_room_suggestion}
+                                    />
+                                    <Textarea
+                                        InputName={'Alternative Date Suggestion'}
+                                        Id={'alternative_date_suggestion'}
+                                        Name={'alternative_date_suggestion'}
+                                        Rows={2}
+                                        Value={suggestForm.data.alternative_date_suggestion}
+                                        Action={(e) =>
+                                            suggestForm.setData(
+                                                'alternative_date_suggestion',
+                                                e.target.value,
+                                            )
+                                        }
+                                        Error={suggestForm.errors.alternative_date_suggestion}
+                                    />
+                                    <PrimaryButton
+                                        Type={'submit'}
+                                        Text={'Save Suggestion'}
+                                        Spinner={suggestForm.processing}
+                                        Disabled={suggestForm.processing}
+                                        CustomClass={'w-full '}
+                                    />
+                                </form>
+
+                                <form
+                                    onSubmit={submitNote}
+                                    className="rounded-lg border border-gray-200 p-3 dark:border-gray-700"
+                                >
+                                    <h4 className="mb-2 text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                        Add Internal Note
+                                    </h4>
+                                    <Textarea
+                                        InputName={'Internal Note'}
+                                        Id={'note'}
+                                        Name={'note'}
+                                        Required={true}
+                                        Rows={4}
+                                        Value={noteForm.data.note}
+                                        Action={(e) => noteForm.setData('note', e.target.value)}
+                                        Error={noteForm.errors.note}
+                                        Placeholder={'Operator-only note'}
+                                    />
+                                    <PrimaryButton
+                                        Type={'submit'}
+                                        Text={'Save Note'}
+                                        Spinner={noteForm.processing}
+                                        Disabled={noteForm.processing}
+                                        CustomClass={'w-full '}
+                                    />
+                                </form>
+                            </div>
+                        </Section>
 
                         <Section title={'Reservation Summary'}>
                             <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">

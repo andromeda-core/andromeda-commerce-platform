@@ -6,7 +6,8 @@ use Illuminate\Http\Request;
 
 /**
  * Stage 2.2: reservation creation (customer) + operator dashboard visibility.
- * Approve/reject + NOWPayments invoice come in 2.3; payment/webhooks/expiry in 2.4.
+ * Stage 2.3: operator approve/reject/suggest/note + auto NOWPayments invoice on approval.
+ * Payment confirmation (webhook/IPN), expiry crons, and notifications are Stage 2.4.
  */
 interface ILodgingReservationRepository
 {
@@ -18,4 +19,16 @@ interface ILodgingReservationRepository
 
     // Dashboard: single reservation (full detail) by reservation_no / public_id.
     public function getSingleReservation(string $identifier);
+
+    // Dashboard (operator): approve + auto-create NOWPayments invoice.
+    public function approveReservation(string $identifier, Request $request);
+
+    // Dashboard (operator): reject with reason/note.
+    public function rejectReservation(string $identifier, Request $request);
+
+    // Dashboard (operator): store alternative room/date suggestion (no status change).
+    public function suggestAlternative(string $identifier, Request $request);
+
+    // Dashboard (operator): store an internal note.
+    public function addInternalNote(string $identifier, Request $request);
 }

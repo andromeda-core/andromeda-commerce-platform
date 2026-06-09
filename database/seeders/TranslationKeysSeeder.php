@@ -1594,6 +1594,11 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'night(s).', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Something went wrong while creating the reservation.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Your reservation request has been submitted and is awaiting hotel review.', 'created_at' => $now, 'updated_at' => $now],
+
+            // Lodging reservation approve/reject (customer-facing) - Stage 2.3. Clean ASCII keys.
+            ['key' => 'Your reservation has been approved.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'A payment link has been created. Please complete your crypto payment before it expires to confirm your booking.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Your reservation request was not approved by the property.', 'created_at' => $now, 'updated_at' => $now],
         ];
 
         $existingKeys = \DB::table('translation_keys')

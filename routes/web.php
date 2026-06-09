@@ -479,6 +479,12 @@ Route::middleware(['auth'])->group(function () {
         Route::controller(LodgingReservationController::class)->name('lodging-reservations.')->group(function () {
             Route::get('/lodging-reservations', 'index')->name('index');
             Route::get('/lodging-reservations-view/{identifier?}', 'show')->name('show');
+
+            // Operator actions (Stage 2.3) — gated by 'Lodging Reservations Edit'.
+            Route::post('/lodging-reservations-approve/{identifier?}', 'approve')->name('approve');
+            Route::post('/lodging-reservations-reject/{identifier?}', 'reject')->name('reject');
+            Route::post('/lodging-reservations-suggest/{identifier?}', 'suggestAlternative')->name('suggest');
+            Route::post('/lodging-reservations-note/{identifier?}', 'addNote')->name('note');
         });
 
         // Batch Routes
