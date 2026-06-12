@@ -42,7 +42,9 @@ interface ILodgingReservationRepository
     public function expireStaleReservations();
 
     // Stage 2.4 Fix 2 — customer-scoped, READ-ONLY reservation load for the payment success page.
-    public function getCustomerReservation(Request $request, string $reservationNo);
+    public function getCustomerReservation(Request $request, string $reservationNo, bool $shouldCheckCustomer = true);
+
+    public function getReservationCustomerInfo(string $reservationNo);
 
     // Stage 3 Fix — persist the NOWPayments payment id (NP_id) appended to the success_url onto the
     // reservation's active payment row (customer-scoped, idempotent) so polling can re-query by it.

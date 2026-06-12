@@ -102,6 +102,7 @@ export default function PaymentSuccess() {
 
                         {/* Reservation details */}
                         <div className="mt-6">
+                            <Row label={__('Customer Name')} value={reservation?.customer_name} />
                             <Row label={__('Reservation Number')} value={reservation?.reservation_no} />
                             <Row label={__('Property')} value={reservation?.property_name_snapshot} />
                             <Row label={__('Room')} value={reservation?.room_name_snapshot} />

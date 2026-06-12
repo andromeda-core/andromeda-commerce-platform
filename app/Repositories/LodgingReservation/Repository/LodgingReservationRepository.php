@@ -288,22 +288,52 @@ class LodgingReservationRepository implements ILodgingReservationRepository
      * Returns the reservation only if it belongs to the authenticated customer. Changes NOTHING
      * (no status write, no confirmation) — the page is pure UX; the poll command confirms.
      */
-    public function getCustomerReservation(Request $request, string $reservationNo)
+    public function getCustomerReservation(Request $request, string $reservationNo, bool $shouldCheckCustomer = true)
     {
-        $customerId = $request->user()?->customer?->id;
-        if (empty($customerId)) {
-            return null;
-        }
-
-        return $this->lodging_reservation
-            // Stage 3.4.4 — translate the live names on the success page (Option A); snapshot fallback.
+        $query = $this->lodging_reservation
             ->with([
                 'lodgingProduct.contentTranslations',
                 'lodgingRoom.contentTranslations',
             ])
+            ->where('reservation_no', $reservationNo);
+
+        if ($shouldCheckCustomer) {
+            $customerId = $request->user()?->customer?->id;
+            if (empty($customerId)) {
+                return null;
+            }
+            $query->where('customer_id', $customerId);
+        }
+
+        $reservation = $query->first();
+        if (empty($reservation)) {
+            return null;
+        }
+
+        // Extra guard when customer check skipped:
+        // Only allow if logged-in user IS the reservation's customer OR is Admin
+        if (! $shouldCheckCustomer) {
+            $user = $request->user();
+            $isAdmin = $user?->hasRole('Admin');
+            $isOwner = $user?->customer?->id === $reservation->customer_id;
+
+            if (! $isAdmin && ! $isOwner) {
+                return null;
+            }
+        }
+
+        return $reservation;
+    }
+
+    public function getReservationCustomerInfo(string $reservationNo)
+    {
+        $reservation = $this->lodging_reservation
+            ->with('customer.user')
             ->where('reservation_no', $reservationNo)
-            ->where('customer_id', $customerId)
+            ->select(['id', 'customer_id'])
             ->first();
+
+        return $reservation;
     }
 
     /**
@@ -326,14 +356,8 @@ class LodgingReservationRepository implements ILodgingReservationRepository
                 return;
             }
 
-            $customerId = $request->user()?->customer?->id;
-            if (empty($customerId)) {
-                return;
-            }
-
             $reservation = $this->lodging_reservation
                 ->where('reservation_no', $reservationNo)
-                ->where('customer_id', $customerId)
                 ->first();
 
             if (empty($reservation)) {
