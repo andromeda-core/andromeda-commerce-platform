@@ -149,6 +149,40 @@ Route::group(['as' => 'website.'], function () {
     })->name('product.findByPublicId');
 
 
+    // Stage 3.2 — public lodging property canonical route (renders the feed with a direct_lodging deep-link).
+    Route::get('/lodging/{public_id}/{slug?}', function ($public_id, $slug = null) {
+        $product = \App\Models\LodgingProduct::where('public_id', $public_id)
+            ->where('is_active', true)
+            ->first(['id', 'public_id', 'slug']);
+
+        if (! $product) {
+            abort(404);
+        }
+
+        // 301 redirect to the canonical URL when the slug is missing or wrong.
+        if ($slug !== $product->slug) {
+            return redirect()->route('website.lodging.findByPublicId', [
+                'public_id' => $product->public_id,
+                'slug'      => $product->slug,
+            ], 301);
+        }
+
+        $previous_url = url()->previous();
+
+        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks')) {
+            $previous_url = null;
+        }
+
+        return Inertia::render('Website/Home/index', [
+            'previous_url'   => $previous_url,
+            'direct_lodging' => [
+                'public_id' => $product->public_id,
+                'slug'      => $product->slug,
+            ],
+        ]);
+    })->name('lodging.findByPublicId');
+
+
     // Posts
     Route::controller(WebsitePostController::class)->name('posts.')->group(function () {
         Route::get('/posts', 'index')->name('index');
@@ -213,6 +247,9 @@ Route::group(['as' => 'website.'], function () {
     Route::controller(ProductController::class)->name('products.')->group(function () {
         Route::get('/products/get-single-smartphone/{public_id?}/{slug?}', 'getSingleSmartphone')->name('get-single-smartphone');
         Route::get('/products/preview/{public_id}', 'getProductPreview')->name('preview');
+
+        // Stage 3.2 — single lodging property for the feed (client-side direct_lodging fetch).
+        Route::get('/products/get-single-lodging/{public_id?}/{slug?}', 'getSingleLodgingForFeed')->name('get-single-lodging');
     });
 
     // Cart Routes

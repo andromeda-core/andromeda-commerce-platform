@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasContentTranslations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -10,6 +11,14 @@ use Illuminate\Support\Facades\Cache;
 
 class LodgingRoom extends Model
 {
+    use HasContentTranslations;
+
+    // System 1 free-text only. room_type/view_type/bed_types are preset enums (System 2);
+    // room_size is a measurement token (not prose) and is intentionally excluded.
+    // view_type_other is the operator's custom view text (shown when view_type === 'other') and IS
+    // System-1 translatable content, so multilingual works and it never renders blank.
+    protected array $translatableFields = ['room_name', 'room_floor_label', 'bed_size', 'view_type_other'];
+
     protected $table = 'lodging_rooms';
 
     protected $fillable = [
@@ -29,6 +38,7 @@ class LodgingRoom extends Model
         'has_bathtub',
         'has_shower_booth',
         'view_type',
+        'view_type_other',
         'room_size',
         'room_floor_label',
         'is_smoking_allowed',
@@ -71,6 +81,18 @@ class LodgingRoom extends Model
 
     // Casting
     protected $casts = [
+        // Optional guest cap: null = unlimited guests. Cast to int (null stays null)
+        // so it serializes as int|null exactly like LodgingRatePlan::maximum_nights.
+        'max_guests' => 'integer',
+        // Integer-cast the remaining numeric count fields too, so the feed/edit JSON emits
+        // numbers (not DB strings), matching max_guests. Behavior-neutral (null stays null;
+        // the React layer already coerces with Number()).
+        'standard_guests' => 'integer',
+        'bedrooms_count' => 'integer',
+        'beds_count' => 'integer',
+        'bathrooms_count' => 'integer',
+        'toilets_count' => 'integer',
+        'remaining_room_count' => 'integer',
         'bed_types' => 'array',
         'is_bathroom_private' => 'boolean',
         'has_jacuzzi' => 'boolean',

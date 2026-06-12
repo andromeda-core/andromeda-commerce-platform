@@ -1,9 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import Spinner from '@/Components/Spinner';
 import axios from 'axios';
 import { useTranslation } from '@/Hooks/useTranslation';
+import { Copy } from 'lucide-react';
+import LinkCopiedModal from '@/Components/LinkCopiedModal';
+import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
+import utc from 'dayjs/plugin/utc';
+
+dayjs.extend(duration);
+dayjs.extend(utc);
 
 /**
  * Stage 3.1 — customer-facing My Reservations LIST.
@@ -12,39 +20,75 @@ import { useTranslation } from '@/Hooks/useTranslation';
  * Lodging domain only — no orders/cart/smartphone logic here. All text is translated via __().
  */
 
-// Status -> badge tone + label (translation key). Covers the full reservation status enum.
-const STATUS_BADGES = {
-    REQUESTED: { tone: 'yellow', label: 'Awaiting Review' },
-    HOTEL_REVIEW_PENDING: { tone: 'yellow', label: 'Awaiting Review' },
-    HOTEL_APPROVED_AWAITING_PAYMENT: { tone: 'blue', label: 'Awaiting Payment' },
-    PAYMENT_LINK_CREATED: { tone: 'blue', label: 'Awaiting Payment' },
-    PAYMENT_PENDING: { tone: 'blue', label: 'Awaiting Payment' },
-    PAYMENT_CONFIRMED: { tone: 'green', label: 'Confirmed' },
-    CONFIRMED: { tone: 'green', label: 'Confirmed' },
-    COMPLETED: { tone: 'green', label: 'Completed' },
-    HOTEL_REJECTED: { tone: 'red', label: 'Rejected' },
-    EXPIRED_NO_RESPONSE: { tone: 'gray', label: 'Expired' },
-    PAYMENT_EXPIRED: { tone: 'gray', label: 'Expired' },
-    PAYMENT_FAILED: { tone: 'red', label: 'Payment Failed' },
-    CANCELLED: { tone: 'gray', label: 'Cancelled' },
+// Stage 3.5 — customer-facing per-status wording (Joseph-approved). NEVER expose the raw enum.
+// Rendered on every reservation row's status heading via __(). Keys are the UPPERCASE DB statuses.
+const STATUS_LABELS = {
+    REQUESTED: 'Waiting for approval',
+    HOTEL_REVIEW_PENDING: 'Waiting for approval',
+    HOTEL_APPROVED_AWAITING_PAYMENT: 'Payment required',
+    PAYMENT_LINK_CREATED: 'Payment link created',
+    PAYMENT_PENDING: 'Waiting for payment confirmation',
+    PAYMENT_CONFIRMED: 'Confirmed',
+    CONFIRMED: 'Confirmed',
+    COMPLETED: 'Completed',
+    HOTEL_REJECTED: 'Rejected by property',
+    EXPIRED_NO_RESPONSE: 'No response / expired',
+    PAYMENT_EXPIRED: 'Payment expired',
+    PAYMENT_FAILED: 'Payment failed',
+    CANCELLED: 'Cancelled',
 };
 
-const TONE_CLASSES = {
-    yellow: 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-300',
-    blue: 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300',
-    green: 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-300',
-    red: 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-300',
-    gray: 'bg-gray-100 text-gray-600 dark:bg-gray-700/40 dark:text-gray-300',
+// Stage 3.5 — SINGLE SOURCE OF TRUTH: each status-filter tab -> its reservation statuses (Joseph's
+// approved grouping). Drives BOTH the filtering and the per-tab counts so they can never drift.
+// Statuses are UPPERCASE to match the DB enum. `all` (null) means every status.
+const TAB_GROUPS = {
+    all: null,
+    pending_approval: ['REQUESTED', 'HOTEL_REVIEW_PENDING'],
+    awaiting_payment: ['HOTEL_APPROVED_AWAITING_PAYMENT', 'PAYMENT_LINK_CREATED', 'PAYMENT_PENDING'],
+    confirmed_upcoming: ['PAYMENT_CONFIRMED', 'CONFIRMED'],
+    completed: ['COMPLETED'],
+    cancelled_expired: [
+        'HOTEL_REJECTED',
+        'CANCELLED',
+        'PAYMENT_EXPIRED',
+        'PAYMENT_FAILED',
+        'EXPIRED_NO_RESPONSE',
+    ],
 };
 
+// Tabs in display order; labels are translation keys (resolved via __()).
+const TABS = [
+    { key: 'all', label: 'All' },
+    { key: 'pending_approval', label: 'Pending Approval' },
+    { key: 'awaiting_payment', label: 'Awaiting Payment' },
+    { key: 'confirmed_upcoming', label: 'Confirmed / Upcoming' },
+    { key: 'completed', label: 'Completed' },
+    { key: 'cancelled_expired', label: 'Cancelled / Expired' },
+];
+
+// All-tab ordering: action-needed first (lower number = earlier). Newest-first WITHIN a group is
+// preserved by the server's latest() order plus a STABLE sort (equal priorities keep input order).
+const ALL_TAB_PRIORITY = {
+    awaiting_payment: 1,
+    pending_approval: 2,
+    confirmed_upcoming: 3,
+    completed: 4,
+    cancelled_expired: 5,
+};
+
+// Resolve a status to its group key (used by the All-tab priority sort). Future/unmapped statuses
+// fall through to null and sort last.
+function groupKeyForStatus(status) {
+    return Object.keys(ALL_TAB_PRIORITY).find((key) => TAB_GROUPS[key]?.includes(status)) || null;
+}
+
+// Status renders as a bold heading (mirrors the My Orders list status style) — no pill background.
 function StatusBadge({ status, __ }) {
-    const badge = STATUS_BADGES[status] || { tone: 'gray', label: status };
+    const label = STATUS_LABELS[status] || status;
     return (
-        <span
-            className={`inline-flex items-center self-start rounded-full px-3 py-1 text-xs font-semibold uppercase ${TONE_CLASSES[badge.tone]}`}
-        >
-            {__(badge.label)}
-        </span>
+        <h3 className="text-[18px] font-semibold uppercase text-main-text-light dark:text-main-text-dark">
+            {__(label)}
+        </h3>
     );
 }
 
@@ -55,6 +99,17 @@ export default function index({ reservations, next_page_url }) {
     const nextPageUrlRef = useRef(next_page_url || null);
     const loaderRef = useRef(null);
     const isFetchingMore = useRef(false);
+
+    // Copied-toast state for the reservation-number copy button (mirrors My Orders).
+    const [linkCopied, setLinkCopied] = useState(false);
+
+    // Stage 3.5 — status filter tabs (client-side, mirrors My Orders). Default = All.
+    const [activeTab, setActiveTab] = useState('all');
+
+    // Horizontal tab strip scroll arrows (mirrors My Orders).
+    const [canScrollLeft, setCanScrollLeft] = useState(false);
+    const [canScrollRight, setCanScrollRight] = useState(false);
+    const scrollContainerRef = useRef(null);
 
     useEffect(() => {
         setAllReservations(reservations || []);
@@ -106,22 +161,156 @@ export default function index({ reservations, next_page_url }) {
         return () => clearInterval(interval);
     }, []);
 
+    // ---- Stage 3.5 — status-filter tabs (client-side, mirrors My Orders) ----
+    // Rows for the active tab. The All tab is priority-sorted (action-needed first); every other
+    // tab is its mapped statuses in the server's newest-first order.
+    const visibleReservations =
+        activeTab === 'all'
+            ? [...allReservations].sort(
+                  (a, b) =>
+                      (ALL_TAB_PRIORITY[groupKeyForStatus(a.status)] ?? 99) -
+                      (ALL_TAB_PRIORITY[groupKeyForStatus(b.status)] ?? 99),
+              )
+            : allReservations.filter((r) => (TAB_GROUPS[activeTab] || []).includes(r.status));
+
+    // Per-tab badge count — computed from the SAME source-of-truth map as the filtering.
+    const countForTab = (tabKey) =>
+        tabKey === 'all'
+            ? allReservations.length
+            : allReservations.filter((r) => (TAB_GROUPS[tabKey] || []).includes(r.status)).length;
+
+    // Tab strip scroll handlers (mirrors My Orders).
+    const scrollLeft = useCallback(() => {
+        scrollContainerRef.current?.scrollBy({ left: -200, behavior: 'smooth' });
+    }, []);
+
+    const scrollRight = useCallback(() => {
+        scrollContainerRef.current?.scrollBy({ left: 200, behavior: 'smooth' });
+    }, []);
+
+    const updateScrollButtons = useCallback(() => {
+        if (scrollContainerRef.current) {
+            const { scrollLeft, scrollWidth, clientWidth } = scrollContainerRef.current;
+            const newCanScrollLeft = scrollLeft > 0;
+            const newCanScrollRight = scrollLeft < scrollWidth - clientWidth - 20;
+            if (newCanScrollLeft !== canScrollLeft || newCanScrollRight !== canScrollRight) {
+                setCanScrollLeft(newCanScrollLeft);
+                setCanScrollRight(newCanScrollRight);
+            }
+        }
+    }, [canScrollLeft, canScrollRight]);
+
+    useEffect(() => {
+        const container = scrollContainerRef.current;
+        if (!container) return;
+
+        const raf = requestAnimationFrame(() => updateScrollButtons());
+        container.addEventListener('scroll', updateScrollButtons);
+        window.addEventListener('resize', updateScrollButtons);
+
+        return () => {
+            cancelAnimationFrame(raf);
+            container.removeEventListener('scroll', updateScrollButtons);
+            window.removeEventListener('resize', updateScrollButtons);
+        };
+    }, [updateScrollButtons, allReservations.length]);
+
     return (
         <MainLayout>
             <Head title={__('Reservations', true)} />
 
-            <div className="my-0 min-h-screen pb-20 lg:my-3">
-                <div className="mx-auto w-full max-w-7xl overflow-x-hidden text-black dark:text-main-text-dark sm:px-8">
-                    <div className="mt-2 px-4 sm:px-0">
-                        {allReservations.length === 0 ? (
+            <div className="min-h-screen pb-20 my-0 lg:my-3">
+                <div className="w-full mx-auto overflow-x-hidden text-black max-w-7xl dark:text-main-text-dark sm:px-8">
+                    <div className="px-4 mt-2 sm:px-0">
+                        {/* Status filter tabs (mirrors My Orders) */}
+                        {allReservations.length > 0 && (
+                            <div className="w-full mt-3 mb-4">
+                                <div className="relative grid w-full grid-cols-1 overflow-hidden">
+                                    <div className="relative flex items-center w-full">
+                                        {/* Left Arrow */}
+                                        {canScrollLeft && (
+                                            <button
+                                                onClick={scrollLeft}
+                                                className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                                style={{ left: '0px' }}
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={2}
+                                                    stroke="currentColor"
+                                                    className="size-4 text-sub-text-light dark:text-sub-text-dark"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M15.75 19.5L8.25 12l7.5-7.5"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
+
+                                        <div
+                                            ref={scrollContainerRef}
+                                            className="flex items-center w-full overflow-x-auto flex-nowrap gap-7 scroll-smooth scrollbar-none"
+                                            style={{
+                                                transform: 'translateZ(0)',
+                                                WebkitOverflowScrolling: 'touch',
+                                                scrollbarWidth: 'none',
+                                                msOverflowStyle: 'none',
+                                                maxWidth: '100%',
+                                                display: 'flex',
+                                            }}
+                                        >
+                                            {TABS.map((tab) => (
+                                                <TabButton
+                                                    key={tab.key}
+                                                    label={__(tab.label)}
+                                                    count={countForTab(tab.key)}
+                                                    active={activeTab === tab.key}
+                                                    onClick={() => setActiveTab(tab.key)}
+                                                />
+                                            ))}
+                                        </div>
+
+                                        {/* Right Arrow */}
+                                        {canScrollRight && (
+                                            <button
+                                                onClick={scrollRight}
+                                                className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    strokeWidth={2}
+                                                    stroke="currentColor"
+                                                    className="size-4 text-sub-text-light dark:text-sub-text-dark"
+                                                >
+                                                    <path
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        d="M8.25 4.5l7.5 7.5-7.5 7.5"
+                                                    />
+                                                </svg>
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {visibleReservations.length === 0 ? (
                             <EmptyReservations __={__} />
                         ) : (
                             <div className="grid grid-cols-1 gap-4">
-                                {allReservations.map((reservation) => (
+                                {visibleReservations.map((reservation) => (
                                     <ReservationCard
                                         key={reservation.id}
                                         reservation={reservation}
                                         __={__}
+                                        setLinkCopied={setLinkCopied}
                                     />
                                 ))}
                             </div>
@@ -134,33 +323,110 @@ export default function index({ reservations, next_page_url }) {
             {nextPageUrlRef.current && (
                 <div
                     ref={loaderRef}
-                    className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-main-text-light transition-all duration-100 dark:text-main-text-dark"
+                    className="flex items-center justify-center gap-2 py-10 text-center transition-all duration-100 animate-pulse text-main-text-light dark:text-main-text-dark"
                 >
                     <Spinner />
                     {__('Loading More')}...
                 </div>
             )}
+
+            <LinkCopiedModal
+                linkCopied={linkCopied}
+                setLinkCopied={setLinkCopied}
+                message={__('Reservation No Copied')}
+            />
         </MainLayout>
     );
 }
 
+// Tab Button Component (mirrors My Orders)
+function TabButton({ label, count, active, onClick }) {
+    return (
+        <button
+            onClick={onClick}
+            className={`flex flex-shrink-0 items-center gap-2 whitespace-nowrap border-b-[3px] py-3.5 pl-1 text-sm font-semibold transition-all ${
+                active
+                    ? 'border-main-text-light text-main-text-light dark:border-main-text-dark dark:text-main-text-dark'
+                    : 'border-transparent text-main-text-light dark:text-main-text-dark hover:lg:border-main-text-light dark:lg:hover:border-main-text-dark'
+            }`}
+        >
+            <span className="text-[24px] font-semibold text-main-text-light dark:text-main-text-dark">
+                {label} {count > 0 ? `(${count})` : ''}
+            </span>
+        </button>
+    );
+}
+
 // Reservation Card Component
-function ReservationCard({ reservation, __ }) {
+function ReservationCard({ reservation, __, setLinkCopied }) {
+    // Show "Complete Payment" ONLY before the customer has gone to NOWPayments: an approved,
+    // not-yet-paid reservation (awaiting-payment / link-created) whose NP_id is still empty. Once
+    // NOWPayments stores the NP_id (or the status moves on), the button is hidden. payment_url is
+    // retained because the button is an anchor to it — without a link there is nothing to open.
     const canPay =
-        ['PAYMENT_PENDING', 'PAYMENT_LINK_CREATED'].includes(reservation.status) &&
-        !!reservation.payment_url;
+        ['HOTEL_APPROVED_AWAITING_PAYMENT', 'PAYMENT_PENDING'].includes(reservation.status) &&
+        !reservation.nowpayments_payment_id;
+
+    // Order-style STATIC "Expires in" countdown (verbatim My Orders helper) — computed ONCE at
+    // render from the approved-unpaid deadline (approval_expires_at, the field the expiry cron
+    // gates on). NO ticking; every page load/refresh recomputes the remaining time, exactly like
+    // the My Orders list.
+    const getRemainingTime = (expiresAt) => {
+        if (!expiresAt) return null;
+
+        const now = dayjs();
+        const expiry = dayjs.utc(expiresAt);
+
+        if (expiry.isBefore(now)) {
+           return __('a few moments',true);
+        }
+
+        const diffMs = expiry.diff(now);
+        const d = dayjs.duration(diffMs);
+
+        const hours = Math.floor(d.asHours());
+        const minutes = d.minutes();
+
+        if (hours > 0) {
+            return `${hours}h ${minutes}m`;
+        }
+
+        return `${minutes}m`;
+    };
+
+    const remainingTime = getRemainingTime(reservation?.approval_expires_at);
 
     return (
-        <div className="overflow-hidden rounded-md border border-surface-3-light bg-white transition-all dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="overflow-hidden transition-all bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header */}
             <div className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
                     <StatusBadge status={reservation.status} __={__} />
+                    {/* Static "Expires in" countdown — ONLY while the 60-min approved-unpaid
+                        window is live (same statuses as the Awaiting Payment tab / expiry cron).
+                        Never on confirmed/expired/rejected/review states. */}
+                    {TAB_GROUPS.awaiting_payment.includes(reservation.status) && (
+                        <span className="text-[14px] font-semibold text-[#ff0000]">
+                            {remainingTime &&
+                                (remainingTime === 'Expired'
+                                    ? __('Expired', true)
+                                    : `${__('Expires in', true)} ${remainingTime}`)}
+                        </span>
+                    )}
                     <span className="flex items-center gap-1 text-sm text-sub-text-light dark:text-sub-text-dark">
                         {__('Reservation Number')}:{' '}
                         <span className="text-[14px] font-medium text-main-text-light dark:text-main-text-dark">
                             {reservation.reservation_no}
                         </span>
+                        <button
+                            className="font-semibold text-main-text-light dark:text-main-text-dark lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
+                            onClick={() => {
+                                navigator.clipboard.writeText(reservation.reservation_no);
+                                setLinkCopied(true);
+                            }}
+                        >
+                            <Copy className="size-3" />
+                        </button>
                     </span>
                 </div>
 
@@ -183,7 +449,7 @@ function ReservationCard({ reservation, __ }) {
                             viewBox="0 0 24 24"
                             strokeWidth={2}
                             stroke="currentColor"
-                            className="h-3 w-3"
+                            className="w-3 h-3"
                         >
                             <path
                                 strokeLinecap="round"
@@ -252,7 +518,7 @@ function EmptyReservations({ __ }) {
                     {__('You have no reservations yet.')}
                 </h3>
 
-                <p className="mb-8 mt-2 max-w-xs text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                <p className="max-w-xs mt-2 mb-8 text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
                     {__('Your reservations will appear here once you book a stay.')}
                 </p>
 

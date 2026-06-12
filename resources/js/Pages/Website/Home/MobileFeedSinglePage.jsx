@@ -28,10 +28,12 @@ const MobileFeedSinglePage = ({
     setFeedIndex,
     isSinglePageRef,
     generateSmartphoneURL,
+    generateLodgingURL,
     setBookmarkStatusChanged,
     setSpatiotemporalInfoModal,
     spatiotemporalInfoModal,
     previous_url,
+    openReservationPanel,
     __,
 }) => {
     useEffect(() => {
@@ -83,6 +85,7 @@ const MobileFeedSinglePage = ({
                     placeholderImage={placeholderImage}
                     generateURL={generateURL}
                     generateSmartphoneURL={generateSmartphoneURL}
+                    generateLodgingURL={generateLodgingURL}
                     showErrorMessage={showErrorMessage}
                     showInfoMessage={showInfoMessage}
                     ErrorMessage={ErrorMessage}
@@ -98,6 +101,7 @@ const MobileFeedSinglePage = ({
                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                     previous_url={previous_url}
+                    openReservationPanel={openReservationPanel}
                     __={__}
                 />
             )}

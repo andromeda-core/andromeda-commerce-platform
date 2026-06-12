@@ -15,6 +15,8 @@ import SmartphoneDetailsAccordion from '@/Components/SmartphoneDetailsAccordion'
 import axios from 'axios';
 import DisplayPrice from '@/Components/DisplayPrice';
 import useProductCardHydration from '@/Hooks/useProductCardHydration';
+import LodgingDetailSections, { humanize } from './LodgingDetailSections';
+import { useLanguageStore } from '@/Hooks/useLanguageStore';
 
 const DesktopFeed = ({
     feedGallery,
@@ -43,13 +45,20 @@ const DesktopFeed = ({
     fetchMoreYAxis,
     fetchRelatedFeed,
     generateSmartphoneURL,
+    generateLodgingURL,
     isSinglePageRef,
     setSpatiotemporalInfoModal,
     spatiotemporalInfoModal,
     previous_url,
+    openReservationPanel,
+    reservationPanelOpenRef,
+    closeReservationPanel,
     __,
 }) => {
     const isDarkMode = useDarkMode();
+    // Translations may still be loading when the lodging viewer mounts; gate the lodging detail
+    // chips on it so they never flash "Loading...." labels (or "[object Object]" joined values).
+    const translationsLoading = useLanguageStore((state) => state.loading);
     const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
     const [showPostDesktopActionsDropdown, setShowPostDesktopActionsDropdown] = useState(false);
 
@@ -183,6 +192,9 @@ const DesktopFeed = ({
         } else if (currentItem?.type === 'smartphones') {
             const url = route('home') + generateSmartphoneURL(currentItem);
             window.history.replaceState({}, '', url);
+        } else if (currentItem?.type === 'lodging') {
+            const url = route('home') + generateLodgingURL(currentItem);
+            window.history.replaceState({}, '', url);
         }
 
         updateArrowStates();
@@ -209,6 +221,9 @@ const DesktopFeed = ({
             window.history.replaceState({}, '', url);
         } else if (currentItem?.type === 'smartphones') {
             const url = route('home') + generateSmartphoneURL(currentItem);
+            window.history.replaceState({}, '', url);
+        } else if (currentItem?.type === 'lodging') {
+            const url = route('home') + generateLodgingURL(currentItem);
             window.history.replaceState({}, '', url);
         }
 
@@ -249,24 +264,35 @@ const DesktopFeed = ({
             if (spatiotemporalInfoModal) return;
             switch (e.key) {
                 case 'ArrowUp':
+                    if(reservationPanelOpenRef.current) break;
                     e.preventDefault();
                     handleTopPrevious();
                     break;
                 case 'ArrowDown':
+                    if(reservationPanelOpenRef.current) break;
                     e.preventDefault();
                     handleBottomNext();
                     break;
 
                 case 'ArrowLeft':
+                    if(reservationPanelOpenRef.current) break;
                     e.preventDefault();
                     handleLeftPrevious();
                     break;
 
                 case 'ArrowRight':
+                    if(reservationPanelOpenRef.current) break;
                     e.preventDefault();
                     handleRightNext();
                     break;
                 case 'Escape':
+                    // If the reservation panel is open, close it FIRST and stop here (the next
+                    // Escape will close the feed). closeReservationPanel handles its own history
+                    // (replaceState strips ?reserve) — do not duplicate that here.
+                    if (reservationPanelOpenRef?.current) {
+                        closeReservationPanel?.();
+                        break;
+                    }
                     setFeedGallery(null);
                     setFeedOpen(false);
                     window.history.replaceState({}, '', '/');
@@ -294,6 +320,9 @@ const DesktopFeed = ({
             window.history.replaceState({}, '', url);
         } else if (feedItem?.type === 'smartphones') {
             const url = route('home') + generateSmartphoneURL(feedItem);
+            window.history.replaceState({}, '', url);
+        } else if (feedItem?.type === 'lodging') {
+            const url = route('home') + generateLodgingURL(feedItem);
             window.history.replaceState({}, '', url);
         }
 
@@ -460,6 +489,10 @@ const DesktopFeed = ({
     const [showSmartphoneDesktopActionsDropdown, setShowSmartphoneDesktopActionsDropdown] =
         useState(false);
 
+    // Lodging desktop viewer 3-dot actions dropdown (mirrors the smartphone one).
+    const [showLodgingDesktopActionsDropdown, setShowLodgingDesktopActionsDropdown] =
+        useState(false);
+
     const [cartProcessing, setCartProcessing] = useState(false);
     const [buyNowProcessing, setBuyNowProcessing] = useState(false);
     const [canActionOnSmartphone, setCanActionOnSmartphone] = useState(false);
@@ -491,6 +524,35 @@ const DesktopFeed = ({
             }
 
             setShowSmartphoneDesktopActionsDropdown(false);
+        };
+        window.addEventListener('resize', handleResize);
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [feedGallery]);
+
+    // Outside-click + resize for the lodging desktop actions dropdown (mirrors the smartphone one).
+    useEffect(() => {
+        if (!feedGallery || feedGallery.type !== 'lodging') return;
+
+        const handleResize = () => {
+            setShowLodgingDesktopActionsDropdown(false);
+        };
+        const handleClickOutside = (e) => {
+            const clickedBtn = e.target.closest('[data-lodging-actions-button]');
+            const clickedDropdown = e.target.closest('[data-lodging-actions-dropdown]');
+
+            if (clickedBtn) {
+                setShowLodgingDesktopActionsDropdown((prev) => !prev);
+                return;
+            }
+            if (clickedDropdown) {
+                return;
+            }
+            setShowLodgingDesktopActionsDropdown(false);
         };
         window.addEventListener('resize', handleResize);
         document.addEventListener('mousedown', handleClickOutside);
@@ -1052,18 +1114,14 @@ const DesktopFeed = ({
     useEffect(() => {
         return () => {
             const refAllowsCleanup = shouldCleanupBrowserHistoryRef.current;
-            const storeAllowsCleanup = useFeedCleanupStore
-                .getState()
-                .shouldCleanupBrowserHistory;
+            const storeAllowsCleanup = useFeedCleanupStore.getState().shouldCleanupBrowserHistory;
 
             if (refAllowsCleanup && storeAllowsCleanup) {
                 window.history.replaceState({}, '', '/');
             }
 
             // Reset store flag for the next feed mount (defensive reset)
-            useFeedCleanupStore
-                .getState()
-                .setShouldCleanupBrowserHistory(true);
+            useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(true);
 
             setShowQrCode(false);
             setCartProcessing(false);
@@ -1494,7 +1552,8 @@ const DesktopFeed = ({
                                                             }}
                                                             className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                         >
-                                                            {feedGallery?.tag_display ?? feedGallery?.tag}
+                                                            {feedGallery?.tag_display ??
+                                                                feedGallery?.tag}
                                                         </button>
                                                     )}
                                                 </div>
@@ -1504,7 +1563,10 @@ const DesktopFeed = ({
                                             <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
                                                 <RawHtmlContentFrame
                                                     ref={postContentRef1}
-                                                    content={feedGallery?.content_display ?? feedGallery?.content}
+                                                    content={
+                                                        feedGallery?.content_display ??
+                                                        feedGallery?.content
+                                                    }
                                                     className="prose prose-sm max-w-none whitespace-pre-line break-words pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                     interactive
                                                 />
@@ -1683,7 +1745,10 @@ const DesktopFeed = ({
                                                         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
                                                             <RawHtmlContentFrame
                                                                 ref={postContentRef2}
-                                                                content={feedGallery?.content_display ?? feedGallery?.content}
+                                                                content={
+                                                                    feedGallery?.content_display ??
+                                                                    feedGallery?.content
+                                                                }
                                                                 className="prose prose-sm max-w-none whitespace-pre-line break-words pr-2 text-[14px] leading-relaxed text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                                 interactive
                                                             />
@@ -2071,7 +2136,8 @@ const DesktopFeed = ({
                                                                         }}
                                                                         className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
-                                                                        {feedGallery?.tag_display ?? feedGallery?.tag}
+                                                                        {feedGallery?.tag_display ??
+                                                                            feedGallery?.tag}
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -2387,7 +2453,7 @@ const DesktopFeed = ({
                                                                     <span className="font-medium text-left text-main-text-light dark:text-main-text-dark">
                                                                         {__('Total Price')}
                                                                     </span>
-                                                                    <div className="ml-auto flex items-center gap-2">
+                                                                    <div className="flex items-center gap-2 ml-auto">
                                                                         {feedGallery?.is_sold_out && (
                                                                             <span className="inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
                                                                                 {__('Sold Out')}
@@ -2399,8 +2465,10 @@ const DesktopFeed = ({
                                                                                     feedGallery?.id
                                                                                 ]
                                                                             }
-                                                                            showEstimatedLabel={false}
-                                                                            className={`text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark ${feedGallery?.is_sold_out ? 'line-through' : ''}`}
+                                                                            showEstimatedLabel={
+                                                                                false
+                                                                            }
+                                                                            className={`text-right text-3xl font-semibold text-main-text-light dark:text-main-text-dark ${feedGallery?.is_sold_out ? 'line-through' : ''}`}
                                                                         />
                                                                     </div>
                                                                 </div>
@@ -2442,7 +2510,13 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {feedGallery?.is_sold_out ? __('Sold Out') : __('Add to cart')}
+                                                                                        {feedGallery?.is_sold_out
+                                                                                            ? __(
+                                                                                                  'Sold Out',
+                                                                                              )
+                                                                                            : __(
+                                                                                                  'Add to cart',
+                                                                                              )}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
@@ -2481,7 +2555,13 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {feedGallery?.is_sold_out ? __('Sold Out') : __('Buy now')}
+                                                                                        {feedGallery?.is_sold_out
+                                                                                            ? __(
+                                                                                                  'Sold Out',
+                                                                                              )
+                                                                                            : __(
+                                                                                                  'Buy now',
+                                                                                              )}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
@@ -3302,7 +3382,8 @@ const DesktopFeed = ({
                                                                         }}
                                                                         className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
-                                                                        {feedGallery?.tag_display ?? feedGallery?.tag}
+                                                                        {feedGallery?.tag_display ??
+                                                                            feedGallery?.tag}
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -3311,7 +3392,10 @@ const DesktopFeed = ({
                                                         {/* Post Content */}
                                                         <RawHtmlContentFrame
                                                             ref={postContentRef3}
-                                                            content={feedGallery?.content_display ?? feedGallery?.content}
+                                                            content={
+                                                                feedGallery?.content_display ??
+                                                                feedGallery?.content
+                                                            }
                                                             className="prose prose-sm max-w-none flex-1 overflow-y-auto whitespace-pre-line break-all pr-2 text-[14px] font-normal text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                                             interactive
                                                         />
@@ -3999,7 +4083,8 @@ const DesktopFeed = ({
                                                                         }}
                                                                         className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
                                                                     >
-                                                                        {feedGallery?.tag_display ?? feedGallery?.tag}
+                                                                        {feedGallery?.tag_display ??
+                                                                            feedGallery?.tag}
                                                                     </button>
                                                                 )}
                                                             </div>
@@ -4315,7 +4400,7 @@ const DesktopFeed = ({
                                                                     <span className="font-medium text-left text-main-text-light dark:text-main-text-dark">
                                                                         {__('Total Price')}
                                                                     </span>
-                                                                    <div className="ml-auto flex items-center gap-2">
+                                                                    <div className="flex items-center gap-2 ml-auto">
                                                                         {feedGallery?.is_sold_out && (
                                                                             <span className="inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
                                                                                 {__('Sold Out')}
@@ -4327,8 +4412,10 @@ const DesktopFeed = ({
                                                                                     feedGallery?.id
                                                                                 ]
                                                                             }
-                                                                            showEstimatedLabel={false}
-                                                                            className={`text-3xl font-semibold text-right text-main-text-light dark:text-main-text-dark ${feedGallery?.is_sold_out ? 'line-through' : ''}`}
+                                                                            showEstimatedLabel={
+                                                                                false
+                                                                            }
+                                                                            className={`text-right text-3xl font-semibold text-main-text-light dark:text-main-text-dark ${feedGallery?.is_sold_out ? 'line-through' : ''}`}
                                                                         />
                                                                     </div>
                                                                 </div>
@@ -4370,7 +4457,13 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {feedGallery?.is_sold_out ? __('Sold Out') : __('Add to cart')}
+                                                                                        {feedGallery?.is_sold_out
+                                                                                            ? __(
+                                                                                                  'Sold Out',
+                                                                                              )
+                                                                                            : __(
+                                                                                                  'Add to cart',
+                                                                                              )}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
@@ -4409,7 +4502,13 @@ const DesktopFeed = ({
                                                                                     )}
 
                                                                                     <span>
-                                                                                        {feedGallery?.is_sold_out ? __('Sold Out') : __('Buy now')}
+                                                                                        {feedGallery?.is_sold_out
+                                                                                            ? __(
+                                                                                                  'Sold Out',
+                                                                                              )
+                                                                                            : __(
+                                                                                                  'Buy now',
+                                                                                              )}
                                                                                     </span>
                                                                                 </div>
                                                                             </button>
@@ -4510,6 +4609,1004 @@ const DesktopFeed = ({
                                                 </div>
                                             </>
                                         )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {spatiotemporalInfoModal && (
+                    <SpatiotemporalInfoModal
+                        onClose={() => {
+                            setSpatiotemporalInfoModal(false);
+                        }}
+                        post={feedGallery}
+                    />
+                )}
+            </>
+        );
+    }
+
+    // Non Text Lodging (Stage 3.2) — property viewer: cover image + details + reservation CTA.
+    if (feedGallery !== null && feedGallery?.type === 'lodging') {
+        // No-media properties render a full-width centered column (like the posts text-only branch);
+        // with media, the existing 2-column (media + details) layout is kept.
+        const lodgingHasMedia =
+            (Array.isArray(feedGallery?.lodging_video_urls) &&
+                feedGallery.lodging_video_urls.length > 0) ||
+            (Array.isArray(feedGallery?.lodging_image_urls) &&
+                feedGallery.lodging_image_urls.length > 0);
+
+        return (
+            <>
+                <div className="absolute inset-y-0 left-[var(--sidebar-w)] right-0 z-[60] bg-backgroundLight dark:bg-backgroundDark">
+                    <div className="flex items-center justify-center w-full h-full overflow-hidden">
+                        <div className="relative mx-auto w-full max-w-[1300px] px-6 lg:px-[96px] xl:px-[120px]">
+                            {/* Left Arrow */}
+                            <button
+                                onClick={handleLeftPrevious}
+                                disabled={isLeftDisabled}
+                                className={`absolute left-[clamp(0px,2vw,0px)] top-1/2 z-[60] -translate-y-1/2 rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isLeftDisabled ? 'cursor-not-allowed opacity-20' : ''}`}
+                                aria-label="Previous item"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeWidth={2}
+                                        strokeLinejoin="round"
+                                        d="M15.75 19.5 8.25 12l7.5-7.5"
+                                    />
+                                </svg>
+                            </button>
+
+                            {/* Close Button */}
+                            <button
+                                onClick={() => {
+                                    if (previous_url) {
+                                        shouldCleanupBrowserHistoryRef.current = false;
+                                        router.visit(previous_url);
+                                    } else {
+                                        setFeedGallery(null);
+                                        setFeedOpen(false);
+                                        setMediaItems([]);
+                                        mediaThumbRefs.current = {};
+                                        window.history.replaceState(
+                                            {},
+                                            '',
+                                            window.location.pathname,
+                                        );
+                                    }
+                                }}
+                                className="absolute right-[clamp(35px,2vw,20px)] top-0 z-[90] flex h-[32px] w-[32px] items-center justify-center rounded-full transition-all duration-200 hover:bg-surface-1-light dark:hover:bg-surface-2-dark"
+                                aria-label="Close modal"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    strokeWidth={2}
+                                    stroke="currentColor"
+                                    className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M6 18L18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+
+                            <div className="absolute right-[clamp(30px,2vw,20px)] top-1/2 z-[60] flex -translate-y-1/2 flex-col items-center gap-8">
+                                {/* Up Arrow */}
+                                <button
+                                    onClick={handleTopPrevious}
+                                    disabled={isTopDisabled}
+                                    className={`rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isTopDisabled ? 'opacity-20' : ''}`}
+                                    aria-label="Previous Item"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeWidth={2}
+                                            strokeLinejoin="round"
+                                            d="m4.5 15.75 7.5-7.5 7.5 7.5"
+                                        />
+                                    </svg>
+                                </button>
+
+                                {/* Right Arrow */}
+                                <button
+                                    onClick={handleRightNext}
+                                    disabled={isRightDisabled}
+                                    className={`rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isRightDisabled ? 'opacity-20' : ''}`}
+                                    aria-label="Next item"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeWidth={2}
+                                            strokeLinejoin="round"
+                                            d="m8.25 4.5 7.5 7.5-7.5 7.5"
+                                        />
+                                    </svg>
+                                </button>
+
+                                {/* Down Arrow */}
+                                <button
+                                    onClick={handleBottomNext}
+                                    disabled={isBottomDisabled}
+                                    className={`rounded-full bg-surface-1-light p-3 transition-all duration-200 hover:scale-110 dark:bg-surface-2-dark dark:hover:bg-surface-3-dark ${isBottomDisabled ? 'opacity-20' : ''}`}
+                                    aria-label="Next item"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        strokeWidth={2}
+                                        stroke="currentColor"
+                                        className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            d="m19.5 8.25-7.5 7.5-7.5-7.5"
+                                        />
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <div className="transition-all duration-300 bg-backgroundLight dark:bg-backgroundDark">
+                                <div className="h-full">
+                                    <div className="flex h-[83vh] min-h-0 flex-col gap-[40px] bg-backgroundLight dark:bg-backgroundDark lg:flex-row lg:items-start">
+                                        {/* Left Side - Image Viewer (mirrors smartphones; lodging_* field names) */}
+                                        {lodgingHasMedia && (
+                                            <div
+                                                className="relative flex h-full w-full justify-center lg:w-[50%] xl:w-[50%]"
+                                                ref={MediaRef}
+                                            >
+                                                <div className="aspect-[3/2] h-full w-full max-w-[520px] lg:aspect-[2/4]">
+                                                    {/* Animated layers */}
+                                                    <AnimatePresence
+                                                        initial={false}
+                                                        custom={direction}
+                                                    >
+                                                        <div className="absolute inset-0 flex items-center justify-center w-full h-full">
+                                                            {mediaItems.map((item, idx) => {
+                                                                const isCurrent =
+                                                                    idx === selectedMediaIndex;
+
+                                                                return (
+                                                                    <motion.div
+                                                                        key={`${idx}-${item.url}`}
+                                                                        initial={false}
+                                                                        animate={{
+                                                                            opacity: isCurrent
+                                                                                ? 1
+                                                                                : 0,
+                                                                            zIndex: isCurrent
+                                                                                ? 1
+                                                                                : 0,
+                                                                        }}
+                                                                        transition={{
+                                                                            duration: 0.4,
+                                                                            ease: 'easeInOut',
+                                                                        }}
+                                                                        className="absolute inset-0 flex items-center justify-center w-full h-full"
+                                                                    >
+                                                                        {item.type === 'image' ? (
+                                                                            <img
+                                                                                src={
+                                                                                    item.url ||
+                                                                                    Placeholder
+                                                                                }
+                                                                                alt={`Media ${idx}`}
+                                                                                className="object-cover object-center w-full h-full rounded-md"
+                                                                                loading={
+                                                                                    isCurrent
+                                                                                        ? 'eager'
+                                                                                        : 'lazy'
+                                                                                }
+                                                                                decoding="async"
+                                                                                fetchpriority={
+                                                                                    isCurrent
+                                                                                        ? 'high'
+                                                                                        : 'low'
+                                                                                }
+                                                                                onLoad={() =>
+                                                                                    loadedCache.current.add(
+                                                                                        item.url,
+                                                                                    )
+                                                                                }
+                                                                                onError={(e) =>
+                                                                                    (e.target.src =
+                                                                                        Placeholder)
+                                                                                }
+                                                                            />
+                                                                        ) : (
+                                                                            <CustomizedVideoPlayer
+                                                                                autoPlay={
+                                                                                    videoAutoplay
+                                                                                }
+                                                                                className="object-cover object-center w-full h-full rounded-md"
+                                                                                videoUrl={item.url}
+                                                                                Preload="metadata"
+                                                                                thumbnail={
+                                                                                    item?.thumbnail_url ||
+                                                                                    Placeholder
+                                                                                }
+                                                                                OnLoadedMetaData={() =>
+                                                                                    loadedCache.current.add(
+                                                                                        item.url,
+                                                                                    )
+                                                                                }
+                                                                                slug={
+                                                                                    feedGallery?.slug
+                                                                                }
+                                                                            />
+                                                                        )}
+                                                                    </motion.div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </AnimatePresence>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Right: Property Details + Reservation CTA.
+                                            No media -> full-width centered column (max-w-lg == inner content width). */}
+                                        <div
+                                            className={`flex h-full w-full flex-col ${
+                                                lodgingHasMedia
+                                                    ? 'lg:w-[40%] xl:w-[45%]'
+                                                    : 'min-h-0'
+                                            }`}
+                                            ref={productRightPanelScrollRef}
+                                        >
+                                            {/* Image Thumbnails Strip (mirrors smartphones; lodging_* field names) */}
+                                            <div className={`flex items-center gap-0`}>
+                                                {/* Prev indicator */}
+                                                {canGoPrev && (
+                                                    <button
+                                                        className="mx-2 flex h-[clamp(66px,5.2vw,66px)] w-[clamp(40px,2.5vw,40px)] flex-shrink-0 items-center justify-center rounded-md bg-surface-2-light dark:bg-surface-2-dark"
+                                                        onClick={() => {
+                                                            const newPage = thumbPage - 1;
+                                                            const firstIndex = newPage * MAX_THUMBS;
+
+                                                            setThumbPage(newPage);
+                                                            setSelectedMediaIndex(firstIndex);
+                                                        }}
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            fill="currentColor"
+                                                            className="size-4 text-sub-text-light dark:text-main-text-dark"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M19.5 18.347c0 1.427-1.529 2.33-2.779 1.643L5.181 13.643c-1.295-.712-1.295-2.573 0-3.286L16.721 4.01c1.25-.687 2.779.217 2.779 1.643v12.694Z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                )}
+                                                {/* Thumbnails */}
+                                                {((Array.isArray(feedGallery?.lodging_video_urls) &&
+                                                    feedGallery.lodging_video_urls.length > 1) ||
+                                                    (Array.isArray(
+                                                        feedGallery?.lodging_image_urls,
+                                                    ) &&
+                                                        feedGallery.lodging_image_urls.length >
+                                                            1)) && (
+                                                    <div
+                                                        ref={MediaThumbRef}
+                                                        className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                                                    >
+                                                        {/* Render thumbnails */}
+                                                        {visibleThumbs.map((mediaItem, index) => {
+                                                            const realIndex = startIndex + index;
+                                                            return (
+                                                                <button
+                                                                    key={realIndex}
+                                                                    ref={(el) => {
+                                                                        mediaThumbRefs.current[
+                                                                            realIndex
+                                                                        ] = el;
+                                                                    }}
+                                                                    onClick={() =>
+                                                                        setSelectedMediaIndex(
+                                                                            realIndex,
+                                                                        )
+                                                                    }
+                                                                    className={`aspect-square ${selectedMediaIndex === realIndex ? 'border-[3px] border-main-text-light dark:border-main-text-dark' : ''} w-[clamp(48px,5vw,64px)] flex-shrink-0 overflow-hidden rounded-md transition-all`}
+                                                                >
+                                                                    {mediaItem?.type === 'image' ? (
+                                                                        <img
+                                                                            src={
+                                                                                mediaItem?.url ||
+                                                                                Placeholder
+                                                                            }
+                                                                            alt={`Thumbnail ${realIndex + 1}`}
+                                                                            className="object-cover w-full h-full"
+                                                                            loading={
+                                                                                selectedMediaIndex ===
+                                                                                realIndex
+                                                                                    ? 'eager'
+                                                                                    : 'lazy'
+                                                                            }
+                                                                            decoding="async"
+                                                                            fetchpriority={
+                                                                                selectedMediaIndex ===
+                                                                                realIndex
+                                                                                    ? 'high'
+                                                                                    : 'low'
+                                                                            }
+                                                                            onError={(e) =>
+                                                                                (e.target.src =
+                                                                                    Placeholder)
+                                                                            }
+                                                                        />
+                                                                    ) : (
+                                                                        <img
+                                                                            src={
+                                                                                mediaItem?.thumbnail_url ||
+                                                                                Placeholder
+                                                                            }
+                                                                            alt={`Thumbnail ${index + 1}`}
+                                                                            className="object-cover w-full h-full"
+                                                                            loading={
+                                                                                selectedMediaIndex ===
+                                                                                realIndex
+                                                                                    ? 'eager'
+                                                                                    : 'lazy'
+                                                                            }
+                                                                            decoding="async"
+                                                                            fetchpriority={
+                                                                                selectedMediaIndex ===
+                                                                                realIndex
+                                                                                    ? 'high'
+                                                                                    : 'low'
+                                                                            }
+                                                                            onError={(e) =>
+                                                                                (e.target.src =
+                                                                                    Placeholder)
+                                                                            }
+                                                                        />
+                                                                    )}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                )}
+
+                                                {/* Next indicator */}
+                                                {canGoNext && (
+                                                    <button
+                                                        className="mx-2 flex h-[clamp(66px,5.2vw,66px)] w-[clamp(40px,2.5vw,40px)] flex-shrink-0 items-center justify-center rounded-md bg-surface-2-light dark:bg-surface-2-dark"
+                                                        onClick={() => {
+                                                            const newPage = thumbPage + 1;
+                                                            const firstIndex = newPage * MAX_THUMBS;
+
+                                                            setThumbPage(newPage);
+                                                            setSelectedMediaIndex(firstIndex);
+                                                        }}
+                                                    >
+                                                        <svg
+                                                            xmlns="http://www.w3.org/2000/svg"
+                                                            viewBox="0 0 24 24"
+                                                            fill="currentColor"
+                                                            className="size-4 text-sub-text-light dark:text-main-text-dark"
+                                                        >
+                                                            <path
+                                                                fillRule="evenodd"
+                                                                d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z"
+                                                                clipRule="evenodd"
+                                                            />
+                                                        </svg>
+                                                    </button>
+                                                )}
+                                            </div>
+
+                                            <div className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-none">
+                                                {/* Actions + tag header (3-dot: QR + Copy Link + Spatiotemporal + Date; NO bookmark) */}
+                                                <div className="flex items-start justify-between mb-3">
+                                                    {/* Three Dot Menu (matches smartphone/post: QR + Copy Link + Spatiotemporal + Date, NO bookmark) */}
+                                                    <div className="relative flex-1">
+                                                        <button
+                                                            data-lodging-actions-button
+                                                            className="flex h-[36px] w-[36px] items-center justify-center rounded-full transition-all duration-200 hover:bg-surface-1-light dark:hover:bg-surface-2-dark"
+                                                        >
+                                                            <svg
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                fill="none"
+                                                                viewBox="0 0 24 24"
+                                                                strokeWidth={2.5}
+                                                                stroke="currentColor"
+                                                                className="w-5 h-5 text-main-text-light dark:text-main-text-dark"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    d="
+      M3.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M12 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+      M20.5 12a.75.75 0 1 1-1.5 0a.75.75 0 0 1 1.5 0
+    "
+                                                                />
+                                                            </svg>
+                                                        </button>
+
+                                                        {showLodgingDesktopActionsDropdown && (
+                                                            <div
+                                                                data-lodging-actions-dropdown
+                                                                className="absolute left-0 z-50 w-56 border rounded-md top-full border-surface-3-light bg-backgroundLight dark:border-surface-3-dark dark:bg-surface-1-dark"
+                                                            >
+                                                                <div className="py-2">
+                                                                    {/* QR Code */}
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setShowQrCode(true);
+                                                                            setShowLodgingDesktopActionsDropdown(
+                                                                                false,
+                                                                            );
+                                                                        }}
+                                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                    >
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="none"
+                                                                            viewBox="0 0 24 24"
+                                                                            strokeWidth={1.5}
+                                                                            stroke="currentColor"
+                                                                            className="w-5 h-5"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z"
+                                                                            />
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                d="M6.75 6.75h.75v.75h-.75v-.75ZM6.75 16.5h.75v.75h-.75v-.75ZM16.5 6.75h.75v.75h-.75v-.75ZM13.5 13.5h.75v.75h-.75v-.75ZM13.5 19.5h.75v.75h-.75v-.75ZM19.5 13.5h.75v.75h-.75v-.75ZM19.5 19.5h.75v.75h-.75v-.75ZM16.5 16.5h.75v.75h-.75v-.75Z"
+                                                                            />
+                                                                        </svg>
+                                                                        <span className="font-normal">
+                                                                            {__('QR Code')}
+                                                                        </span>
+                                                                    </button>
+
+                                                                    {/* Copy Link */}
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            const url =
+                                                                                route('home') +
+                                                                                generateLodgingURL(
+                                                                                    feedGallery,
+                                                                                    true,
+                                                                                    true,
+                                                                                );
+                                                                            navigator.clipboard.writeText(
+                                                                                url.trim(),
+                                                                            );
+                                                                            setLinkCopied(true);
+                                                                            setShowLodgingDesktopActionsDropdown(
+                                                                                false,
+                                                                            );
+                                                                        }}
+                                                                        className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                    >
+                                                                        <svg
+                                                                            xmlns="http://www.w3.org/2000/svg"
+                                                                            fill="none"
+                                                                            viewBox="0 0 24 24"
+                                                                            strokeWidth={1.5}
+                                                                            stroke="currentColor"
+                                                                            className="w-5 h-5"
+                                                                        >
+                                                                            <path
+                                                                                strokeLinecap="round"
+                                                                                strokeLinejoin="round"
+                                                                                d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244"
+                                                                            />
+                                                                        </svg>
+                                                                        <span className="font-normal">
+                                                                            {__('Copy Link')}
+                                                                        </span>
+                                                                    </button>
+
+                                                                    {/* Spatiotemporal Information */}
+                                                                    {feedGallery?.latitude !=
+                                                                        null &&
+                                                                        feedGallery?.longitude !=
+                                                                            null && (
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    setSpatiotemporalInfoModal(
+                                                                                        true,
+                                                                                    );
+                                                                                    setShowLodgingDesktopActionsDropdown(
+                                                                                        false,
+                                                                                    );
+                                                                                }}
+                                                                                className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-colors rounded-md text-main-text-light hover:bg-surface-2-light dark:text-main-text-dark dark:hover:bg-surface-3-dark"
+                                                                            >
+                                                                                <svg
+                                                                                    xmlns="http://www.w3.org/2000/svg"
+                                                                                    fill="none"
+                                                                                    viewBox="0 0 24 24"
+                                                                                    strokeWidth={
+                                                                                        1.5
+                                                                                    }
+                                                                                    stroke="currentColor"
+                                                                                    className="w-5 h-5"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                                                                                    />
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
+                                                                                    />
+                                                                                </svg>
+                                                                                <span className="font-normal">
+                                                                                    {__(
+                                                                                        'Spatiotemporal Info',
+                                                                                    )}
+                                                                                </span>
+                                                                            </button>
+                                                                        )}
+
+                                                                    {/* Post Created */}
+                                                                    <span className="flex items-center w-full gap-3 px-4 py-3 text-xs transition-colors rounded-md text-main-text-light dark:text-main-text-dark">
+                                                                        <span>
+                                                                            {__('Post Created')}:
+                                                                            <p>
+                                                                                {
+                                                                                    feedGallery?.added_at
+                                                                                }{' '}
+                                                                                {
+                                                                                    feedGallery?.created_at_time
+                                                                                }
+                                                                            </p>
+                                                                        </span>
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+
+                                                    {feedGallery?.tag && (
+                                                        <button
+                                                            onClick={() => {
+                                                                shouldCleanupBrowserHistoryRef.current = false;
+                                                                navigateToHashtag(feedGallery.tag);
+                                                            }}
+                                                            className="z-[90] flex items-center justify-center rounded-full p-2 text-[14px] font-medium text-main-text-light transition-all duration-200 hover:bg-surface-1-light dark:text-main-text-dark dark:hover:bg-surface-2-dark"
+                                                        >
+                                                            {feedGallery.tag_display ??
+                                                                feedGallery.tag}
+                                                        </button>
+                                                    )}
+                                                </div>
+
+                                                {/* Content wrapper (max-w-lg + gap-4 column) — matches the smartphone panel */}
+                                                <div key={feedGallery?.slug} className="w-full">
+                                                    <div className="flex flex-col items-start gap-4">
+                                                        {/* Property name */}
+                                                        <h2 className="w-full text-xl font-semibold leading-tight break-words text-main-text-light dark:text-main-text-dark">
+                                                            {feedGallery.property_name}
+                                                        </h2>
+
+                                                        {/* Type + location + (optional) star rating */}
+                                                        <div className="flex flex-col w-full gap-1">
+                                                            {feedGallery.property_type && (
+                                                                <span className="text-sm capitalize text-sub-text-light dark:text-sub-text-dark">
+                                                                    {__(humanize(feedGallery.property_type))}
+                                                                </span>
+                                                            )}
+                                                            {feedGallery?.city_region && (
+                                                                <span className="text-sm font-medium break-words text-main-text-light dark:text-main-text-dark">
+                                                                    {feedGallery?.city_region}
+                                                                </span>
+                                                            )}
+                                                            {feedGallery.location_name && (
+                                                                <span className="text-sm break-words text-sub-text-light dark:text-sub-text-dark">
+                                                                    {feedGallery.location_name}
+                                                                </span>
+                                                            )}
+                                                            {feedGallery.location_description && (
+                                                                <span className="text-sm break-words text-sub-text-light dark:text-sub-text-dark">
+                                                                    {feedGallery.location_description}
+                                                                </span>
+                                                            )}
+                                                            {feedGallery.star_rating && (
+                                                                <span className="text-sm text-yellow-400">
+                                                                    {'★'.repeat(
+                                                                        feedGallery.star_rating,
+                                                                    )}
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Price */}
+                                                        {feedGallery.lowest_rate && (
+                                                            <DisplayPrice
+                                                                usdAmount={feedGallery.lowest_rate}
+                                                                isLodgingProduct={true}
+                                                                paymentDisplay={true}
+                                                                size="lg"
+                                                                className="text-main-text-light dark:text-main-text-dark"
+                                                            />
+                                                        )}
+
+                                                        {/* Quick facts: property-level base check-in / check-out times */}
+                                                        {(feedGallery.base_checkin_time ||
+                                                            feedGallery.base_checkout_time) && (
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {feedGallery.base_checkin_time && (
+                                                                    <span className="px-3 py-1 text-xs rounded-md bg-surface-1-light text-main-text-light dark:bg-surface-2-dark dark:text-main-text-dark">
+                                                                        <span className="font-medium">
+                                                                            {__('Check-in')}:
+                                                                        </span>{' '}
+                                                                        {feedGallery.base_checkin_time}
+                                                                    </span>
+                                                                )}
+                                                                {feedGallery.base_checkout_time && (
+                                                                    <span className="px-3 py-1 text-xs rounded-md bg-surface-1-light text-main-text-light dark:bg-surface-2-dark dark:text-main-text-dark">
+                                                                        <span className="font-medium">
+                                                                            {__('Check-out')}:
+                                                                        </span>{' '}
+                                                                        {feedGallery.base_checkout_time}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
+
+                                                        {/* Divider */}
+                                                        <div className="h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+
+                                                        {/* Approval notice (manual-approval domain) */}
+                                                        {feedGallery.requires_hotel_approval && (
+                                                            <p className="text-sm italic text-sub-text-light dark:text-sub-text-dark">
+                                                                {__(
+                                                                    'This property requires approval before payment.',
+                                                                )}
+                                                            </p>
+                                                        )}
+
+                                                        {/* Stage 3.3 — property-level Reserve/Login/Register removed.
+                                                            Reservation is now per rate plan (button on each rate-plan row below). */}
+
+                                                        {/* Description (admin HTML content; real field is `content`, not `description`) */}
+                                                        {feedGallery.content && (
+                                                            <>
+                                                                <div className="h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                                                <div
+                                                                    className="w-full text-sm leading-relaxed break-words text-main-text-light dark:text-main-text-dark"
+                                                                    dangerouslySetInnerHTML={{
+                                                                        __html: feedGallery.content,
+                                                                    }}
+                                                                />
+                                                            </>
+                                                        )}
+
+                                                        {translationsLoading ? (
+                                                            <div
+                                                                className="w-full mt-3 space-y-3 animate-pulse"
+                                                                aria-hidden="true"
+                                                            >
+                                                                <div className="h-4 rounded w-28 bg-surface-1-light dark:bg-surface-2-dark" />
+                                                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                                                                    <div className="rounded h-9 bg-surface-1-light dark:bg-surface-2-dark" />
+                                                                    <div className="rounded h-9 bg-surface-1-light dark:bg-surface-2-dark" />
+                                                                    <div className="rounded h-9 bg-surface-1-light dark:bg-surface-2-dark" />
+                                                                    <div className="rounded h-9 bg-surface-1-light dark:bg-surface-2-dark" />
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <LodgingDetailSections
+                                                                lodging={feedGallery}
+                                                                openReservationPanel={
+                                                                    openReservationPanel
+                                                                }
+                                                                __={__}
+                                                                variant="desktop"
+                                                            />
+                                                        )}
+
+                                                        {/* Rooms + rate plans (sale_price only; member_price never rendered) */}
+                                                        {false &&
+                                                            Array.isArray(feedGallery?.rooms) &&
+                                                            feedGallery.rooms.length > 0 && (
+                                                                <>
+                                                                    <div className="h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                                                    <div className="w-full">
+                                                                        <h3 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                            {__('Rooms')}
+                                                                        </h3>
+                                                                        {feedGallery?.is_reservation_closed ===
+                                                                            true && (
+                                                                            <p className="mb-3 text-sm italic text-sub-text-light dark:text-sub-text-dark">
+                                                                                {__(
+                                                                                    'Not available for reservation',
+                                                                                )}
+                                                                            </p>
+                                                                        )}
+                                                                        <div className="flex flex-col gap-3">
+                                                                            {feedGallery.rooms.map(
+                                                                                (room) => (
+                                                                                    <div
+                                                                                        key={
+                                                                                            room.id
+                                                                                        }
+                                                                                        className="p-4 border rounded-md border-surface-3-light dark:border-surface-3-dark"
+                                                                                    >
+                                                                                        <p className="text-sm font-semibold break-words text-main-text-light dark:text-main-text-dark">
+                                                                                            {
+                                                                                                room.room_name
+                                                                                            }
+                                                                                        </p>
+                                                                                        {(room.max_guests !=
+                                                                                            null ||
+                                                                                            room.standard_guests !=
+                                                                                                null) && (
+                                                                                            <p className="mt-1 text-xs text-sub-text-light dark:text-sub-text-dark">
+                                                                                                {__(
+                                                                                                    'Sleeps',
+                                                                                                )}{' '}
+                                                                                                {room.max_guests ??
+                                                                                                    room.standard_guests}
+                                                                                            </p>
+                                                                                        )}
+
+                                                                                        {Array.isArray(
+                                                                                            room.rate_plans,
+                                                                                        ) &&
+                                                                                            room
+                                                                                                .rate_plans
+                                                                                                .length >
+                                                                                                0 && (
+                                                                                                <div className="flex flex-col gap-2 mt-3">
+                                                                                                    {room.rate_plans.map(
+                                                                                                        (
+                                                                                                            plan,
+                                                                                                        ) => {
+                                                                                                            const canReserve =
+                                                                                                                room?.is_available !==
+                                                                                                                    false &&
+                                                                                                                plan?.is_bookable !==
+                                                                                                                    false &&
+                                                                                                                plan?.is_active !==
+                                                                                                                    false;
+
+                                                                                                            return (
+                                                                                                                <div
+                                                                                                                    key={
+                                                                                                                        plan.id
+                                                                                                                    }
+                                                                                                                    className="flex items-center justify-between gap-3 px-3 py-2 rounded-sm bg-surface-1-light dark:bg-surface-2-dark"
+                                                                                                                >
+                                                                                                                    <div className="flex flex-col min-w-0">
+                                                                                                                        <span className="min-w-0 text-xs break-words text-main-text-light dark:text-main-text-dark">
+                                                                                                                            {
+                                                                                                                                plan.name
+                                                                                                                            }
+                                                                                                                        </span>
+                                                                                                                        {plan.sale_price !=
+                                                                                                                            null && (
+                                                                                                                            <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                                                                                {
+                                                                                                                                    feedGallery.currency_code
+                                                                                                                                }{' '}
+                                                                                                                                {Number(
+                                                                                                                                    plan.sale_price,
+                                                                                                                                ).toFixed(
+                                                                                                                                    2,
+                                                                                                                                )}
+                                                                                                                                <span className="ml-1 text-xs font-normal text-sub-text-light dark:text-sub-text-dark">
+                                                                                                                                    /{' '}
+                                                                                                                                    {__(
+                                                                                                                                        'night',
+                                                                                                                                    )}
+                                                                                                                                </span>
+                                                                                                                            </span>
+                                                                                                                        )}
+                                                                                                                        {!canReserve &&
+                                                                                                                            feedGallery?.is_reservation_closed !==
+                                                                                                                                true && (
+                                                                                                                                <span className="mt-1 text-xs italic text-sub-text-light dark:text-sub-text-dark">
+                                                                                                                                    {__(
+                                                                                                                                        'Not available for reservation',
+                                                                                                                                    )}
+                                                                                                                                </span>
+                                                                                                                            )}
+                                                                                                                    </div>
+                                                                                                                    {/* Stage 3.3 — per-rate-plan Reserve (replaces property-level button) */}
+                                                                                                                    {feedGallery?.is_reservation_closed !==
+                                                                                                                        true && (
+                                                                                                                        <button
+                                                                                                                            type="button"
+                                                                                                                            disabled={
+                                                                                                                                !canReserve
+                                                                                                                            }
+                                                                                                                            onClick={
+                                                                                                                                canReserve
+                                                                                                                                    ? () =>
+                                                                                                                                          openReservationPanel(
+                                                                                                                                              {
+                                                                                                                                                  lodging:
+                                                                                                                                                      feedGallery,
+                                                                                                                                                  room,
+                                                                                                                                                  ratePlan:
+                                                                                                                                                      plan,
+                                                                                                                                              },
+                                                                                                                                          )
+                                                                                                                                    : undefined
+                                                                                                                            }
+                                                                                                                            className={`shrink-0 rounded-md bg-main-text-light px-4 py-2 text-xs font-semibold text-main-text-dark transition hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 ${
+                                                                                                                                canReserve
+                                                                                                                                    ? ''
+                                                                                                                                    : 'cursor-not-allowed opacity-50 hover:bg-main-text-light dark:hover:bg-main-text-dark'
+                                                                                                                            }`}
+                                                                                                                        >
+                                                                                                                            {__(
+                                                                                                                                'Reserve',
+                                                                                                                            )}
+                                                                                                                        </button>
+                                                                                                                    )}
+                                                                                                                </div>
+                                                                                                            );
+                                                                                                        },
+                                                                                                    )}
+                                                                                                </div>
+                                                                                            )}
+                                                                                    </div>
+                                                                                ),
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </>
+                                                            )}
+
+                                                        {/* Amenities */}
+                                                        {false &&
+                                                            Array.isArray(feedGallery?.amenities) &&
+                                                            feedGallery.amenities.length > 0 && (
+                                                                <>
+                                                                    <div className="h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                                                    <div className="w-full">
+                                                                        <h3 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                            {__('Amenities')}
+                                                                        </h3>
+                                                                        <div className="flex flex-wrap gap-2">
+                                                                            {feedGallery.amenities.map(
+                                                                                (amenity) => (
+                                                                                    <span
+                                                                                        key={
+                                                                                            amenity.id
+                                                                                        }
+                                                                                        className="px-3 py-1 text-xs rounded-full bg-surface-1-light text-main-text-light dark:bg-surface-2-dark dark:text-main-text-dark"
+                                                                                    >
+                                                                                        {
+                                                                                            amenity.name
+                                                                                        }
+                                                                                    </span>
+                                                                                ),
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </>
+                                                            )}
+
+                                                        {/* Policies (check-in / check-out / cancellation / parking) */}
+                                                        {false && feedGallery?.policies && (
+                                                            <>
+                                                                <div className="h-px w-full bg-[#c8c8c8] dark:bg-surface-3-dark" />
+                                                                <div className="w-full">
+                                                                    <h3 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
+                                                                        {__('Policies')}
+                                                                    </h3>
+                                                                    <div className="flex flex-col gap-2 text-sm text-sub-text-light dark:text-sub-text-dark">
+                                                                        {feedGallery.policies
+                                                                            .checkin_time && (
+                                                                            <p>
+                                                                                <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                                                    {__('Check-in')}
+                                                                                    :
+                                                                                </span>{' '}
+                                                                                {
+                                                                                    feedGallery
+                                                                                        .policies
+                                                                                        .checkin_time
+                                                                                }
+                                                                            </p>
+                                                                        )}
+                                                                        {feedGallery.policies
+                                                                            .checkout_time && (
+                                                                            <p>
+                                                                                <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                                                    {__(
+                                                                                        'Check-out',
+                                                                                    )}
+                                                                                    :
+                                                                                </span>{' '}
+                                                                                {
+                                                                                    feedGallery
+                                                                                        .policies
+                                                                                        .checkout_time
+                                                                                }
+                                                                            </p>
+                                                                        )}
+                                                                        {feedGallery.policies
+                                                                            .cancellation_policy && (
+                                                                            <p>
+                                                                                <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                                                    {__(
+                                                                                        'Cancellation',
+                                                                                    )}
+                                                                                    :
+                                                                                </span>{' '}
+                                                                                <span className="capitalize">
+                                                                                    {feedGallery.policies.cancellation_policy.replace(
+                                                                                        /_/g,
+                                                                                        ' ',
+                                                                                    )}
+                                                                                </span>
+                                                                            </p>
+                                                                        )}
+                                                                        {feedGallery.policies
+                                                                            .parking_type && (
+                                                                            <p>
+                                                                                <span className="font-medium text-main-text-light dark:text-main-text-dark">
+                                                                                    {__('Parking')}:
+                                                                                </span>{' '}
+                                                                                <span className="capitalize">
+                                                                                    {feedGallery.policies.parking_type.replace(
+                                                                                        /_/g,
+                                                                                        ' ',
+                                                                                    )}
+                                                                                </span>{' '}
+                                                                                (
+                                                                                {feedGallery
+                                                                                    .policies
+                                                                                    .parking_free
+                                                                                    ? __('Free')
+                                                                                    : __('Paid')}
+                                                                                )
+                                                                            </p>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Traits\HasContentTranslations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,6 +13,12 @@ use Str;
 
 class LodgingProduct extends Model
 {
+    use HasContentTranslations;
+
+    // System 1 (per-record content translation). Customer-facing free-text only;
+    // preset/enum (property_type) + numeric/bool + internal/MSAP columns are excluded.
+    protected array $translatableFields = ['property_name', 'location_description', 'location_name', 'city_region', 'content', 'tag'];
+
     protected $table = 'lodging_products';
 
     protected $fillable = [
@@ -24,6 +31,8 @@ class LodgingProduct extends Model
         'longitude',
         'location_name',
         'floor_id',
+        'floor_start_id',
+        'floor_end_id',
         'tag',
         'content',
         'base_checkin_time',
@@ -76,6 +85,17 @@ class LodgingProduct extends Model
         return $this->belongsTo(Floor::class, 'floor_id', 'id');
     }
 
+    // Optional floor RANGE endpoints (e.g. "1F - 3F"). floor() above stays the single anchor floor.
+    public function floorStart(): BelongsTo
+    {
+        return $this->belongsTo(Floor::class, 'floor_start_id', 'id');
+    }
+
+    public function floorEnd(): BelongsTo
+    {
+        return $this->belongsTo(Floor::class, 'floor_end_id', 'id');
+    }
+
     public function assignedDashboardUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_dashboard_user_id', 'id');
@@ -91,8 +111,30 @@ class LodgingProduct extends Model
     protected static function booted()
     {
         static::created(function ($product) {
+            $dirty = false;
+
             if (empty($product->public_id)) {
                 $product->public_id = 'lod_' . Str::uuid();
+                $dirty = true;
+            }
+
+            // Stage 3.2 — canonical slug (stable after first generation): property-name + id + random.
+            // slug is NOT in $fillable (never mass-assigned); generated here only.
+            if (empty($product->slug)) {
+                $product->slug = Str::slug($product->property_name) . '-' . $product->id . '-' . Str::lower(Str::random(6));
+                $dirty = true;
+            }
+
+            if ($dirty) {
+                $product->saveQuietly();
+            }
+        });
+
+        // Backfill guard only: regenerate the slug if a rename ever lands on a row that still has none.
+        // A slug is otherwise STABLE once set (do not regenerate on normal updates).
+        static::updated(function ($product) {
+            if ($product->wasChanged('property_name') && empty($product->slug)) {
+                $product->slug = Str::slug($product->property_name) . '-' . $product->id . '-' . Str::lower(Str::random(6));
                 $product->saveQuietly();
             }
         });

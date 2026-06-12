@@ -169,6 +169,7 @@ class LodgingReservationPaymentService
             ])->get("{$baseUrl}/payment/", ['invoiceId' => $invoiceId]);
 
             $data = $response->json();
+            info(json_encode($data));
 
             if (! $response->successful()) {
                 return ['status' => false, 'message' => 'Unable to list NOWPayments payments by invoice.'];

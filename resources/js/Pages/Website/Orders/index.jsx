@@ -220,17 +220,17 @@ export default function index({ orders, next_page_url }) {
                     }}
                 />
             )}
-            <div className="my-0 min-h-screen pb-20 lg:my-3">
-                <div className="mx-auto w-full max-w-7xl overflow-x-hidden text-black dark:text-main-text-dark sm:px-8">
-                    <div className="mt-2 px-4 sm:px-0">
-                        <div className="mb-4 mt-3 w-full">
+            <div className="min-h-screen pb-20 my-0 lg:my-3">
+                <div className="w-full mx-auto overflow-x-hidden text-black max-w-7xl dark:text-main-text-dark sm:px-8">
+                    <div className="px-4 mt-2 sm:px-0">
+                        <div className="w-full mt-3 mb-4">
                             <div className="relative grid w-full grid-cols-1 overflow-hidden">
-                                <div className="relative flex w-full items-center">
+                                <div className="relative flex items-center w-full">
                                     {/* Left Arrow */}
                                     {canScrollLeft && (
                                         <button
                                             onClick={scrollLeft}
-                                            className="absolute left-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-1-light p-2 transition-all duration-200 hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                            className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
                                             style={{ left: '0px' }}
                                         >
                                             <svg
@@ -252,7 +252,7 @@ export default function index({ orders, next_page_url }) {
 
                                     <div
                                         ref={scrollContainerRef}
-                                        className="flex w-full flex-nowrap items-center gap-7 overflow-x-auto scroll-smooth scrollbar-none"
+                                        className="flex items-center w-full overflow-x-auto flex-nowrap gap-7 scroll-smooth scrollbar-none"
                                         style={{
                                             transform: 'translateZ(0)',
                                             WebkitOverflowScrolling: 'touch',
@@ -319,7 +319,7 @@ export default function index({ orders, next_page_url }) {
                                     {canScrollRight && (
                                         <button
                                             onClick={scrollRight}
-                                            className="absolute right-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-1-light p-2 transition-all duration-200 hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                            className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -363,7 +363,7 @@ export default function index({ orders, next_page_url }) {
             {nextPageUrlRef.current && (
                 <div
                     ref={loaderRef}
-                    className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-main-text-light transition-all duration-100 dark:text-main-text-dark"
+                    className="flex items-center justify-center gap-2 py-10 text-center transition-all duration-100 animate-pulse text-main-text-light dark:text-main-text-dark"
                 >
                     <Spinner />
                     {__('Loading More')}...
@@ -504,7 +504,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
         const expiry = dayjs.utc(expiresAt);
 
         if (expiry.isBefore(now)) {
-            return 'Expired';
+           return __('a few moments',true);
         }
 
         const diffMs = expiry.diff(now);
@@ -536,7 +536,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
         <>
             <ConfirmDialog />
 
-            <div className="overflow-hidden rounded-md border border-surface-3-light bg-white transition-all dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <div className="overflow-hidden transition-all bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                 {/* Header Section */}
                 <div className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
                     {/* Status and Expiry */}
@@ -600,7 +600,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                 viewBox="0 0 24 24"
                                 strokeWidth={2}
                                 stroke="currentColor"
-                                className="h-3 w-3"
+                                className="w-3 h-3"
                             >
                                 <path
                                     strokeLinecap="round"
@@ -622,7 +622,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                         {productImage && (
                             <div className="flex-shrink-0">
                                 <div
-                                    className="relative h-20 w-20 cursor-pointer overflow-hidden rounded-md border border-surface-3-light transition-all duration-300 dark:border-surface-3-dark md:h-28 md:w-28 lg:hover:scale-105"
+                                    className="relative w-20 h-20 overflow-hidden transition-all duration-300 border rounded-md cursor-pointer border-surface-3-light dark:border-surface-3-dark md:h-28 md:w-28 lg:hover:scale-105"
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
@@ -641,7 +641,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                                         alt={
                                             firstProduct?.smartphone?.model_name?.name || 'Product'
                                         }
-                                        className="h-full w-full object-cover"
+                                        className="object-cover w-full h-full"
                                         onError={(e) => (e.target.src = Placeholder)}
                                     />
                                 </div>
@@ -667,7 +667,7 @@ function OrderCard({ order, currency, __, setLinkCopied }) {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex flex-shrink-0 flex-col gap-2 md:gap-3">
+                    <div className="flex flex-col flex-shrink-0 gap-2 md:gap-3">
                         {order.status.toLowerCase() === 'awaiting_payment' && (
                             <>
                                 {!order?.is_cancelation_requested ? (
@@ -1031,7 +1031,7 @@ function EmptyOrders({ __ }) {
                     {__('No orders yet')}
                 </h3>
 
-                <p className="mb-8 mt-2 max-w-xs text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                <p className="max-w-xs mt-2 mb-8 text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
                     {__('Start shopping to see your orders here')}
                 </p>
 

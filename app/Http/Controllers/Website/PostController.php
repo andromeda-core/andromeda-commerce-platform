@@ -174,8 +174,9 @@ class PostController extends Controller
 
         $posts = $data['data']['posts'];
         $smartphones = $data['data']['products']['smartphones'];
+        $lodging = $data['data']['products']['lodging_properties'] ?? [];
 
-        $results = collect($posts)->merge($smartphones);
+        $results = collect($posts)->merge($smartphones)->merge($lodging);
         $next_page_url = $data['pagination']['next_page_url'];
         $hashtag_display = $data['hashtag_display'] ?? $hashtag;
 

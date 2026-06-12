@@ -121,6 +121,8 @@ export const blankRatePlan = () => ({
     maximum_nights: '',
     booking_cutoff_time: '',
     same_day_booking_allowed: true,
+    // Stage 3.4.2 — per-record content translations ([{language_id, fields:{}}]); not a DB column.
+    translations: [],
 });
 
 export const blankRoom = () => ({
@@ -139,6 +141,8 @@ export const blankRoom = () => ({
     has_bathtub: false,
     has_shower_booth: false,
     view_type: '',
+    // Custom view text; only used/shown when view_type === 'other'.
+    view_type_other: '',
     room_size: '',
     room_floor_label: '',
     is_smoking_allowed: false,
@@ -149,6 +153,8 @@ export const blankRoom = () => ({
     is_available: true,
     amenity_ids: [],
     rate_plans: [],
+    // Stage 3.4.2 — per-record content translations ([{language_id, fields:{}}]); not a DB column.
+    translations: [],
 });
 
 export const defaultCheckinPolicy = () => ({
@@ -156,8 +162,11 @@ export const defaultCheckinPolicy = () => ({
     checkout_time: '',
     early_checkin_available: false,
     early_checkin_fee: '',
+    // Optional free-text override shown to the guest instead of the numeric fee (display-only).
+    early_checkin_fee_display_text: '',
     late_checkout_available: false,
     late_checkout_fee: '',
+    late_checkout_fee_display_text: '',
     checkin_method: '',
     front_desk_available: false,
     self_checkin_available: false,
@@ -173,6 +182,8 @@ export const defaultCheckinPolicy = () => ({
     noise_party_restriction: '',
     party_policy: '',
     checkin_instruction_message: '',
+    // Stage 3.4.2 — per-record content translations ([{language_id, fields:{}}]); not a DB column.
+    translations: [],
 });
 
 export const defaultParkingPolicy = () => ({
@@ -193,6 +204,10 @@ export const defaultParkingPolicy = () => ({
     ev_charging_available: false,
     refund_if_no_parking: false,
     extra_parking_fee: '',
+    // Optional free-text override shown to the guest instead of the numeric fee (display-only).
+    extra_parking_fee_display_text: '',
+    // Stage 3.4.2 — per-record content translations ([{language_id, fields:{}}]); not a DB column.
+    translations: [],
 });
 
 export const defaultCancellationPolicy = () => ({
@@ -210,15 +225,27 @@ export const defaultCancellationPolicy = () => ({
     tax_amount: '',
     tax_online: false,
     extra_guest_fee: '',
+    // Optional free-text overrides shown to the guest instead of the numeric on-site fee (display-only).
+    extra_guest_fee_display_text: '',
     child_fee: '',
+    child_fee_display_text: '',
     pet_fee: '',
+    pet_fee_display_text: '',
     extension_fee: '',
+    extension_fee_display_text: '',
     security_deposit: '',
+    security_deposit_display_text: '',
     onsite_payment_amount: '',
+    onsite_payment_amount_display_text: '',
     damage_fee: '',
+    damage_fee_display_text: '',
     minibar_incidental_fee: '',
+    minibar_incidental_fee_display_text: '',
     onsite_tax: '',
+    onsite_tax_display_text: '',
     damage_policy: '',
+    // Stage 3.4.2 — per-record content translations ([{language_id, fields:{}}]); not a DB column.
+    translations: [],
 });
 
 // Merge a possibly-partial persisted policy onto the defaults (edit mode).
@@ -298,3 +325,67 @@ export function Accordion({ title, subtitle, open, onToggle, children }) {
         </div>
     );
 }
+
+// Stage 3.4.2 — TranslationsRepeater `fields` config per record type. The `key`s MUST match the
+// backend $translatableFields (3.4.1) exactly; `content` uses textarea to mirror its English
+// authoring input (a plain Textarea), keeping markup consistent across languages.
+export const productTranslatableFields = [
+    { key: 'property_name', label: 'Property Name', type: 'text' },
+    { key: 'city_region', label: 'City / Region', type: 'text' },
+    { key: 'location_name', label: 'Location Name', type: 'text' },
+    { key: 'location_description', label: 'Location Description', type: 'textarea' },
+    { key: 'content', label: 'Content', type: 'textarea' },
+    { key: 'tag', label: 'Tag', type: 'text' },
+];
+
+export const roomTranslatableFields = [
+    { key: 'room_name', label: 'Room Name', type: 'text' },
+    { key: 'room_floor_label', label: 'Room Floor Label', type: 'text' },
+    { key: 'bed_size', label: 'Bed Size', type: 'text' },
+    { key: 'view_type_other', label: 'Custom View Type', type: 'text' },
+];
+
+export const ratePlanTranslatableFields = [
+    { key: 'name', label: 'Rate Plan Name', type: 'text' },
+];
+
+export const checkinPolicyTranslatableFields = [
+    { key: 'instructions_sent_when', label: 'Instructions Sent When', type: 'text' },
+    { key: 'early_checkin_fee_display_text', label: 'Early Check-in Fee (Display Text)', type: 'text' },
+    { key: 'late_checkout_fee_display_text', label: 'Late Check-out Fee (Display Text)', type: 'text' },
+    { key: 'same_day_booking_notice', label: 'Same Day Booking Notice', type: 'textarea' },
+    { key: 'early_entry_penalty', label: 'Early Entry Penalty', type: 'textarea' },
+    { key: 'late_checkout_penalty', label: 'Late Check-out Penalty', type: 'textarea' },
+    { key: 'minor_policy', label: 'Minor Policy', type: 'textarea' },
+    { key: 'mixed_gender_policy', label: 'Mixed Gender Policy', type: 'textarea' },
+    { key: 'noise_party_restriction', label: 'Noise Policy', type: 'textarea' },
+    { key: 'party_policy', label: 'Party Policy', type: 'textarea' },
+    { key: 'checkin_instruction_message', label: 'Check-in Instruction Message', type: 'textarea' },
+];
+
+export const cancellationPolicyTranslatableFields = [
+    { key: 'free_cancellation_deadline', label: 'Free Cancellation Deadline', type: 'text' },
+    { key: 'extra_guest_fee_display_text', label: 'Extra Guest Fee (Display Text)', type: 'text' },
+    { key: 'child_fee_display_text', label: 'Child Fee (Display Text)', type: 'text' },
+    { key: 'pet_fee_display_text', label: 'Pet Fee (Display Text)', type: 'text' },
+    { key: 'extension_fee_display_text', label: 'Extension Fee (Display Text)', type: 'text' },
+    { key: 'security_deposit_display_text', label: 'Security Deposit (Display Text)', type: 'text' },
+    { key: 'onsite_payment_amount_display_text', label: 'On-site Payment Amount (Display Text)', type: 'text' },
+    { key: 'damage_fee_display_text', label: 'Damage Fee (Display Text)', type: 'text' },
+    { key: 'minibar_incidental_fee_display_text', label: 'Minibar / Incidental Fee (Display Text)', type: 'text' },
+    { key: 'onsite_tax_display_text', label: 'On-site Tax (Display Text)', type: 'text' },
+    { key: 'no_show_policy', label: 'No-show Policy', type: 'textarea' },
+    { key: 'rejection_refund_policy', label: 'Rejection Refund Policy', type: 'textarea' },
+    { key: 'non_refundable_reasons', label: 'Non-refundable Reasons', type: 'textarea' },
+    { key: 'damage_policy', label: 'Damage Policy', type: 'textarea' },
+];
+
+export const parkingPolicyTranslatableFields = [
+    { key: 'parking_availability_time', label: 'Parking Availability Time', type: 'text' },
+    { key: 'extra_parking_fee_display_text', label: 'Extra Parking Fee (Display Text)', type: 'text' },
+    { key: 'before_checkin_after_checkout', label: 'Before Check-in / After Check-out', type: 'textarea' },
+    { key: 'full_lot_policy', label: 'Full Lot Policy', type: 'textarea' },
+    { key: 'large_vehicle_restrictions', label: 'Large Vehicle Restriction', type: 'textarea' },
+    { key: 'modified_vehicle_restriction', label: 'Modified Vehicle Restriction', type: 'textarea' },
+    { key: 'supercar_restriction', label: 'Supercar Restriction', type: 'textarea' },
+];

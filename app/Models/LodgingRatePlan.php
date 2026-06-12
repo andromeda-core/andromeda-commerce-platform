@@ -2,12 +2,18 @@
 
 namespace App\Models;
 
+use App\Traits\HasContentTranslations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Cache;
 
 class LodgingRatePlan extends Model
 {
+    use HasContentTranslations;
+
+    // System 1 free-text only. stay_type is a preset (System 2); member_price never touched.
+    protected array $translatableFields = ['name'];
+
     protected $table = 'lodging_rate_plans';
 
     protected $fillable = [

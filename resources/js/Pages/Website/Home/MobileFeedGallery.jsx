@@ -1,6 +1,7 @@
 import React from 'react';
 import SmartphoneMobileFeedGallery from './SmartphoneMobileFeedGallery';
 import PostMobileFeedGallery from './PostMobileFeedGallery';
+import LodgingMobileFeedGallery from './LodgingMobileFeedGallery';
 const MobileFeedGallery = ({
     feedGallery,
     setShowQrCode,
@@ -23,10 +24,12 @@ const MobileFeedGallery = ({
     isDarkMode,
     setMobileFeedGalleryOpen,
     generateSmartphoneURL,
+    generateLodgingURL,
     shouldCleanupBrowserHistoryRef,
     setSpatiotemporalInfoModal,
     spatiotemporalInfoModal,
     previous_url = null,
+    openReservationPanel,
 }) => {
     return (
         <>
@@ -74,6 +77,25 @@ const MobileFeedGallery = ({
                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                     previous_url={previous_url}
+                />
+            )}
+
+            {feedGallery?.type === 'lodging' && (
+                <LodgingMobileFeedGallery
+                    lodging={feedGallery}
+                    setShowQrCode={setShowQrCode}
+                    setLinkCopied={setLinkCopied}
+                    auth={auth}
+                    navigateToHashtag={navigateToHashtag}
+                    placeholderImage={placeholderImage}
+                    __={__}
+                    shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
+                    setMobileFeedGalleryOpen={setMobileFeedGalleryOpen}
+                    spatiotemporalInfoModal={spatiotemporalInfoModal}
+                    setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                    previous_url={previous_url}
+                    generateLodgingURL={generateLodgingURL}
+                    openReservationPanel={openReservationPanel}
                 />
             )}
         </>

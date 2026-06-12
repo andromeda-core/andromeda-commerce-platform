@@ -7,9 +7,12 @@ use App\Jobs\CompressPostVideoWithFFMPEG;
 use App\Jobs\PostDestroyOnAWSJob;
 use App\Jobs\PostStoreOnAWSJob;
 use App\Jobs\PostUpdateOnAWSjob;
+use App\Models\Currency;
 use App\Models\Floor;
+use App\Models\LodgingProduct;
 use App\Models\Post;
 use App\Models\Smartphone;
+use App\Repositories\Lodging\Interface\ILodgingProductRepository;
 use App\Repositories\Posts\Interface\IPostRepository;
 use App\Services\ContentTranslationService;
 use App\Services\GoogleGeoCoderService;
@@ -31,6 +34,8 @@ class PostRepository implements IPostRepository
         private Smartphone $smartphone,
         private Trans $trans,
         private ContentTranslationService $contentTranslationService,
+        private ILodgingProductRepository $lodging_product_repository,
+        private LodgingProduct $lodging_product,
     ) {}
 
     public function getAllPosts(Request $request)
@@ -225,7 +230,16 @@ class PostRepository implements IPostRepository
                     });
             }
 
-            $post->related = collect([...$related_posts, ...$related_smartphones])->shuffle();
+            // Stage refinement — related lodging (tag-based) injected alongside posts + smartphones.
+            $related_lodging = collect();
+            if ($show_products && ! empty($post->tag)) {
+                $related_lodging = $this->lodging_product_repository
+                    ->getRelatedLodgingForFeed([$post->tag], $images ?? true, $videos ?? true, $text ?? true)
+                    ->take(5)
+                    ->values();
+            }
+
+            $post->related = collect([...$related_posts, ...$related_smartphones, ...$related_lodging])->shuffle();
             $post->type = 'posts';
             $post->title = $post->translatedValue('title');
             $post->content = $post->translatedValue('content');
@@ -872,6 +886,7 @@ class PostRepository implements IPostRepository
             $hasMore = false;
             $posts = [];
             $smartphones = [];
+            $lodging_properties = collect();
 
             if ($show_posts) {
                 $posts = $this->post
@@ -1050,6 +1065,13 @@ class PostRepository implements IPostRepository
                         });
                 }
 
+                // Stage refinement — related lodging (tag-based) injected alongside posts + smartphones.
+                $relatedLodging = collect();
+                if ($show_products && ! blank($allHashtags)) {
+                    $relatedLodging = $this->lodging_product_repository
+                        ->getRelatedLodgingForFeed($allHashtags, $images, $videos, $text);
+                }
+
                 foreach ($posts as $post) {
                     $postHashtag = $post->tag;
 
@@ -1070,9 +1092,15 @@ class PostRepository implements IPostRepository
                         ->take(5)
                         ->values();
 
+                    $postRelatedLodging = $relatedLodging
+                        ->filter(fn($rl) => ! empty($rl->tag) && $rl->tag === $postHashtag)
+                        ->take(5)
+                        ->values();
+
                     $post->related = collect()
                         ->merge($postRelatedPosts->values())
                         ->merge($postRelatedSmartphones->values())
+                        ->merge($postRelatedLodging->values())
                         ->shuffle()
                         ->values();
 
@@ -1273,6 +1301,11 @@ class PostRepository implements IPostRepository
                         });
                 }
 
+                // Stage refinement — related lodging (tag-based) injected alongside posts + smartphones.
+                // The method guards blank($allHashtags) internally, so no outer guard is needed here.
+                $relatedLodging = $this->lodging_product_repository
+                    ->getRelatedLodgingForFeed($allHashtags, $images, $videos, $text);
+
                 foreach ($smartphones as $sp) {
                     $spHashtag = $sp->tag;
 
@@ -1291,6 +1324,11 @@ class PostRepository implements IPostRepository
                             fn($rp) => ! empty($rp->tag) &&
                                 $rp->tag === $spHashtag
                         )
+                        ->take(5)
+                        ->values();
+
+                    $spRelatedLodging = $relatedLodging
+                        ->filter(fn($rl) => ! empty($rl->tag) && $rl->tag === $spHashtag)
                         ->take(5)
                         ->values();
 
@@ -1331,6 +1369,7 @@ class PostRepository implements IPostRepository
                         'related' => collect()
                             ->merge($spRelatedPosts->values())
                             ->merge($spRelatedSmartphones->values())
+                            ->merge($spRelatedLodging->values())
                             ->shuffle()
                             ->values(),
                     ];
@@ -1339,10 +1378,24 @@ class PostRepository implements IPostRepository
                 $hasMore = $hasMore || ($smartphones->count() === $perPage);
             }
 
+            // Stage 3.2 — lodging properties as a third feed type (additive; built in LodgingProductRepository).
+            // Gated by the Products filter; the image/video/text filters are forwarded to the lodging query.
+            if ($show_products) {
+                $lodging_properties = $this->lodging_product_repository->getLodgingProductsForFeed(
+                    $page,
+                    $perPage,
+                    $images,
+                    $videos,
+                    $text
+                );
+                $hasMore = $hasMore || ($lodging_properties->count() === $perPage);
+            }
+
             $results = $results->merge([
                 'posts' => $posts,
                 'products' => [
                     'smartphones' => $smartphones,
+                    'lodging_properties' => $lodging_properties,
                 ],
             ]);
 
@@ -1369,7 +1422,7 @@ class PostRepository implements IPostRepository
                     'per_page' => (int) $perPage,
                     'has_more_pages' => $hasMore,
                     'next_page' => $hasMore ? $page + 1 : null,
-                    'total' => (count($results['posts']) ?? 0) + (count($results['products']['smartphones']) ?? 0),
+                    'total' => (count($results['posts']) ?? 0) + (count($results['products']['smartphones']) ?? 0) + (count($results['products']['lodging_properties']) ?? 0),
                     'next_page_url' => $hasMore ? route('website.posts.index') . '?' . http_build_query($nextParams) : null,
                     'prev_page_url' => $page > 1 ? route('website.posts.index') . '?' . http_build_query($prevParams) : null,
                 ],
@@ -1600,7 +1653,25 @@ class PostRepository implements IPostRepository
                 $hasMore = $hasMore || ($related_smartphones->count() === $perPage);
             }
 
-            $results = collect([...$related_posts, ...$related_smartphones])->toArray();
+            // Stage refinement — paginated related lodging (tag-based), respecting already-shown slugs.
+            $related_lodging = [];
+            if ($show_products && ! empty($hashtag)) {
+                $related_lodging = $this->lodging_product_repository
+                    ->getRelatedLodgingForFeed(
+                        [$hashtag],
+                        $images,
+                        $videos,
+                        $text,
+                        ! blank($existing_slugs) ? $existing_slugs : [],
+                        $page,
+                        $perPage
+                    )
+                    ->all();
+
+                $hasMore = $hasMore || (count($related_lodging) === $perPage);
+            }
+
+            $results = collect([...$related_posts, ...$related_smartphones, ...$related_lodging])->toArray();
 
             $queryParams = [
                 'page' => $page + 1,
@@ -1804,8 +1875,58 @@ class PostRepository implements IPostRepository
                 });
 
             $hasMore = $hasMore || ($smartphones->count() === $perPage);
+
+            // Lodging — third hashtag-result type. LEAN + hashtag-only: same matching/translation/
+            // pagination as smartphones, but NO related queries and NO heavy detail (rooms/policies/
+            // amenities) are shipped. Only rooms.ratePlans (bookable sale_price > 0) is eager-loaded
+            // to compute the lowest nightly rate for the card. Gates mirror the public feed.
+            $currencyCode = $this->resolveHashtagBaseCurrencyCode();
+
+            $lodging = $this->lodging_product
+                ->where('tag', $hashtag)
+                ->where('is_active', true)
+                ->whereNotNull('slug')
+                ->with([
+                    'media',
+                    'contentTranslations',
+                    'rooms.ratePlans' => fn ($q) => $q
+                        ->whereNotNull('sale_price')
+                        ->where('sale_price', '>', 0),
+                ])
+                ->latest()
+                ->forPage($page, $perPage)
+                ->get()
+                ->map(function ($product) use ($currencyCode) {
+                    $coverImage = optional($product->media->first(fn ($m) => $m->type === 'image'))->file_url;
+                    $videoThumbnail = optional($product->media->first(fn ($m) => $m->type === 'video'))->thumbnail_url;
+
+                    $rates = $product->rooms
+                        ->flatMap(fn ($room) => $room->ratePlans)
+                        ->pluck('sale_price')
+                        ->filter(fn ($price) => is_numeric($price) && (float) $price > 0);
+
+                    return [
+                        'id' => $product->id,
+                        'type' => 'lodging',
+                        'public_id' => $product->public_id,
+                        'slug' => $product->slug,
+                        'name' => $product->translatedValue('property_name'),
+                        'image' => $coverImage,
+                        'video_thumbnail' => $videoThumbnail,
+                        'tag' => $product->tag,
+                        'tag_display' => $product->translatedValue('tag'),
+                        'lowest_rate' => $rates->isEmpty() ? null : (float) $rates->min(),
+                        'currency_code' => $currencyCode,
+                        'created_at' => $product->created_at->format('Y-m-d g:i A '),
+                        'timestamp' => $product->created_at->timestamp,
+                    ];
+                });
+
+            $hasMore = $hasMore || ($lodging->count() === $perPage);
+
             $data['products'] = [
                 'smartphones' => $smartphones,
+                'lodging_properties' => $lodging,
             ];
             $queryParams = [
                 'page' => $page + 1,
@@ -1824,8 +1945,11 @@ class PostRepository implements IPostRepository
 
             // Translated display value for the hashtag header (display-only).
             // The original $hashtag stays canonical for matching/navigation.
-            $sourceModel = $this->post->where('tag', $hashtag)->first()
-                ?? $this->smartphone->where('tag', $hashtag)->first();
+           $sourceModel = $this->post->where('tag', $hashtag)->whereHas('contentTranslations')->with('contentTranslations')->first()
+    ?? $this->smartphone->where('tag', $hashtag)->whereHas('contentTranslations')->with('contentTranslations', 'model_name.contentTranslations')->first()
+    ?? $this->lodging_product->where('tag', $hashtag)->whereHas('contentTranslations')->with('contentTranslations')->first();
+
+
 
             $hashtagDisplay = $sourceModel
                 ? $sourceModel->translatedValue('tag')
@@ -1840,7 +1964,7 @@ class PostRepository implements IPostRepository
                     'per_page' => (int) $perPage,
                     'has_more_pages' => $hasMore,
                     'next_page' => $hasMore ? $page + 1 : null,
-                    'total' => (count($data['posts']) ?? 0) + (count($data['products']['smartphones']) ?? 0),
+                    'total' => (count($data['posts']) ?? 0) + (count($data['products']['smartphones']) ?? 0) + (count($data['products']['lodging_properties']) ?? 0),
                     'next_page_url' => $hasMore ? route('website.posts.hashtag-results') . '?' . http_build_query($nextParams) : null,
                     'prev_page_url' => $page > 1 ? route('website.posts.hashtag-results') . '?' . http_build_query($prevParams) : null,
                 ],
@@ -1852,6 +1976,14 @@ class PostRepository implements IPostRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    /** Active base currency code (dynamic, never hardcoded) for the lodging hashtag card rate. */
+    private function resolveHashtagBaseCurrencyCode(): ?string
+    {
+        $currency = Cache::get('currency') ?? Currency::where('is_active', true)->first();
+
+        return $currency?->name;
     }
 
     // private function extractKeywords($text)

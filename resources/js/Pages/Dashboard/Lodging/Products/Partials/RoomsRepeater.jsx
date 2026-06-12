@@ -2,7 +2,8 @@ import { useEffect } from 'react';
 import Input from '@/Components/Input';
 import SelectInput from '@/Components/SelectInput';
 import PrimaryButton from '@/Components/PrimaryButton';
-import { blankRoom, blankRatePlan, toOptions, bedTypeOptions, stayTypeOptions, ToggleField, FlatpickrTimeInput } from './helpers';
+import TranslationsRepeater from '@/Components/TranslationsRepeater';
+import { blankRoom, blankRatePlan, toOptions, bedTypeOptions, stayTypeOptions, ToggleField, FlatpickrTimeInput, roomTranslatableFields, ratePlanTranslatableFields } from './helpers';
 
 // Sale price is derived from original price and discount rate (display only — the
 // backend sale_price column is unchanged). Empty original -> '' (field stays blank);
@@ -16,11 +17,23 @@ const computeSalePrice = (original, discount) => {
     return Math.round((sale < 0 ? 0 : sale) * 100) / 100;
 };
 
+// Display-only comma formatting for the read-only auto Sale Price field (1000 -> 1,000.00).
+// The submitted sale_price comes from the rate-plan state set on price/discount change, never
+// from this field's text — so formatting here changes nothing that is stored or calculated.
+const formatSalePriceDisplay = (original, discount) => {
+    const sale = computeSalePrice(original, discount);
+    if (sale === '' || sale === null || sale === undefined) return '';
+    return Number(sale).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+};
+
 // `section` controls which half renders so Rooms and Rate Plans can live in separate
 // tabs while staying nested in the same data.rooms state (modular for a future split,
 // no DB change). 'rooms' = room fields only, 'rate_plans' = the per-room rate-plan
 // editors only, 'all' = both (default — backward compatible).
-export default function RoomsRepeater({ data, setData, errors, enums, amenities, section = 'all' }) {
+export default function RoomsRepeater({ data, setData, errors, enums, amenities, languages = [], section = 'all' }) {
     const rooms = data.rooms ?? [];
     const showRooms = section === 'all' || section === 'rooms';
     const showRatePlans = section === 'all' || section === 'rate_plans';
@@ -205,10 +218,12 @@ export default function RoomsRepeater({ data, setData, errors, enums, amenities,
                             InputName={'Sale Price (Auto)'}
                             Id={`rooms_${index}_rate_plans_${planIndex}_sale_price`}
                             Name={`rooms_${index}_rate_plans_${planIndex}_sale_price`}
-                            Type={'number'}
+                            // Text (not number) so thousand separators render; the field is read-only
+                            // and decorative — the stored sale_price lives in rate-plan state.
+                            Type={'text'}
                             Required={true}
                             readOnly={true}
-                            Value={computeSalePrice(plan.original_price, plan.discount_rate)}
+                            Value={formatSalePriceDisplay(plan.original_price, plan.discount_rate)}
                             Error={errors[`rooms.${index}.rate_plans.${planIndex}.sale_price`]}
                         />
                         <Input
@@ -339,6 +354,23 @@ export default function RoomsRepeater({ data, setData, errors, enums, amenities,
                             onChange={(v) => updateRatePlan(index, planIndex, 'consecutive_nights_allowed', v)}
                         />
                     </div>
+
+                    {/* The consecutive-nights cross-field rule errors against this toggle, which has
+                        no input-bottom slot — surface it here (it concerns the minimum/maximum nights
+                        above) mirroring how the number inputs render their errors[...] message. */}
+                    {errors[`rooms.${index}.rate_plans.${planIndex}.consecutive_nights_allowed`] && (
+                        <p className="mt-1 text-sm text-red-500">
+                            {errors[`rooms.${index}.rate_plans.${planIndex}.consecutive_nights_allowed`]}
+                        </p>
+                    )}
+
+                    {/* Per-language overrides for this rate plan's name. */}
+                    <TranslationsRepeater
+                        value={plan.translations}
+                        onChange={(next) => updateRatePlan(index, planIndex, 'translations', next)}
+                        languages={languages}
+                        fields={ratePlanTranslatableFields}
+                    />
                 </div>
             ))}
         </div>
@@ -413,6 +445,7 @@ export default function RoomsRepeater({ data, setData, errors, enums, amenities,
                                     Id={`rooms_${index}_standard_guests`}
                                     Name={`rooms_${index}_standard_guests`}
                                     Type={'number'}
+                                    Required={true}
                                     Value={room.standard_guests}
                                     Error={errors[`rooms.${index}.standard_guests`]}
                                     Action={(e) => updateRoom(index, 'standard_guests', e.target.value)}
@@ -490,8 +523,38 @@ export default function RoomsRepeater({ data, setData, errors, enums, amenities,
                                     itemKey={'name'}
                                     Value={room.view_type}
                                     Error={errors[`rooms.${index}.view_type`]}
-                                    Action={(value) => updateRoom(index, 'view_type', value)}
+                                    // Set both fields atomically: clear the custom text whenever the
+                                    // view type is not 'other' (two updateRoom calls would race on the
+                                    // same stale `rooms` closure and drop one of the changes).
+                                    Action={(value) =>
+                                        setData(
+                                            'rooms',
+                                            rooms.map((r, i) =>
+                                                i === index
+                                                    ? {
+                                                          ...r,
+                                                          view_type: value,
+                                                          view_type_other:
+                                                              value === 'other' ? r.view_type_other : '',
+                                                      }
+                                                    : r,
+                                            ),
+                                        )
+                                    }
                                 />
+                                {room.view_type === 'other' && (
+                                    <Input
+                                        InputName={'Custom View Type'}
+                                        Id={`rooms_${index}_view_type_other`}
+                                        Name={`rooms_${index}_view_type_other`}
+                                        Type={'text'}
+                                        Value={room.view_type_other}
+                                        Error={errors[`rooms.${index}.view_type_other`]}
+                                        Action={(e) =>
+                                            updateRoom(index, 'view_type_other', e.target.value)
+                                        }
+                                    />
+                                )}
                                 <Input
                                     InputName={'Room Size'}
                                     Id={`rooms_${index}_room_size`}
@@ -591,6 +654,23 @@ export default function RoomsRepeater({ data, setData, errors, enums, amenities,
                                     Action={(value) => updateRoom(index, 'amenity_ids', value)}
                                 />
                             </div>
+
+                            {/* Per-language overrides for this room's free-text fields. The custom
+                                view-type override only applies when view_type === 'other' (same
+                                condition as the main form input), so drop it from the translation
+                                fields otherwise. */}
+                            <TranslationsRepeater
+                                value={room.translations}
+                                onChange={(next) => updateRoom(index, 'translations', next)}
+                                languages={languages}
+                                fields={
+                                    room.view_type === 'other'
+                                        ? roomTranslatableFields
+                                        : roomTranslatableFields.filter(
+                                              (f) => f.key !== 'view_type_other',
+                                          )
+                                }
+                            />
 
                             {/* In the combined ('all') view the rate plans stay nested here. */}
                             {section === 'all' && <div className="mt-6">{ratePlansBlock(room, index)}</div>}

@@ -17,25 +17,27 @@ import MasonryFeedItem from './MasonryFeedItem';
 import DesktopFeed from './DesktopFeed';
 import { useTranslation } from '@/Hooks/useTranslation';
 import MobileFeedSinglePage from './MobileFeedSinglePage';
+import LodgingReservationPanel from './LodgingReservationPanel';
 import DesktopFeedSkeleton from '@/Components/DesktopFeedSkeleton';
 import MobileFeedSkeleton from '@/Components/MobileFeedSkeleton';
 
 // Interleaves posts and smartphones in a zig-zag order (post, smartphone, post, smartphone, ...).
 // Leftover items from the longer list are appended at the end.
 // Used only when appending newly-fetched items to the feed, so the feed renders mixed instead of blocky.
-const interleaveFeedItems = (posts = [], smartphones = []) => {
+const interleaveFeedItems = (posts = [], smartphones = [], lodging_properties = []) => {
     const mixed = [];
-    const max = Math.max(posts.length, smartphones.length);
+    const max = Math.max(posts.length, smartphones.length, lodging_properties.length);
 
     for (let i = 0; i < max; i++) {
         if (i < posts.length) mixed.push(posts[i]);
         if (i < smartphones.length) mixed.push(smartphones[i]);
+        if (i < lodging_properties.length) mixed.push(lodging_properties[i]);
     }
 
     return mixed;
 };
 
-const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
+const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_lodging = null }) => {
     // Translation Hook
     const { __, loading: translationLoading } = useTranslation();
     const t = (key) => (translationLoading ? key : __(key));
@@ -46,7 +48,10 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
 
         const pathname = window.location.pathname;
         const params = new URLSearchParams(window.location.search);
-        const isCanonicalPath = pathname.startsWith('/post/') || pathname.startsWith('/product/');
+        const isCanonicalPath =
+            pathname.startsWith('/post/') ||
+            pathname.startsWith('/product/') ||
+            pathname.startsWith('/lodging/');
         const isDirect =
             params.get('direct') === 'true' &&
             (params.has('slug') ||
@@ -112,6 +117,12 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
     const [spatiotemporalInfoModal, setSpatiotemporalInfoModal] = useState(false);
     const isSpatiotemporalModalOpenRef = useRef(false);
 
+    // Stage 3.3 — rate-plan reservation slide-in. Holds { lodging, room, ratePlan } or null.
+    // History wiring mirrors the spatiotemporal modal (own ref + own `?reserve` param + a
+    // first-priority popstate check) so the Back button closes the panel without touching the feed.
+    const [reservationPanel, setReservationPanel] = useState(null);
+    const reservationPanelOpenRef = useRef(false);
+
     // This State is For Tracking If The FEED ITEM Is Opening After refresh or FROM URL DIRECTLY
     const [isFeedOpeningDirectly, setIsFeedOpeningDirectly] = useState(false);
 
@@ -171,7 +182,11 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                 setFeed((prevFeed) => {
                     const existingIds = new Set(
                         prevFeed.map((item) =>
-                            item.type === 'posts' ? `posts-${item.id}` : `smartphones-${item.id}`,
+                            item.type === 'posts'
+                                ? `posts-${item.id}`
+                                : item.type === 'lodging'
+                                  ? `lodging-${item.id}`
+                                  : `smartphones-${item.id}`,
                         ),
                     );
 
@@ -181,8 +196,15 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                         (smartphone) => !existingIds.has(`smartphones-${smartphone.id}`),
                     );
 
+                    const newLodging = (products.lodging_properties || []).filter(
+                        (lodging) => !existingIds.has(`lodging-${lodging.id}`),
+                    );
+
                     // return [...prevFeed, ...newPosts, ...newSmartphones];
-                    return [...prevFeed, ...interleaveFeedItems(newPosts, newSmartphones)];
+                    return [
+                        ...prevFeed,
+                        ...interleaveFeedItems(newPosts, newSmartphones,newLodging),
+                    ];
                 });
 
                 //  Extracting and storing all related feeds by slug
@@ -210,6 +232,18 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                             !prevRelated[smartphone.slug]
                         ) {
                             updatedRelated[smartphone.slug] = smartphone.related;
+                        }
+                    });
+
+                    // Extracting related from lodging properties (only if not already stored)
+                    (products.lodging_properties || []).forEach((lodging) => {
+                        if (
+                            lodging.related &&
+                            Array.isArray(lodging.related) &&
+                            lodging.related.length > 0 &&
+                            !prevRelated[lodging.slug]
+                        ) {
+                            updatedRelated[lodging.slug] = lodging.related;
                         }
                     });
 
@@ -271,6 +305,11 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
         return `/product/${encodeURIComponent(smartphone?.public_id)}/${smartphone?.slug}`; //${isSinglePage ? '&single_page=true' : ''}${isDirect ? '&direct=true' : ''}`;
     };
 
+    // Lodging Property URL Generation (Stage 3.2)
+    const generateLodgingURL = (lodging, isDirect = false, isSinglePage = false) => {
+        return `/lodging/${encodeURIComponent(lodging?.public_id)}/${lodging?.slug}`;
+    };
+
     // NAVIGATING TO HASHTAG PAGE AFTER RECEIVING HASHTAG
     const navigateToHashtag = async (hashtag) => {
         const tag = encodeURIComponent(hashtag);
@@ -327,6 +366,8 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
         let post_public_id = params.get('public_id');
         let smartphone_slug = params.get('m-slug');
         let smartphone_public_id = params.get('m-public_id');
+        let lodging_slug = null;
+        let lodging_public_id = null;
         let isSinglePage = params.get('single_page') === 'true';
 
         if (direct_post?.public_id) {
@@ -341,11 +382,21 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
             isSinglePage = true;
         }
 
+        // Lodging deep-link (Stage 3.2 Fix L): open in single-page mode like post/smartphone,
+        // so a mobile refresh routes to MobileFeedSinglePage -> MobileFeedGallery (lodging branch).
+        if (direct_lodging?.public_id) {
+            lodging_public_id = direct_lodging.public_id;
+            lodging_slug = direct_lodging.slug;
+            isSinglePage = true;
+        }
+
         if (
             !post_slug &&
             !smartphone_slug &&
             !post_public_id &&
             !smartphone_public_id &&
+            !lodging_slug &&
+            !lodging_public_id &&
             !isSinglePage
         )
             return;
@@ -371,6 +422,12 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                     item.type === 'smartphones' &&
                     (item.slug === smartphone_slug || item.public_id === smartphone_public_id),
             );
+        } else if (lodging_slug || lodging_public_id) {
+            feedItem = feed.find(
+                (item) =>
+                    item.type === 'lodging' &&
+                    (item.slug === lodging_slug || item.public_id === lodging_public_id),
+            );
         }
 
         if (feedItem) {
@@ -390,10 +447,12 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                 fetchSinglePost(post_slug || null, post_public_id || null);
             else if (smartphone_slug || smartphone_public_id)
                 fetchSingleSmartphone(smartphone_slug || null, smartphone_public_id || null);
+            else if (lodging_slug || lodging_public_id)
+                fetchSingleLodging(lodging_slug || null, lodging_public_id || null);
 
             window.history.replaceState({}, '', window.location.href);
         }
-    }, [isFeedLoaded, feed, windowSize.width, direct_post, direct_smartphone]);
+    }, [isFeedLoaded, feed, windowSize.width, direct_post, direct_smartphone, direct_lodging]);
 
     // Fetch Single Post Method
     const fetchSinglePost = async (slug, public_id = null) => {
@@ -618,6 +677,87 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
         }
     };
 
+    //  Fetch Single Lodging Method (Stage 3.2)
+    const fetchSingleLodging = async (slug, public_id = null) => {
+        try {
+            if (!isFeedLoaded) {
+                return;
+            }
+
+            const routeParams = {};
+            if (public_id) routeParams.public_id = public_id;
+            if (slug) routeParams.slug = encodeURIComponent(slug);
+
+            const res = await axios.get(
+                route('website.products.get-single-lodging', routeParams),
+            );
+            const data = await res.data;
+
+            if (data.status) {
+                let newIndex = -1;
+                flushSync(() => {
+                    //  Extracting and storing all related feeds by slug
+                    setRelatedFeed((prevRelated) => {
+                        const updatedRelated = { ...prevRelated };
+                        const lodging = data.lodging;
+
+                        // Extracting related from lodging (only if not already stored)
+                        if (
+                            lodging.related &&
+                            Array.isArray(lodging.related) &&
+                            lodging.related.length > 0
+                        ) {
+                            updatedRelated[lodging.slug] = lodging.related;
+                        }
+
+                        return updatedRelated;
+                    });
+
+                    setFeed((prevFeed) => {
+                        const exists = prevFeed.some(
+                            (item) => item.type === 'lodging' && item.id === data.lodging.id,
+                        );
+
+                        let newFeed;
+                        if (!exists) {
+                            newFeed = [data.lodging, ...prevFeed];
+                        } else {
+                            newFeed = prevFeed;
+                        }
+
+                        const idx = newFeed.findIndex(
+                            (item) => item.type === 'lodging' && item.id === data.lodging.id,
+                        );
+
+                        newIndex = idx;
+
+                        return newFeed;
+                    });
+
+                    setFeedGallery(data.lodging);
+                    setFeedOpen(true);
+                });
+
+                if (newIndex !== -1) {
+                    setFeedIndex(newIndex);
+                }
+            } else {
+                isSinglePageRef.current = false;
+                setShowFeedSkeleton(false);
+                setShowInfoMessage(true);
+                setInfoMessage(t('Property Not Found'));
+                window.history.replaceState({}, '', window.location.pathname);
+            }
+        } catch (err) {
+            isSinglePageRef.current = false;
+            setShowFeedSkeleton(false);
+            setShowErrorMessage(true);
+            const msg = err.response?.data?.message;
+            setErrorMessage(msg || t('Something went wrong'));
+            window.history.replaceState({}, '', window.location.pathname);
+        }
+    };
+
     // Fetch More Method
     const fetchMorePostsAndProducts = async () => {
         const currentUrl = nextPageUrlRef.current;
@@ -641,7 +781,11 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                 setFeed((prevFeed) => {
                     const existingIds = new Set(
                         prevFeed.map((item) =>
-                            item.type === 'posts' ? `posts-${item.id}` : `smartphones-${item.id}`,
+                            item.type === 'posts'
+                                ? `posts-${item.id}`
+                                : item.type === 'lodging'
+                                  ? `lodging-${item.id}`
+                                  : `smartphones-${item.id}`,
                         ),
                     );
 
@@ -650,11 +794,22 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                         (smartphone) => !existingIds.has(`smartphones-${smartphone.id}`),
                     );
 
-                    if (newPosts.length === 0 && newSmartphones.length === 0) {
+                    const newLodging = (products.lodging_properties || []).filter(
+                        (lodging) => !existingIds.has(`lodging-${lodging.id}`),
+                    );
+
+                    if (
+                        newPosts.length === 0 &&
+                        newSmartphones.length === 0 &&
+                        newLodging.length === 0
+                    ) {
                         return prevFeed;
                     }
                     // return [...prevFeed, ...newPosts, ...newSmartphones];
-                    return [...prevFeed, ...interleaveFeedItems(newPosts, newSmartphones)];
+                    return [
+                        ...prevFeed,
+                        ...interleaveFeedItems(newPosts, newSmartphones,newLodging),
+                    ];
                 });
 
                 //  Extracting and storing all related feeds by slug
@@ -682,6 +837,18 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                             !prevRelated[smartphone.slug]
                         ) {
                             updatedRelated[smartphone.slug] = smartphone.related;
+                        }
+                    });
+
+                    // Extracting related from lodging properties (only if not already stored)
+                    (products.lodging_properties || []).forEach((lodging) => {
+                        if (
+                            lodging.related &&
+                            Array.isArray(lodging.related) &&
+                            lodging.related.length > 0 &&
+                            !prevRelated[lodging.slug]
+                        ) {
+                            updatedRelated[lodging.slug] = lodging.related;
                         }
                     });
 
@@ -924,7 +1091,10 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                     : Array.isArray(feedGallery.smartphone_image_urls) &&
                         feedGallery.type === 'smartphones'
                       ? feedGallery.smartphone_image_urls.map((url) => ({ type: 'image', url }))
-                      : [];
+                      : Array.isArray(feedGallery.lodging_image_urls) &&
+                          feedGallery.type === 'lodging'
+                        ? feedGallery.lodging_image_urls.map((url) => ({ type: 'image', url }))
+                        : [];
             const videos =
                 Array.isArray(feedGallery.post_video_urls) && feedGallery.type === 'posts'
                     ? feedGallery.post_video_urls.map((url) => ({
@@ -939,7 +1109,14 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                             url: url.url,
                             thumbnail_url: url.thumbnail_url,
                         }))
-                      : [];
+                      : Array.isArray(feedGallery.lodging_video_urls) &&
+                          feedGallery.type === 'lodging'
+                        ? feedGallery.lodging_video_urls.map((url) => ({
+                              type: 'video',
+                              url: url.url,
+                              thumbnail_url: url.thumbnail_url,
+                          }))
+                        : [];
 
             const allMedia = [...images, ...videos];
             setMediaItems(allMedia);
@@ -985,6 +1162,14 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
             const previousUrl = new URL(previousUrlRef.current);
             const previousParams = new URLSearchParams(previousUrl.search);
             const wasOnMobileGallery = previousParams.has('mobile-feed-gallery');
+
+            // Stage 3.3 — reservation slide-in is the TOPMOST overlay: Back closes it first and
+            // leaves the feed/viewer open (additive; does not alter the branches below).
+            if (reservationPanelOpenRef.current) {
+                reservationPanelOpenRef.current = false;
+                setReservationPanel(null);
+                return;
+            }
 
             // SpatiotemporalInfo Modal Open
             if (isSpatiotemporalModalOpenRef.current) {
@@ -1063,7 +1248,8 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
             const isHomePath =
                 pathname === '/' ||
                 pathname.startsWith('/post/') ||
-                pathname.startsWith('/product/');
+                pathname.startsWith('/product/') ||
+                pathname.startsWith('/lodging/');
 
             // Block if we just closed mobile gallery
             if (isSpatiotemporalModalOpenRef.current && isHomePath && !isSidebarClickActive) {
@@ -1150,12 +1336,59 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                 } else {
                     window.history.pushState({}, '', url);
                 }
+            } else if (item.type === 'lodging') {
+                const url = generateLodgingURL(item);
+                if (feedOpenCountRef.current === 1) {
+                    window.history.replaceState({}, '', url);
+                    window.history.pushState({}, '', url);
+                } else {
+                    window.history.pushState({}, '', url);
+                }
             }
 
             previousUrlRef.current = window.location.href;
         },
-        [generateURL, generateSmartphoneURL],
+        [generateURL, generateSmartphoneURL, generateLodgingURL],
     );
+
+    // Stage 3.3 — open the rate-plan reservation slide-in (history-safe; mirrors the
+    // SpatiotemporalInfoModal pattern). Guests are routed to login with a return redirect;
+    // logged-in non-customers see a local message without leaving the feed.
+    const openReservationPanel = useCallback(
+        ({ lodging, room, ratePlan }) => {
+            if (!auth?.user) {
+                router.get(route('login'), {
+                    redirect: window.location.pathname + window.location.search,
+                });
+                return;
+            }
+
+            if (auth?.user?.role !== 'Customer') {
+                setInfoMessage(__('Only customers can make a reservation'));
+                setShowInfoMessage(true);
+                return;
+            }
+
+            reservationPanelOpenRef.current = true;
+            setReservationPanel({ lodging, room, ratePlan });
+
+            // Push a `?reserve=<rate plan id>` history entry so Back closes the panel first.
+            const sp = new URLSearchParams(window.location.search);
+            sp.set('reserve', String(ratePlan?.id ?? ''));
+            window.history.pushState({}, '', window.location.pathname + '?' + sp.toString());
+        },
+        [__, auth],
+    );
+
+    // Close the panel and strip `?reserve` (replaceState — no extra history entry).
+    const closeReservationPanel = useCallback(() => {
+        reservationPanelOpenRef.current = false;
+        setReservationPanel(null);
+        const sp = new URLSearchParams(window.location.search);
+        sp.delete('reserve');
+        const qs = sp.toString();
+        window.history.replaceState({}, '', window.location.pathname + (qs ? '?' + qs : ''));
+    }, []);
 
     useEffect(() => {
         if (feedOpen && showFeedSkeleton) {
@@ -1419,6 +1652,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                     auth={auth}
                                     generateURL={generateURL}
                                     generateSmartphoneURL={generateSmartphoneURL}
+                                    generateLodgingURL={generateLodgingURL}
                                     navigateToHashtag={navigateToHashtag}
                                     Placeholder={Placeholder}
                                     showQrCode={showQrCode}
@@ -1437,6 +1671,9 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                                     previous_url={redirectedPreviousUrl.current}
+                                    openReservationPanel={openReservationPanel}
+                                    reservationPanelOpenRef={reservationPanelOpenRef}
+                                    closeReservationPanel={closeReservationPanel}
                                     __={__}
                                 />
                             )}
@@ -1459,6 +1696,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                 auth={auth}
                                 generateURL={generateURL}
                                 generateSmartphoneURL={generateSmartphoneURL}
+                                generateLodgingURL={generateLodgingURL}
                                 navigateToHashtag={navigateToHashtag}
                                 feedIndex={feedIndex}
                                 setFeedIndex={setFeedIndex}
@@ -1486,6 +1724,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                 isSinglePageRef={isSinglePageRef}
                                 spatiotemporalInfoModal={spatiotemporalInfoModal}
                                 setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                                openReservationPanel={openReservationPanel}
                                 __={__}
                             />
                         )}
@@ -1504,6 +1743,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                 auth={auth}
                                 generateURL={generateURL}
                                 generateSmartphoneURL={generateSmartphoneURL}
+                                generateLodgingURL={generateLodgingURL}
                                 navigateToHashtag={navigateToHashtag}
                                 setFeedIndex={setFeedIndex}
                                 MobileFeedGalleryOpen={MobileFeedGalleryOpen}
@@ -1524,6 +1764,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                 spatiotemporalInfoModal={spatiotemporalInfoModal}
                                 setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
                                 previous_url={redirectedPreviousUrl.current}
+                                openReservationPanel={openReservationPanel}
                                 __={__}
                             />
                         )}
@@ -1565,6 +1806,15 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                                                 true,
                                                             ),
                                                     })}
+                                                    {...(feedGallery?.type === 'lodging' && {
+                                                        value:
+                                                            window.location.origin +
+                                                            generateLodgingURL(
+                                                                feedGallery,
+                                                                true,
+                                                                true,
+                                                            ),
+                                                    })}
                                                     level="H"
                                                     includemargin="true"
                                                     bgColor="#ffffff"
@@ -1588,6 +1838,16 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                                                         url =
                                                             window.location.origin +
                                                             generateSmartphoneURL(
+                                                                feedGallery,
+                                                                true,
+                                                                true,
+                                                            );
+                                                    } else if (
+                                                        feedGallery?.type === 'lodging'
+                                                    ) {
+                                                        url =
+                                                            window.location.origin +
+                                                            generateLodgingURL(
                                                                 feedGallery,
                                                                 true,
                                                                 true,
@@ -1649,6 +1909,19 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [] }) => {
                             BookmarkStatusChanged={bookmarkStatusChanged}
                             setBookmarkStatusChanged={setBookmarkStatusChanged}
                             viewablePost={feedGallery}
+                        />
+                    )}
+
+                    {/* Stage 3.3 — rate-plan reservation slide-in (rendered over the viewer) */}
+                    {reservationPanel && (
+                        <LodgingReservationPanel
+                            open={!!reservationPanel}
+                            onClose={closeReservationPanel}
+                            lodging={reservationPanel.lodging}
+                            selectedRoom={reservationPanel.room}
+                            selectedRatePlan={reservationPanel.ratePlan}
+                            auth={auth}
+                            __={__}
                         />
                     )}
                 </>

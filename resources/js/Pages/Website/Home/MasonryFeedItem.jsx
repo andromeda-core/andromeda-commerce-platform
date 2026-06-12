@@ -16,6 +16,10 @@ const MasonryFeedItem = memo(
         setBookmarkActionPost,
         windowSize,
     }) => {
+
+
+
+
         const { __ } = useTranslation();
 
         const [loaded, setLoaded] = useState(false);
@@ -26,7 +30,7 @@ const MasonryFeedItem = memo(
         if (item.type === 'posts') {
             return (
                 <article
-                    className="group relative mb-2 cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
+                    className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
                     style={{
                         WebkitColumnBreakInside: 'avoid',
                         pageBreakInside: 'avoid',
@@ -96,7 +100,7 @@ const MasonryFeedItem = memo(
 
                                     {isBookmarkPage && (
                                         <div
-                                            className="pointer-events-auto absolute right-3 top-3 z-30"
+                                            className="absolute z-30 pointer-events-auto right-3 top-3"
                                             onClick={(e) => {
                                                 setUnmarking(true);
                                                 e.stopPropagation();
@@ -153,7 +157,7 @@ const MasonryFeedItem = memo(
 
                                     <div className="absolute inset-x-0 bottom-0 p-4">
                                         <div className="mt-1 flex items-center justify-between text-[13px] leading-[17px] lg:text-[14px]">
-                                            <p className="min-w-0 flex-1 font-semibold text-main-text-dark">
+                                            <p className="flex-1 min-w-0 font-semibold text-main-text-dark">
                                                 <span
                                                     className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
                                                     dangerouslySetInnerHTML={{
@@ -232,7 +236,7 @@ const MasonryFeedItem = memo(
 
                                     {isBookmarkPage && (
                                         <div
-                                            className="pointer-events-auto absolute right-3 top-3 z-30"
+                                            className="absolute z-30 pointer-events-auto right-3 top-3"
                                             onClick={(e) => {
                                                 setUnmarking(true);
                                                 e.stopPropagation();
@@ -289,7 +293,7 @@ const MasonryFeedItem = memo(
 
                                     <div className="absolute inset-x-0 bottom-0 p-4">
                                         <div className="mt-1 flex items-center justify-between text-[13px] leading-[17px] lg:text-[14px]">
-                                            <p className="min-w-0 flex-1 font-semibold text-main-text-dark">
+                                            <p className="flex-1 min-w-0 font-semibold text-main-text-dark">
                                                 <span
                                                     className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
                                                     dangerouslySetInnerHTML={{
@@ -317,7 +321,7 @@ const MasonryFeedItem = memo(
 
                             {isBookmarkPage && (
                                 <div
-                                    className="pointer-events-auto absolute right-3 top-3 z-30"
+                                    className="absolute z-30 pointer-events-auto right-3 top-3"
                                     onClick={(e) => {
                                         setUnmarking(true);
                                         e.stopPropagation();
@@ -385,10 +389,171 @@ const MasonryFeedItem = memo(
             );
         }
 
+        // Lodging (Stage 3.2) — property card; mirrors the smartphones image card.
+        if (item.type === 'lodging') {
+            return (
+                <article
+                    className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
+                    style={{
+                        WebkitColumnBreakInside: 'avoid',
+                        pageBreakInside: 'avoid',
+                        breakInside: 'avoid',
+                    }}
+                    onClick={onClick}
+                >
+                    {item?.cover_image_url ? (
+                        <div className="relative">
+                            <div className="transition-transform duration-500 lg:group-hover:scale-105">
+                                {/* Top gradient */}
+                                <div
+                                    className="pointer-events-none absolute inset-x-0 top-0 h-[40%]"
+                                    style={{
+                                        background:
+                                            'linear-gradient(to bottom, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                        mixBlendMode: 'multiply',
+                                    }}
+                                />
+
+                                {/* Bottom gradient */}
+                                <div
+                                    className="pointer-events-none absolute inset-x-0 bottom-0 h-[40%]"
+                                    style={{
+                                        background:
+                                            'linear-gradient(to top, rgba(0,0,0,0.4), rgba(0,0,0,0))',
+                                        mixBlendMode: 'multiply',
+                                    }}
+                                />
+
+                                {!loaded && (
+                                    <div
+                                        className="relative w-full overflow-hidden"
+                                        style={{ paddingBottom: '100%' }}
+                                    >
+                                        <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-surface-1-light via-surface-2-light to-surface-3-light dark:from-surface-1-dark dark:via-surface-2-dark dark:to-surface-3-dark" />
+                                    </div>
+                                )}
+
+                                <img
+                                    src={
+                                        item?.lodging_image_urls?.[0] ||
+                                        item?.cover_image_url ||
+                                        Placeholder
+                                    }
+                                    alt={item.property_name}
+                                    loading={loadingStrategy}
+                                    decoding="async"
+                                    onLoad={() => {
+                                        setLoaded(true);
+                                    }}
+                                    onError={(e) => {
+                                        e.target.src = Placeholder;
+                                        setLoaded(true);
+                                    }}
+                                    style={{
+                                        opacity: loaded ? 1 : 0,
+                                        width: '100%',
+                                        height: 'auto',
+                                    }}
+                                    className="object-cover text-[10px] text-black dark:text-white"
+                                />
+                            </div>
+
+                            {loaded && (
+                                <>
+                                    {item?.tag && (
+                                        <div className="absolute left-3 top-3">
+                                            <span className="text-[13px] font-semibold leading-[17px] text-white lg:text-[14px]">
+                                                {item?.tag_display ?? item?.tag}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                    <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+                                        <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
+
+
+ {item.lowest_rate && (
+                                                <span className="text-white">
+                                                     <DisplayPrice
+                                                usdAmount={item.lowest_rate}
+                                                size="sm"
+                                                className={`w-full truncate text-white`}
+                                                  isLodgingProduct={true}
+                                            />
+
+
+                                                </span>
+                                            )}
+
+
+ <p className="w-full text-white truncate">
+                                                {item.property_name}
+                                            </p>
+
+                                            {item.location_name && (
+                                                <p className="w-full truncate text-[11px] font-normal text-white">
+                                                    {item.location_name}
+                                                </p>
+                                            )}
+
+
+
+
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    ) : (
+                        // No cover image: text card fallback
+                        <div
+                            className={`relative flex w-full flex-col bg-surface-2-light p-[18px] text-black transition-all duration-500 dark:bg-surface-2-dark dark:text-white lg:group-hover:scale-[1.02] ${windowSize.width > 1024 ? 'min-h-[clamp(300px,100%,100%)]' : ''}`}
+                        >
+                            {item?.tag && (
+                                <div className="absolute left-4 top-3">
+                                    <span className="text-[13px] font-semibold leading-[17px] text-black dark:text-white lg:text-[14px]">
+                                        {item?.tag_display ?? item?.tag}
+                                    </span>
+                                </div>
+                            )}
+                            <div className="flex flex-col flex-1 mt-10">
+                                <div className="line-clamp-6 whitespace-pre-line break-all text-[13px] leading-[17px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
+                                   <p className='font-semibold'>
+                                     {item.property_name}
+                                   </p>
+                                     <p
+                                        dangerouslySetInnerHTML={{
+                                            __html: item?.content?.trim(),
+                                        }}
+                                    ></p>
+                                </div>
+
+                                {item.location_name && (
+                                    <p className="mt-1 text-[13px] text-sub-text-light dark:text-sub-text-dark">
+                                        {item.location_name}
+                                    </p>
+                                )}
+                                <div className="pt-4 mt-auto">
+                                   {item.lowest_rate && (
+                                                <DisplayPrice
+                                                usdAmount={item.lowest_rate}
+                                                size="sm"
+                                                className={`w-full truncate`}
+                                                isLodgingProduct={true}
+                                            />
+                                            )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </article>
+            );
+        }
+
         // Smartphones
         return (
             <article
-                className="group relative mb-2 cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
+                className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
                 style={{
                     WebkitColumnBreakInside: 'avoid',
                     pageBreakInside: 'avoid',
@@ -457,7 +622,7 @@ const MasonryFeedItem = memo(
                                     </span>
                                 </div>
 
-                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-12">
+                                <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                         {item.is_sold_out && (
                                             <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -475,7 +640,7 @@ const MasonryFeedItem = memo(
                                             ''
                                         )}
 
-                                        <p className="w-full truncate text-white">
+                                        <p className="w-full text-white truncate">
                                             {item.name} ({item.capacity})
                                         </p>
                                     </div>
@@ -538,7 +703,7 @@ const MasonryFeedItem = memo(
 
                         {loaded && (
                             <>
-                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-12">
+                                <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                         {item.is_sold_out && (
                                             <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -556,7 +721,7 @@ const MasonryFeedItem = memo(
                                             ''
                                         )}
 
-                                        <p className="w-full truncate text-white">
+                                        <p className="w-full text-white truncate">
                                             {item.name} ({item.capacity})
                                         </p>
                                     </div>
@@ -574,7 +739,7 @@ const MasonryFeedItem = memo(
                             </span>
                         </div>
 
-                        <div className="mt-10 flex flex-1 flex-col">
+                        <div className="flex flex-col flex-1 mt-10">
                             <p className="line-clamp-6 whitespace-pre-line break-words text-[13px] leading-[20px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
                                 <span
                                     dangerouslySetInnerHTML={{
@@ -588,7 +753,7 @@ const MasonryFeedItem = memo(
                             </p>
 
                             {/* PRICE - normal flow, pushed to bottom (no overlap) */}
-                            <div className="mt-auto pt-4 text-main-text-light dark:text-main-text-dark">
+                            <div className="pt-4 mt-auto text-main-text-light dark:text-main-text-dark">
                                 <div className="flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                     {item.is_sold_out && (
                                         <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">

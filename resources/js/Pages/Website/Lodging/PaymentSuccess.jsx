@@ -1,5 +1,5 @@
 import React from 'react';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { CheckCircle2, Clock, XCircle, AlertTriangle, ChevronLeft } from 'lucide-react';
@@ -66,9 +66,9 @@ export default function PaymentSuccess() {
 
     const Row = ({ label, value }) =>
         value ? (
-            <div className="flex items-center justify-between gap-4 py-2 border-b border-black/5 dark:border-white/5 last:border-0">
-                <span className="text-sm text-sub-text-light dark:text-sub-text-dark">{label}</span>
-                <span className="text-sm font-medium text-right text-main-text-light dark:text-main-text-dark">{value}</span>
+            <div className="flex items-start justify-between gap-4 py-2 border-b border-surface-3-light dark:border-surface-3-dark last:border-0">
+                <span className="text-sm shrink-0 text-sub-text-light dark:text-sub-text-dark">{label}</span>
+                <span className="min-w-0 text-sm font-medium text-right break-words text-main-text-light dark:text-main-text-dark">{value}</span>
             </div>
         ) : null;
 
@@ -79,14 +79,14 @@ export default function PaymentSuccess() {
             <div className="px-4 sm:px-6 lg:px-8">
                 <div className="max-w-xl py-10 mx-auto">
                     <button
-                        onClick={() => window.history.back()}
+                        onClick={() => router.visit(route('home'))}
                         className="inline-flex items-center gap-1 mb-6 text-sm font-medium transition-colors text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
                     >
                         <ChevronLeft className="w-4 h-4" />
                         {__('Back')}
                     </button>
 
-                    <div className="p-6 border shadow-sm rounded-2xl border-black/5 dark:border-white/10 bg-surface-1-light dark:bg-surface-1-dark sm:p-8">
+                    <div className="p-6 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark sm:p-8">
                         {/* Status icon + heading + message */}
                         <div className="flex flex-col items-center text-center">
                             <div className={`flex items-center justify-center w-16 h-16 rounded-full ${view.ring}`}>
@@ -114,13 +114,13 @@ export default function PaymentSuccess() {
                         <div className="flex flex-col gap-3 mt-8 sm:flex-row">
                             <Link
                                 href={my_reservations_url}
-                                className="inline-flex items-center justify-center flex-1 px-4 py-2.5 text-sm font-semibold transition-all rounded-lg bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                                className="inline-flex items-center justify-center flex-1 px-4 py-2.5 text-sm font-semibold transition-all rounded-md bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                             >
                                 {__('Go to My Reservations')}
                             </Link>
                             <button
-                                onClick={() => window.history.back()}
-                                className="inline-flex items-center justify-center flex-1 px-4 py-2.5 text-sm font-semibold transition-colors border rounded-lg border-black/10 dark:border-white/15 text-main-text-light dark:text-main-text-dark lg:hover:bg-black/5 dark:lg:hover:bg-white/5"
+                                onClick={() => router.visit(route('home'))}
+                                className="inline-flex items-center justify-center flex-1 px-4 py-2.5 text-sm font-semibold transition-colors border rounded-md border-surface-3-light dark:border-surface-3-dark text-main-text-light dark:text-main-text-dark lg:hover:bg-surface-1-light dark:lg:hover:bg-surface-3-dark"
                             >
                                 {__('Back')}
                             </button>

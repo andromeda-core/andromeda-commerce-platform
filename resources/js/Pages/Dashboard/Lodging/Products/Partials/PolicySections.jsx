@@ -3,11 +3,115 @@ import Input from '@/Components/Input';
 import SelectInput from '@/Components/SelectInput';
 import Textarea from '@/Components/Textarea';
 import PrimaryButton from '@/Components/PrimaryButton';
+import TranslationsRepeater from '@/Components/TranslationsRepeater';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
-import { Accordion, ToggleField, toOptions } from './helpers';
+import {
+    Accordion,
+    ToggleField,
+    toOptions,
+    checkinPolicyTranslatableFields,
+    cancellationPolicyTranslatableFields,
+    parkingPolicyTranslatableFields,
+} from './helpers';
 
-export default function PolicySections({ data, setData, errors, enums }) {
+// Stage 3.4.6 — per-language translated LABELS for the cancellation refund_schedule rows.
+// refund_schedule rows are {label, refund_percent}; the shared TranslationsRepeater's keyvalue type
+// is locked to {title,value} and can't represent them, so this dedicated editor rides the SAME
+// cancellation_policy.translations array (field key 'refund_schedule'). Per non-default language it
+// shows each English row (label + percent read-only) with an editable translated-label input. The
+// saved override row carries the English refund_percent for shape alignment; the customer read path
+// always takes the percent (and row order/count) from the English base, so percents never drift.
+function RefundScheduleTranslations({ englishRows, languages, value, onChange }) {
+    const rows = Array.isArray(englishRows) ? englishRows : [];
+    const blocks = Array.isArray(value) ? value : [];
+    if (rows.length === 0 || (languages?.length ?? 0) === 0) return null;
+
+    const blockFor = (langId) => blocks.find((b) => String(b?.language_id) === String(langId));
+
+    const translatedLabel = (langId, i) => {
+        const schedule = blockFor(langId)?.fields?.refund_schedule;
+        const row = Array.isArray(schedule) ? schedule[i] : null;
+        return row && typeof row.label === 'string' ? row.label : '';
+    };
+
+    const setTranslatedLabel = (langId, changedIndex, label) => {
+        // Rebuild the full override array for ALL English rows (current order + percents) so it stays
+        // index-aligned with the English base; only the edited row's label changes.
+        const nextSchedule = rows.map((r, idx) => ({
+            label: idx === changedIndex ? label : translatedLabel(langId, idx),
+            refund_percent: r.refund_percent,
+        }));
+
+        const existing = blockFor(langId);
+        const nextBlocks = existing
+            ? blocks.map((b) =>
+                  String(b.language_id) === String(langId)
+                      ? { ...b, fields: { ...(b.fields || {}), refund_schedule: nextSchedule } }
+                      : b,
+              )
+            : [...blocks, { language_id: langId, fields: { refund_schedule: nextSchedule } }];
+
+        onChange(nextBlocks);
+    };
+
+    return (
+        <div className="mt-6">
+            <h5 className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                Refund Schedule — Label Translations
+            </h5>
+            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                Optional. Translate each refund row's label per language. Percentages are shared from
+                the English rows. Empty fields fall back to the English label.
+            </p>
+
+            {languages.map((lang) => (
+                <div
+                    key={lang.id}
+                    className="mt-3 rounded-lg border border-gray-200 p-3 dark:border-gray-700"
+                >
+                    <p className="mb-2 text-xs font-semibold text-main-text-light dark:text-main-text-dark">
+                        {lang.name}
+                    </p>
+                    <div className="flex flex-col gap-2">
+                        {rows.map((row, i) => (
+                            <div
+                                key={i}
+                                className="grid grid-cols-1 items-end gap-2 md:grid-cols-[1fr,1fr,70px]"
+                            >
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    <span className="block text-[11px] uppercase tracking-wide">English</span>
+                                    <span className="break-words text-main-text-light dark:text-main-text-dark">
+                                        {row.label || '—'}
+                                    </span>
+                                </div>
+                                <Input
+                                    InputName={'Translated Label'}
+                                    Id={`refund_tr_${lang.id}_${i}_label`}
+                                    Name={`refund_tr_${lang.id}_${i}_label`}
+                                    Type={'text'}
+                                    Placeholder={'Translated label'}
+                                    Value={translatedLabel(lang.id, i)}
+                                    Action={(e) => setTranslatedLabel(lang.id, i, e.target.value)}
+                                />
+                                <div className="text-xs text-gray-500 dark:text-gray-400">
+                                    <span className="block text-[11px] uppercase tracking-wide">%</span>
+                                    <span className="text-main-text-light dark:text-main-text-dark">
+                                        {row.refund_percent !== '' && row.refund_percent != null
+                                            ? `${row.refund_percent}%`
+                                            : '—'}
+                                    </span>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+}
+
+export default function PolicySections({ data, setData, errors, enums, languages = [] }) {
     const [open, setOpen] = useState(null);
     const toggle = (key) => setOpen((prev) => (prev === key ? null : key));
 
@@ -131,6 +235,16 @@ export default function PolicySections({ data, setData, errors, enums }) {
                         Action={(e) => updatePolicy('checkin_policy', 'early_checkin_fee', e.target.value)}
                     />
                     <Input
+                        InputName={'Early Check-in Fee — Display Text (optional)'}
+                        Id={'early_checkin_fee_display_text'}
+                        Name={'early_checkin_fee_display_text'}
+                        Type={'text'}
+                        Placeholder={'Overrides the amount shown to guests, e.g. Free'}
+                        Value={checkin.early_checkin_fee_display_text}
+                        Error={errors['checkin_policy.early_checkin_fee_display_text']}
+                        Action={(e) => updatePolicy('checkin_policy', 'early_checkin_fee_display_text', e.target.value)}
+                    />
+                    <Input
                         InputName={'Late Check-out Fee'}
                         Id={'late_checkout_fee'}
                         Name={'late_checkout_fee'}
@@ -138,6 +252,16 @@ export default function PolicySections({ data, setData, errors, enums }) {
                         Value={checkin.late_checkout_fee}
                         Error={errors['checkin_policy.late_checkout_fee']}
                         Action={(e) => updatePolicy('checkin_policy', 'late_checkout_fee', e.target.value)}
+                    />
+                    <Input
+                        InputName={'Late Check-out Fee — Display Text (optional)'}
+                        Id={'late_checkout_fee_display_text'}
+                        Name={'late_checkout_fee_display_text'}
+                        Type={'text'}
+                        Placeholder={'Overrides the amount shown to guests, e.g. Pay at property'}
+                        Value={checkin.late_checkout_fee_display_text}
+                        Error={errors['checkin_policy.late_checkout_fee_display_text']}
+                        Action={(e) => updatePolicy('checkin_policy', 'late_checkout_fee_display_text', e.target.value)}
                     />
                     <SelectInput
                         InputName={'Check-in Method'}
@@ -271,6 +395,13 @@ export default function PolicySections({ data, setData, errors, enums }) {
                         Action={(e) => updatePolicy('checkin_policy', 'checkin_instruction_message', e.target.value)}
                     />
                 </div>
+
+                <TranslationsRepeater
+                    value={checkin.translations}
+                    onChange={(next) => updatePolicy('checkin_policy', 'translations', next)}
+                    languages={languages}
+                    fields={checkinPolicyTranslatableFields}
+                />
             </Accordion>
 
             {/* Parking policy */}
@@ -325,6 +456,16 @@ export default function PolicySections({ data, setData, errors, enums }) {
                         Value={parking.extra_parking_fee}
                         Error={errors['parking_policy.extra_parking_fee']}
                         Action={(e) => updatePolicy('parking_policy', 'extra_parking_fee', e.target.value)}
+                    />
+                    <Input
+                        InputName={'Extra Parking Fee — Display Text (optional)'}
+                        Id={'extra_parking_fee_display_text'}
+                        Name={'extra_parking_fee_display_text'}
+                        Type={'text'}
+                        Placeholder={'Overrides the amount shown to guests, e.g. 10,000 KRW per hour'}
+                        Value={parking.extra_parking_fee_display_text}
+                        Error={errors['parking_policy.extra_parking_fee_display_text']}
+                        Action={(e) => updatePolicy('parking_policy', 'extra_parking_fee_display_text', e.target.value)}
                     />
                 </div>
 
@@ -415,6 +556,13 @@ export default function PolicySections({ data, setData, errors, enums }) {
                         Action={(e) => updatePolicy('parking_policy', 'supercar_restriction', e.target.value)}
                     />
                 </div>
+
+                <TranslationsRepeater
+                    value={parking.translations}
+                    onChange={(next) => updatePolicy('parking_policy', 'translations', next)}
+                    languages={languages}
+                    fields={parkingPolicyTranslatableFields}
+                />
             </Accordion>
 
             {/* Cancellation / fee policy */}
@@ -560,18 +708,29 @@ export default function PolicySections({ data, setData, errors, enums }) {
                         On-site fees
                     </h5>
                     <p className="mb-3 text-xs text-gray-400">
-                        Shown to the guest, not charged online at launch.
+                        Shown to the guest, not charged online at launch. Each fee has an optional Display
+                        Text field — when filled, the guest sees that text (e.g. "Free", "Pay at property")
+                        instead of the amount.
                     </p>
                     <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                         <Input InputName={'Extra Guest Fee'} Id={'extra_guest_fee'} Name={'extra_guest_fee'} Type={'number'} Value={cancellation.extra_guest_fee} Error={errors['cancellation_policy.extra_guest_fee']} Action={(e) => updatePolicy('cancellation_policy', 'extra_guest_fee', e.target.value)} />
+                        <Input InputName={'Extra Guest Fee — Display Text (optional)'} Id={'extra_guest_fee_display_text'} Name={'extra_guest_fee_display_text'} Type={'text'} Placeholder={'Overrides the amount shown to guests'} Value={cancellation.extra_guest_fee_display_text} Error={errors['cancellation_policy.extra_guest_fee_display_text']} Action={(e) => updatePolicy('cancellation_policy', 'extra_guest_fee_display_text', e.target.value)} />
                         <Input InputName={'Child Fee'} Id={'child_fee'} Name={'child_fee'} Type={'number'} Value={cancellation.child_fee} Error={errors['cancellation_policy.child_fee']} Action={(e) => updatePolicy('cancellation_policy', 'child_fee', e.target.value)} />
+                        <Input InputName={'Child Fee — Display Text (optional)'} Id={'child_fee_display_text'} Name={'child_fee_display_text'} Type={'text'} Placeholder={'Overrides the amount shown to guests'} Value={cancellation.child_fee_display_text} Error={errors['cancellation_policy.child_fee_display_text']} Action={(e) => updatePolicy('cancellation_policy', 'child_fee_display_text', e.target.value)} />
                         <Input InputName={'Pet Fee'} Id={'pet_fee'} Name={'pet_fee'} Type={'number'} Value={cancellation.pet_fee} Error={errors['cancellation_policy.pet_fee']} Action={(e) => updatePolicy('cancellation_policy', 'pet_fee', e.target.value)} />
+                        <Input InputName={'Pet Fee — Display Text (optional)'} Id={'pet_fee_display_text'} Name={'pet_fee_display_text'} Type={'text'} Placeholder={'Overrides the amount shown to guests'} Value={cancellation.pet_fee_display_text} Error={errors['cancellation_policy.pet_fee_display_text']} Action={(e) => updatePolicy('cancellation_policy', 'pet_fee_display_text', e.target.value)} />
                         <Input InputName={'Extension Fee'} Id={'extension_fee'} Name={'extension_fee'} Type={'number'} Value={cancellation.extension_fee} Error={errors['cancellation_policy.extension_fee']} Action={(e) => updatePolicy('cancellation_policy', 'extension_fee', e.target.value)} />
+                        <Input InputName={'Extension Fee — Display Text (optional)'} Id={'extension_fee_display_text'} Name={'extension_fee_display_text'} Type={'text'} Placeholder={'Overrides the amount shown to guests'} Value={cancellation.extension_fee_display_text} Error={errors['cancellation_policy.extension_fee_display_text']} Action={(e) => updatePolicy('cancellation_policy', 'extension_fee_display_text', e.target.value)} />
                         <Input InputName={'Security Deposit'} Id={'security_deposit'} Name={'security_deposit'} Type={'number'} Value={cancellation.security_deposit} Error={errors['cancellation_policy.security_deposit']} Action={(e) => updatePolicy('cancellation_policy', 'security_deposit', e.target.value)} />
+                        <Input InputName={'Security Deposit — Display Text (optional)'} Id={'security_deposit_display_text'} Name={'security_deposit_display_text'} Type={'text'} Placeholder={'Overrides the amount shown to guests'} Value={cancellation.security_deposit_display_text} Error={errors['cancellation_policy.security_deposit_display_text']} Action={(e) => updatePolicy('cancellation_policy', 'security_deposit_display_text', e.target.value)} />
                         <Input InputName={'On-site Payment Amount'} Id={'onsite_payment_amount'} Name={'onsite_payment_amount'} Type={'number'} Value={cancellation.onsite_payment_amount} Error={errors['cancellation_policy.onsite_payment_amount']} Action={(e) => updatePolicy('cancellation_policy', 'onsite_payment_amount', e.target.value)} />
+                        <Input InputName={'On-site Payment Amount — Display Text (optional)'} Id={'onsite_payment_amount_display_text'} Name={'onsite_payment_amount_display_text'} Type={'text'} Placeholder={'Overrides the amount shown to guests'} Value={cancellation.onsite_payment_amount_display_text} Error={errors['cancellation_policy.onsite_payment_amount_display_text']} Action={(e) => updatePolicy('cancellation_policy', 'onsite_payment_amount_display_text', e.target.value)} />
                         <Input InputName={'Damage Fee'} Id={'damage_fee'} Name={'damage_fee'} Type={'number'} Value={cancellation.damage_fee} Error={errors['cancellation_policy.damage_fee']} Action={(e) => updatePolicy('cancellation_policy', 'damage_fee', e.target.value)} />
+                        <Input InputName={'Damage Fee — Display Text (optional)'} Id={'damage_fee_display_text'} Name={'damage_fee_display_text'} Type={'text'} Placeholder={'Overrides the amount shown to guests'} Value={cancellation.damage_fee_display_text} Error={errors['cancellation_policy.damage_fee_display_text']} Action={(e) => updatePolicy('cancellation_policy', 'damage_fee_display_text', e.target.value)} />
                         <Input InputName={'Minibar / Incidental Fee'} Id={'minibar_incidental_fee'} Name={'minibar_incidental_fee'} Type={'number'} Value={cancellation.minibar_incidental_fee} Error={errors['cancellation_policy.minibar_incidental_fee']} Action={(e) => updatePolicy('cancellation_policy', 'minibar_incidental_fee', e.target.value)} />
+                        <Input InputName={'Minibar / Incidental Fee — Display Text (optional)'} Id={'minibar_incidental_fee_display_text'} Name={'minibar_incidental_fee_display_text'} Type={'text'} Placeholder={'Overrides the amount shown to guests'} Value={cancellation.minibar_incidental_fee_display_text} Error={errors['cancellation_policy.minibar_incidental_fee_display_text']} Action={(e) => updatePolicy('cancellation_policy', 'minibar_incidental_fee_display_text', e.target.value)} />
                         <Input InputName={'On-site Tax'} Id={'onsite_tax'} Name={'onsite_tax'} Type={'number'} Value={cancellation.onsite_tax} Error={errors['cancellation_policy.onsite_tax']} Action={(e) => updatePolicy('cancellation_policy', 'onsite_tax', e.target.value)} />
+                        <Input InputName={'On-site Tax — Display Text (optional)'} Id={'onsite_tax_display_text'} Name={'onsite_tax_display_text'} Type={'text'} Placeholder={'Overrides the amount shown to guests'} Value={cancellation.onsite_tax_display_text} Error={errors['cancellation_policy.onsite_tax_display_text']} Action={(e) => updatePolicy('cancellation_policy', 'onsite_tax_display_text', e.target.value)} />
                     </div>
                 </div>
 
@@ -581,6 +740,22 @@ export default function PolicySections({ data, setData, errors, enums }) {
                     <Textarea InputName={'Non-refundable Reasons'} Id={'non_refundable_reasons'} Name={'non_refundable_reasons'} Value={cancellation.non_refundable_reasons} Error={errors['cancellation_policy.non_refundable_reasons']} Action={(e) => updatePolicy('cancellation_policy', 'non_refundable_reasons', e.target.value)} />
                     <Textarea InputName={'Damage Policy'} Id={'damage_policy'} Name={'damage_policy'} Value={cancellation.damage_policy} Error={errors['cancellation_policy.damage_policy']} Action={(e) => updatePolicy('cancellation_policy', 'damage_policy', e.target.value)} />
                 </div>
+
+                <TranslationsRepeater
+                    value={cancellation.translations}
+                    onChange={(next) => updatePolicy('cancellation_policy', 'translations', next)}
+                    languages={languages}
+                    fields={cancellationPolicyTranslatableFields}
+                />
+
+                {/* Stage 3.4.6 — per-language refund_schedule row-label translations (rides the same
+                    cancellation_policy.translations array under field key 'refund_schedule'). */}
+                <RefundScheduleTranslations
+                    englishRows={cancellation.refund_schedule}
+                    languages={languages}
+                    value={cancellation.translations}
+                    onChange={(next) => updatePolicy('cancellation_policy', 'translations', next)}
+                />
             </Accordion>
         </div>
     );

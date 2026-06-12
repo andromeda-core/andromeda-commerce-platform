@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\LodgingProduct;
 use App\Models\Post;
 use App\Models\Smartphone;
 use Illuminate\Http\Response;
@@ -45,6 +46,22 @@ class SitemapController extends Controller
                     $content .= '<url>';
                     $content .= '<loc>' . url('/post/' . $p->public_id . '/' . $p->slug) . '</loc>';
                     $content .= '<lastmod>' . $p->updated_at->toAtomString() . '</lastmod>';
+                    $content .= '<changefreq>weekly</changefreq>';
+                    $content .= '<priority>0.7</priority>';
+                    $content .= '</url>';
+                });
+
+            // Lodging properties (Stage 3.2) — active + slugged only.
+            LodgingProduct::whereNotNull('public_id')
+                ->whereNotNull('slug')
+                ->where('is_active', true)
+                ->select('public_id', 'slug', 'updated_at')
+                ->latest()
+                ->lazy(500)
+                ->each(function ($l) use (&$content) {
+                    $content .= '<url>';
+                    $content .= '<loc>' . url('/lodging/' . $l->public_id . '/' . $l->slug) . '</loc>';
+                    $content .= '<lastmod>' . $l->updated_at->toAtomString() . '</lastmod>';
                     $content .= '<changefreq>weekly</changefreq>';
                     $content .= '<priority>0.7</priority>';
                     $content .= '</url>';

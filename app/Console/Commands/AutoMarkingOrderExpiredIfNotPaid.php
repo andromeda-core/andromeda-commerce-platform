@@ -28,23 +28,38 @@ class AutoMarkingOrderExpiredIfNotPaid extends Command
 
                 foreach ($orders as $order) {
 
-                    if (! empty($order->expires_at) && now()->lessThan(Carbon::parse($order->expires_at))) {
+                    if (empty($order->expires_at)) {
+                        continue;
+                    }
+
+                    $deadline = Carbon::parse($order->expires_at);
+                    $graceCutoff = $deadline->copy()->addMinutes(3);
+
+                    if (now()->lessThanOrEqualTo($graceCutoff)) {
                         continue;
                     }
 
                     $user = $order->customer->user;
 
                     DB::transaction(function () use ($order, $user) {
-                        $order->update(['status' => 'expired', 'expired_at' => now()]);
+                        $locked = Order::whereKey($order->id)
+                            ->with(['orderItems'])
+                            ->lockForUpdate()->first();
 
-                        if (! empty($order->points_used)) {
+                        if (! in_array($locked->status, ['awaiting_payment', 'pending'], true)) {
+                            return;
+                        }
+
+                        $locked->update(['status' => 'expired', 'expired_at' => now()]);
+
+                        if (! empty($locked->points_used)) {
                             $user->reward_points()->create([
-                                'points' => $order->points_used,
+                                'points' => $locked->points_used,
                                 'expires_at' => now()->addYears(5),
                             ]);
                         }
 
-                        foreach ($order->orderItems as $item) {
+                        foreach ($locked->orderItems as $item) {
 
                             $inventoryItemsIds = $item->inventory_item_ids;
                             if (empty($inventoryItemsIds)) {

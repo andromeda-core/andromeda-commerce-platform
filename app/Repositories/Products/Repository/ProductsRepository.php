@@ -10,6 +10,7 @@ use App\Models\Post;
 use App\Models\PriceRange;
 use App\Models\Smartphone;
 use App\Repositories\Categories\Interface\ICategoryRepository;
+use App\Repositories\Lodging\Interface\ILodgingProductRepository;
 use App\Repositories\Products\Interface\IProductsRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -25,7 +26,8 @@ class ProductsRepository implements IProductsRepository
         private Condition $condition,
         private ICategoryRepository $category,
         private Trans $trans,
-        private PriceRange $priceRange
+        private PriceRange $priceRange,
+        private ILodgingProductRepository $lodging_product_repository,
     ) {}
 
     // Smartphone
@@ -130,6 +132,9 @@ class ProductsRepository implements IProductsRepository
                                 'colors' => $smartphone?->colors,
                                 'upc' => $smartphone?->upc,
                                 'floor' => $smartphone->floor,
+                                'location_name' => $smartphone->location_name,
+                                'latitude' => $smartphone->latitude,
+                                'longitude' => $smartphone->longitude,
                                 'selling_info' => $smartphone?->selling_info,
                                 'country' => $smartphone?->country,
                                 'condition' => $smartphone?->condition,
@@ -194,6 +199,12 @@ class ProductsRepository implements IProductsRepository
                             });
                     }
 
+                    // Stage refinement — related lodging (tag-based) injected alongside posts + smartphones.
+                    $related_lodging = $this->lodging_product_repository
+                        ->getRelatedLodgingForFeed([$smartphone->tag], $images ?? true, $videos ?? true, $text ?? true)
+                        ->take(5)
+                        ->values();
+
                     return [
                         'id' => $smartphone?->id,
                         'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
@@ -205,6 +216,9 @@ class ProductsRepository implements IProductsRepository
                         'colors' => $smartphone->colors,
                         'upc' => $smartphone?->upc,
                         'floor' => $smartphone->floor,
+                        'location_name' => $smartphone->location_name,
+                        'latitude' => $smartphone->latitude,
+                        'longitude' => $smartphone->longitude,
                         'selling_info' => $smartphone?->selling_info,
                         'inventory_items_count' => $smartphone?->inventory_items_count,
                         'country' => $smartphone?->country,
@@ -223,7 +237,7 @@ class ProductsRepository implements IProductsRepository
                         'type' => 'smartphones',
                         'added_at' => $smartphone->added_at,
                         'created_at_time' => $smartphone->created_at_time,
-                        'related' => collect([...$related_posts, ...$related_smartphones])->shuffle(),
+                        'related' => collect([...$related_posts, ...$related_smartphones, ...$related_lodging])->shuffle(),
                     ];
                 });
 
@@ -262,13 +276,13 @@ class ProductsRepository implements IProductsRepository
         }
 
         $priceRangeMap = $this->getActivePriceRanges()
-            ->keyBy(fn($r) => $r->type === 'less_than' ? 'under_' . $r->value : 'over_' . $r->value);
+            ->keyBy(fn ($r) => $r->type === 'less_than' ? 'under_'.$r->value : 'over_'.$r->value);
 
         $smartphones = $this->smartphone
             ->with(['condition', 'capacity', 'selling_info', 'model_name', 'category', 'contentTranslations', 'model_name.contentTranslations'])
             ->whereHas('selling_info')
             ->whereNotNull('slug')
-            ->when(! empty($request->input('tag')), function ($query) use ($request, $priceRangeMap) {
+            ->when(! empty($request->input('tag')), function ($query) use ($request) {
                 $query->where('tag', $request->input('tag'));
             })
             ->when(! empty($category_id), function ($query) use ($category_id) {
@@ -362,9 +376,8 @@ class ProductsRepository implements IProductsRepository
             $category_id = $first_category->id;
         }
 
-
         $priceRangeMap = $this->getActivePriceRanges()
-            ->keyBy(fn($r) => $r->type === 'less_than' ? 'under_' . $r->value : 'over_' . $r->value);
+            ->keyBy(fn ($r) => $r->type === 'less_than' ? 'under_'.$r->value : 'over_'.$r->value);
 
         $query = \DB::table('smartphones')
             ->distinct()
@@ -432,7 +445,7 @@ class ProductsRepository implements IProductsRepository
         return $query
             ->orderBy('smartphones.tag')
             ->get()
-            ->map(fn($row) => [
+            ->map(fn ($row) => [
                 'key' => $row->tag,
                 'label' => ucfirst($row->tag),
             ])
@@ -501,7 +514,7 @@ class ProductsRepository implements IProductsRepository
         return $this->getActivePriceRanges()
             ->map(function ($range) {
                 return [
-                    'key' => $range->type === 'less_than' ? 'under_' . $range->value : ('over_' . $range->value),
+                    'key' => $range->type === 'less_than' ? 'under_'.$range->value : ('over_'.$range->value),
                     'label' => $range->type === 'less_than' ? Trans::get('Under') : Trans::get('Over'),
                     'value' => (int) $range->value,
                 ];
@@ -520,16 +533,16 @@ class ProductsRepository implements IProductsRepository
 
         if (! $smartphone) {
             return [
-                'exists'    => false,
+                'exists' => false,
                 'public_id' => $public_id,
             ];
         }
 
         return [
-            'exists'    => true,
+            'exists' => true,
             'public_id' => $smartphone->public_id,
-            'slug'      => $smartphone->slug,
-            'name'      => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
+            'slug' => $smartphone->slug,
+            'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
             'image_url' => $smartphone->smartphone_image_urls[0] ?? null,
             'price_usd' => (float) ($smartphone->selling_info?->total_price ?? 0),
         ];

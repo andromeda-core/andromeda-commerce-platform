@@ -6,10 +6,12 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 
-const Field = ({ label, value }) => (
-    <div className="flex flex-col">
+const Field = ({ label, value, breakAll = false }) => (
+    <div className="flex min-w-0 flex-col">
         <span className="text-xs uppercase text-gray-400">{label}</span>
-        <span className="text-sm text-main-text-light dark:text-main-text-dark">
+        <span
+            className={`text-sm text-main-text-light dark:text-main-text-dark ${breakAll ? 'break-all' : 'break-words'}`}
+        >
             {value === null || value === undefined || value === '' ? 'N/A' : String(value)}
         </span>
     </div>
@@ -313,7 +315,7 @@ export default function show({ lodging_reservation }) {
                         <Section title={'Reservation Summary'}>
                             <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-3">
                                 <Field label={'Reservation No'} value={r.reservation_no} />
-                                <Field label={'Public ID'} value={r.public_id} />
+                                <Field label={'Public ID'} value={r.public_id} breakAll={true} />
                                 <div className="flex flex-col">
                                     <span className="text-xs uppercase text-gray-400">
                                         Booking Status
@@ -335,14 +337,14 @@ export default function show({ lodging_reservation }) {
                         <Section title={'Guest'}>
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                 <Field label={'Guest Name'} value={guest.name} />
-                                <Field label={'Guest Email'} value={guest.email} />
+                                <Field label={'Guest Email'} value={guest.email} breakAll={true} />
                                 <Field label={'Guest Count'} value={r.guest_count} />
                             </div>
-                            <div className="mt-3">
+                            <div className="mt-3 min-w-0">
                                 <span className="text-xs uppercase text-gray-400">
                                     Request Message
                                 </span>
-                                <p className="whitespace-pre-wrap text-sm text-main-text-light dark:text-main-text-dark">
+                                <p className="whitespace-pre-wrap break-words text-sm text-main-text-light dark:text-main-text-dark">
                                     {r.request_message || 'N/A'}
                                 </p>
                             </div>
@@ -478,7 +480,11 @@ export default function show({ lodging_reservation }) {
                                             label={'NOWPayments Status'}
                                             value={pay.nowpayments_payment_status}
                                         />
-                                        <Field label={'Tx Hash'} value={pay.tx_hash} />
+                                        <Field
+                                            label={'Tx Hash'}
+                                            value={pay.tx_hash}
+                                            breakAll={true}
+                                        />
                                         <Field
                                             label={'Created At'}
                                             value={fmtDateTime(pay.created_at)}
@@ -494,17 +500,38 @@ export default function show({ lodging_reservation }) {
                                 <Field label={'Source of Truth'} value={r.source_of_truth} />
                                 <Field label={'Sync Status'} value={r.sync_status} />
                                 <Field label={'External Provider'} value={r.external_provider} />
-                                <Field label={'External Listing ID'} value={r.external_listing_id} />
-                                <Field label={'External Room ID'} value={r.external_room_id} />
+                                <Field
+                                    label={'External Listing ID'}
+                                    value={r.external_listing_id}
+                                    breakAll={true}
+                                />
+                                <Field
+                                    label={'External Room ID'}
+                                    value={r.external_room_id}
+                                    breakAll={true}
+                                />
                                 <Field
                                     label={'External Rate Plan ID'}
                                     value={r.external_rate_plan_id}
+                                    breakAll={true}
                                 />
-                                <Field label={'External Booking ID'} value={r.external_booking_id} />
-                                <Field label={'External Case ID'} value={r.external_case_id} />
-                                <Field label={'MSAP URI'} value={r.msap_uri} />
-                                <Field label={'MSAP Event Ref'} value={r.msap_event_ref} />
-                                <Field label={'Event ID'} value={r.event_id} />
+                                <Field
+                                    label={'External Booking ID'}
+                                    value={r.external_booking_id}
+                                    breakAll={true}
+                                />
+                                <Field
+                                    label={'External Case ID'}
+                                    value={r.external_case_id}
+                                    breakAll={true}
+                                />
+                                <Field label={'MSAP URI'} value={r.msap_uri} breakAll={true} />
+                                <Field
+                                    label={'MSAP Event Ref'}
+                                    value={r.msap_event_ref}
+                                    breakAll={true}
+                                />
+                                <Field label={'Event ID'} value={r.event_id} breakAll={true} />
                             </div>
                         </Section>
                     </>

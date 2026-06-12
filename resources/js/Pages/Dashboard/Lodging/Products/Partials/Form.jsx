@@ -15,6 +15,7 @@ import RoomsRepeater from './RoomsRepeater';
 import PolicySections from './PolicySections';
 import MediaSection from './MediaSection';
 import LocationDetector from './LocationDetector';
+import TranslationsRepeater from '@/Components/TranslationsRepeater';
 import {
     toOptions,
     boolsToInts,
@@ -25,6 +26,7 @@ import {
     defaultCancellationPolicy,
     mergePolicy,
     ToggleField,
+    productTranslatableFields,
 } from './helpers';
 
 const productDefaults = () => ({
@@ -36,6 +38,8 @@ const productDefaults = () => ({
     longitude: '',
     location_name: '',
     floor_id: '',
+    floor_start_id: '',
+    floor_end_id: '',
     tag: '',
     content: '',
     base_checkin_time: '',
@@ -43,6 +47,9 @@ const productDefaults = () => ({
     from_price: '',
     is_active: true,
     is_reservation_closed: false,
+    created_at: '',
+    // Stage 3.4.2 — product-level content translations ([{language_id, fields:{}}]); not a DB column.
+    translations: [],
 });
 
 // Copy only the template's keys from src (so persisted relation/system columns never leak
@@ -74,6 +81,8 @@ const buildInitialData = (mode, product) => {
         return {
             _method: 'put',
             ...pickKeys(product, productDefaults()),
+            // datetime-local needs `YYYY-MM-DDTHH:MM` (16 chars), not the full ISO timestamp.
+            created_at: product?.created_at ? product.created_at.slice(0, 16) : '',
             amenity_ids: product?.amenity_ids ?? [],
             rooms: (product?.rooms ?? []).map(buildRoom),
             checkin_policy: mergePolicy(defaultCheckinPolicy, product?.checkin_policy),
@@ -97,12 +106,97 @@ const buildInitialData = (mode, product) => {
     };
 };
 
+// ---- Validation-error popup helpers (admin/dashboard surface → plain English; NOT routed
+// through the translation system). A failed submit returns Inertia's flat `errors` object:
+// nested field errors keyed by dotted paths (e.g. `rooms.0.rate_plans.0.consecutive_nights_allowed`)
+// plus a few special top-level keys (`translation_error` / `file_error` / `video_error`). We
+// surface EVERY one of them in a single popup so no validation error can be silently swallowed,
+// turning each raw key into a human location + a clean sentence (the dotted key is never shown).
+
+const titleCaseSegment = (seg) =>
+    String(seg)
+        .replace(/_/g, ' ')
+        .replace(/\b\w/g, (c) => c.toUpperCase());
+
+const SPECIAL_ERROR_LOCATIONS = {
+    translation_error: 'Translations',
+    file_error: 'Images',
+    video_error: 'Videos',
+};
+
+const POLICY_ERROR_LABELS = {
+    checkin_policy: 'Check-in Policy',
+    parking_policy: 'Parking Policy',
+    cancellation_policy: 'Cancellation Policy',
+};
+
+// Derive a human "location" (which room / rate plan / policy / section) and "field" name
+// from a dotted error key, so the popup can read like "Room 1 · Rate plan 2: ...".
+const describeErrorKey = (key) => {
+    if (SPECIAL_ERROR_LOCATIONS[key]) {
+        return { location: SPECIAL_ERROR_LOCATIONS[key], field: '' };
+    }
+    const seg = key.split('.');
+    // rooms.{i}.rate_plans.{j}.{field...}
+    if (seg[0] === 'rooms' && seg[2] === 'rate_plans' && seg.length >= 5) {
+        return {
+            location: `Room ${Number(seg[1]) + 1} · Rate plan ${Number(seg[3]) + 1}`,
+            field: titleCaseSegment(seg.slice(4).join('_')),
+        };
+    }
+    // rooms.{i}.{field...}
+    if (seg[0] === 'rooms' && !Number.isNaN(Number(seg[1])) && seg.length >= 3) {
+        return {
+            location: `Room ${Number(seg[1]) + 1}`,
+            field: titleCaseSegment(seg.slice(2).join('_')),
+        };
+    }
+    // {policy}.{field}
+    if (POLICY_ERROR_LABELS[seg[0]] && seg.length >= 2) {
+        return {
+            location: POLICY_ERROR_LABELS[seg[0]],
+            field: titleCaseSegment(seg.slice(1).join('_')),
+        };
+    }
+    // plain top-level field
+    return { location: '', field: titleCaseSegment(key) };
+};
+
+// Laravel's default messages embed the raw attribute (e.g. "The rooms.0.room name field is
+// required."). Strip that leaked dotted attribute so the operator never sees a raw key.
+const cleanErrorMessage = (key, message, field) => {
+    if (!message) return message;
+    const displayable = key.replace(/_/g, ' '); // Laravel :attribute default form (dots kept)
+    const human = (field || titleCaseSegment(key.split('.').pop())).toLowerCase();
+    return String(message).split(displayable).join(human).split(key).join(human);
+};
+
+// Build the deduped, human-readable list of messages shown in the error popup.
+const buildErrorMessages = (errors) => {
+    const lines = [];
+    const seen = new Set();
+    for (const key in errors) {
+        const raw = errors[key];
+        const message = Array.isArray(raw) ? raw[0] : raw;
+        if (!message) continue;
+        const { location, field } = describeErrorKey(key);
+        const cleaned = cleanErrorMessage(key, message, field);
+        const line = location ? `${location}: ${cleaned}` : cleaned;
+        if (seen.has(line)) continue;
+        seen.add(line);
+        lines.push(line);
+    }
+    return lines;
+};
+
 export default function Form({
     mode = 'create',
-    floors = [],
+    from_floors = [],
+    to_floors = [],
     amenities = [],
     dashboard_users = [],
     enums = {},
+    languages = [],
     lodging_product = null,
     googleMapSettings = null,
 }) {
@@ -166,6 +260,11 @@ export default function Form({
     const [activeTab, setActiveTab] = useState('property');
     const [submitAttempted, setSubmitAttempted] = useState(false);
 
+    // Every validation error (special top-level keys + nested rate-plan/room field keys) is
+    // collected here so the popup below can guarantee nothing is silently swallowed.
+    const [errorModalOpen, setErrorModalOpen] = useState(false);
+    const errorMessages = buildErrorMessages(errors);
+
     // Frontend required UX (backend unchanged): at least one room, and at least one
     // rate plan per room.
     const noRooms = (data.rooms?.length ?? 0) === 0;
@@ -182,10 +281,17 @@ export default function Form({
             setActiveTab('rate_plans');
             return;
         }
+        // Open the all-errors popup whenever the backend returns validation errors, so nested
+        // keys (e.g. the consecutive-nights rule on a toggle with no input slot) can't hide.
+        const options = {
+            onError: (errs) => {
+                if (errs && Object.keys(errs).length) setErrorModalOpen(true);
+            },
+        };
         if (isEdit) {
-            post(route('dashboard.lodging-products.update', lodging_product.id));
+            post(route('dashboard.lodging-products.update', lodging_product.id), options);
         } else {
-            post(route('dashboard.lodging-products.store'));
+            post(route('dashboard.lodging-products.store'), options);
         }
     };
 
@@ -214,7 +320,7 @@ export default function Form({
             <Card
                 Content={
                     <>
-                        <div className="my-3 flex flex-wrap justify-end">
+                        <div className="flex flex-wrap justify-end my-3">
                             <LinkButton
                                 Text={'Back To Lodging Products'}
                                 URL={route('dashboard.lodging-products.index')}
@@ -242,7 +348,7 @@ export default function Form({
                                 Content={
                                     <>
                                         {/* Tab navigation */}
-                                        <div className="mb-6 flex flex-wrap gap-6 overflow-auto border-b border-gray-200 dark:border-gray-700">
+                                        <div className="flex flex-wrap gap-6 mb-6 overflow-auto border-b border-gray-200 dark:border-gray-700">
                                             {TABS.map((t) => {
                                                 const isActive = activeTab === t.key;
                                                 return (
@@ -300,15 +406,30 @@ export default function Form({
                                                 Error={errors.city_region}
                                                 Action={(e) => setData('city_region', e.target.value)}
                                             />
+                                            {/* Optional floor RANGE (e.g. "1F - 3F"). Both or neither;
+                                                the end must be at/above the start. The operator only
+                                                fills Start + End — the spatiotemporal ANCHOR (floor_id)
+                                                is derived server-side from Floor Range Start, so the
+                                                "Floor (anchor)" input is intentionally NOT shown here. */}
                                             <SelectInput
-                                                InputName={'Floor'}
-                                                Id={'floor_id'}
-                                                Name={'floor_id'}
-                                                items={floors}
+                                                InputName={'Floor Range Start (optional)'}
+                                                Id={'floor_start_id'}
+                                                Name={'floor_start_id'}
+                                                items={from_floors}
                                                 itemKey={'name'}
-                                                Value={data.floor_id}
-                                                Error={errors.floor_id}
-                                                Action={(value) => setData('floor_id', value)}
+                                                Value={data.floor_start_id}
+                                                Error={errors.floor_start_id}
+                                                Action={(value) => setData('floor_start_id', value)}
+                                            />
+                                            <SelectInput
+                                                InputName={'Floor Range End (optional)'}
+                                                Id={'floor_end_id'}
+                                                Name={'floor_end_id'}
+                                                items={to_floors}
+                                                itemKey={'name'}
+                                                Value={data.floor_end_id}
+                                                Error={errors.floor_end_id}
+                                                Action={(value) => setData('floor_end_id', value)}
                                             />
                                             <LocationDetector
                                                 data={data}
@@ -325,6 +446,21 @@ export default function Form({
                                                 Error={errors.tag}
                                                 Action={(e) => setData('tag', e.target.value)}
                                             />
+                                            <Input
+                                                InputName={'Custom Date & Time (Optional)'}
+                                                Error={errors.created_at}
+                                                Value={data.created_at}
+                                                Action={(e) => setData('created_at', e.target.value)}
+                                                Id={'created_at'}
+                                                Name={'created_at'}
+                                                Type={'datetime-local'}
+                                                    ClassName={'picker-full-click'}
+
+                                                Required={false}
+                                            />
+
+
+
                                             <Input
                                                 InputName={'Base Check-in Time'}
                                                 Id={'base_checkin_time'}
@@ -358,7 +494,7 @@ export default function Form({
                                             />
                                         </div>
 
-                                        <div className="mt-2 grid grid-cols-1 gap-x-6 md:grid-cols-2">
+                                        <div className="grid grid-cols-1 mt-2 gap-x-6 md:grid-cols-2">
                                             <ToggleField
                                                 id={'is_active'}
                                                 label={'Active'}
@@ -373,7 +509,7 @@ export default function Form({
                                             />
                                         </div>
 
-                                        <div className="mt-4 grid grid-cols-1 gap-4">
+                                        <div className="grid grid-cols-1 gap-4 mt-4">
                                             <Textarea
                                                 InputName={'Location Description'}
                                                 Id={'location_description'}
@@ -393,6 +529,14 @@ export default function Form({
                                             />
                                         </div>
 
+                                        {/* Per-language overrides for the product free-text fields above. */}
+                                        <TranslationsRepeater
+                                            value={data.translations}
+                                            onChange={(next) => setData('translations', next)}
+                                            languages={languages}
+                                            fields={productTranslatableFields}
+                                        />
+
                                         </div>
 
                                         {/* Rooms */}
@@ -409,6 +553,7 @@ export default function Form({
                                                 errors={errors}
                                                 enums={enums}
                                                 amenities={amenities}
+                                                languages={languages}
                                             />
                                         </div>
 
@@ -426,6 +571,7 @@ export default function Form({
                                                 errors={errors}
                                                 enums={enums}
                                                 amenities={amenities}
+                                                languages={languages}
                                             />
                                         </div>
 
@@ -454,6 +600,7 @@ export default function Form({
                                                 setData={setData}
                                                 errors={errors}
                                                 enums={enums}
+                                                languages={languages}
                                             />
                                         </div>
 
@@ -479,26 +626,26 @@ export default function Form({
                                                 required at launch.
                                             </p>
                                             {isEdit && (
-                                                <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                    <div className="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700">
+                                                <div className="grid grid-cols-1 gap-4 mt-4 md:grid-cols-2">
+                                                    <div className="p-3 text-sm border border-gray-200 rounded-lg dark:border-gray-700">
                                                         <span className="block text-xs text-gray-400">Booking Source</span>
                                                         <span className="text-main-text-light dark:text-main-text-dark">
                                                             {lodging_product?.booking_source ?? 'N/A'}
                                                         </span>
                                                     </div>
-                                                    <div className="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700">
+                                                    <div className="p-3 text-sm border border-gray-200 rounded-lg dark:border-gray-700">
                                                         <span className="block text-xs text-gray-400">Source Of Truth</span>
                                                         <span className="text-main-text-light dark:text-main-text-dark">
                                                             {lodging_product?.source_of_truth ?? 'N/A'}
                                                         </span>
                                                     </div>
-                                                    <div className="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700">
+                                                    <div className="p-3 text-sm border border-gray-200 rounded-lg dark:border-gray-700">
                                                         <span className="block text-xs text-gray-400">Sync Status</span>
                                                         <span className="text-main-text-light dark:text-main-text-dark">
                                                             {lodging_product?.sync_status ?? 'N/A'}
                                                         </span>
                                                     </div>
-                                                    <div className="rounded-lg border border-gray-200 p-3 text-sm dark:border-gray-700">
+                                                    <div className="p-3 text-sm border border-gray-200 rounded-lg dark:border-gray-700">
                                                         <span className="block text-xs text-gray-400">MSAP Ready</span>
                                                         <span className="text-main-text-light dark:text-main-text-dark">
                                                             {lodging_product?.msap_ready ? 'Yes' : 'No'}
@@ -543,16 +690,73 @@ export default function Form({
                         </form>
 
                         {showProgressModal && (
-                            <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 sm:p-6">
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
                                 <div className="fixed inset-0 backdrop-blur-[32px]"></div>
-                                <div className="relative z-10 max-h-screen w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-xl dark:bg-deepcharcoal sm:p-8">
+                                <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
                                     <div className="text-center">
                                         <h2 className="text-lg font-medium text-gray-800 dark:text-white">
                                             Please Wait While We Are Uploading Your Files
                                         </h2>
-                                        <div className="mt-5 flex items-center justify-center">
-                                            <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent"></div>
+                                        <div className="flex items-center justify-center mt-5">
+                                            <div className="w-8 h-8 border-4 border-blue-500 rounded-full animate-spin border-t-transparent"></div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* All-errors popup: lists EVERY validation error returned by the backend
+                            (special top-level keys + nested room/rate-plan field keys) so none can
+                            be silently swallowed — including the consecutive-nights rule attached to
+                            a toggle that has no input-bottom message slot. */}
+                        {errorModalOpen && errorMessages.length > 0 && (
+                            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 overflow-y-auto sm:p-6">
+                                <div
+                                    className="fixed inset-0 backdrop-blur-[32px]"
+                                    onClick={() => setErrorModalOpen(false)}
+                                ></div>
+                                <div className="relative z-10 w-full max-w-lg max-h-screen p-6 overflow-y-auto bg-white shadow-xl rounded-2xl dark:bg-deepcharcoal sm:p-8">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <h2 className="text-lg font-semibold text-red-600 dark:text-red-400">
+                                            {errorMessages.length === 1
+                                                ? 'Please fix the following error'
+                                                : `Please fix the following ${errorMessages.length} errors`}
+                                        </h2>
+                                        <button
+                                            type="button"
+                                            onClick={() => setErrorModalOpen(false)}
+                                            aria-label="Close"
+                                            className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-200"
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="size-6"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6 18 18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <ul className="mt-4 max-h-[60vh] space-y-2 overflow-y-auto pl-5 text-sm list-disc text-main-text-light dark:text-main-text-dark">
+                                        {errorMessages.map((msg, i) => (
+                                            <li key={i}>{msg}</li>
+                                        ))}
+                                    </ul>
+                                    <div className="flex justify-end mt-6">
+                                        <button
+                                            type="button"
+                                            onClick={() => setErrorModalOpen(false)}
+                                            className="rounded-md bg-black px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-gray-800 dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                                        >
+                                            Close
+                                        </button>
                                     </div>
                                 </div>
                             </div>

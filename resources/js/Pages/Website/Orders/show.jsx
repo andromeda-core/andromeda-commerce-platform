@@ -294,7 +294,7 @@ export default function OrderView({ order, countries }) {
                     <div className="my-2">
                         <Link
                             href={route('website.orders.index')}
-                            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-main-text-light transition-colors dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
+                            className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors text-main-text-light dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                         >
                             <ChevronLeft />
                         </Link>
@@ -319,7 +319,7 @@ export default function OrderView({ order, countries }) {
                         </div>
                     </div>
 
-                    <div className="mb-20 grid grid-cols-1 gap-8 lg:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-8 mb-20 lg:grid-cols-3">
                         {/* Left Section: Shipping & Payment */}
                         <div className="space-y-6 lg:col-span-2">
                             {/* Shipping Information */}
@@ -393,7 +393,7 @@ export default function OrderView({ order, countries }) {
                                 <OrderSummaryCard currency={currency} order={order} __={__} />
 
                                 {/* Help Section */}
-                                <div className="rounded-md border border-surface-3-light bg-white p-6 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                                <div className="p-6 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                                     <h2 className="mb-2 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('Need Help')}?
                                     </h2>
@@ -404,7 +404,7 @@ export default function OrderView({ order, countries }) {
                                     </p>
                                     <Link
                                         href={route('website.contact.index')}
-                                        className="text-md flex w-full items-center justify-center gap-2 rounded-md bg-main-text-light px-4 py-2 font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                                        className="flex items-center justify-center w-full gap-2 px-4 py-2 font-semibold transition-all rounded-md text-md bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                                     >
                                         {__('Contact Support')}
                                     </Link>
@@ -427,7 +427,7 @@ export default function OrderView({ order, countries }) {
                 createPortal(
                     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4">
                         <div
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                            className="fixed inset-0 transition-opacity duration-300 bg-black/40 backdrop-blur-sm"
                             onClick={() => {
                                 setShowImageModal(false);
                                 setSelectedImage(null);
@@ -456,7 +456,7 @@ export default function OrderView({ order, countries }) {
                 createPortal(
                     <div className="fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto p-4">
                         <div
-                            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+                            className="fixed inset-0 transition-opacity duration-300 bg-black/40 backdrop-blur-sm"
                             onClick={() => {
                                 setShowVideoModal(false);
                                 setSelectedVideo({});
@@ -492,7 +492,7 @@ export default function OrderView({ order, countries }) {
                         }`}
                     >
                         <div
-                            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
+                            className="fixed inset-0 transition-opacity duration-300 bg-black/50 backdrop-blur-sm"
                             onClick={() => {
                                 setShowRecordingModal(false);
                                 setSelectedRecording(null);
@@ -509,7 +509,7 @@ export default function OrderView({ order, countries }) {
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Header */}
-                            <div className="sticky top-0 z-10 flex items-center justify-between border-b border-surface-3-light bg-white px-5 py-4 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                            <div className="sticky top-0 z-10 flex items-center justify-between px-5 py-4 bg-white border-b border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                                 <h3 className="text-base font-semibold text-main-text-light dark:text-main-text-dark">
                                     {__('Packaging Verification')} #{selectedRecording.index + 1}
                                 </h3>
@@ -518,10 +518,10 @@ export default function OrderView({ order, countries }) {
                                         setShowRecordingModal(false);
                                         setSelectedRecording(null);
                                     }}
-                                    className="flex h-8 w-8 items-center justify-center rounded-md text-sub-text-light hover:bg-surface-1-light dark:text-sub-text-dark dark:hover:bg-surface-3-dark"
+                                    className="flex items-center justify-center w-8 h-8 rounded-md text-sub-text-light hover:bg-surface-1-light dark:text-sub-text-dark dark:hover:bg-surface-3-dark"
                                 >
                                     <svg
-                                        className="h-4 w-4"
+                                        className="w-4 h-4"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -540,7 +540,7 @@ export default function OrderView({ order, countries }) {
                                 {/* Barcode Photo */}
                                 {selectedRecording.barcode_photo && (
                                     <div className="flex flex-col gap-2">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-sub-text-light dark:text-sub-text-dark">
+                                        <p className="text-xs font-semibold tracking-wide uppercase text-sub-text-light dark:text-sub-text-dark">
                                             {__('Barcode Photo')}
                                         </p>
                                         <div className="overflow-hidden rounded-xl bg-surface-3-light dark:bg-surface-3-dark">
@@ -548,7 +548,7 @@ export default function OrderView({ order, countries }) {
                                                 src={selectedRecording.barcode_photo}
                                                 alt="Barcode"
                                                 onError={(e) => (e.target.src = Placeholder)}
-                                                className="max-h-56 w-full object-contain"
+                                                className="object-contain w-full max-h-56"
                                                 style={{ touchAction: 'pinch-zoom' }}
                                                 onMouseMove={(e) => {
                                                     const rect =
@@ -576,10 +576,10 @@ export default function OrderView({ order, countries }) {
                                 {/* Screen Recording */}
                                 {selectedRecording.screen_recording_video && (
                                     <div className="flex flex-col gap-2">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-sub-text-light dark:text-sub-text-dark">
+                                        <p className="text-xs font-semibold tracking-wide uppercase text-sub-text-light dark:text-sub-text-dark">
                                             {__('Screen Recording')}
                                         </p>
-                                        <div className="overflow-hidden rounded-xl bg-black">
+                                        <div className="overflow-hidden bg-black rounded-xl">
                                             <VideoWithThumbnail
                                                 thumbnail={
                                                     selectedRecording.screen_recording_thumbnail ||
@@ -597,10 +597,10 @@ export default function OrderView({ order, countries }) {
                                 {/* Scene Video */}
                                 {selectedRecording.scene_video && (
                                     <div className="flex flex-col gap-2">
-                                        <p className="text-xs font-semibold uppercase tracking-wide text-sub-text-light dark:text-sub-text-dark">
+                                        <p className="text-xs font-semibold tracking-wide uppercase text-sub-text-light dark:text-sub-text-dark">
                                             {__('Scene Video')}
                                         </p>
-                                        <div className="overflow-hidden rounded-xl bg-black">
+                                        <div className="overflow-hidden bg-black rounded-xl">
                                             <VideoWithThumbnail
                                                 thumbnail={
                                                     selectedRecording.scene_video_thumbnail ||
@@ -646,9 +646,9 @@ function ShippingInfoCard({ shippingInfo, countries, __ }) {
     };
 
     return (
-        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="mb-4 flex items-start justify-between">
+            <div className="flex items-start justify-between mb-4">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Shipping Information')}
                 </h2>
@@ -683,9 +683,9 @@ function ShippingInfoCard({ shippingInfo, countries, __ }) {
 // Courier Info component
 function CourierInfoCard({ order, __ }) {
     return (
-        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="mb-4 flex items-start justify-between">
+            <div className="flex items-start justify-between mb-4">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Courier Details')}
                 </h2>
@@ -720,9 +720,9 @@ function OrderReferenceCard({ order, __, setCopied, setCopiedMessage }) {
     if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected')
         return null;
     return (
-        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="mb-4 flex items-start justify-between">
+            <div className="flex items-start justify-between mb-4">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Reference No')}{' '}
                     <span className="ml-2 text-sm font-normal text-sub-text-light dark:text-sub-text-dark">
@@ -757,9 +757,9 @@ function BankDetailsCard({ order, __, setCopied, setCopiedMessage }) {
     if (order?.is_cancelation_requested && order?.cancelation_request_status !== 'rejected')
         return null;
     return (
-        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="mb-4 flex items-start justify-between">
+            <div className="flex items-start justify-between mb-4">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Bank Details')}
                 </h2>
@@ -893,8 +893,8 @@ function PaymentProof({
         const now = dayjs();
         const expiry = dayjs.utc(expiresAt);
 
-        if (expiry.isBefore(now)) {
-            return 'Expired';
+       if (expiry.isBefore(now)) {
+           return __('a few moments',true);
         }
 
         const diffMs = expiry.diff(now);
@@ -913,9 +913,9 @@ function PaymentProof({
     const remainingTime = getRemainingTime(order?.expires_at);
 
     return (
-        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header with Edit Button */}
-            <div className="mb-4 flex items-center justify-start gap-4">
+            <div className="flex items-center justify-start gap-4 mb-4">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Payment Proof')}
                 </h2>
@@ -937,17 +937,17 @@ function PaymentProof({
                     <div>
                         <div
                             onClick={() => handleImageView(order.payment_proof)}
-                            className="group cursor-pointer overflow-hidden rounded-md border-2 border-surface-3-light bg-surface-3-light transition-all dark:border-surface-3-dark dark:bg-surface-3-dark"
+                            className="overflow-hidden transition-all border-2 rounded-md cursor-pointer group border-surface-3-light bg-surface-3-light dark:border-surface-3-dark dark:bg-surface-3-dark"
                         >
                             <img
                                 src={order.payment_proof}
                                 alt={__('Payment Proof')}
-                                className="h-64 w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                                className="object-contain w-full h-64 transition-transform duration-300 group-hover:scale-105"
                             />
                         </div>
 
                         {order.status === 'pending' && (
-                            <div className="mt-4 rounded-md border border-surface-3-light bg-surface-1-light p-4 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                            <div className="p-4 mt-4 border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                                 <div className="flex gap-3">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -955,7 +955,7 @@ function PaymentProof({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-5 w-5 flex-shrink-0 text-main-text-light dark:text-main-text-dark"
+                                        className="flex-shrink-0 w-5 h-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -997,12 +997,12 @@ function PaymentProof({
                             <button
                                 onClick={handleUploadPaymentProof}
                                 disabled={isUploading}
-                                className="flex w-full items-center justify-center gap-2 rounded-md bg-main-text-light px-6 py-4 text-sm font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                                className="flex items-center justify-center w-full gap-2 px-6 py-4 text-sm font-semibold transition-all rounded-md bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                             >
                                 {isUploading ? (
                                     <>
                                         <svg
-                                            className="h-5 w-5 animate-spin"
+                                            className="w-5 h-5 animate-spin"
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
@@ -1031,7 +1031,7 @@ function PaymentProof({
                                             viewBox="0 0 24 24"
                                             strokeWidth={2}
                                             stroke="currentColor"
-                                            className="h-5 w-5"
+                                            className="w-5 h-5"
                                         >
                                             <path
                                                 strokeLinecap="round"
@@ -1058,7 +1058,7 @@ function OrderItems({ order, currency, __ }) {
     };
 
     return (
-        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header */}
             <h2 className="mb-10 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                 {__('Order Items')} ({order.order_items?.length || 0})
@@ -1087,7 +1087,7 @@ function OrderItems({ order, currency, __ }) {
                                 {(item?.smartphone?.smartphone_image_urls?.length > 0 ||
                                     item?.smartphone?.smartphone_video_urls?.length > 0) && (
                                     <div
-                                        className="group/img relative aspect-square h-28 w-28 shrink-0 cursor-pointer overflow-hidden rounded-md bg-surface-2-light transition-all dark:bg-surface-2-dark"
+                                        className="relative overflow-hidden transition-all rounded-md cursor-pointer group/img aspect-square h-28 w-28 shrink-0 bg-surface-2-light dark:bg-surface-2-dark"
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
@@ -1109,7 +1109,7 @@ function OrderItems({ order, currency, __ }) {
                                                 Placeholder
                                             }
                                             alt={item?.smartphone?.model_name?.name}
-                                            className="h-full w-full object-cover transition-transform duration-300 lg:group-hover/img:scale-110"
+                                            className="object-cover w-full h-full transition-transform duration-300 lg:group-hover/img:scale-110"
                                             loading="lazy"
                                             onError={(e) => (e.target.src = Placeholder)}
                                         />
@@ -1191,7 +1191,7 @@ function OrderItems({ order, currency, __ }) {
                                     {item.smartphone_addons?.length > 0 && (
                                         <>
                                             <div className="mt-10 border-t border-surface-3-light dark:border-surface-3-dark" />
-                                            <div className="space-y-2 py-3">
+                                            <div className="py-3 space-y-2">
                                                 {item.smartphone_addons.map((addon) => (
                                                     <div
                                                         key={addon.id}
@@ -1220,7 +1220,7 @@ function OrderItems({ order, currency, __ }) {
 
                             {/* Divider */}
                             {index < order.order_items.length - 1 && (
-                                <div className="mb-10 mt-10 border-b border-surface-3-light dark:border-surface-3-dark" />
+                                <div className="mt-10 mb-10 border-b border-surface-3-light dark:border-surface-3-dark" />
                             )}
                         </div>
                     );
@@ -1235,13 +1235,13 @@ function OrderSummaryCard({ order, currency, __ }) {
     return (
         <div className="space-y-3">
             {/* Summary Card */}
-            <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
+            <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                 <h2 className="mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Order Summary')}
                 </h2>
 
                 {/* Price Breakdown */}
-                <div className="mb-5 space-y-3 border-b border-surface-3-light pb-5 dark:border-surface-3-dark">
+                <div className="pb-5 mb-5 space-y-3 border-b border-surface-3-light dark:border-surface-3-dark">
                     {/* Items Total */}
                     <div className="flex items-center justify-between">
                         <span className="text-[14px] font-semibold text-main-text-light dark:text-main-text-dark">
@@ -1310,7 +1310,7 @@ function PackagingVideos({ order, __, handleRecordingView }) {
     if (!order.order_package_recordings?.length) return null;
 
     return (
-        <div className="rounded-md border border-surface-3-light bg-white p-6 dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="p-6 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             <h2 className="mb-6 text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                 {__('Packaging Verification')}
             </h2>
@@ -1334,19 +1334,19 @@ function PackagingVideos({ order, __, handleRecordingView }) {
                         <div
                             key={index}
                             onClick={() => handleRecordingView({ ...recording, index })}
-                            className="group relative cursor-pointer overflow-hidden rounded-xl border border-surface-3-light bg-white transition-all hover:shadow-md dark:border-surface-3-dark dark:bg-surface-1-dark"
+                            className="relative overflow-hidden transition-all bg-white border cursor-pointer group rounded-xl border-surface-3-light hover:shadow-md dark:border-surface-3-dark dark:bg-surface-1-dark"
                         >
                             {/* Thumbnail */}
-                            <div className="relative aspect-video overflow-hidden bg-surface-3-dark">
+                            <div className="relative overflow-hidden aspect-video bg-surface-3-dark">
                                 <img
                                     src={thumbnail}
                                     alt={'Recording ' + (index + 1)}
                                     onError={(e) => (e.target.src = Placeholder)}
-                                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                                 />
                                 {/* Play overlay */}
-                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 transition group-hover:bg-black/35">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 shadow-lg transition group-hover:scale-110">
+                                <div className="absolute inset-0 flex items-center justify-center transition bg-black/20 group-hover:bg-black/35">
+                                    <div className="flex items-center justify-center w-12 h-12 transition rounded-full shadow-lg bg-white/90 group-hover:scale-110">
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
                                             viewBox="0 0 24 24"
@@ -1465,9 +1465,9 @@ function ReturnTrackingSlipUpload({
     const alreadyUploaded = !!refund.return_tracking_uploaded_at;
 
     return (
-        <div className="rounded-md border border-surface-3-light bg-white p-8 dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="p-8 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header */}
-            <div className="mb-4 flex items-center justify-start gap-4">
+            <div className="flex items-center justify-start gap-4 mb-4">
                 <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                     {__('Return Tracking Slip')}
                 </h2>
@@ -1511,16 +1511,16 @@ function ReturnTrackingSlipUpload({
                         <div>
                             <div
                                 onClick={() => handleImageView(refund.return_tracking_image)}
-                                className="group cursor-pointer overflow-hidden rounded-md border-2 border-surface-3-light bg-surface-3-light transition-all dark:border-surface-3-dark dark:bg-surface-3-dark"
+                                className="overflow-hidden transition-all border-2 rounded-md cursor-pointer group border-surface-3-light bg-surface-3-light dark:border-surface-3-dark dark:bg-surface-3-dark"
                             >
                                 <img
                                     src={refund.return_tracking_image}
                                     alt={__('Return Tracking Slip')}
-                                    className="h-64 w-full object-contain transition-transform duration-300 group-hover:scale-105"
+                                    className="object-contain w-full h-64 transition-transform duration-300 group-hover:scale-105"
                                 />
                             </div>
 
-                            <div className="mt-4 rounded-md border border-surface-3-light bg-surface-1-light p-4 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                            <div className="p-4 mt-4 border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                                 <div className="flex gap-3">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -1528,7 +1528,7 @@ function ReturnTrackingSlipUpload({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-5 w-5 flex-shrink-0 text-main-text-light dark:text-main-text-dark"
+                                        className="flex-shrink-0 w-5 h-5 text-main-text-light dark:text-main-text-dark"
                                     >
                                         <path
                                             strokeLinecap="round"
@@ -1549,10 +1549,10 @@ function ReturnTrackingSlipUpload({
                         </div>
                     ) : (
                         // S3 job still processing
-                        <div className="rounded-md border border-surface-3-light bg-surface-1-light p-4 dark:border-surface-3-dark dark:bg-surface-1-dark">
+                        <div className="p-4 border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark">
                             <div className="flex gap-3">
                                 <svg
-                                    className="h-5 w-5 flex-shrink-0 animate-spin text-main-text-light dark:text-main-text-dark"
+                                    className="flex-shrink-0 w-5 h-5 animate-spin text-main-text-light dark:text-main-text-dark"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
@@ -1632,12 +1632,12 @@ function ReturnTrackingSlipUpload({
                         <button
                             onClick={handleUploadTrackingSlip}
                             disabled={isUploadingTrackingSlip}
-                            className="flex w-full items-center justify-center gap-2 rounded-md bg-main-text-light px-6 py-4 text-sm font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                            className="flex items-center justify-center w-full gap-2 px-6 py-4 text-sm font-semibold transition-all rounded-md bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                         >
                             {isUploadingTrackingSlip ? (
                                 <>
                                     <svg
-                                        className="h-5 w-5 animate-spin"
+                                        className="w-5 h-5 animate-spin"
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
                                         viewBox="0 0 24 24"
@@ -1666,7 +1666,7 @@ function ReturnTrackingSlipUpload({
                                         viewBox="0 0 24 24"
                                         strokeWidth={2}
                                         stroke="currentColor"
-                                        className="h-5 w-5"
+                                        className="w-5 h-5"
                                     >
                                         <path
                                             strokeLinecap="round"

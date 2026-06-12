@@ -45,9 +45,11 @@ const MobileFeed = ({
     setShowErrorMessage,
     windowSize,
     generateSmartphoneURL,
+    generateLodgingURL,
     isSinglePageRef,
     setSpatiotemporalInfoModal,
     spatiotemporalInfoModal,
+    openReservationPanel,
     __,
 }) => {
     useEffect(() => {
@@ -157,7 +159,7 @@ const MobileFeed = ({
         return (
             <div
                 key={`skeleton-${index}`}
-                className="pointer-events-none relative min-w-full cursor-not-allowed snap-start"
+                className="relative min-w-full cursor-not-allowed pointer-events-none snap-start"
                 inert=""
                 style={{
                     height: '100%',
@@ -177,18 +179,18 @@ const MobileFeed = ({
                 onTouchEnd={(e) => e.preventDefault()}
             >
                 {/* HEADER SKELETON */}
-                <div className="absolute left-0 right-0 top-0 z-30 flex items-center justify-between px-4 pb-2 pt-3">
+                <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-4 pt-3 pb-2">
                     {/* Tag skeleton */}
-                    <div className="h-5 w-20 animate-pulse rounded bg-gray-200 dark:bg-zinc-700" />
+                    <div className="w-20 h-5 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
 
                     {/* Three dots skeleton */}
-                    <div className="h-5 w-5 animate-pulse rounded bg-gray-200 dark:bg-zinc-700" />
+                    <div className="w-5 h-5 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
                 </div>
 
                 {/* MEDIA AREA SKELETON */}
-                <div className="relative h-full w-full overflow-hidden">
+                <div className="relative w-full h-full overflow-hidden">
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="h-full w-full animate-pulse bg-gray-200 object-cover dark:bg-zinc-700" />
+                        <div className="object-cover w-full h-full bg-gray-200 animate-pulse dark:bg-zinc-700" />
                     </div>
                 </div>
 
@@ -197,8 +199,8 @@ const MobileFeed = ({
                     <div className="flex items-center justify-between gap-3">
                         {/* Text skeleton */}
                         <div className="flex-1 space-y-2">
-                            <div className="h-4 w-full animate-pulse rounded bg-gray-200 dark:bg-zinc-700" />
-                            <div className="h-4 w-2/3 animate-pulse rounded bg-gray-200 dark:bg-zinc-700" />
+                            <div className="w-full h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
+                            <div className="w-2/3 h-4 bg-gray-200 rounded animate-pulse dark:bg-zinc-700" />
                         </div>
 
                         {/* Button skeleton */}
@@ -212,9 +214,9 @@ const MobileFeed = ({
     // Helper Function to Render Feed CONTENT Skeleton before Showing Actual ITEM
     const RenderFeedItemContentSkeleton = () => {
         return (
-            <div className="relative h-full w-full overflow-hidden">
+            <div className="relative w-full h-full overflow-hidden">
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-full w-full animate-pulse bg-gray-200 object-cover dark:bg-zinc-700" />
+                    <div className="object-cover w-full h-full bg-gray-200 animate-pulse dark:bg-zinc-700" />
                 </div>
             </div>
         );
@@ -344,7 +346,11 @@ const MobileFeed = ({
                     item.post_video_urls?.length === 0) ||
                 (item.type === 'smartphones' &&
                     item.smartphone_image_urls?.length === 0 &&
-                    item.smartphone_video_urls?.length === 0);
+                    item.smartphone_video_urls?.length === 0) ||
+                (item.type === 'lodging' &&
+                    (item.lodging_image_urls?.length ?? 0) === 0 &&
+                    (item.lodging_video_urls?.length ?? 0) === 0 &&
+                    !item.cover_image_url);
 
             // View More Button Height
             const viewMoreHeightPx = 100;
@@ -407,7 +413,7 @@ const MobileFeed = ({
             return (
                 <div
                     key={index}
-                    className="feed-page min-w-full snap-start"
+                    className="min-w-full feed-page snap-start"
                     style={{
                         height: feedItemHeight,
                         scrollSnapAlign: 'start',
@@ -470,7 +476,7 @@ const MobileFeed = ({
 
                     {/* Image + Videos - Takes remaining space */}
                     <div
-                        className="absolute inset-0 h-full w-full"
+                        className="absolute inset-0 w-full h-full"
                         style={{
                             lineHeight: 0,
                             display: 'block',
@@ -508,7 +514,7 @@ const MobileFeed = ({
                                         key={item.id}
                                         src={item.smartphone_image_urls[0] || placeholderImage}
                                         alt={item.title}
-                                        className="h-full w-full rounded-none object-cover object-center"
+                                        className="object-cover object-center w-full h-full rounded-none"
                                         loading={shouldEagerLoad ? 'eager' : 'lazy'}
                                         fetchpriority={shouldEagerLoad ? 'high' : 'low'}
                                         decoding="async"
@@ -529,7 +535,7 @@ const MobileFeed = ({
                                         slug={item.slug}
                                         videoUrl={item.smartphone_video_urls[0].url}
                                         thumbnail={item.smartphone_video_urls[0]?.thumbnail_url}
-                                        className="h-full w-full object-cover object-center"
+                                        className="object-cover object-center w-full h-full"
                                         OnLoadedMetaData={() => {
                                             if (item.slug)
                                                 setLoadedItems((prev) =>
@@ -542,7 +548,7 @@ const MobileFeed = ({
                                     />
                                 ) : (
                                     isText && (
-                                        <div className="absolute inset-0 overflow-hidden px-4 pb-40 pt-20">
+                                        <div className="absolute inset-0 px-4 pt-20 pb-40 overflow-hidden">
                                             <div
                                                 className="line-clamp-[var(--text-lines)] whitespace-pre-line break-words text-sm leading-relaxed text-main-text-light dark:text-main-text-dark"
                                                 style={{ '--text-lines': maxLines }}
@@ -563,7 +569,7 @@ const MobileFeed = ({
                                         key={item.id}
                                         src={item.post_image_urls[0] || placeholderImage}
                                         alt={item.title}
-                                        className="h-full w-full rounded-none object-cover object-center"
+                                        className="object-cover object-center w-full h-full rounded-none"
                                         loading={shouldEagerLoad ? 'eager' : 'lazy'}
                                         fetchpriority={shouldEagerLoad ? 'high' : 'low'}
                                         decoding="async"
@@ -584,7 +590,7 @@ const MobileFeed = ({
                                         slug={item.slug}
                                         videoUrl={item.post_video_urls[0].url}
                                         thumbnail={item.post_video_urls[0]?.thumbnail_url}
-                                        className="h-full w-full object-cover object-center"
+                                        className="object-cover object-center w-full h-full"
                                         OnLoadedMetaData={() => {
                                             if (item.slug)
                                                 setLoadedItems((prev) =>
@@ -597,7 +603,7 @@ const MobileFeed = ({
                                     />
                                 ) : (
                                     isText && (
-                                        <div className="absolute inset-0 overflow-hidden px-4 pb-40 pt-20">
+                                        <div className="absolute inset-0 px-4 pt-20 pb-40 overflow-hidden">
                                             <div
                                                 className="line-clamp-[var(--text-lines)] whitespace-pre-line break-words text-sm leading-relaxed text-main-text-light dark:text-main-text-dark"
                                                 style={{ '--text-lines': maxLines }}
@@ -607,6 +613,47 @@ const MobileFeed = ({
                                             />
                                         </div>
                                     )
+                                )}
+                            </>
+                        )}
+
+                        {item.type === 'lodging' && (
+                            <>
+                                {item?.cover_image_url && (
+                                    <img
+                                        key={item.id}
+                                        src={item.cover_image_url || placeholderImage}
+                                        alt={item.property_name}
+                                        className="object-cover object-center w-full h-full rounded-none"
+                                        loading={shouldEagerLoad ? 'eager' : 'lazy'}
+                                        fetchpriority={shouldEagerLoad ? 'high' : 'low'}
+                                        decoding="async"
+                                        style={{
+                                            display: 'block',
+                                            verticalAlign: 'top',
+                                        }}
+                                        onLoad={handleOnLoad}
+                                        onError={(e) => {
+                                            handleOnLoad();
+                                            if (e.target.src !== placeholderImage) {
+                                                e.target.src = placeholderImage;
+                                            }
+                                        }}
+                                    />
+                                )}
+
+                                {/* Text-only lodging body (no media) — mirrors the smartphone text-only body.
+                                    Lodging `content` is HTML; fall back to property_name when empty. */}
+                                {isText && (
+                                    <div className="absolute inset-0 px-4 pt-20 pb-40 overflow-hidden">
+                                        <div
+                                            className="line-clamp-[var(--text-lines)] whitespace-pre-line break-words text-sm leading-relaxed text-main-text-light dark:text-main-text-dark"
+                                            style={{ '--text-lines': maxLines }}
+                                            dangerouslySetInnerHTML={{
+                                                __html: item.content || item.property_name,
+                                            }}
+                                        />
+                                    </div>
                                 )}
                             </>
                         )}
@@ -668,7 +715,7 @@ const MobileFeed = ({
                                                                 viewBox="0 0 24 24"
                                                                 strokeWidth={1.5}
                                                                 stroke="currentColor"
-                                                                className="h-4 w-4"
+                                                                className="w-4 h-4"
                                                             >
                                                                 <path
                                                                     strokeLinecap="round"
@@ -731,7 +778,7 @@ const MobileFeed = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="h-4 w-4"
+                                                            className="w-4 h-4"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -799,7 +846,7 @@ const MobileFeed = ({
                                                             viewBox="0 0 24 24"
                                                             strokeWidth={1.5}
                                                             stroke="currentColor"
-                                                            className="h-4 w-4"
+                                                            className="w-4 h-4"
                                                         >
                                                             <path
                                                                 strokeLinecap="round"
@@ -838,7 +885,7 @@ const MobileFeed = ({
                                                         viewBox="0 0 24 24"
                                                         strokeWidth={1.5}
                                                         stroke="currentColor"
-                                                        className="h-4 w-4"
+                                                        className="w-4 h-4"
                                                     >
                                                         <path
                                                             strokeLinecap="round"
@@ -868,6 +915,64 @@ const MobileFeed = ({
                                         />
                                     </p>
                                 )}
+                            </div>
+                        </div>
+                    )}
+
+                    {item.type === 'lodging' && (
+                        <div
+                            className={`absolute left-0 right-0 z-20 px-5 pt-3 text-main-text-dark`}
+                            style={{ bottom: `${BottomOffset}px` }}
+                        >
+                            <div className="flex items-center justify-between">
+                                <div className="flex flex-col">
+                                    {item.lowest_rate && (
+                                        <DisplayPrice
+                                            usdAmount={item.lowest_rate}
+                                            isLodgingProduct={true}
+                                            paymentDisplay={true}
+                                            size="lg"
+                                            MobileFeedPriceClass={'text-main-text-dark'}
+                                        />
+                                    )}
+                                    <span className="line-clamp-1 text-[13px] font-medium text-main-text-dark">
+                                        {item.property_name}
+                                    </span>
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        setManualFeedGalleryItem(item);
+                                        setMobileFeedGalleryOpening(true);
+
+                                        setTimeout(() => {
+                                            setMobileFeedGalleryOpen(true);
+                                            setMobileFeedGalleryOpening(false);
+                                        }, 500);
+                                    }}
+                                    className={!isText ? `flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-full bg-transparent text-[14px] font-semibold text-main-text-dark transition-colors` : `flex h-[30px] shrink-0 items-center justify-center gap-2 rounded-full bg-transparent text-[14px] font-semibold text-main-text-light transition-colors dark:text-main-text-dark`}
+                                >
+                                    {mobileFeedGalleryOpening ? (
+                                        <Spinner customSize={'size-3'} />
+                                    ) : (
+                                        <div className="flex items-center gap-1">
+                                            <span>{__('View More')}</span>
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={1.5}
+                                                stroke="currentColor"
+                                                className="w-4 h-4"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"
+                                                />
+                                            </svg>
+                                        </div>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     )}
@@ -1329,6 +1434,9 @@ const MobileFeed = ({
                 if (itemToUse.type === 'smartphones') {
                     const url = generateSmartphoneURL(itemToUse);
                     window.history.replaceState({}, '', url);
+                } else if (itemToUse.type === 'lodging') {
+                    const url = generateLodgingURL(itemToUse);
+                    window.history.replaceState({}, '', url);
                 } else if (itemToUse.type === 'posts') {
                     const fullUrl = route('home') + generateURL(itemToUse);
                     window.history.replaceState({}, '', fullUrl);
@@ -1499,6 +1607,9 @@ const MobileFeed = ({
                         if (firstItem.type === 'smartphones') {
                             const url = generateSmartphoneURL(firstItem);
                             window.history.replaceState({}, '', url);
+                        } else if (firstItem.type === 'lodging') {
+                            const url = generateLodgingURL(firstItem);
+                            window.history.replaceState({}, '', url);
                         } else {
                             const fullUrl = route('home') + generateURL(firstItem);
                             window.history.replaceState({}, '', fullUrl);
@@ -1568,6 +1679,9 @@ const MobileFeed = ({
                         if (lastItem.type === 'smartphones') {
                             const url = generateSmartphoneURL(lastItem);
                             window.history.replaceState({}, '', url);
+                        } else if (lastItem.type === 'lodging') {
+                            const url = generateLodgingURL(lastItem);
+                            window.history.replaceState({}, '', url);
                         } else {
                             const fullUrl = route('home') + generateURL(lastItem);
                             window.history.replaceState({}, '', fullUrl);
@@ -1636,6 +1750,9 @@ const MobileFeed = ({
                     preserveXAxisScrollRef.current[rowIndex] = currentScrollLeft;
                     if (newItem.type === 'smartphones') {
                         const url = generateSmartphoneURL(newItem);
+                        window.history.replaceState({}, '', url);
+                    } else if (newItem.type === 'lodging') {
+                        const url = generateLodgingURL(newItem);
                         window.history.replaceState({}, '', url);
                     } else if (newItem.type === 'posts') {
                         const fullUrl = route('home') + generateURL(newItem);
@@ -1824,7 +1941,7 @@ const MobileFeed = ({
                             return (
                                 <div
                                     key={`feed-${item.id}`}
-                                    className="feed-page min-w-full snap-start"
+                                    className="min-w-full feed-page snap-start"
                                     style={{
                                         height: feedItemHeight,
                                         contentVisibility: isIOS ? 'visible' : 'auto',
@@ -1838,7 +1955,7 @@ const MobileFeed = ({
                                     }}
                                 >
                                     <div
-                                        className="flex w-full snap-x snap-mandatory overflow-x-auto scrollbar-none"
+                                        className="flex w-full overflow-x-auto snap-x snap-mandatory scrollbar-none"
                                         ref={(el) => {
                                             horizontalRefs.current[index] = el;
 
@@ -1938,6 +2055,7 @@ const MobileFeed = ({
                     placeholderImage={placeholderImage}
                     generateURL={generateURL}
                     generateSmartphoneURL={generateSmartphoneURL}
+                    generateLodgingURL={generateLodgingURL}
                     showErrorMessage={showErrorMessage}
                     showInfoMessage={showInfoMessage}
                     ErrorMessage={ErrorMessage}
@@ -1952,6 +2070,7 @@ const MobileFeed = ({
                     shouldCleanupBrowserHistoryRef={shouldCleanupBrowserHistoryRef}
                     spatiotemporalInfoModal={spatiotemporalInfoModal}
                     setSpatiotemporalInfoModal={setSpatiotemporalInfoModal}
+                    openReservationPanel={openReservationPanel}
                     __={__}
                 />
             )}

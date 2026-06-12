@@ -13,18 +13,22 @@ import DisplayPrice from '@/Components/DisplayPrice';
 
 // Memoized result item component
 const ResultItem = memo(
-    ({ item, onCopyLink, generateURL, generateSmartphoneURL, activeView, __ }) => {
+    ({ item, onCopyLink, generateURL, generateSmartphoneURL, generateLodgingURL, activeView, __ }) => {
         const { width } = useWindowSize();
+        // Resolve the open URL by result type (posts / smartphones / lodging).
+        const buildOpenURL = () =>
+            item.type === 'posts'
+                ? route('home') + generateURL(item, true, true)
+                : item.type === 'lodging'
+                  ? route('home') + generateLodgingURL(item, true, true)
+                  : route('home') + generateSmartphoneURL(item, true, true);
         // List View
         if (activeView === 'list') {
             return (
                 <div
                     role={'button'}
                     onClick={() => {
-                        const url =
-                            item.type === 'posts'
-                                ? route('home') + generateURL(item, true, true)
-                                : route('home') + generateSmartphoneURL(item, true, true);
+                        const url = buildOpenURL();
 
                         if (width > 1024) {
                             window.history.replaceState({}, '', route('home'));
@@ -70,7 +74,11 @@ const ResultItem = memo(
                     <div className="min-w-0 flex-1">
                         <h3 className="truncate font-medium">{(item.title_display ?? item.title) || item.name}</h3>
                         <p className="truncate text-xs text-main-text-light dark:text-main-text-dark">
-                            {item.type === 'posts' ? item.location_name || '' : item.capacity || ''}
+                            {item.type === 'posts'
+                                ? item.location_name || ''
+                                : item.type === 'lodging'
+                                  ? item.city_region || item.location_name || ''
+                                  : item.capacity || ''}
                         </p>
                         {item.tag && (
                             <p className="truncate text-xs text-sub-text-light dark:text-sub-text-dark">
@@ -90,11 +98,7 @@ const ResultItem = memo(
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
-                                const url =
-                                    item.type === 'posts'
-                                        ? route('home') + generateURL(item, true, true)
-                                        : route('home') + generateSmartphoneURL(item, true, true);
-                                onCopyLink(url);
+                                onCopyLink(buildOpenURL());
                             }}
                         >
                             <svg
@@ -122,10 +126,7 @@ const ResultItem = memo(
             <div
                 role={'button'}
                 onClick={() => {
-                    const url =
-                        item.type === 'posts'
-                            ? route('home') + generateURL(item, true, true)
-                            : route('home') + generateSmartphoneURL(item, true, true);
+                    const url = buildOpenURL();
 
                     if (width > 1024) {
                         window.history.replaceState({}, '', route('home'));
@@ -202,6 +203,26 @@ const ResultItem = memo(
                                 </div>
                             )}
 
+                            {item?.type === 'lodging' && (
+                                <div className="flex flex-col items-start space-y-1 text-[14px] font-semibold">
+                                    {item.lowest_rate ? (
+                                        <DisplayPrice
+                                            usdAmount={item.lowest_rate}
+                                            isLodgingProduct={true}
+                                            showEstimatedLabel={false}
+                                            className="w-full overflow-hidden truncate text-white"
+                                        />
+                                    ) : (
+                                        ''
+                                    )}
+                                    <p className="w-full overflow-hidden truncate text-white">
+                                        {item.name?.length > 20
+                                            ? item.name.slice(0, 20) + '...'
+                                            : item.name}
+                                    </p>
+                                </div>
+                            )}
+
                             {item?.type === 'posts' && (
                                 <div className="flex items-center justify-between text-[14px]">
                                     <p className="min-w-0 flex-1 font-semibold leading-relaxed text-white">
@@ -241,6 +262,31 @@ const ResultItem = memo(
                                         ></span>
                                     </p>
                                 </div>
+                            ) : item?.type === 'lodging' ? (
+                                // Lodging - Property name with bottom rate (no content shipped)
+                                <>
+                                    <div className="flex-1 overflow-hidden pb-12">
+                                        <p className="line-clamp-[10] whitespace-pre-line break-words text-[14px] font-semibold leading-relaxed opacity-90">
+                                            {item.name}
+                                        </p>
+                                    </div>
+
+                                    {/* Price Bar */}
+                                    <div className="absolute inset-x-0 bottom-0 p-4 pt-6">
+                                        <div className="flex flex-col items-start space-y-1 font-semibold">
+                                            {item.lowest_rate ? (
+                                                <DisplayPrice
+                                                    usdAmount={item.lowest_rate}
+                                                    isLodgingProduct={true}
+                                                    showEstimatedLabel={false}
+                                                    className="w-full truncate text-[14px] text-main-text-light dark:text-main-text-dark"
+                                                />
+                                            ) : (
+                                                ''
+                                            )}
+                                        </div>
+                                    </div>
+                                </>
                             ) : (
                                 // Smartphones - Text with bottom price
                                 <>
@@ -347,6 +393,11 @@ const index = ({
         },
         [],
     );
+
+    // Lodging URL Generation
+    const generateLodgingURL = useCallback((lodging, isDirect = false, isSinglePage = false) => {
+        return `/lodging/${encodeURIComponent(lodging?.public_id)}/${encodeURIComponent(lodging?.slug)}`;
+    }, []);
 
     // Batch state updates helper
     const updateState = useCallback((updates) => {
@@ -1363,6 +1414,7 @@ const index = ({
                                     onCopyLink={handleCopyLink}
                                     generateURL={generateURL}
                                     generateSmartphoneURL={generateSmartphoneURL}
+                                    generateLodgingURL={generateLodgingURL}
                                     activeView={activeView}
                                     __={__}
                                 />

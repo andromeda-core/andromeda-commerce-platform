@@ -3,6 +3,8 @@
 namespace App\Repositories\GlobalSearch\Repository;
 
 use App\Helpers\Trans;
+use App\Models\Currency;
+use App\Models\LodgingProduct;
 use App\Models\Post;
 use App\Models\SearchHistory;
 use App\Models\Smartphone;
@@ -18,6 +20,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
     public function __construct(
         private Post $post,
         private Smartphone $smartphone,
+        private LodgingProduct $lodging_product,
         private SearchHistory $searchHistory,
         private Trans $trans,
 
@@ -614,6 +617,182 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                     ->values();
             }
 
+            // Lodging — third search-result type. Mirrors the smartphones block 1:1:
+            // same geo/spatiotemporal filter (haversine + floor-range + date-range on lodging's
+            // own latitude/longitude/floor_id/created_at), same hashtag/text + locale-scoped
+            // translation matching, same *_display mapping, same merge + timestamp sort.
+            // LEAN: no related queries, no heavy detail (rooms/policies/amenities) shipped — only
+            // rooms.ratePlans (bookable sale_price > 0) is eager-loaded for the lowest nightly rate.
+            // member_price is never touched. Lodging stays its own isolated domain (no cross joins).
+            if ((! empty($query) || (isset($post_filters['address']) && ! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng']) && ! empty($post_filters['radius'])))) {
+                $lodging = $this->lodging_product::query();
+
+                $hasGeo =
+                    isset($post_filters['address']) &&
+                    isset($post_filters['address']['lat'], $post_filters['address']['lng']) &&
+                    is_numeric($post_filters['address']['lat']) &&
+                    is_numeric($post_filters['address']['lng']) &&
+                    isset($post_filters['radius']) &&
+                    (float) $post_filters['radius'] > 0;
+
+                if ($hasGeo) {
+
+                    $lat = (float) $post_filters['address']['lat'];
+                    $lng = (float) $post_filters['address']['lng'];
+                    $radius = (float) $post_filters['radius'];
+                    $from_floor_id = $post_filters['from_floor_id'];
+                    $to_floor_id = $post_filters['to_floor_id'];
+                    $date_range = $post_filters['date_range'];
+
+                    $lodging = $lodging->where('floor_id', '!=', null);
+
+                    if (! empty($from_floor_id) && ! empty($to_floor_id)) {
+                        // Lodging-only: a property configured with a floor RANGE matches when its
+                        // [floor_start_id .. floor_end_id] OVERLAPS the requested [from .. to] range;
+                        // a property with only the single anchor floor keeps the EXACT existing
+                        // whereBetween behavior. Floor ordering is the floors PK — the same basis the
+                        // posts/smartphones branches use — so this is purely additive and changes
+                        // neither the single-floor case nor the other two domains.
+                        $lodging = $lodging->where(function ($q) use ($from_floor_id, $to_floor_id) {
+                            $q->where(function ($range) use ($from_floor_id, $to_floor_id) {
+                                $range->whereNotNull('floor_start_id')
+                                    ->whereNotNull('floor_end_id')
+                                    ->where('floor_start_id', '<=', $to_floor_id)
+                                    ->where('floor_end_id', '>=', $from_floor_id);
+                            })->orWhere(function ($single) use ($from_floor_id, $to_floor_id) {
+                                $single->where(function ($noRange) {
+                                    $noRange->whereNull('floor_start_id')->orWhereNull('floor_end_id');
+                                })->whereBetween('floor_id', [$from_floor_id, $to_floor_id]);
+                            });
+                        });
+                    }
+
+                    if (! empty($date_range)) {
+                        $from_date = Carbon::parse($date_range[0]);
+                        $to_date = Carbon::parse($date_range[1]);
+                        $lodging = $lodging->whereBetween('created_at', [$from_date, $to_date]);
+                    }
+
+                    $lodging = $lodging->select('*')
+                        ->selectRaw('
+                (6371000 * acos(
+                    cos(radians(?)) *
+                    cos(radians(latitude)) *
+                    cos(radians(longitude) - radians(?)) +
+                    sin(radians(?)) *
+                    sin(radians(latitude))
+                )) AS distance
+              ', [$lat, $lng, $lat])
+                        ->having('distance', '<', $radius)
+                        ->orderBy('distance', 'asc');
+                }
+                if (blank($post_filters) || blank($post_preferences)) {
+                    return $results;
+                }
+
+                if ($request->filled('query')) {
+
+                    $lodging = $lodging->where(function ($q) use ($query, $isTranslatable, $activeLangId) {
+                        if (Str::startsWith($query, '#')) {
+                            // Hashtag search — exact tag match (+ active-locale translated tag).
+                            $q->where(function ($inner) use ($query, $isTranslatable, $activeLangId) {
+                                $inner->where('tag', '=', $query);
+                                if ($isTranslatable) {
+                                    $inner->orWhereHas('contentTranslations', function ($t) use ($query, $activeLangId) {
+                                        $t->where('language_id', $activeLangId)
+                                            ->where('field', 'tag')
+                                            ->where('value', $query);
+                                    });
+                                }
+                            });
+                        } else {
+                            // Plain text (URL queries fall through here and match as text on the
+                            // searchable columns). Base-column LIKE always runs as the English
+                            // fallback; the translation clause is additive (active locale only).
+                            $q->where(function ($sub) use ($query, $isTranslatable, $activeLangId) {
+                                $sub->where('property_name', 'LIKE', '%' . $query . '%')
+                                    ->orWhere('content', 'LIKE', '%' . $query . '%')
+                                    ->orWhere('city_region', 'LIKE', '%' . $query . '%')
+                                    ->orWhere('location_name', 'LIKE', '%' . $query . '%')
+                                    ->orWhere('location_description', 'LIKE', '%' . $query . '%');
+                                if ($isTranslatable) {
+                                    $sub->orWhereHas('contentTranslations', function ($t) use ($query, $activeLangId) {
+                                        $t->where('language_id', $activeLangId)
+                                            ->whereIn('field', ['property_name', 'content', 'city_region', 'location_name', 'location_description'])
+                                            ->where('value', 'LIKE', '%' . $query . '%');
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+
+                $currencyCode = $this->resolveBaseCurrencyCode();
+
+                $lodging = $lodging->with([
+                    'floor',
+                    'media',
+                    'contentTranslations',
+                    'rooms.ratePlans' => fn ($q) => $q
+                        ->whereNotNull('sale_price')
+                        ->where('sale_price', '>', 0),
+                ])
+                    ->where('is_active', true)
+                    ->whereNotNull('slug')
+                    ->latest()
+                    ->forPage($page, $perPage)
+                    ->get()
+                    ->map(function ($lodgingProduct) use ($query, $isTranslatable, $currencyCode) {
+
+                        $coverImage = optional($lodgingProduct->media->first(fn ($m) => $m->type === 'image'))->file_url;
+                        $videoThumbnail = optional($lodgingProduct->media->first(fn ($m) => $m->type === 'video'))->thumbnail_url;
+
+                        $rates = $lodgingProduct->rooms
+                            ->flatMap(fn ($room) => $room->ratePlans)
+                            ->pluck('sale_price')
+                            ->filter(fn ($price) => is_numeric($price) && (float) $price > 0);
+
+                        $matchType = null;
+                        if (! empty($query)) {
+                            if (Str::startsWith($query, '#')) {
+                                $matchType = 'hashtag';
+                            } elseif (Str::startsWith($query, 'http://') || Str::startsWith($query, 'https://')) {
+                                $matchType = 'url';
+                            } else {
+                                $matchType = 'search_terms';
+                            }
+                        }
+
+                        return [
+                            'id' => $lodgingProduct->id,
+                            'type' => 'lodging',
+                            'public_id' => $lodgingProduct->public_id,
+                            'slug' => $lodgingProduct->slug,
+                            'name' => $isTranslatable ? $lodgingProduct->translatedValue('property_name') : $lodgingProduct->property_name,
+                            'image' => $coverImage,
+                            'video_thumbnail' => $videoThumbnail,
+                            'tag' => $lodgingProduct->tag,
+                            'tag_display' => $isTranslatable ? $lodgingProduct->translatedValue('tag') : $lodgingProduct->tag,
+                            'content' => $lodgingProduct->content,
+                            'content_display' => $isTranslatable ? $lodgingProduct->translatedValue('content') : $lodgingProduct->content,
+                            'city_region' => $lodgingProduct->city_region,
+                            'location_name' => $lodgingProduct->location_name,
+                            'latitude' => $lodgingProduct->latitude,
+                            'longitude' => $lodgingProduct->longitude,
+                            'floor' => $lodgingProduct?->floor?->name,
+                            'lowest_rate' => $rates->isEmpty() ? null : (float) $rates->min(),
+                            'currency_code' => $currencyCode,
+                            'created_at' => $lodgingProduct->created_at->format('Y-m-d g:i A '),
+                            'timestamp' => $lodgingProduct->created_at->timestamp,
+                            'matchType' => $matchType,
+                        ];
+                    });
+
+                $results = $results->merge($lodging)
+                    ->sortByDesc('timestamp')
+                    ->values();
+            }
+
             // dd($results);
             // Storing Search History
             if ($request->user() && (! empty($query) || (! empty($post_filters['address']['lat']) && ! empty($post_filters['address']['lng'])))) {
@@ -659,7 +838,7 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 }
             }
 
-            $hasMore = ($results->where('type', 'posts')->count() === $perPage) || ($results->where('type', 'smartphones')->count() === $perPage);
+            $hasMore = ($results->where('type', 'posts')->count() === $perPage) || ($results->where('type', 'smartphones')->count() === $perPage) || ($results->where('type', 'lodging')->count() === $perPage);
             $queryParams = [
                 'page' => $page + 1,
                 'query' => $query,
@@ -693,6 +872,14 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                 'message' => $e->getMessage(),
             ];
         }
+    }
+
+    /** Active base currency code (dynamic, never hardcoded) for the lodging card rate. */
+    private function resolveBaseCurrencyCode(): ?string
+    {
+        $currency = Cache::get('currency') ?? Currency::where('is_active', true)->first();
+
+        return $currency?->name;
     }
 
     private function stableJsonHash(?array $filters = null): ?string
@@ -761,6 +948,11 @@ class GlobalSearchRepository implements IGlobalSearchRepository
                             'longitude' => $result->longitude ?? null,
                             'floor' => $result->floor ?? null,
                             'timestamp' => $result->timestamp ?? null,
+                            // Lodging-specific frozen fields (null for posts/smartphones); carried
+                            // through replay verbatim so the lodging card renders, no re-translation.
+                            'lowest_rate' => $result->lowest_rate ?? null,
+                            'currency_code' => $result->currency_code ?? null,
+                            'city_region' => $result->city_region ?? null,
                         ];
                     });
                 }

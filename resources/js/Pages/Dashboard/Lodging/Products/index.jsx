@@ -34,7 +34,7 @@ export default function index({ lodging_products }) {
                 render: (item) => (
                     <Link
                         href={route('dashboard.lodging-products.show', item?.id)}
-                        className="cursor-pointer text-blue-500 underline"
+                        className="text-blue-500 underline cursor-pointer"
                     >
                         {item.property_name}
                     </Link>
@@ -46,7 +46,8 @@ export default function index({ lodging_products }) {
                 badge: () => 'p-2 bg-blue-500 rounded-lg text-white capitalize',
             },
             { key: 'city_region', label: 'City / Region' },
-            { key: 'floor.name', label: 'Floor' },
+            { key: 'floor_start.name', label: 'Floor Start' },
+            { key: 'floor_end.name', label: 'Floor End' },
             {
                 label: 'Rooms',
                 render: (item) => item?.rooms_count ?? 0,
@@ -104,7 +105,7 @@ export default function index({ lodging_products }) {
                 Content={
                     <>
                         {can('Lodging Products Create') && (
-                            <div className="my-3 flex flex-wrap justify-end">
+                            <div className="flex flex-wrap justify-end my-3">
                                 <LinkButton
                                     Text={'Create Lodging Product'}
                                     URL={route('dashboard.lodging-products.create')}

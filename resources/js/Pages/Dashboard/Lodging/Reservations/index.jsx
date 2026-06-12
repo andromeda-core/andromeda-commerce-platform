@@ -3,6 +3,7 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
+import SelectInput from '@/Components/SelectInput';
 import { useEffect, useState } from 'react';
 
 // Full Doc 2 sec 4 lifecycle, grouped into badge colors.
@@ -54,6 +55,13 @@ const fmtDate = (v) => (v ? String(v).slice(0, 10) : 'N/A');
 
 const humanize = (v) =>
     v ? String(v).replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase()) : 'N/A';
+
+// SelectInput consumes `items` + `itemKey`; STATUS_OPTIONS is a flat string array. Map it so the
+// option value = raw status (via `id`) and the visible label = humanized status (via itemKey="label").
+const STATUS_SELECT_ITEMS = STATUS_OPTIONS.map((s) => ({
+    id: s,
+    label: humanize(s),
+}));
 
 export default function index({ lodging_reservations }) {
     const { props } = usePage();
@@ -188,18 +196,18 @@ export default function index({ lodging_reservations }) {
                         canSelect={false}
                         EditRoute={null}
                         customSearch={
-                            <select
-                                value={status}
-                                onChange={(e) => applyStatusFilter(e.target.value)}
-                                className="mt-3 w-full rounded-lg border border-gray-300 bg-slate-50 px-3 py-2 text-sm text-gray-700 focus:ring-2 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white sm:w-[260px]"
-                            >
-                                <option value="">All Statuses</option>
-                                {STATUS_OPTIONS.map((s) => (
-                                    <option key={s} value={s}>
-                                        {humanize(s)}
-                                    </option>
-                                ))}
-                            </select>
+                            <SelectInput
+                                InputName={'Status'}
+                                Id={'reservation-status-filter'}
+                                Name={'status'}
+                                items={STATUS_SELECT_ITEMS}
+                                itemKey={'label'}
+                                Value={status}
+                                Action={(val) => applyStatusFilter(val ?? '')}
+                                customPlaceHolder={true}
+                                Placeholder={'All Statuses'}
+                                CustomCss={'mt-3 w-full sm:w-[260px]'}
+                            />
                         }
                     />
                 }

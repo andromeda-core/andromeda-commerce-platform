@@ -2,11 +2,19 @@
 
 namespace App\Models;
 
+use App\Traits\HasContentTranslations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LodgingParkingPolicy extends Model
 {
+    use HasContentTranslations;
+
+    // System 1 customer-facing free-text only. parking_type is a preset enum (System 2);
+    // vehicle_height_limit (measurement), bools, and the numeric fee are excluded.
+    // The optional on-site extra_parking_fee_display_text companion IS translatable (English fallback).
+    protected array $translatableFields = ['parking_availability_time', 'before_checkin_after_checkout', 'full_lot_policy', 'large_vehicle_restrictions', 'modified_vehicle_restriction', 'supercar_restriction', 'extra_parking_fee_display_text'];
+
     protected $table = 'lodging_parking_policies';
 
     protected $fillable = [
@@ -28,6 +36,7 @@ class LodgingParkingPolicy extends Model
         'ev_charging_available',
         'refund_if_no_parking',
         'extra_parking_fee',
+        'extra_parking_fee_display_text',
     ];
 
     // RelationShip

@@ -28,6 +28,7 @@ export default function DisplayPrice({
     className = '',
     paymentDisplay = true,
     MobileFeedPriceClass = '',
+    isLodgingProduct = false
 }) {
     const { displayCurrency } = usePage().props;
 
@@ -108,7 +109,7 @@ export default function DisplayPrice({
                 {/* USD base — the actual amount charged */}
                 <span
                     className={`${priceClass} ${MobileFeedPriceClass}`}
-                >{`$ ${usdPaymentFormatted}`}</span>
+                >{`$ ${usdPaymentFormatted} ${isLodgingProduct ? "/ night" : ''}`}</span>
 
                 {/* Approximate local conversion — hidden when display == active currency */}
                 {!noConversion && (
