@@ -16,10 +16,6 @@ const MasonryFeedItem = memo(
         setBookmarkActionPost,
         windowSize,
     }) => {
-
-
-
-
         const { __ } = useTranslation();
 
         const [loaded, setLoaded] = useState(false);
@@ -86,7 +82,7 @@ const MasonryFeedItem = memo(
                                         width: '100%',
                                         height: 'auto',
                                     }}
-                                    className="object-cover text-[10px]  text-black dark:text-white"
+                                    className="object-cover text-[10px] text-black dark:text-white"
                                 />
                             </div>
 
@@ -470,29 +466,24 @@ const MasonryFeedItem = memo(
 
                                     <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
                                         <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
-
-                                              {item.is_reservation_closed != false && (
-                                            <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
-                                                {__('Sold Out')}
-                                            </span>
-                                        )}
-
-
- {item.lowest_rate && (
-                                                <span className="text-white">
-                                                     <DisplayPrice
-                                                usdAmount={item.lowest_rate}
-                                                size="sm"
-                                                className={`w-full truncate text-white ${item.is_reservation_closed != false ? 'line-through' : ''}`}
-                                                  isLodgingProduct={true}
-                                            />
-
-
+                                            {item.is_reservation_closed != false && (
+                                                <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                                                    {__('Sold Out')}
                                                 </span>
                                             )}
 
+                                            {item.lowest_rate && (
+                                                <span className="text-white">
+                                                    <DisplayPrice
+                                                        usdAmount={item.lowest_rate}
+                                                        size="sm"
+                                                        className={`w-full truncate text-white ${item.is_reservation_closed != false ? 'line-through' : ''}`}
+                                                        isLodgingProduct={true}
+                                                    />
+                                                </span>
+                                            )}
 
- <p className="w-full text-white truncate">
+                                            <p className="w-full text-white truncate">
                                                 {item.property_name}
                                             </p>
 
@@ -501,10 +492,6 @@ const MasonryFeedItem = memo(
                                                     {item.location_name}
                                                 </p>
                                             )}
-
-
-
-
                                         </div>
                                     </div>
                                 </>
@@ -524,10 +511,8 @@ const MasonryFeedItem = memo(
                             )}
                             <div className="flex flex-col flex-1 mt-10">
                                 <div className="line-clamp-6 whitespace-pre-line break-all text-[13px] leading-[17px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
-                                   <p className='font-semibold'>
-                                     {item.property_name}
-                                   </p>
-                                     <p
+                                    <p className="font-semibold">{item.property_name}</p>
+                                    <p
                                         dangerouslySetInnerHTML={{
                                             __html: item?.content?.trim(),
                                         }}
@@ -540,14 +525,14 @@ const MasonryFeedItem = memo(
                                     </p>
                                 )}
                                 <div className="pt-4 mt-auto">
-                                   {item.lowest_rate && (
-                                                <DisplayPrice
-                                                usdAmount={item.lowest_rate}
-                                                size="sm"
-                                                className={`w-full truncate`}
-                                                isLodgingProduct={true}
-                                            />
-                                            )}
+                                    {item.lowest_rate && (
+                                        <DisplayPrice
+                                            usdAmount={item.lowest_rate}
+                                            size="sm"
+                                            className={`w-full truncate`}
+                                            isLodgingProduct={true}
+                                        />
+                                    )}
                                 </div>
                             </div>
                         </div>
