@@ -471,13 +471,19 @@ const MasonryFeedItem = memo(
                                     <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
                                         <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
 
+                                              {item.is_reservation_closed != false && (
+                                            <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
+                                                {__('Sold Out')}
+                                            </span>
+                                        )}
+
 
  {item.lowest_rate && (
                                                 <span className="text-white">
                                                      <DisplayPrice
                                                 usdAmount={item.lowest_rate}
                                                 size="sm"
-                                                className={`w-full truncate text-white`}
+                                                className={`w-full truncate text-white ${item.is_reservation_closed != false ? 'line-through' : ''}`}
                                                   isLodgingProduct={true}
                                             />
 
