@@ -164,7 +164,7 @@ const MasonryFeedItem = memo(
                                                         __html: item?.content
                                                             ?.replace(/<[^>]*>/g, ' ')
                                                             .replace(/\s+/g, ' ')
-                                                            .trim(),
+                                                            ?.trim(),
                                                     }}
                                                 />
                                             </p>
@@ -300,7 +300,7 @@ const MasonryFeedItem = memo(
                                                         __html: item?.content
                                                             ?.replace(/<[^>]*>/g, ' ')
                                                             .replace(/\s+/g, ' ')
-                                                            .trim(),
+                                                            ?.trim(),
                                                     }}
                                                 />
                                             </p>
@@ -378,7 +378,7 @@ const MasonryFeedItem = memo(
                                 <p className="line-clamp-6 whitespace-pre-line break-all text-[13px] leading-[17px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
                                     <span
                                         dangerouslySetInnerHTML={{
-                                            __html: item?.content.trim(),
+                                            __html: item?.content?.trim(),
                                         }}
                                     ></span>
                                 </p>
@@ -747,7 +747,7 @@ const MasonryFeedItem = memo(
                                             item?.content_display ??
                                             item?.content ??
                                             ''
-                                        ).trim(),
+                                        )?.trim(),
                                     }}
                                 ></span>
                             </p>

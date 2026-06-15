@@ -105,7 +105,7 @@ export default function DisplayPrice({
         });
 
         return (
-            <div className={`flex flex-col gap-0 ${className}`.trim()}>
+            <div className={`flex flex-col gap-0 ${className}`?.trim()}>
                 {/* USD base — the actual amount charged */}
                 <span
                     className={`${priceClass} ${MobileFeedPriceClass}`}
@@ -130,7 +130,7 @@ export default function DisplayPrice({
 
     // ── Render ────────────────────────────────────────────────────────────────
     return (
-        <div className={`flex flex-col gap-0 ${className}`.trim()}>
+        <div className={`flex flex-col gap-0 ${className}`?.trim()}>
             {/* Converted price */}
             <span
                 className={`${priceClass ? `${priceClass} ` : 'text-main-text-light dark:text-main-text-dark'} `}

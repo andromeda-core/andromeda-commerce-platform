@@ -20,21 +20,30 @@ import MobileFeedSinglePage from './MobileFeedSinglePage';
 import LodgingReservationPanel from './LodgingReservationPanel';
 import DesktopFeedSkeleton from '@/Components/DesktopFeedSkeleton';
 import MobileFeedSkeleton from '@/Components/MobileFeedSkeleton';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 
 // Interleaves posts and smartphones in a zig-zag order (post, smartphone, post, smartphone, ...).
 // Leftover items from the longer list are appended at the end.
 // Used only when appending newly-fetched items to the feed, so the feed renders mixed instead of blocky.
 const interleaveFeedItems = (posts = [], smartphones = [], lodging_properties = []) => {
-    const mixed = [];
-    const max = Math.max(posts.length, smartphones.length, lodging_properties.length);
+    const batch = [...posts, ...smartphones, ...lodging_properties];
 
-    for (let i = 0; i < max; i++) {
-        if (i < posts.length) mixed.push(posts[i]);
-        if (i < smartphones.length) mixed.push(smartphones[i]);
-        if (i < lodging_properties.length) mixed.push(lodging_properties[i]);
-    }
+    const toTime = (item) => {
+        const raw = item?.created_at ?? item?.added_at ?? null;
+        if (!raw) return 0;                       // missing -> push to bottom
+        const t = dayjs.utc(raw).valueOf();
+        return Number.isNaN(t) ? 0 : t;           // invalid -> also bottom, never NaN
+    };
 
-    return mixed;
+    return batch.sort((a, b) => {
+        const dateA = toTime(a);
+        const dateB = toTime(b);
+
+        if (dateB !== dateA) return dateB - dateA; // newest first
+        return (b?.id ?? 0) - (a?.id ?? 0);        // stable tie-breaker
+    });
 };
 
 const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_lodging = null }) => {

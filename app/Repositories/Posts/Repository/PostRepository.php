@@ -342,7 +342,7 @@ class PostRepository implements IPostRepository
 
             if (! empty($validated_req['tag']) && ! str_starts_with($validated_req['tag'], '#')) {
                 $tag = $validated_req['tag'];
-                $concatinated_tag = '#' . $tag;
+                $concatinated_tag = '#'.$tag;
                 $validated_req['tag'] = $concatinated_tag;
             }
 
@@ -371,7 +371,7 @@ class PostRepository implements IPostRepository
                 $paths = [];
 
                 foreach ($request->file('images') as $image) {
-                    $new_name = time() . uniqid() . '-' . Str::random(10) . '.webp';
+                    $new_name = time().uniqid().'-'.Str::random(10).'.webp';
 
                     $resizedImage = ImageManager::imagick()
                         ->read($image)
@@ -380,7 +380,7 @@ class PostRepository implements IPostRepository
 
                     // $tempPath = $image->storeAs('temp/uploads', $new_name, 'local');
 
-                    $tempPath = 'temp/uploads/' . $new_name;
+                    $tempPath = 'temp/uploads/'.$new_name;
                     Storage::disk('local')->put($tempPath, (string) $resizedImage);
 
                     $paths[] = $tempPath;
@@ -393,7 +393,7 @@ class PostRepository implements IPostRepository
                 $tempPaths = [];
 
                 foreach ($request->file('videos') as $video) {
-                    $originalName = time() . uniqid() . '-' . Str::random(8) . '.' . $video->getClientOriginalExtension();
+                    $originalName = time().uniqid().'-'.Str::random(8).'.'.$video->getClientOriginalExtension();
                     $tempPaths[] = $video->storeAs('temp/uploads', $originalName, 'local');
                 }
 
@@ -522,7 +522,7 @@ class PostRepository implements IPostRepository
 
             if (! empty($validated_req['tag']) && ! str_starts_with($validated_req['tag'], '#')) {
                 $tag = $validated_req['tag'];
-                $concatinated_tag = '#' . $tag;
+                $concatinated_tag = '#'.$tag;
                 $validated_req['tag'] = $concatinated_tag;
             }
 
@@ -643,22 +643,18 @@ class PostRepository implements IPostRepository
                 throw new Exception('Something Went Wrong While Updating Post');
             }
 
-
-
-
-
             if ($request->hasFile('new_images')) {
                 $paths = [];
 
                 foreach ($request->file('new_images') as $image) {
-                    $new_name = time() . uniqid() . '-' . Str::random(10) . '.webp';
+                    $new_name = time().uniqid().'-'.Str::random(10).'.webp';
 
                     $resizedImage = ImageManager::imagick()
                         ->read($image)
                         ->scaleDown(1800)
                         ->encode(new WebpEncoder(quality: 70));
 
-                    $tempPath = 'temp/uploads/' . $new_name;
+                    $tempPath = 'temp/uploads/'.$new_name;
                     Storage::disk('local')->put($tempPath, (string) $resizedImage);
 
                     $paths[] = $tempPath;
@@ -672,7 +668,7 @@ class PostRepository implements IPostRepository
                 $tempPaths = [];
 
                 foreach ($request->file('new_videos') as $video) {
-                    $originalName = time() . uniqid() . '-' . Str::random(8) . '.' . $video->getClientOriginalExtension();
+                    $originalName = time().uniqid().'-'.Str::random(8).'.'.$video->getClientOriginalExtension();
                     $tempPaths[] = $video->storeAs('temp/uploads', $originalName, 'local');
                 }
                 dispatch(new CompressPostVideoWithFFMPEG($tempPaths, $post, 'update'))->onQueue('video');
@@ -870,15 +866,15 @@ class PostRepository implements IPostRepository
         $perPage = 10;
 
         $cacheTags = [
-            'images:' . (int) $images,
-            'text:' . (int) $text,
-            'videos:' . (int) $videos,
-            'products:' . (int) $show_products,
-            'posts:' . (int) $show_posts,
+            'images:'.(int) $images,
+            'text:'.(int) $text,
+            'videos:'.(int) $videos,
+            'products:'.(int) $show_products,
+            'posts:'.(int) $show_posts,
             "page:{$page}",
         ];
 
-        $cacheKey = app()->getLocale() . ':' . implode(':', $cacheTags);
+        $cacheKey = app()->getLocale().':'.implode(':', $cacheTags);
 
         return Cache::tags(['feed'])->rememberForever($cacheKey, function () use ($images, $videos, $text, $show_products, $show_posts, $page, $perPage) {
 
@@ -925,7 +921,8 @@ class PostRepository implements IPostRepository
                         'user:id,name',
                         'contentTranslations',
                     ])
-                    ->orderBy('created_at', 'asc')
+                    ->orderBy('created_at', 'desc')
+                    ->orderBy('id', 'desc')
                     ->forPage($page, $perPage)
                     ->get();
 
@@ -1028,7 +1025,7 @@ class PostRepository implements IPostRepository
                         ->map(function ($smartphone) {
 
                             return (object) [
-                                '_key' => 'sp_' . $smartphone->id,
+                                '_key' => 'sp_'.$smartphone->id,
                                 'id' => $smartphone->id,
                                 'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
                                 'capacity' => $smartphone->capacity->name,
@@ -1077,7 +1074,7 @@ class PostRepository implements IPostRepository
 
                     $postRelatedPosts = $relatedPosts
                         ->filter(
-                            fn($rp) => $rp->id !== $post->id &&
+                            fn ($rp) => $rp->id !== $post->id &&
                                 ! empty($rp->tag) &&
                                 $rp->tag === $postHashtag
                         )
@@ -1086,14 +1083,14 @@ class PostRepository implements IPostRepository
 
                     $postRelatedSmartphones = $relatedSmartphones
                         ->filter(
-                            fn($sp) => ! empty($sp->tag) &&
+                            fn ($sp) => ! empty($sp->tag) &&
                                 $sp->tag === $postHashtag
                         )
                         ->take(5)
                         ->values();
 
                     $postRelatedLodging = $relatedLodging
-                        ->filter(fn($rl) => ! empty($rl->tag) && $rl->tag === $postHashtag)
+                        ->filter(fn ($rl) => ! empty($rl->tag) && $rl->tag === $postHashtag)
                         ->take(5)
                         ->values();
 
@@ -1161,7 +1158,8 @@ class PostRepository implements IPostRepository
 
                     ->whereHas('selling_info')
                     ->whereNotNull('slug')
-                    ->orderBy('created_at', 'asc')
+                    ->orderBy('created_at', 'desc')
+                    ->orderBy('id', 'desc')
                     ->forPage($page, $perPage)
                     ->get();
 
@@ -1216,7 +1214,7 @@ class PostRepository implements IPostRepository
                         ->get()
                         ->map(function ($smartphone) {
                             return (object) [
-                                '_key' => 'sp_' . $smartphone->id,
+                                '_key' => 'sp_'.$smartphone->id,
                                 'id' => $smartphone->id,
                                 'name' => optional($smartphone->model_name)->translatedValue('name') ?? $smartphone->model_searchable_name,
                                 'capacity' => $smartphone->capacity->name,
@@ -1311,7 +1309,7 @@ class PostRepository implements IPostRepository
 
                     $spRelatedSmartphones = $relatedSmartphones
                         ->filter(
-                            fn($rs) => $rs->id !== $sp->id &&
+                            fn ($rs) => $rs->id !== $sp->id &&
                                 ! empty($rs->tag) &&
                                 $rs->tag === $spHashtag
                         )
@@ -1321,19 +1319,19 @@ class PostRepository implements IPostRepository
                     // Filter related posts with same hashtag
                     $spRelatedPosts = $relatedPosts
                         ->filter(
-                            fn($rp) => ! empty($rp->tag) &&
+                            fn ($rp) => ! empty($rp->tag) &&
                                 $rp->tag === $spHashtag
                         )
                         ->take(5)
                         ->values();
 
                     $spRelatedLodging = $relatedLodging
-                        ->filter(fn($rl) => ! empty($rl->tag) && $rl->tag === $spHashtag)
+                        ->filter(fn ($rl) => ! empty($rl->tag) && $rl->tag === $spHashtag)
                         ->take(5)
                         ->values();
 
                     $sp->structured = [
-                        '_key' => 'sp_' . $sp->id,
+                        '_key' => 'sp_'.$sp->id,
                         'id' => $sp->id,
                         'name' => optional($sp->model_name)->translatedValue('name') ?? $sp->model_searchable_name,
                         'capacity' => $sp->capacity->name,
@@ -1374,7 +1372,7 @@ class PostRepository implements IPostRepository
                             ->values(),
                     ];
                 }
-                $smartphones = $smartphones->map(fn($sp) => $sp->structured);
+                $smartphones = $smartphones->map(fn ($sp) => $sp->structured);
                 $hasMore = $hasMore || ($smartphones->count() === $perPage);
             }
 
@@ -1423,8 +1421,8 @@ class PostRepository implements IPostRepository
                     'has_more_pages' => $hasMore,
                     'next_page' => $hasMore ? $page + 1 : null,
                     'total' => (count($results['posts']) ?? 0) + (count($results['products']['smartphones']) ?? 0) + (count($results['products']['lodging_properties']) ?? 0),
-                    'next_page_url' => $hasMore ? route('website.posts.index') . '?' . http_build_query($nextParams) : null,
-                    'prev_page_url' => $page > 1 ? route('website.posts.index') . '?' . http_build_query($prevParams) : null,
+                    'next_page_url' => $hasMore ? route('website.posts.index').'?'.http_build_query($nextParams) : null,
+                    'prev_page_url' => $page > 1 ? route('website.posts.index').'?'.http_build_query($prevParams) : null,
                 ],
 
             ];
@@ -1698,8 +1696,8 @@ class PostRepository implements IPostRepository
                     'has_more_pages' => $hasMore,
                     'next_page' => $hasMore ? $page + 1 : null,
                     'total' => (count($results) ?? 0),
-                    'next_page_url' => $hasMore ? route('website.posts.getrelated') . '?' . http_build_query($nextParams) : null,
-                    'prev_page_url' => $page > 1 ? route('website.posts.getrelated') . '?' . http_build_query($prevParams) : null,
+                    'next_page_url' => $hasMore ? route('website.posts.getrelated').'?'.http_build_query($nextParams) : null,
+                    'prev_page_url' => $page > 1 ? route('website.posts.getrelated').'?'.http_build_query($prevParams) : null,
                 ],
 
             ];
@@ -1945,11 +1943,9 @@ class PostRepository implements IPostRepository
 
             // Translated display value for the hashtag header (display-only).
             // The original $hashtag stays canonical for matching/navigation.
-           $sourceModel = $this->post->where('tag', $hashtag)->whereHas('contentTranslations')->with('contentTranslations')->first()
+            $sourceModel = $this->post->where('tag', $hashtag)->whereHas('contentTranslations')->with('contentTranslations')->first()
     ?? $this->smartphone->where('tag', $hashtag)->whereHas('contentTranslations')->with('contentTranslations', 'model_name.contentTranslations')->first()
     ?? $this->lodging_product->where('tag', $hashtag)->whereHas('contentTranslations')->with('contentTranslations')->first();
-
-
 
             $hashtagDisplay = $sourceModel
                 ? $sourceModel->translatedValue('tag')
@@ -1965,8 +1961,8 @@ class PostRepository implements IPostRepository
                     'has_more_pages' => $hasMore,
                     'next_page' => $hasMore ? $page + 1 : null,
                     'total' => (count($data['posts']) ?? 0) + (count($data['products']['smartphones']) ?? 0) + (count($data['products']['lodging_properties']) ?? 0),
-                    'next_page_url' => $hasMore ? route('website.posts.hashtag-results') . '?' . http_build_query($nextParams) : null,
-                    'prev_page_url' => $page > 1 ? route('website.posts.hashtag-results') . '?' . http_build_query($prevParams) : null,
+                    'next_page_url' => $hasMore ? route('website.posts.hashtag-results').'?'.http_build_query($nextParams) : null,
+                    'prev_page_url' => $page > 1 ? route('website.posts.hashtag-results').'?'.http_build_query($prevParams) : null,
                 ],
 
             ];

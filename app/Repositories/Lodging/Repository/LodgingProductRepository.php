@@ -123,7 +123,8 @@ class LodgingProductRepository implements ILodgingProductRepository
                 'cancellationPolicy.contentTranslations',
                 'parkingPolicy.contentTranslations',
             ])
-            ->orderBy('created_at', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->forPage($page, $perPage)
             ->get();
 
