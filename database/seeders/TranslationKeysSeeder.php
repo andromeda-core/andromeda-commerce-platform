@@ -51,6 +51,8 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Scene Video', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Under', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Over', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Sold Out', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Cannot Be Reserved', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Shipping cost may apply at checkout', 'created_at' => $now, 'updated_at' => $now],
 
             ['key' => 'pending', 'created_at' => $now, 'updated_at' => $now],

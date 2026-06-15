@@ -267,7 +267,8 @@ const RatePlan = ({ lodging, room, plan, openReservationPanel, __ }) => {
                                 isLodgingProduct={true}
                                 paymentDisplay={true}
                                 size="sm"
-                                className="text-main-text-light dark:text-main-text-dark"
+                                className={`text-main-text-light dark:text-main-text-dark ${lodging?.is_reservation_closed != false ? 'line-through' : ''}`}
+
                             />
                         </div>
                     )}
@@ -339,7 +340,7 @@ const RatePlan = ({ lodging, room, plan, openReservationPanel, __ }) => {
                         </span>
                     )}
                 </div>
-                {lodging?.is_reservation_closed !== true && (
+                {lodging?.is_reservation_closed !== true ? (
                     <button
                         type="button"
                         disabled={!canReserve}
@@ -354,8 +355,12 @@ const RatePlan = ({ lodging, room, plan, openReservationPanel, __ }) => {
                                 : 'cursor-not-allowed opacity-50 hover:bg-main-text-light dark:hover:bg-main-text-dark'
                         }`}
                     >
-                        {__('Reserve')}
+                       {canReserve ? __('Reserve') : __("Cannot Be Reserved")}
                     </button>
+                ):(
+                   <span className="inline-block rounded bg-red-600 px-2.5 py-1 text-xs font-semibold text-white">
+                        {__('Sold Out')}
+                    </span>
                 )}
             </div>
         </div>

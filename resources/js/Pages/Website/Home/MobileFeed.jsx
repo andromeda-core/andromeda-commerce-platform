@@ -932,7 +932,7 @@ const MobileFeed = ({
                                             isLodgingProduct={true}
                                             paymentDisplay={true}
                                             size="lg"
-                                            MobileFeedPriceClass={'text-main-text-dark'}
+                                            MobileFeedPriceClass={isText ?'text-main-text-light dark:text-main-text-dark': ''}
                                         />
                                     )}
                                     <span className="line-clamp-1 text-[13px] font-medium text-main-text-dark">
