@@ -37,31 +37,23 @@ const MobileFeedSinglePage = ({
     __,
 }) => {
     useEffect(() => {
-        const url = new URL(window.location);
-        window.history.pushState({}, '', url.toString());
         setMobileFeedGalleryOpen(true);
     }, []);
-
 
     const shouldCleanupBrowserHistoryRef = useRef(true);
     const isDarkMode = useDarkMode();
 
-
     useEffect(() => {
         if (!MobileFeedGalleryOpen) {
             const refAllowsCleanup = shouldCleanupBrowserHistoryRef.current;
-            const storeAllowsCleanup = useFeedCleanupStore
-                .getState()
-                .shouldCleanupBrowserHistory;
+            const storeAllowsCleanup = useFeedCleanupStore.getState().shouldCleanupBrowserHistory;
 
-            if (refAllowsCleanup && storeAllowsCleanup) {
+            if (!previous_url && refAllowsCleanup && storeAllowsCleanup) {
                 window.history.replaceState({}, '', window.location.pathname);
             }
 
             // Reset store flag for the next feed mount (defensive reset)
-            useFeedCleanupStore
-                .getState()
-                .setShouldCleanupBrowserHistory(true);
+            useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(true);
 
             setFeedGallery(null);
             setMediaItems([]);
@@ -69,8 +61,7 @@ const MobileFeedSinglePage = ({
             setFeedIndex(0);
             isSinglePageRef.current = false;
         }
-    }, [MobileFeedGalleryOpen])
-
+    }, [MobileFeedGalleryOpen]);
 
     return (
         <>

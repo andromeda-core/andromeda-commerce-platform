@@ -264,24 +264,24 @@ const DesktopFeed = ({
             if (spatiotemporalInfoModal) return;
             switch (e.key) {
                 case 'ArrowUp':
-                    if(reservationPanelOpenRef.current) break;
+                    if (reservationPanelOpenRef.current) break;
                     e.preventDefault();
                     handleTopPrevious();
                     break;
                 case 'ArrowDown':
-                    if(reservationPanelOpenRef.current) break;
+                    if (reservationPanelOpenRef.current) break;
                     e.preventDefault();
                     handleBottomNext();
                     break;
 
                 case 'ArrowLeft':
-                    if(reservationPanelOpenRef.current) break;
+                    if (reservationPanelOpenRef.current) break;
                     e.preventDefault();
                     handleLeftPrevious();
                     break;
 
                 case 'ArrowRight':
-                    if(reservationPanelOpenRef.current) break;
+                    if (reservationPanelOpenRef.current) break;
                     e.preventDefault();
                     handleRightNext();
                     break;
@@ -291,6 +291,12 @@ const DesktopFeed = ({
                     // (replaceState strips ?reserve) — do not duplicate that here.
                     if (reservationPanelOpenRef?.current) {
                         closeReservationPanel?.();
+                        break;
+                    }
+
+                    if (previous_url) {
+                        shouldCleanupBrowserHistoryRef.current = false;
+                        router.visit(previous_url, { replace: true });
                         break;
                     }
                     setFeedGallery(null);
@@ -1186,7 +1192,7 @@ const DesktopFeed = ({
                                 onClick={() => {
                                     if (previous_url) {
                                         shouldCleanupBrowserHistoryRef.current = false;
-                                        router.visit(previous_url);
+                                        router.visit(previous_url, {replace: true});
                                     } else {
                                         setFeedGallery(null);
                                         setFeedOpen(false);
@@ -1628,7 +1634,7 @@ const DesktopFeed = ({
                                 onClick={() => {
                                     if (previous_url) {
                                         shouldCleanupBrowserHistoryRef.current = false;
-                                        router.visit(previous_url);
+                                        router.visit(previous_url, {replace: true});
                                     } else {
                                         setFeedGallery(null);
                                         setFeedOpen(false);
@@ -2706,7 +2712,7 @@ const DesktopFeed = ({
                                 onClick={() => {
                                     if (previous_url) {
                                         shouldCleanupBrowserHistoryRef.current = false;
-                                        router.visit(previous_url);
+                                         router.visit(previous_url, {replace: true});
                                     } else {
                                         setFeedGallery(null);
                                         setFeedOpen(false);
@@ -3482,7 +3488,7 @@ const DesktopFeed = ({
                                 onClick={() => {
                                     if (previous_url) {
                                         shouldCleanupBrowserHistoryRef.current = false;
-                                        router.visit(previous_url);
+                                        router.visit(previous_url, {replace: true});
                                     } else {
                                         setFeedGallery(null);
                                         setFeedOpen(false);
@@ -4671,7 +4677,7 @@ const DesktopFeed = ({
                                 onClick={() => {
                                     if (previous_url) {
                                         shouldCleanupBrowserHistoryRef.current = false;
-                                        router.visit(previous_url);
+                                        router.visit(previous_url, {replace: true});
                                     } else {
                                         setFeedGallery(null);
                                         setFeedOpen(false);
@@ -5225,7 +5231,11 @@ const DesktopFeed = ({
                                                         <div className="flex flex-col w-full gap-1">
                                                             {feedGallery.property_type && (
                                                                 <span className="text-sm capitalize text-sub-text-light dark:text-sub-text-dark">
-                                                                    {__(humanize(feedGallery.property_type))}
+                                                                    {__(
+                                                                        humanize(
+                                                                            feedGallery.property_type,
+                                                                        ),
+                                                                    )}
                                                                 </span>
                                                             )}
                                                             {feedGallery?.city_region && (
@@ -5240,7 +5250,9 @@ const DesktopFeed = ({
                                                             )}
                                                             {feedGallery.location_description && (
                                                                 <span className="text-sm break-words text-sub-text-light dark:text-sub-text-dark">
-                                                                    {feedGallery.location_description}
+                                                                    {
+                                                                        feedGallery.location_description
+                                                                    }
                                                                 </span>
                                                             )}
                                                             {feedGallery.star_rating && (
@@ -5272,7 +5284,9 @@ const DesktopFeed = ({
                                                                         <span className="font-medium">
                                                                             {__('Check-in')}:
                                                                         </span>{' '}
-                                                                        {feedGallery.base_checkin_time}
+                                                                        {
+                                                                            feedGallery.base_checkin_time
+                                                                        }
                                                                     </span>
                                                                 )}
                                                                 {feedGallery.base_checkout_time && (
@@ -5280,7 +5294,9 @@ const DesktopFeed = ({
                                                                         <span className="font-medium">
                                                                             {__('Check-out')}:
                                                                         </span>{' '}
-                                                                        {feedGallery.base_checkout_time}
+                                                                        {
+                                                                            feedGallery.base_checkout_time
+                                                                        }
                                                                     </span>
                                                                 )}
                                                             </div>

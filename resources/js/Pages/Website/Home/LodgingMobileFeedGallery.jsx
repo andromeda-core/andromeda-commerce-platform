@@ -106,7 +106,7 @@ const LodgingMobileFeedGallery = ({
                             onClick={() => {
                                 if (previous_url) {
                                     shouldCleanupBrowserHistoryRef.current = false;
-                                    router.visit(previous_url);
+                                     router.visit(previous_url, {replace: true});
                                 } else {
                                     setMobileFeedGalleryOpen(false);
                                 }
@@ -412,13 +412,13 @@ const LodgingMobileFeedGallery = ({
                             {(lodging?.base_checkin_time || lodging?.base_checkout_time) && (
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {lodging?.base_checkin_time && (
-                                        <span className="rounded-md bg-surface-1-light px-3 py-1 text-xs text-main-text-light dark:bg-surface-2-dark dark:text-main-text-dark">
+                                        <span className="px-3 py-1 text-xs rounded-md bg-surface-1-light text-main-text-light dark:bg-surface-2-dark dark:text-main-text-dark">
                                             <span className="font-medium">{__('Check-in')}:</span>{' '}
                                             {lodging.base_checkin_time}
                                         </span>
                                     )}
                                     {lodging?.base_checkout_time && (
-                                        <span className="rounded-md bg-surface-1-light px-3 py-1 text-xs text-main-text-light dark:bg-surface-2-dark dark:text-main-text-dark">
+                                        <span className="px-3 py-1 text-xs rounded-md bg-surface-1-light text-main-text-light dark:bg-surface-2-dark dark:text-main-text-dark">
                                             <span className="font-medium">{__('Check-out')}:</span>{' '}
                                             {lodging.base_checkout_time}
                                         </span>

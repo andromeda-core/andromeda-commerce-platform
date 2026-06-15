@@ -1300,9 +1300,18 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
 
     // Sync MobileFeedGalleryOpen state changes
     useEffect(() => {
-        MobileFeedGalleryOpenRef.current = MobileFeedGalleryOpen;
+         MobileFeedGalleryOpenRef.current = MobileFeedGalleryOpen;
+
+
+
 
         if (MobileFeedGalleryOpen) {
+
+              if(redirectedPreviousUrl.current)
+        {
+            return;
+        }
+
             const url = new URL(window.location.href);
             url.searchParams.set('mobile-feed-gallery', true);
 
