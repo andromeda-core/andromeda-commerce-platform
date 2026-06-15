@@ -152,6 +152,7 @@ class ProductsRepository implements IProductsRepository
                                 'type' => 'smartphones',
                                 'added_at' => $smartphone->added_at,
                                 'created_at_time' => $smartphone->created_at_time,
+                                'created_at' => $smartphone->created_at,
 
                             ];
                         });
@@ -237,6 +238,7 @@ class ProductsRepository implements IProductsRepository
                         'type' => 'smartphones',
                         'added_at' => $smartphone->added_at,
                         'created_at_time' => $smartphone->created_at_time,
+                        'created_at' => $smartphone->created_at,
                         'related' => collect([...$related_posts, ...$related_smartphones, ...$related_lodging])->shuffle(),
                     ];
                 });

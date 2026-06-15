@@ -86,7 +86,7 @@ const MasonryFeedItem = memo(
                                         width: '100%',
                                         height: 'auto',
                                     }}
-                                    className="object-cover text-[10px] text-black dark:text-white"
+                                    className="object-cover text-[10px]  text-black dark:text-white"
                                 />
                             </div>
 

@@ -410,6 +410,7 @@ class LodgingProductRepository implements ILodgingProductRepository
                     'type' => 'smartphones',
                     'added_at' => $smartphone->added_at,
                     'created_at_time' => $smartphone->created_at_time,
+                    'created_at' => $smartphone->created_at,
                     'product_details' => $smartphone->translatedValue('product_details'),
                 ];
             });
@@ -486,6 +487,7 @@ class LodgingProductRepository implements ILodgingProductRepository
             'is_reservation_closed' => (bool) $product->is_reservation_closed,
             'added_at' => optional($product->created_at)->format('M d, Y'),
             'created_at_time' => optional($product->created_at)->format('g:i A'),
+            'created_at' => $product->created_at,
             'related' => [],
         ];
 
