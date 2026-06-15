@@ -88,7 +88,12 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
         try {
             const stored = sessionStorage.getItem('andromeda_prev_url');
 
-            if (stored && (stored.includes('/shop') || stored.includes('/bookmarks'))) {
+            if (
+                stored &&
+                (stored.includes('/shop') ||
+                    stored.includes('/bookmarks') ||
+                    stored.includes('/stay'))
+            ) {
                 return stored;
             }
         } catch (e) {}

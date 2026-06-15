@@ -33,4 +33,10 @@ interface ILodgingProductRepository
 
     // Tag-based related lodging cards for cross-domain related lists (posts + smartphones inject this).
     public function getRelatedLodgingForFeed(array $tags, bool $images = true, bool $videos = true, bool $text = true, array $excludeSlugs = [], ?int $page = null, ?int $perPage = null, int $limit = 50);
+
+    // Stay page (public lodging browse grid; mirrors Shop). Paginated, filterable lodging cards.
+    public function getLodgingProductsForStay(Request $request);
+
+    // Filter option lists for the Stay page (single source of truth for the enum/amenity dropdowns).
+    public function getStayFilterOptions();
 }

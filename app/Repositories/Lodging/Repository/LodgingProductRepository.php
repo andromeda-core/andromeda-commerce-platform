@@ -63,6 +63,9 @@ class LodgingProductRepository implements ILodgingProductRepository
 
     private const VIDEOS_DIR = 'Lodging/Videos/';
 
+    // Stay browse grid page size (mirrors Shop's paginate mechanism; divisible by the 2/3/4 column grid).
+    private const STAY_PER_PAGE = 12;
+
     public function __construct(
         private LodgingProduct $lodging_product,
         private LodgingAmenity $lodging_amenity,
@@ -748,6 +751,263 @@ class LodgingProductRepository implements ILodgingProductRepository
         $currency = Cache::get('currency') ?? Currency::where('is_active', true)->first();
 
         return $currency?->name;
+    }
+
+    // ---------------------------------------------------------------------
+    // Stay page (public lodging browse grid; mirrors the Shop smartphone grid).
+    // READ-ONLY: paginated, filterable lodging cards reusing the feed card payload.
+    // ---------------------------------------------------------------------
+
+    /**
+     * Paginated lodging properties for the public Stay grid. Same inclusion rule as the feed
+     * (active + slugged + at least one rate plan with sale_price > 0) and the same card payload
+     * (buildLodgingFeedItem, includeDetails = false). Filters are read from $request->array('filters')
+     * mirroring Shop's convention, and the query string is carried into loadMore via withPath().
+     */
+    public function getLodgingProductsForStay(Request $request)
+    {
+        $filters = $request->array('filters');
+        $currencyCode = $this->resolveBaseCurrencyCode();
+
+        // Correlated lowest-rate subquery: MIN(sale_price) across the property's rooms' rate plans,
+        // restricted to positive sale_price EXACTLY like resolveLowestRate(). Used only to filter on
+        // the price bounds; the emitted lowest_rate value still comes from resolveLowestRate() so the
+        // card and the price filter always agree on the same number.
+        $lowestRateSql = '(select min(lrp.sale_price) from lodging_rate_plans lrp '
+            .'inner join lodging_rooms lr on lr.id = lrp.lodging_room_id '
+            .'where lr.lodging_product_id = lodging_products.id and lrp.sale_price > 0)';
+
+        $query = $this->lodging_product
+            ->where('is_active', true)
+            ->whereNotNull('slug')
+            // Inclusion rule (mirrors the feed): only properties with at least one rate plan whose
+            // sale_price > 0, so lowest_rate is never null. is_reservation_closed is NOT excluded
+            // (the card shows those with the Sold Out / line-through state, identical to the feed).
+            ->whereHas('rooms.ratePlans', fn ($q) => $q->where('sale_price', '>', 0));
+
+        $this->applyStayFilters($query, $filters, $lowestRateSql);
+
+        $properties = $query
+            ->with([
+                // Exactly the relations the feed card path (includeDetails = false) touches, so the
+                // payload shape matches and no lazy-load fires under Model::shouldBeStrict().
+                'media',
+                'rooms.ratePlans' => fn ($q) => $q
+                    ->whereNotNull('sale_price')
+                    ->where('sale_price', '>', 0),
+                'floor:id,name',
+                'floorStart:id,name',
+                'floorEnd:id,name',
+                'contentTranslations',
+            ])
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->simplePaginate(self::STAY_PER_PAGE)
+            ->withPath(route('website.stay.loadMore', ['filters' => $filters]));
+
+        $properties->getCollection()->transform(
+            fn ($product) => $this->buildLodgingFeedItem($product, $currencyCode, false)
+        );
+
+        return [
+            'lodgings' => $properties->items(),
+            'nextPageUrl' => $properties->nextPageUrl(),
+        ];
+    }
+
+    /**
+     * Filter option lists for the Stay page (single source of truth for the dropdowns). Enum values
+     * stay raw keys; the customer UI humanizes + translates them via __(humanize(value)).
+     */
+    public function getStayFilterOptions()
+    {
+        return [
+            'property_types' => self::PROPERTY_TYPES,
+            'room_types' => self::ROOM_TYPES,
+            'view_types' => self::VIEW_TYPES,
+            'parking_types' => self::PARKING_TYPES,
+            'cancellation_policies' => self::CANCELLATION_POLICY_NAMES,
+            'amenities' => $this->lodging_amenity
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get(['id', 'name', 'icon', 'category']),
+        ];
+    }
+
+    /**
+     * Apply the Stay filters additively (only when present). Each numeric/relation filter is an
+     * independent whereHas: a property matches if it has at least one room / rate plan / policy that
+     * satisfies that filter. distinct grouping is unnecessary because whereHas uses EXISTS subqueries
+     * (no row duplication).
+     */
+    private function applyStayFilters($query, array $filters, string $lowestRateSql): void
+    {
+        if (blank($filters)) {
+            return;
+        }
+
+        // Price (lowest_rate bounds via the correlated MIN(sale_price) subquery). Unchanged.
+        $priceMin = $this->stayNumericFilter($filters['price_min'] ?? null);
+        $priceMax = $this->stayNumericFilter($filters['price_max'] ?? null);
+
+        if (! is_null($priceMin)) {
+            $query->whereRaw("$lowestRateSql >= ?", [$priceMin]);
+        }
+        if (! is_null($priceMax)) {
+            $query->whereRaw("$lowestRateSql <= ?", [$priceMax]);
+        }
+
+        // Property type (multi) on the product itself. Unchanged.
+        $propertyTypes = $this->stayArrayFilter($filters['property_types'] ?? null, self::PROPERTY_TYPES);
+        if (! blank($propertyTypes)) {
+            $query->whereIn('property_type', $propertyTypes);
+        }
+
+        // ---- Collect ALL room-level conditions into ONE whereHas('rooms') ----
+        // Previously each room filter created its own correlated EXISTS subquery (10 filters =
+        // 10 dependent subqueries per product row). Folding them into a single whereHas means a
+        // SINGLE EXISTS that the (lodging_product_id, is_available) index can drive. It also tightens
+        // the semantics: ONE available room must satisfy every selected room condition (Airbnb-style),
+        // instead of different rooms each satisfying a different filter.
+        $roomConditions = [];
+
+        $roomTypes = $this->stayArrayFilter($filters['room_types'] ?? null, self::ROOM_TYPES);
+        if (! blank($roomTypes)) {
+            $roomConditions[] = fn ($q) => $q->whereIn('room_type', $roomTypes);
+        }
+
+        $viewTypes = $this->stayArrayFilter($filters['view_types'] ?? null, self::VIEW_TYPES);
+        if (! blank($viewTypes)) {
+            $roomConditions[] = fn ($q) => $q->whereIn('view_type', $viewTypes);
+        }
+
+        foreach ([
+            'bedrooms' => 'bedrooms_count',
+            'beds' => 'beds_count',
+            'bathrooms' => 'bathrooms_count',
+            'guests' => 'max_guests',
+        ] as $param => $column) {
+            $min = $this->stayNumericFilter($filters[$param] ?? null);
+            if (! is_null($min) && $min > 0) {
+                $roomConditions[] = fn ($q) => $q->where($column, '>=', $min);
+            }
+        }
+
+        foreach ([
+            'pets_allowed' => 'pets_allowed',
+            'private_bathroom' => 'is_bathroom_private',
+            'bathtub' => 'has_bathtub',
+            'jacuzzi' => 'has_jacuzzi',
+            'shower_booth' => 'has_shower_booth',
+            'smoking_allowed' => 'is_smoking_allowed',
+            'children_allowed' => 'children_allowed',
+        ] as $param => $column) {
+            if ($this->stayBoolFilter($filters[$param] ?? null)) {
+                $roomConditions[] = fn ($q) => $q->where($column, true);
+            }
+        }
+
+        // Room-scoped rate-plan conditions (breakfast / cancellable). Both must hold on the SAME
+        // available room. Each is a nested whereHas('ratePlans') inside the single room subquery.
+        $ratePlanConditions = [];
+        if ($this->stayBoolFilter($filters['breakfast'] ?? null)) {
+            $ratePlanConditions[] = fn ($rp) => $rp->where('breakfast_included', true);
+        }
+        if ($this->stayBoolFilter($filters['cancellable'] ?? null)) {
+            $ratePlanConditions[] = fn ($rp) => $rp->where('is_cancellable', true);
+        }
+
+        if (! blank($roomConditions) || ! blank($ratePlanConditions)) {
+            $query->whereHas('rooms', function ($q) use ($roomConditions, $ratePlanConditions) {
+                $q->where('is_available', true);
+
+                foreach ($roomConditions as $apply) {
+                    $apply($q);
+                }
+
+                foreach ($ratePlanConditions as $applyRp) {
+                    $q->whereHas('ratePlans', $applyRp);
+                }
+            });
+        }
+
+        // Amenities (multi): product OR room pivot, ANY of the selected ids. Unchanged.
+        $amenityIds = array_values(array_filter(array_map('intval', $this->stayArrayFilter($filters['amenities'] ?? null))));
+        if (! blank($amenityIds)) {
+            $query->where(function ($q) use ($amenityIds) {
+                $q->whereHas('amenities', fn ($sub) => $sub->whereIn('lodging_amenities.id', $amenityIds))
+                    ->orWhereHas('rooms.amenities', fn ($sub) => $sub
+                        ->whereIn('lodging_amenities.id', $amenityIds)
+                        ->where('lodging_rooms.is_available', true));
+            });
+        }
+
+        // Parking policy. Unchanged.
+        if ($this->stayBoolFilter($filters['free_parking'] ?? null)) {
+            $query->whereHas('parkingPolicy', fn ($q) => $q
+                ->where('parking_available', true)
+                ->where('parking_free', true));
+        }
+
+        if ($this->stayBoolFilter($filters['ev_charging'] ?? null)) {
+            $query->whereHas('parkingPolicy', fn ($q) => $q->where('ev_charging_available', true));
+        }
+
+        $parkingTypes = $this->stayArrayFilter($filters['parking_types'] ?? null, self::PARKING_TYPES);
+        if (! blank($parkingTypes)) {
+            $query->whereHas('parkingPolicy', fn ($q) => $q->whereIn('parking_type', $parkingTypes));
+        }
+
+        // Check-in. Unchanged.
+        if ($this->stayBoolFilter($filters['self_checkin'] ?? null)) {
+            $query->whereHas('checkinPolicy', fn ($q) => $q->where(function ($sub) {
+                $sub->where('self_checkin_available', true)
+                    ->orWhere('contactless_checkin_available', true);
+            }));
+        }
+
+        // Cancellation policy (multi). Unchanged.
+        $cancellationPolicies = $this->stayArrayFilter($filters['cancellation_policies'] ?? null, self::CANCELLATION_POLICY_NAMES);
+        if (! blank($cancellationPolicies)) {
+            $query->whereHas('cancellationPolicy', fn ($q) => $q->whereIn('policy_name', $cancellationPolicies));
+        }
+    }
+
+    /** Normalize a scalar numeric filter (handles GET-string vs POST-number). Null if absent/invalid. */
+    private function stayNumericFilter($value): ?float
+    {
+        if ($value === null || $value === '' || is_array($value)) {
+            return null;
+        }
+
+        return is_numeric($value) ? (float) $value : null;
+    }
+
+    /** Normalize a boolean filter (true / "true" / "1" / 1 are on; "0" / "false" / absent are off). */
+    private function stayBoolFilter($value): bool
+    {
+        if (is_array($value)) {
+            return false;
+        }
+
+        return filter_var($value, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /** Normalize a multi-select filter to a clean array, optionally constrained to an allow-list. */
+    private function stayArrayFilter($value, ?array $allowed = null): array
+    {
+        if (blank($value)) {
+            return [];
+        }
+
+        $values = is_array($value) ? $value : [$value];
+        $values = array_values(array_filter($values, fn ($v) => $v !== null && $v !== ''));
+
+        if (! is_null($allowed)) {
+            $values = array_values(array_intersect($values, $allowed));
+        }
+
+        return $values;
     }
 
     public function getAllLodgingProducts(Request $request)

@@ -15,7 +15,7 @@ class HomeController extends Controller
 
         $previous_url = url()->previous();
 
-        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks')) {
+        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks') && ! Str::of($previous_url)->contains('stay')) {
             $previous_url = null;
         }
 

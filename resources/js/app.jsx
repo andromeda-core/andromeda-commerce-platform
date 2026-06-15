@@ -10,9 +10,13 @@ router.on('before', (event) => {
         const origin = window.location.pathname + window.location.search;
         const target = event.detail?.visit?.url?.pathname || '';
 
-        const originIsShopOrBookmarks = origin.includes('/shop') || origin.includes('/bookmarks');
+        const originIsShopOrBookmarks =
+            origin.includes('/shop') || origin.includes('/bookmarks') || origin.includes('/stay');
 
-        const targetIsFeedItem = target.startsWith('/post/') || target.startsWith('/product/');
+        const targetIsFeedItem =
+            target.startsWith('/post/') ||
+            target.startsWith('/product/') ||
+            target.startsWith('/lodging/');
 
         if (originIsShopOrBookmarks && targetIsFeedItem) {
             sessionStorage.setItem('andromeda_prev_url', origin);

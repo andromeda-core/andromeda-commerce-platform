@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\Dashboard\AttributionRewardController;
-use App\Http\Controllers\Dashboard\InternalProductImageController;
 use App\Http\Controllers\Dashboard\BatchController;
 use App\Http\Controllers\Dashboard\BookmarkController;
 use App\Http\Controllers\Dashboard\CategoryController;
@@ -15,6 +14,7 @@ use App\Http\Controllers\Dashboard\DataDeletionRequestController;
 use App\Http\Controllers\Dashboard\DistributorController;
 use App\Http\Controllers\Dashboard\FloorController;
 use App\Http\Controllers\Dashboard\HomeController;
+use App\Http\Controllers\Dashboard\InternalProductImageController;
 use App\Http\Controllers\Dashboard\InventoryController;
 use App\Http\Controllers\Dashboard\InventoryVerificationController;
 use App\Http\Controllers\Dashboard\LanguageController;
@@ -24,10 +24,10 @@ use App\Http\Controllers\Dashboard\OrderAddressChangeRequestController;
 use App\Http\Controllers\Dashboard\OrderCancelationRequestController;
 use App\Http\Controllers\Dashboard\OrderController;
 use App\Http\Controllers\Dashboard\OrderCourierCompanyController;
-use App\Http\Controllers\Dashboard\PriceRangeController;
 use App\Http\Controllers\Dashboard\OrderRefundController;
 use App\Http\Controllers\Dashboard\PackageRecordingController;
 use App\Http\Controllers\Dashboard\PostController;
+use App\Http\Controllers\Dashboard\PriceRangeController;
 use App\Http\Controllers\Dashboard\ProductLinkController;
 use App\Http\Controllers\Dashboard\ProfileController;
 use App\Http\Controllers\Dashboard\RewardPointController;
@@ -57,10 +57,10 @@ use App\Http\Controllers\Website\DataDeletionRequestController as WebsiteDataDel
 use App\Http\Controllers\Website\GlobalFilterController;
 use App\Http\Controllers\Website\GlobalSearchController;
 use App\Http\Controllers\Website\HomeController as WebsiteHomeController;
+use App\Http\Controllers\Website\LodgingReservationController as WebsiteLodgingReservationController;
 use App\Http\Controllers\Website\NotificationController;
 use App\Http\Controllers\Website\OrderCancelationRequestController as WebsiteOrderCancelationRequestController;
 use App\Http\Controllers\Website\OrderController as WebsiteOrderController;
-use App\Http\Controllers\Website\LodgingReservationController as WebsiteLodgingReservationController;
 use App\Http\Controllers\Website\PostController as WebsitePostController;
 use App\Http\Controllers\Website\PrivacyPolicyController;
 use App\Http\Controllers\Website\ProductController;
@@ -69,12 +69,13 @@ use App\Http\Controllers\Website\ReturnPolicyController as WebsiteReturnPolicyCo
 use App\Http\Controllers\Website\ShippingAddressController;
 use App\Http\Controllers\Website\ShippingPolicyController;
 use App\Http\Controllers\Website\ShopController;
+use App\Http\Controllers\Website\StayController;
 use App\Http\Controllers\Website\TermsOfServiceController;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 use Illuminate\Support\Str;
+use Inertia\Inertia;
 
 // Home
 Route::get('/', [WebsiteHomeController::class, 'index'])->name('home');
@@ -100,27 +101,24 @@ Route::group(['as' => 'website.'], function () {
         //     // 'floor'         => request('floor'),
         // ]);
 
-
-
         // $url = url('/') . '?' . http_build_query($query);
 
         $previous_url = url()->previous();
 
-        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks')) {
+        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks') && ! Str::of($previous_url)->contains('stay')) {
             $previous_url = null;
         }
+
         return Inertia::render('Website/Home/index', [
             'previous_url' => $previous_url,
             'direct_post' => [
                 'public_id' => $public_id,
-                'slug'      => $slug,
+                'slug' => $slug,
             ],
         ]);
 
         // return redirect()->to($url, 301);
     })->name('post.findByPublicId');
-
-
 
     Route::get('/product/{public_id}/{slug?}', function ($public_id, $slug = null) {
         // $query = array_filter([
@@ -134,20 +132,20 @@ Route::group(['as' => 'website.'], function () {
 
         $previous_url = url()->previous();
 
-        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks')) {
+        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks') && ! Str::of($previous_url)->contains('stay')) {
             $previous_url = null;
         }
+
         return Inertia::render('Website/Home/index', [
             'previous_url' => $previous_url,
             'direct_smartphone' => [
                 'public_id' => $public_id,
-                'slug'      => $slug,
+                'slug' => $slug,
             ],
         ]);
 
         // return redirect()->to($url, 301);
     })->name('product.findByPublicId');
-
 
     // Stage 3.2 — public lodging property canonical route (renders the feed with a direct_lodging deep-link).
     Route::get('/lodging/{public_id}/{slug?}', function ($public_id, $slug = null) {
@@ -163,25 +161,23 @@ Route::group(['as' => 'website.'], function () {
         if ($slug !== $product->slug) {
             return redirect()->route('website.lodging.findByPublicId', [
                 'public_id' => $product->public_id,
-                'slug'      => $product->slug,
+                'slug' => $product->slug,
             ], 301);
         }
 
         $previous_url = url()->previous();
-
-        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks')) {
+        if (! Str::of($previous_url)->contains('shop') && ! Str::of($previous_url)->contains('bookmarks') && ! Str::of($previous_url)->contains('stay')) {
             $previous_url = null;
         }
 
         return Inertia::render('Website/Home/index', [
-            'previous_url'   => $previous_url,
+            'previous_url' => $previous_url,
             'direct_lodging' => [
                 'public_id' => $product->public_id,
-                'slug'      => $product->slug,
+                'slug' => $product->slug,
             ],
         ]);
     })->name('lodging.findByPublicId');
-
 
     // Posts
     Route::controller(WebsitePostController::class)->name('posts.')->group(function () {
@@ -293,7 +289,7 @@ Route::group(['as' => 'website.'], function () {
         Route::post('/orders/refund/withdrawl', 'refundWithdrawl')->name('refund.withdrawl');
         Route::post('/orders/re-order', 'reOrder')->name('re-order');
         Route::post('/orders/verify-imei', 'verifyOrderProduct')->name('verify');
-        Route::post('/orders/{order_no}/refund/upload-tracking-slip',  'uploadReturnTrackingSlip')->name('refund.upload-tracking-slip');
+        Route::post('/orders/{order_no}/refund/upload-tracking-slip', 'uploadReturnTrackingSlip')->name('refund.upload-tracking-slip');
     });
 
     // Lodging Reservation Routes (customer-facing). No UI here — Stage 3 wires the product page.
@@ -375,7 +371,9 @@ Route::group(['as' => 'website.'], function () {
     Route::match(['get', 'post'], '/shop', ShopController::class)->name('shop.index');
     Route::get('/shop/loadMore', [ShopController::class, 'loadMore'])->name('shop.loadMore');
 
-
+    // Stay Routes (public lodging browse grid; mirrors Shop)
+    Route::match(['get', 'post'], '/stay', StayController::class)->name('stay.index');
+    Route::get('/stay/loadMore', [StayController::class, 'loadMore'])->name('stay.loadMore');
 
     // Link Route
     Route::get('/link/{public_id?}', [AttributionController::class, 'entry'])->name('link.index');
@@ -586,7 +584,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/orders/shipping-label/{id?}', 'shippingLabelsIndex')->name('shipping-label');
         });
 
-
         // Order Courier Company Routes
         Route::resource('order-courier-companies', OrderCourierCompanyController::class)
             ->except(['show']);
@@ -773,11 +770,9 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/order-cancelations/update/{id?}', 'update')->name('update');
         });
 
-
         // Product Link Routes
         Route::resource('/attribution-links', ProductLinkController::class)->except(['show']);
         Route::delete('/attribution-links-deleteBySelection', [ProductLinkController::class, 'destroyBySelection'])->name('attribution-links.destroyBySelection');
-
 
         // Internal Product Images Routes
         Route::controller(InternalProductImageController::class)->name('internal-product-images.')->group(function () {
@@ -1048,7 +1043,6 @@ Route::middleware(['auth'])->group(function () {
                     Route::get('/dormancy-settings', 'dormancySettingIndex')->name('dormancy-setting.index');
                     Route::put('/dormancy-settings-save', 'dormancySettingSave')->name('dormancy-setting.save');
 
-
                     // Attribution Reward Setting Routes
                     Route::get('/attribution-reward-settings', 'attributionRewardSettingIndex')->name('attribution-reward-setting.index');
                     Route::put('/attribution-reward-settings-save', 'attributionRewardSettingSave')->name('attribution-reward-setting.save');
@@ -1109,7 +1103,6 @@ Route::post('/device-fingerprint', DeviceFingerPrintController::class)->name('de
 Route::post('/scanner/ai-decode', [OpenAiController::class, 'aiDecode'])
     ->name('scanner.ai-decode');
 
-
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 // Route::get('/debug-currency', function () {
@@ -1136,4 +1129,4 @@ Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 //         }),
 //     ];
 // });
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

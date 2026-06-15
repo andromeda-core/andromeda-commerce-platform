@@ -338,7 +338,7 @@ class ProductsRepository implements IProductsRepository
                     });
             })
             ->latest()
-            ->paginate(10)
+            ->simplePaginate(10)
             ->withPath(route('website.shop.loadMore', ['filters' => $filters, 'tag' => $request->input('tag'), 'category_id' => $category_id]));
 
         $smartphones->getCollection()->transform(function ($smartphone) {

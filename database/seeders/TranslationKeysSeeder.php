@@ -1737,7 +1737,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Free parking', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Early check-in', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Late check-out', 'created_at' => $now, 'updated_at' => $now],
-            ['key' => 'Free cancellation', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Cancellable', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Non-refundable', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Crypto accepted', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Same-day booking', 'created_at' => $now, 'updated_at' => $now],
@@ -1911,6 +1911,24 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Accessibility', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Step-free entrance', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Host-meet check-in', 'created_at' => $now, 'updated_at' => $now],
+
+            // Stay page (public lodging browse grid + filter panel). Clean ASCII; idempotent dedupe.
+            // (Price, Min, Max, Bedrooms, Beds, Bathrooms, Guests, Amenities, the booking/policy and
+            //  Group-B checkbox labels, all enum humanized labels and amenity names, Sold Out,
+            //  Loading, Loading More, Close, Cancellation Policy are already seeded above; reused.)
+            ['key' => 'Stay', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Filters', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Show results', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Clear all', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'More filters', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Property type', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Room type', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'View type', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Any', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Rooms and beds', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Booking and policy', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'No properties found', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Try adjusting your filters to see more stays.', 'created_at' => $now, 'updated_at' => $now],
         ];
 
         $existingKeys = \DB::table('translation_keys')

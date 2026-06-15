@@ -231,6 +231,38 @@ const Sidebar = ({
                             </Link>
                         </li>
 
+                        {/* Stay */}
+                        <li>
+                            <Link
+                                data-sidebar-link="true"
+                                title={__('Stay')}
+                                href={route('website.stay.index')}
+                                className={`text-md flex w-full items-center gap-3 rounded-md px-4 py-2.5 transition-colors ${
+                                    route().current() === 'website.stay.index'
+                                        ? 'menu-item-active'
+                                        : 'menu-item-inactive'
+                                }`}
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className={`size-6 text-main-text-light dark:text-main-text-dark`}
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="1.25"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="M2 20v-8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v8" />
+                                    <path d="M4 10V6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v4" />
+                                    <path d="M12 4v6" />
+                                    <path d="M2 18h20" />
+                                </svg>
+
+                                <span>{__('Stay')}</span>
+                            </Link>
+                        </li>
+
                         {/* Search */}
 
                         <li>

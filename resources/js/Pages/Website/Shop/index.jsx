@@ -476,16 +476,16 @@ const index = ({
                     className={`mx-auto w-full ${windowSize.width > 1024 ? 'pb-10' : 'pb-24'} max-w-[1400px]`}
                 >
                     {/* Navigation Tabs */}
-                    <div className="my-2 mb-6 w-full sm:mb-8">
+                    <div className="w-full my-2 mb-6 sm:mb-8">
                         {/* Headers */}
-                        <div className="mb-7 w-full">
+                        <div className="w-full mb-7">
                             <div className="relative grid w-full grid-cols-1 overflow-hidden">
-                                <div className="relative flex w-full items-center">
+                                <div className="relative flex items-center w-full">
                                     {/* Left Arrow */}
                                     {canCategoryScrollLeft && (
                                         <button
                                             onClick={scrollLeftCategory}
-                                            className="absolute left-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-1-light p-2 transition-all duration-200 hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                            className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
                                             style={{ left: '0px' }}
                                         >
                                             <svg
@@ -507,7 +507,7 @@ const index = ({
 
                                     <div
                                         ref={scrollContainerRef}
-                                        className="flex w-full flex-nowrap items-center gap-7 overflow-x-auto scroll-smooth scrollbar-none"
+                                        className="flex items-center w-full overflow-x-auto flex-nowrap gap-7 scroll-smooth scrollbar-none"
                                         style={{
                                             transform: 'translateZ(0)',
                                             WebkitOverflowScrolling: 'touch',
@@ -542,7 +542,7 @@ const index = ({
                                     {canCategoryScrollRight && (
                                         <button
                                             onClick={scrollRightCategory}
-                                            className="absolute right-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-1-light p-2 transition-all duration-200 hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                            className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -565,14 +565,14 @@ const index = ({
                         </div>
 
                         {/* Tabs Container */}
-                        <div className="relative mb-4 mt-6 w-full">
+                        <div className="relative w-full mt-6 mb-4">
                             <div className="relative grid w-full grid-cols-1 overflow-hidden">
-                                <div className="relative flex w-full items-center">
+                                <div className="relative flex items-center w-full">
                                     {/* Left Arrow */}
                                     {tabScrollState.canScrollLeft && windowSize.width <= 1024 && (
                                         <button
                                             onClick={scrollLeft}
-                                            className="absolute left-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-2-light p-2 transition-all duration-200 hover:scale-110 dark:bg-surface-3-dark md:flex"
+                                            className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex"
                                             style={{ left: '0px' }}
                                         >
                                             <svg
@@ -581,7 +581,7 @@ const index = ({
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={2}
                                                 stroke="currentColor"
-                                                className="size-4 text-gray-600 dark:text-sub-text-dark"
+                                                className="text-gray-600 size-4 dark:text-sub-text-dark"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -594,7 +594,7 @@ const index = ({
 
                                     {/* Scrollable Container */}
                                     <div
-                                        className="flex w-full flex-nowrap items-center gap-3 overflow-x-auto scroll-smooth scrollbar-none"
+                                        className="flex items-center w-full gap-3 overflow-x-auto flex-nowrap scroll-smooth scrollbar-none"
                                         ref={tabsContainerRef}
                                         style={{
                                             transform: 'translateZ(0)',
@@ -613,7 +613,7 @@ const index = ({
                                             >
                                                 <span>{__('Filter')}</span>
                                                 <svg
-                                                    className="h-5 w-5 sm:h-4 sm:w-4"
+                                                    className="w-5 h-5 sm:h-4 sm:w-4"
                                                     fill="none"
                                                     stroke="currentColor"
                                                     viewBox="0 0 24 24"
@@ -652,7 +652,7 @@ const index = ({
                                     {tabScrollState.canScrollRight && windowSize.width <= 1024 && (
                                         <button
                                             onClick={scrollRight}
-                                            className="absolute right-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-2-light p-2 transition-all duration-200 hover:scale-110 dark:bg-surface-3-dark md:flex"
+                                            className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-2-light hover:scale-110 dark:bg-surface-3-dark md:flex"
                                         >
                                             <svg
                                                 xmlns="http://www.w3.org/2000/svg"
@@ -660,7 +660,7 @@ const index = ({
                                                 viewBox="0 0 24 24"
                                                 strokeWidth={2}
                                                 stroke="currentColor"
-                                                className="size-4 text-black dark:text-sub-text-dark"
+                                                className="text-black size-4 dark:text-sub-text-dark"
                                             >
                                                 <path
                                                     strokeLinecap="round"
@@ -677,12 +677,12 @@ const index = ({
 
                     {/* No Results */}
                     {!isLoadingMore && productsData.length === 0 && (
-                        <div className="flex w-full flex-col items-center justify-center py-16 text-center">
+                        <div className="flex flex-col items-center justify-center w-full py-16 text-center">
                             <h3 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('No products found')}
                             </h3>
 
-                            <p className="mt-2 max-w-md text-sm text-sub-text-light dark:text-sub-text-dark">
+                            <p className="max-w-md mt-2 text-sm text-sub-text-light dark:text-sub-text-dark">
                                 {__(
                                     'Try adjusting your filters or removing some selections to see more results.',
                                 )}
@@ -691,7 +691,7 @@ const index = ({
                             {hasAppliedFilters() && (
                                 <button
                                     onClick={() => resetFilters()}
-                                    className="mt-5 flex items-center justify-center text-center text-sm font-semibold text-main-text-light underline dark:text-main-text-dark"
+                                    className="flex items-center justify-center mt-5 text-sm font-semibold text-center underline text-main-text-light dark:text-main-text-dark"
                                 >
                                     {isFilterResetting ? <Spinner /> : __('Clear all filters')}
                                 </button>
@@ -704,7 +704,7 @@ const index = ({
                         {productsData.map((product) => (
                             <div
                                 key={product.id}
-                                className="group w-full cursor-pointer overflow-hidden"
+                                className="w-full overflow-hidden cursor-pointer group"
                                 onClick={() =>
                                     router.get(
                                         route('home') + generateSmartphoneURL(product, true, true),
@@ -712,7 +712,7 @@ const index = ({
                                 }
                             >
                                 {/* Product Image / Text Container - */}
-                                <div className="relative aspect-square w-full overflow-hidden rounded-md bg-surface-2-light text-main-text-light transition-all duration-500 dark:bg-surface-2-dark dark:text-main-text-dark lg:group-hover:scale-105">
+                                <div className="relative w-full overflow-hidden transition-all duration-500 rounded-md aspect-square bg-surface-2-light text-main-text-light dark:bg-surface-2-dark dark:text-main-text-dark lg:group-hover:scale-105">
                                     {product?.image || product?.video_thumbnail ? (
                                         <img
                                             src={
@@ -721,13 +721,13 @@ const index = ({
                                                 Placeholder
                                             }
                                             alt={product?.name}
-                                            className="h-full w-full object-cover"
+                                            className="object-cover w-full h-full"
                                             onError={(e) => {
                                                 e.target.src = Placeholder;
                                             }}
                                         />
                                     ) : (
-                                        <div className="flex h-full w-full items-start justify-center overflow-hidden p-3 sm:p-4">
+                                        <div className="flex items-start justify-center w-full h-full p-3 overflow-hidden sm:p-4">
                                             <div
                                                 className="line-clamp-[10] w-full overflow-hidden text-ellipsis break-words text-left text-[14px] leading-relaxed opacity-90"
                                                 dangerouslySetInnerHTML={{
@@ -740,11 +740,11 @@ const index = ({
 
                                 {/* Product Info */}
                                 <div className="w-full space-y-1 p-2.5 sm:p-3 lg:p-4">
-                                    <h3 className="line-clamp-1 text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                    <h3 className="text-sm font-medium line-clamp-1 text-main-text-light dark:text-main-text-dark">
                                         {product?.name}
                                     </h3>
 
-                                    <p className="line-clamp-1 text-xs font-medium text-sub-text-light dark:text-sub-text-dark">
+                                    <p className="text-xs font-medium line-clamp-1 text-sub-text-light dark:text-sub-text-dark">
                                         {product?.condition}, {product?.capacity}, {product.color}
                                     </p>
 
@@ -795,7 +795,7 @@ const index = ({
                         pointerEvents: isFilterOpen ? 'auto' : 'none',
                         transition: 'opacity 120ms ease, transform 120ms ease',
                     }}
-                    className="rounded-md border border-surface-3-light bg-surface-1-light shadow-md dark:border-surface-3-dark dark:bg-surface-1-dark"
+                    className="border rounded-md shadow-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-1-dark"
                 >
                     <div className="max-h-[50vh] space-y-4 overflow-y-auto p-3 scrollbar">
                         {filterCategories.map((category) => (
@@ -807,7 +807,7 @@ const index = ({
                                     {category.options.map((option) => (
                                         <label
                                             key={option.key}
-                                            className="flex cursor-pointer items-center space-x-2"
+                                            className="flex items-center space-x-2 cursor-pointer"
                                         >
                                             <input
                                                 type="checkbox"
@@ -846,8 +846,10 @@ const index = ({
                                                 )}
                                             </div>
 
-                                            <span className="flex items-center gap-1 text-sm text-sub-text-light dark:text-sub-text-dark">
-                                                <span>{option.label}</span>
+                                            <span className="flex flex-col text-sm text-sub-text-light dark:text-sub-text-dark">
+                                                <span className="flex items-center gap-1">
+                                                    <span>{option.label}</span>
+                                                </span>
                                                 {category.id === 'price_range' &&
                                                     option.value != null && (
                                                         <DisplayPrice
@@ -863,7 +865,7 @@ const index = ({
                                 </div>
                             </div>
                         ))}
-                        <div className="flex gap-2 border-t border-surface-1-light pt-4 dark:border-surface-1-dark">
+                        <div className="flex gap-2 pt-4 border-t border-surface-1-light dark:border-surface-1-dark">
                             <button
                                 disabled={!hasAppliedFilters()}
                                 onClick={() => resetFilters()}
