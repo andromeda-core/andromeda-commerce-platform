@@ -2971,7 +2971,7 @@ const DesktopFeed = ({
                                                                     1)) && (
                                                             <div
                                                                 ref={MediaThumbRef}
-                                                                className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                                                                className="flex items-center gap-2 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
                                                             >
                                                                 {/* Render thumbnails */}
                                                                 {visibleThumbs.map(
@@ -3749,7 +3749,7 @@ const DesktopFeed = ({
                                                                     .length > 1)) && (
                                                             <div
                                                                 ref={MediaThumbRef}
-                                                                className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                                                                className="flex items-center gap-2 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
                                                             >
                                                                 {/* Render thumbnails */}
                                                                 {visibleThumbs.map(
@@ -4920,7 +4920,7 @@ const DesktopFeed = ({
                                                             1)) && (
                                                     <div
                                                         ref={MediaThumbRef}
-                                                        className="flex items-center gap-2 mb-3 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
+                                                        className="flex items-center gap-2 overflow-x-auto scrollbar-none scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700"
                                                     >
                                                         {/* Render thumbnails */}
                                                         {visibleThumbs.map((mediaItem, index) => {
