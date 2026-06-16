@@ -7,6 +7,7 @@ import { Head, useForm } from '@inertiajs/react';
 import React from 'react';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { ChevronLeft } from 'lucide-react';
+import goBackOrHome from '@/Helpers/backNavigationHelper';
 
 const index = () => {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -49,7 +50,7 @@ const index = () => {
                         <div className="relative px-6 mx-auto my-2 lg:max-w-6xl sm:max-w-3xl">
 
                             <button
-                                onClick={() => window.history.back()}
+                                onClick={goBackOrHome}
                                 className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
                             >
                                 <ChevronLeft />

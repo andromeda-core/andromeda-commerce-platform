@@ -13,6 +13,7 @@ import { createPortal } from 'react-dom';
 import Cropper from 'react-easy-crop';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { ChevronLeft } from 'lucide-react';
+import goBackOrHome from '@/Helpers/backNavigationHelper';
 
 const index = ({ user, countries }) => {
     const [infoMessage, setInfoMessage] = useState('');
@@ -396,7 +397,7 @@ const index = ({ user, countries }) => {
                     <div className="my-2">
 
                         <button
-                            onClick={() => window.history.back()}
+                            onClick={goBackOrHome}
                             className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
                         >
                             <ChevronLeft />

@@ -5,6 +5,7 @@ import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link, usePage } from '@inertiajs/react';
 import { ChevronLeft } from 'lucide-react';
 import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import goBackOrHome from '@/Helpers/backNavigationHelper';
 
 const index = ({ privacy_policy }) => {
     const [activeSection, setActiveSection] = useState(null);
@@ -96,7 +97,7 @@ const index = ({ privacy_policy }) => {
                         <div className="relative mx-auto my-2 lg:max-w-6xl sm:max-w-3xl ">
 
                             <button
-                                onClick={() => window.history.back()}
+                                onClick={goBackOrHome}
                                 className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors lg:hidden text-main-text-light lg:hover:text-main-text-light/80 dark:text-main-text-dark dark:lg:hover:text-main-text-dark/80"
                             >
                                 <ChevronLeft />

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { router } from '@inertiajs/react';
 import { useFeedCleanupStore } from '@/Hooks/useFeedCleanupStore';
+import goBackOrHome from '@/Helpers/backNavigationHelper';
 
 const DesktopPwaBackButton = ({ __, CustomClassName }) => {
     const [show, setShow] = useState(false);
@@ -24,19 +24,7 @@ const DesktopPwaBackButton = ({ __, CustomClassName }) => {
         useFeedCleanupStore.getState().setShouldCleanupBrowserHistory(false);
     } catch (e) {}
 
-    const urlBefore = window.location.href;
-
-    const onPop = () => {
-        window.removeEventListener('popstate', onPop);
-        if (window.location.href === urlBefore) {
-            window.history.back();
-        }
-    };
-
-    window.addEventListener('popstate', onPop);
-    window.history.back();
-
-    setTimeout(() => window.removeEventListener('popstate', onPop), 600);
+   goBackOrHome();
 };
 
     return (

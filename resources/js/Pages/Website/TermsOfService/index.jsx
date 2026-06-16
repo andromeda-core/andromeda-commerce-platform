@@ -4,6 +4,7 @@ import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, Link } from '@inertiajs/react';
 import { ChevronLeft } from 'lucide-react';
 import React, { Fragment, useEffect, useMemo, useRef, useState } from 'react';
+import goBackOrHome from '@/Helpers/backNavigationHelper';
 
 const index = ({ terms_of_service }) => {
     const [activeSection, setActiveSection] = useState(null);
@@ -92,8 +93,8 @@ const index = ({ terms_of_service }) => {
 
                         <div className="relative mx-auto my-2 sm:max-w-3xl lg:max-w-6xl">
                             <button
-                                onClick={() => window.history.back()}
-                                className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-main-text-light transition-colors dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
+                                onClick={goBackOrHome}
+                                className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors text-main-text-light dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                             >
                                 <ChevronLeft />
                             </button>
@@ -102,15 +103,15 @@ const index = ({ terms_of_service }) => {
                                 {__('Terms Of Service')}
                             </h1>
 
-                            <p className="dark:sub-text-dark mt-1 max-w-3xl text-sm text-sub-text-light">
+                            <p className="max-w-3xl mt-1 text-sm dark:sub-text-dark text-sub-text-light">
                                 {__(
                                     'These Terms govern your access to and use of this website and all related services, including purchases, payments, and compliance obligations.',
                                 )}
                             </p>
 
-                            <div className="mt-5 flex flex-wrap gap-4">
+                            <div className="flex flex-wrap gap-4 mt-5">
                                 <div className="flex items-center gap-2 rounded-full bg-surface-1-light px-3 py-1.5 dark:bg-surface-1-dark">
-                                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                                    <div className="w-2 h-2 bg-green-500 rounded-full" />
 
                                     <span className="text-sm font-medium text-sub-text-light dark:text-sub-text-dark">
                                         {__('Last Updated')}: {terms_of_service?.human_updated_at}
@@ -129,7 +130,7 @@ const index = ({ terms_of_service }) => {
                                     ref={tocRef}
                                     className="h-[calc(100vh-7rem)] overflow-y-auto overscroll-contain rounded-md bg-surface-1-light p-6 scrollbar-thin scrollbar-none dark:bg-surface-1-dark dark:backdrop-blur-xl"
                                 >
-                                    <h3 className="text-md mb-4 px-2 font-semibold text-main-text-light dark:text-main-text-dark">
+                                    <h3 className="px-2 mb-4 font-semibold text-md text-main-text-light dark:text-main-text-dark">
                                         {__('Contents')}
                                     </h3>
                                     <nav className="space-y-1">
@@ -169,7 +170,7 @@ const index = ({ terms_of_service }) => {
                         {/* Content */}
                         <main className="flex-1 space-y-6">
                             {/* Company Info */}
-                            <section className="rounded-md bg-surface-1-light p-8 dark:bg-surface-1-dark dark:backdrop-blur-xl">
+                            <section className="p-8 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl">
                                 <p className="leading-relaxed text-sub-text-light dark:text-sub-text-dark">
                                     {__(
                                         'These Terms of Service (“Terms”) govern your access to and use of the website and services operated by',
@@ -184,7 +185,7 @@ const index = ({ terms_of_service }) => {
                                 </p>
                             </section>
 
-                            <section className="w-auto rounded-md bg-surface-1-light p-8 dark:bg-surface-1-dark dark:backdrop-blur-xl">
+                            <section className="w-auto p-8 rounded-md bg-surface-1-light dark:bg-surface-1-dark dark:backdrop-blur-xl">
                                 {dynamicSections?.map((section, index) => {
                                     return (
                                         <Fragment key={index}>
@@ -192,7 +193,7 @@ const index = ({ terms_of_service }) => {
                                                 key={section?.id}
                                                 id={section?.id}
                                                 data-section={section?.id}
-                                                className="mb-8 scroll-mt-32 break-words break-all"
+                                                className="mb-8 break-words break-all scroll-mt-32"
                                             >
                                                 <h2 className="mb-3 text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                                     {index + 1}. {section.title}
@@ -226,7 +227,7 @@ const index = ({ terms_of_service }) => {
                                                         data-section="data_protection_officer"
                                                         className="scroll-mt-10"
                                                     >
-                                                        <div className="mb-3 flex items-center gap-4">
+                                                        <div className="flex items-center gap-4 mb-3">
                                                             <h2 className="text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                                                                 {index + 2}.{' '}
                                                                 {__(
@@ -236,7 +237,7 @@ const index = ({ terms_of_service }) => {
                                                         </div>
 
                                                         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                                                            <div className="break-words rounded-md bg-backgroundLight px-4 py-3 dark:bg-surface-2-dark">
+                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
                                                                 <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">
                                                                     {__('Name')}
                                                                 </p>
@@ -245,7 +246,7 @@ const index = ({ terms_of_service }) => {
                                                                 </p>
                                                             </div>
 
-                                                            <div className="break-words rounded-md bg-backgroundLight px-4 py-3 dark:bg-surface-2-dark">
+                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
                                                                 <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">
                                                                     {__('Email Address')}
                                                                 </p>
@@ -254,7 +255,7 @@ const index = ({ terms_of_service }) => {
                                                                 </p>
                                                             </div>
 
-                                                            <div className="break-words rounded-md bg-backgroundLight px-4 py-3 dark:bg-surface-2-dark">
+                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
                                                                 <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">
                                                                     {__('Phone Number')}
                                                                 </p>
@@ -264,8 +265,8 @@ const index = ({ terms_of_service }) => {
                                                             </div>
                                                         </div>
 
-                                                        <div className="mt-3 grid grid-cols-1 gap-3">
-                                                            <div className="break-words rounded-md bg-backgroundLight px-4 py-3 dark:bg-surface-2-dark">
+                                                        <div className="grid grid-cols-1 gap-3 mt-3">
+                                                            <div className="px-4 py-3 break-words rounded-md bg-backgroundLight dark:bg-surface-2-dark">
                                                                 <p className="text-xs font-medium text-main-text-light dark:text-main-text-dark">
                                                                     {__('Address')}
                                                                 </p>
@@ -283,19 +284,19 @@ const index = ({ terms_of_service }) => {
                             </section>
 
                             {/* Footer CTA */}
-                            <section className="rounded-md bg-surface-1-light p-8 backdrop-blur-xl dark:bg-surface-1-dark">
+                            <section className="p-8 rounded-md bg-surface-1-light backdrop-blur-xl dark:bg-surface-1-dark">
                                 <div className="text-center">
                                     <h3 className="mb-4 text-xl font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('Have Questions About Your Privacy')}?
                                     </h3>
-                                    <p className="mx-auto mb-6 max-w-xl font-medium text-sub-text-light dark:text-sub-text-dark">
+                                    <p className="max-w-xl mx-auto mb-6 font-medium text-sub-text-light dark:text-sub-text-dark">
                                         {__(
                                             "We're here to help. Contact our Data Protection Ofﬁcer for any privacy-related inquiries.",
                                         )}
                                     </p>
                                     <Link
                                         href={route('website.contact.index')}
-                                        className="inline-flex w-full items-center justify-center rounded-md bg-main-text-light px-6 py-3 font-semibold text-main-text-dark transition-all hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 sm:w-auto lg:px-20"
+                                        className="inline-flex items-center justify-center w-full px-6 py-3 font-semibold transition-all rounded-md bg-main-text-light text-main-text-dark hover:bg-main-text-light/80 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80 sm:w-auto lg:px-20"
                                     >
                                         {__('Contact Us')}
                                     </Link>

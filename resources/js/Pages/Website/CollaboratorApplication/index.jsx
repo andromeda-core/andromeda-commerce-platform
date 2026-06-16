@@ -10,7 +10,7 @@ import { Head } from '@inertiajs/react';
 import axios from 'axios';
 import { ChevronLeft } from 'lucide-react';
 import React, { useState } from 'react';
-
+import goBackOrHome from '@/Helpers/backNavigationHelper';
 // Canonical English option values. Display labels are translated with t(),
 // but the value submitted to the server (and shown in the admin email) stays English.
 const OPTIONS = {
@@ -312,13 +312,13 @@ const index = () => {
                 {OPTIONS[field].map((option) => (
                     <label
                         key={option}
-                        className="flex cursor-pointer items-center gap-2 text-sm text-main-text-light dark:text-main-text-dark"
+                        className="flex items-center gap-2 text-sm cursor-pointer text-main-text-light dark:text-main-text-dark"
                     >
                         <input
                             type="checkbox"
                             checked={form[field].includes(option)}
                             onChange={() => toggleArrayValue(field, option)}
-                            className="h-4 w-4 rounded border-surface-3-light accent-main-text-light focus:ring-0 dark:border-surface-3-dark dark:accent-main-text-dark"
+                            className="w-4 h-4 rounded border-surface-3-light accent-main-text-light focus:ring-0 dark:border-surface-3-dark dark:accent-main-text-dark"
                         />
                         <span>{t(option)}</span>
                     </label>
@@ -328,12 +328,12 @@ const index = () => {
     );
 
     const renderAgreement = ({ field, text }) => (
-        <label className="flex cursor-pointer items-start gap-3">
+        <label className="flex items-start gap-3 cursor-pointer">
             <input
                 type="checkbox"
                 checked={!!form[field]}
                 onChange={(e) => setData(field, e.target.checked)}
-                className="mt-1 size-4 shrink-0 cursor-pointer rounded border-gray-300 text-main-text-light focus:ring-0 dark:border-gray-600"
+                className="mt-1 border-gray-300 rounded cursor-pointer size-4 shrink-0 text-main-text-light focus:ring-0 dark:border-gray-600"
             />
             <span className="text-sm leading-relaxed text-main-text-light dark:text-main-text-dark">
                 {t(text)}
@@ -343,16 +343,19 @@ const index = () => {
     );
 
     const renderSection = ({ title, description, children }) => (
-        <section className="mb-5 rounded-md bg-surface-1-light px-4 py-5 dark:bg-surface-1-dark sm:px-6">
+        <section className="px-4 py-5 mb-5 rounded-md bg-surface-1-light dark:bg-surface-1-dark sm:px-6">
             <h2 className="text-[18px] font-semibold text-main-text-light dark:text-main-text-dark">
                 {t(title)}
             </h2>
-            <p className="mb-4 mt-1 text-sm text-sub-text-light dark:text-sub-text-dark">
+            <p className="mt-1 mb-4 text-sm text-sub-text-light dark:text-sub-text-dark">
                 {t(description)}
             </p>
             <div className="space-y-2">{children}</div>
         </section>
     );
+
+
+
 
     return (
         <MainLayout>
@@ -379,12 +382,12 @@ const index = () => {
             )}
 
             <div className="sm:px-6 lg:px-8">
-                <div className="mx-auto pb-24 sm:max-w-4xl lg:mt-6 lg:max-w-7xl">
+                <div className="pb-24 mx-auto sm:max-w-4xl lg:mt-6 lg:max-w-7xl">
                     {/* Header */}
-                    <div className="relative mx-auto my-2 px-6 sm:max-w-3xl lg:max-w-4xl">
+                    <div className="relative px-6 mx-auto my-2 sm:max-w-3xl lg:max-w-4xl">
                         <button
-                            onClick={() => window.history.back()}
-                            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-main-text-light transition-colors dark:text-main-text-dark lg:hidden"
+                            onClick={goBackOrHome}
+                            className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors text-main-text-light dark:text-main-text-dark lg:hidden"
                         >
                             <ChevronLeft />
                         </button>
@@ -397,14 +400,14 @@ const index = () => {
                             {t('Collaborator Application')}
                         </h1>
 
-                        <p className="mt-2 max-w-2xl text-sm text-sub-text-light dark:text-sub-text-dark">
+                        <p className="max-w-2xl mt-2 text-sm text-sub-text-light dark:text-sub-text-dark">
                             {t(
                                 'Apply to become an official collaborator. Approved collaborators may receive a collaborator code and may earn platform points and commission when eligible customers purchase using that code.',
                             )}
                         </p>
                     </div>
 
-                    <div className="mx-auto mt-6 px-6 sm:max-w-3xl lg:max-w-4xl">
+                    <div className="px-6 mx-auto mt-6 sm:max-w-3xl lg:max-w-4xl">
                         <form onSubmit={handleSubmit} dir={isRtl ? 'rtl' : 'ltr'} noValidate>
                             {/* Honeypot: visually hidden, must stay empty for real users. */}
                             <input

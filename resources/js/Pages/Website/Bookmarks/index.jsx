@@ -11,6 +11,7 @@ import { useTranslation } from '@/Hooks/useTranslation';
 import BookmarkStatusChangedModal from '@/Components/BookmarkStatusChangedModal';
 import useWindowSize from '@/Hooks/useWindowSize';
 import { ChevronLeft } from 'lucide-react';
+import goBackOrHome from '@/Helpers/backNavigationHelper';
 
 export default function index() {
     const [bookmarkedPosts, setBookmarkedPosts] = useState([]);
@@ -167,7 +168,7 @@ export default function index() {
                     <div className="px-6 mx-auto max-w-8xl lg:px-8">
                         <div className="my-2 lg:my-7">
                             <button
-                                onClick={() => window.history.back()}
+                                onClick={goBackOrHome}
                                 className="inline-flex items-center gap-2 mb-4 text-sm font-medium transition-colors text-main-text-light dark:text-main-text-dark lg:hidden lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                             >
                                 <ChevronLeft />
