@@ -25,6 +25,7 @@ class GoogleGeoCoderService
             'location' => "$lat,$lng",
             'radius' => 50,
             'key' => $this->apiKey,
+            'language' => 'en',
         ]);
 
         if ($response->failed()) {
@@ -42,6 +43,8 @@ class GoogleGeoCoderService
         $details = Http::get('https://maps.googleapis.com/maps/api/place/details/json', [
             'place_id' => $placeId,
             'key' => $this->apiKey,
+            'language' => 'en',
+
         ]);
 
         if ($details->failed()) {
@@ -60,7 +63,7 @@ class GoogleGeoCoderService
     public function autoCompleteLocations(Request $request)
     {
 
-        $url = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input={$request->get('search')}&key={$this->apiKey}";
+        $url = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input={$request->get('search')}&key={$this->apiKey}&language=en";
         $response = Http::get($url);
 
         if ($response->failed()) {
@@ -78,6 +81,7 @@ class GoogleGeoCoderService
         $response = Http::get('https://maps.googleapis.com/maps/api/place/details/json', [
             'place_id' => $placeId,
             'key' => $this->apiKey,
+            'language' => 'en',
         ]);
 
         if ($response->failed()) {
