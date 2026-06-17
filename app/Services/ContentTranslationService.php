@@ -13,16 +13,20 @@ class ContentTranslationService
      *   ['language_id' => 3, 'fields' => ['content' => '...', 'product_details' => [['title'=>'','value'=>'']]]],
      * ]
      *
-     * Empty array => no-op. Empty field => translation removed (falls back to default).
+     * Empty field => that field's translation removed (falls back to default).
+     *
+     * $reconcile = true (dashboard forms): the submitted payload is the COMPLETE set of
+     * translations for this model instance. Any language NOT present in the payload is
+     * treated as removed and its rows are deleted (default language always excluded).
+     * This is what makes the "Remove" button actually delete a language, including the
+     * case where ALL languages were removed (payload becomes empty). Callers that do not
+     * own the full translation set must leave $reconcile = false.
+     *
      * Idempotent: safe to call on every store/update without creating duplicates.
      */
-    public function syncTranslations(Model $model, array $payload): void
+    public function syncTranslations(Model $model, array $payload, bool $reconcile = false): void
     {
         if (! method_exists($model, 'contentTranslations')) {
-            return;
-        }
-
-        if (empty($payload)) {
             return;
         }
 
@@ -37,6 +41,10 @@ class ContentTranslationService
         // Default language is authored in the original columns; never persist a translation for it.
         $defaultLanguageId = \App\Models\Language::where('code', config('app.fallback_locale', 'en'))->value('id');
 
+        // Language ids present (and valid) in the submitted payload, so reconciliation can
+        // delete every OTHER language's rows for this model instance.
+        $submittedLanguageIds = [];
+
         foreach ($payload as $block) {
             $languageId = $block['language_id'] ?? null;
             if (! $languageId) {
@@ -47,6 +55,8 @@ class ContentTranslationService
             if ($defaultLanguageId && (int) $languageId === (int) $defaultLanguageId) {
                 continue;
             }
+
+            $submittedLanguageIds[] = (int) $languageId;
 
             $fields = $block['fields'] ?? [];
 
@@ -75,6 +85,20 @@ class ContentTranslationService
                     ['value' => $value]
                 );
             }
+        }
+
+        // Reconciliation (dashboard forms only): the payload is authoritative, so any language
+        // that exists in the DB for this model but was NOT submitted has been removed in the UI
+        // — delete it. The default language is always excluded.
+        if ($reconcile) {
+            $model->contentTranslations()
+                ->when(! empty($submittedLanguageIds), function ($q) use ($submittedLanguageIds) {
+                    $q->whereNotIn('language_id', $submittedLanguageIds);
+                })
+                ->when($defaultLanguageId, function ($q) use ($defaultLanguageId) {
+                    $q->where('language_id', '!=', $defaultLanguageId);
+                })
+                ->delete();
         }
     }
 }

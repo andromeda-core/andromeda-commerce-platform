@@ -406,7 +406,8 @@ class PostRepository implements IPostRepository
             // No-op unless a `translations` payload is sent (Phase 2 dashboard form).
             $this->contentTranslationService->syncTranslations(
                 $post,
-                (array) ($request->input('translations') ?? [])
+                (array) ($request->input('translations') ?? []),
+                true
             );
 
             $hasMedia = ($request->hasFile('videos') || $request->hasFile('images'));
@@ -682,7 +683,8 @@ class PostRepository implements IPostRepository
             // No-op unless a `translations` payload is sent (Phase 2 dashboard form).
             $this->contentTranslationService->syncTranslations(
                 $post,
-                (array) ($request->input('translations') ?? [])
+                (array) ($request->input('translations') ?? []),
+                true
             );
 
             $hasMedia = ($request->hasFile('new_videos') || $request->hasFile('new_images'));

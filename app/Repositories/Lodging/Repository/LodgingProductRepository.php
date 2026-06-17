@@ -1195,7 +1195,7 @@ class LodgingProductRepository implements ILodgingProductRepository
                 }
 
                 // Stage 3.4.2 — product per-language overrides (idempotent; no-op when none sent).
-                $this->contentTranslationService->syncTranslations($product, (array) $request->input('translations', []));
+                $this->contentTranslationService->syncTranslations($product, (array) $request->input('translations', []), true);
 
                 foreach ($request->input('rooms', []) as $roomInput) {
                     $roomData = collect($roomInput)
@@ -1208,7 +1208,7 @@ class LodgingProductRepository implements ILodgingProductRepository
                         $room->amenities()->sync($roomInput['amenity_ids'] ?? []);
                     }
 
-                    $this->contentTranslationService->syncTranslations($room, (array) ($roomInput['translations'] ?? []));
+                    $this->contentTranslationService->syncTranslations($room, (array) ($roomInput['translations'] ?? []), true);
 
                     foreach ($roomInput['rate_plans'] ?? [] as $ratePlanInput) {
                         $ratePlanData = collect($ratePlanInput)
@@ -1216,23 +1216,23 @@ class LodgingProductRepository implements ILodgingProductRepository
                             ->toArray();
 
                         $ratePlan = $room->ratePlans()->create($ratePlanData);
-                        $this->contentTranslationService->syncTranslations($ratePlan, (array) ($ratePlanInput['translations'] ?? []));
+                        $this->contentTranslationService->syncTranslations($ratePlan, (array) ($ratePlanInput['translations'] ?? []), true);
                     }
                 }
 
                 if ($request->filled('checkin_policy')) {
                     $checkinPolicy = $product->checkinPolicy()->create($this->policyData($request->input('checkin_policy')));
-                    $this->contentTranslationService->syncTranslations($checkinPolicy, (array) $request->input('checkin_policy.translations', []));
+                    $this->contentTranslationService->syncTranslations($checkinPolicy, (array) $request->input('checkin_policy.translations', []), true);
                 }
 
                 if ($request->filled('parking_policy')) {
                     $parkingPolicy = $product->parkingPolicy()->create($this->policyData($request->input('parking_policy')));
-                    $this->contentTranslationService->syncTranslations($parkingPolicy, (array) $request->input('parking_policy.translations', []));
+                    $this->contentTranslationService->syncTranslations($parkingPolicy, (array) $request->input('parking_policy.translations', []), true);
                 }
 
                 if ($request->filled('cancellation_policy')) {
                     $cancellationPolicy = $product->cancellationPolicy()->create($this->policyData($request->input('cancellation_policy')));
-                    $this->contentTranslationService->syncTranslations($cancellationPolicy, (array) $request->input('cancellation_policy.translations', []));
+                    $this->contentTranslationService->syncTranslations($cancellationPolicy, (array) $request->input('cancellation_policy.translations', []), true);
                 }
 
                 return $product;
@@ -1304,7 +1304,7 @@ class LodgingProductRepository implements ILodgingProductRepository
                 }
 
                 // Stage 3.4.2 — product per-language overrides (idempotent; no-op when none sent).
-                $this->contentTranslationService->syncTranslations($product, (array) $request->input('translations', []));
+                $this->contentTranslationService->syncTranslations($product, (array) $request->input('translations', []), true);
 
                 // Sync rooms: update existing (by id, scoped to this product), create new, delete removed.
                 $submittedRoomIds = [];
@@ -1330,7 +1330,7 @@ class LodgingProductRepository implements ILodgingProductRepository
                         $room->amenities()->sync($roomInput['amenity_ids'] ?? []);
                     }
 
-                    $this->contentTranslationService->syncTranslations($room, (array) ($roomInput['translations'] ?? []));
+                    $this->contentTranslationService->syncTranslations($room, (array) ($roomInput['translations'] ?? []), true);
 
                     $submittedRatePlanIds = [];
                     foreach ($roomInput['rate_plans'] ?? [] as $ratePlanInput) {
@@ -1350,7 +1350,7 @@ class LodgingProductRepository implements ILodgingProductRepository
                         }
 
                         $submittedRatePlanIds[] = $ratePlan->id;
-                        $this->contentTranslationService->syncTranslations($ratePlan, (array) ($ratePlanInput['translations'] ?? []));
+                        $this->contentTranslationService->syncTranslations($ratePlan, (array) ($ratePlanInput['translations'] ?? []), true);
                     }
 
                     // Stage 3.4.1 — clear orphaned content_translations for rate plans being
@@ -1389,17 +1389,17 @@ class LodgingProductRepository implements ILodgingProductRepository
                 // is left untouched (clearing semantics are deferred to the Prompt 3b form phase).
                 if ($request->filled('checkin_policy')) {
                     $checkinPolicy = $product->checkinPolicy()->updateOrCreate([], $this->policyData($request->input('checkin_policy')));
-                    $this->contentTranslationService->syncTranslations($checkinPolicy, (array) $request->input('checkin_policy.translations', []));
+                    $this->contentTranslationService->syncTranslations($checkinPolicy, (array) $request->input('checkin_policy.translations', []), true);
                 }
 
                 if ($request->filled('parking_policy')) {
                     $parkingPolicy = $product->parkingPolicy()->updateOrCreate([], $this->policyData($request->input('parking_policy')));
-                    $this->contentTranslationService->syncTranslations($parkingPolicy, (array) $request->input('parking_policy.translations', []));
+                    $this->contentTranslationService->syncTranslations($parkingPolicy, (array) $request->input('parking_policy.translations', []), true);
                 }
 
                 if ($request->filled('cancellation_policy')) {
                     $cancellationPolicy = $product->cancellationPolicy()->updateOrCreate([], $this->policyData($request->input('cancellation_policy')));
-                    $this->contentTranslationService->syncTranslations($cancellationPolicy, (array) $request->input('cancellation_policy.translations', []));
+                    $this->contentTranslationService->syncTranslations($cancellationPolicy, (array) $request->input('cancellation_policy.translations', []), true);
                 }
 
                 // Collect removed-media S3 paths, delete the rows in-transaction; the S3 destroy

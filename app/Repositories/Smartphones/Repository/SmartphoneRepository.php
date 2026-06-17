@@ -280,7 +280,8 @@ class SmartphoneRepository implements ISmartphoneRepository
             // No-op unless a `translations` payload is sent (Phase 2 dashboard form).
             $this->contentTranslationService->syncTranslations(
                 $smartphone,
-                (array) ($request->input('translations') ?? [])
+                (array) ($request->input('translations') ?? []),
+                true
             );
 
             $hasMedia = ($request->hasFile('videos') || $request->hasFile('images'));
@@ -580,7 +581,8 @@ class SmartphoneRepository implements ISmartphoneRepository
             // No-op unless a `translations` payload is sent (Phase 2 dashboard form).
             $this->contentTranslationService->syncTranslations(
                 $smartphone,
-                (array) ($request->input('translations') ?? [])
+                (array) ($request->input('translations') ?? []),
+                true
             );
 
             $hasMedia = ($request->hasFile('new_videos') || $request->hasFile('new_images'));

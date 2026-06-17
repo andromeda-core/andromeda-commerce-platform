@@ -849,7 +849,8 @@ class SettingRepository implements ISettingRepository
             // No-op unless a `translations` payload is sent.
             $this->contentTranslationService->syncTranslations(
                 $created,
-                (array) ($request->input('translations') ?? [])
+                (array) ($request->input('translations') ?? []),
+                true
             );
 
             return [
@@ -909,7 +910,8 @@ class SettingRepository implements ISettingRepository
             // No-op unless a `translations` payload is sent.
             $this->contentTranslationService->syncTranslations(
                 $model_name,
-                (array) ($request->input('translations') ?? [])
+                (array) ($request->input('translations') ?? []),
+                true
             );
 
             return [
