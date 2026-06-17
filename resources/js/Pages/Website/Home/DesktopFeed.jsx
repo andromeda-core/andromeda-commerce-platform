@@ -5245,7 +5245,7 @@ const DesktopFeed = ({
                                                             )}
                                                             {feedGallery.location_name && (
                                                                 <span className="text-sm break-words text-sub-text-light dark:text-sub-text-dark">
-                                                                    {feedGallery.location_name}
+                                                                    {feedGallery.location_name_display ?? feedGallery.location_name}
                                                                 </span>
                                                             )}
                                                             {feedGallery.location_description && (

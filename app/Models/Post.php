@@ -14,7 +14,7 @@ class Post extends Model
 {
     use HasContentTranslations;
 
-    protected array $translatableFields = ['title', 'content', 'tag'];
+    protected array $translatableFields = ['title', 'content', 'tag', 'location_name'];
 
     protected $fillable = [
         'public_id',

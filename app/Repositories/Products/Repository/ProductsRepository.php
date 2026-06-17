@@ -147,6 +147,7 @@ class ProductsRepository implements IProductsRepository
                                 'public_id' => $smartphone->public_id,
                                 'tag' => $smartphone->tag,
                                 'tag_display' => $smartphone->translatedValue('tag'),
+                                'location_name_display' => $smartphone->translatedValue('location_name'),
                                 'is_sold_out' => $smartphone->is_sold_out,
                                 'content' => $smartphone->translatedValue('content'),
                                 'type' => 'smartphones',
@@ -195,6 +196,7 @@ class ProductsRepository implements IProductsRepository
                                 $post->title = $post->translatedValue('title');
                                 $post->content = $post->translatedValue('content');
                                 $post->tag_display = $post->translatedValue('tag');
+                                $post->location_name_display = $post->translatedValue('location_name');
 
                                 return $post;
                             });
@@ -233,6 +235,7 @@ class ProductsRepository implements IProductsRepository
                         'public_id' => $smartphone?->public_id,
                         'tag' => $smartphone?->tag,
                         'tag_display' => $smartphone?->translatedValue('tag'),
+                        'location_name_display' => $smartphone?->translatedValue('location_name'),
                         'is_sold_out' => $smartphone?->is_sold_out,
                         'content' => $smartphone?->translatedValue('content'),
                         'type' => 'smartphones',

@@ -1107,6 +1107,7 @@ export default function create({
                                                 fields={[
                                                     { key: 'content', label: 'About This Product', type: 'textarea' },
                                                     { key: 'tag', label: 'Tag', type: 'text' },
+                                                    { key: 'location_name', label: 'Location Name', type: 'text' },
                                                     { key: 'product_details', label: 'Product Details', type: 'keyvalue' },
                                                 ]}
                                             />

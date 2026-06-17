@@ -489,7 +489,7 @@ const MasonryFeedItem = memo(
 
                                             {item.location_name && (
                                                 <p className="w-full truncate text-[11px] font-normal text-white">
-                                                    {item.location_name}
+                                                    {item.location_name_display ?? item.location_name}
                                                 </p>
                                             )}
                                         </div>
@@ -521,7 +521,7 @@ const MasonryFeedItem = memo(
 
                                 {item.location_name && (
                                     <p className="mt-1 text-[13px] text-sub-text-light dark:text-sub-text-dark">
-                                        {item.location_name}
+                                        {item.location_name_display ?? item.location_name}
                                     </p>
                                 )}
                                 <div className="pt-4 mt-auto">

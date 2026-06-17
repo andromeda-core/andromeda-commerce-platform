@@ -352,6 +352,7 @@ class LodgingProductRepository implements ILodgingProductRepository
                 $post->title = $post->translatedValue('title');
                 $post->content = $post->translatedValue('content');
                 $post->tag_display = $post->translatedValue('tag');
+                $post->location_name_display = $post->translatedValue('location_name');
 
                 return $post;
             });
@@ -408,6 +409,7 @@ class LodgingProductRepository implements ILodgingProductRepository
                     'public_id' => $smartphone->public_id,
                     'tag' => $smartphone->tag,
                     'tag_display' => $smartphone->translatedValue('tag'),
+                    'location_name_display' => $smartphone->translatedValue('location_name'),
                     'is_sold_out' => $smartphone->is_sold_out,
                     'content' => $smartphone->translatedValue('content'),
                     'type' => 'smartphones',
@@ -462,7 +464,8 @@ class LodgingProductRepository implements ILodgingProductRepository
             'type' => 'lodging',
             'property_name' => $product->translatedValue('property_name'),
             'property_type' => $product->property_type,
-            'location_name' => $product->translatedValue('location_name'),
+            'location_name' => $product->location_name,
+            'location_name_display' => $product->translatedValue('location_name'),
             'location_description' => $product->translatedValue('location_description'),
             'city_region' => $product->translatedValue('city_region'),
             'latitude' => $product->latitude,

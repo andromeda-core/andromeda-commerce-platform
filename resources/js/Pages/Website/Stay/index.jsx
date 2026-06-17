@@ -155,7 +155,7 @@ const LodgingGridCard = ({ item, onOpen, __ }) => {
 
                 {item?.location_name && (
                     <p className="text-xs font-medium line-clamp-1 text-sub-text-light dark:text-sub-text-dark">
-                        {item.location_name}
+                        {item.location_name_display ?? item.location_name}
                     </p>
                 )}
 

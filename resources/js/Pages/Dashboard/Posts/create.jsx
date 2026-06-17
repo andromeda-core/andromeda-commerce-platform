@@ -577,6 +577,7 @@ export default function create({ floors, googleMapSettings, languages }) {
                                                     { key: 'title', label: 'Title', type: 'text' },
                                                     { key: 'content', label: 'Content', type: 'textarea' },
                                                     { key: 'tag', label: 'Tag', type: 'text' },
+                                                    { key: 'location_name', label: 'Location Name', type: 'text' },
                                                 ]}
                                             />
 

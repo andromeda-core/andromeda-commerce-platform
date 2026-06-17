@@ -386,7 +386,7 @@ const LodgingMobileFeedGallery = ({
                             )}
                             {lodging?.location_name && (
                                 <p className="mb-3 text-sm text-sub-text-light dark:text-sub-text-dark">
-                                    {lodging.location_name}
+                                    {lodging.location_name_display ?? lodging.location_name}
                                 </p>
                             )}
                             {lodging?.location_description && (

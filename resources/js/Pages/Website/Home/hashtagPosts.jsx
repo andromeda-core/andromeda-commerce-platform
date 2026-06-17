@@ -75,7 +75,11 @@ const ResultItem = memo(
                     <div className="flex-1 min-w-0">
                         <h3 className="font-medium truncate">{item.title || item.name}</h3>
                         <p className="text-xs truncate text-main-text-light dark:text-main-text-dark">
-                            {item.type === 'posts' ? item.location_name || '' : item.capacity || ''}
+                            {item.type === 'posts'
+                                ? (item.location_name_display ?? item.location_name) || ''
+                                : item.type === 'lodging'
+                                  ? item.city_region || (item.location_name_display ?? item.location_name) || ''
+                                  : item.capacity || ''}
                         </p>
                         {item.tag && (
                             <p className="text-xs truncate text-sub-text-light dark:text-sub-text-dark">

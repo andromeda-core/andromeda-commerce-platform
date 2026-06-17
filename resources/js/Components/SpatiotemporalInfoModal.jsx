@@ -144,7 +144,7 @@ export default function SpatiotemporalModal({ onClose, post }) {
                                 <div className="flex-1">
                                     <p className="font-semibold text-main-text-light dark:text-main-text-dark mb-0.5">{__('Location')}</p>
                                     <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                        {post?.location_name}
+                                        {post?.location_name_display ?? post?.location_name}
                                     </p>
                                     <p className="mt-1 text-xs text-sub-text-light dark:text-sub-text-dark">
                                         {post?.latitude}° N, {post?.longitude}° E
@@ -279,7 +279,7 @@ export default function SpatiotemporalModal({ onClose, post }) {
                                 <div className="flex-1">
                                     <p className="font-semibold text-main-text-light dark:text-main-text-dark mb-0.5">{__('Location')}</p>
                                     <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
-                                        {post?.location_name}
+                                        {post?.location_name_display ?? post?.location_name}
                                     </p>
                                     <p className="mt-1 text-xs text-sub-text-light dark:text-sub-text-dark">
                                         {post?.latitude}° N, {post?.longitude}° E

@@ -148,6 +148,7 @@ class PostRepository implements IPostRepository
                     $post->title = $post->translatedValue('title');
                     $post->content = $post->translatedValue('content');
                     $post->tag_display = $post->translatedValue('tag');
+                    $post->location_name_display = $post->translatedValue('location_name');
 
                     return $post;
                 });
@@ -220,6 +221,7 @@ class PostRepository implements IPostRepository
                             'public_id' => $smartphone->public_id,
                             'tag' => $smartphone->tag,
                             'tag_display' => $smartphone->translatedValue('tag'),
+                            'location_name_display' => $smartphone->translatedValue('location_name'),
                             'is_sold_out' => $smartphone->is_sold_out,
                             'content' => $smartphone->translatedValue('content'),
                             'type' => 'smartphones',
@@ -244,6 +246,7 @@ class PostRepository implements IPostRepository
             $post->title = $post->translatedValue('title');
             $post->content = $post->translatedValue('content');
             $post->tag_display = $post->translatedValue('tag');
+            $post->location_name_display = $post->translatedValue('location_name');
         }
 
         return $post;
@@ -977,6 +980,7 @@ class PostRepository implements IPostRepository
                             $post->title = $post->translatedValue('title');
                             $post->content = $post->translatedValue('content');
                             $post->tag_display = $post->translatedValue('tag');
+                            $post->location_name_display = $post->translatedValue('location_name');
 
                             return $post;
                         });
@@ -1052,6 +1056,7 @@ class PostRepository implements IPostRepository
                                 'public_id' => $smartphone->public_id,
                                 'tag' => $smartphone->tag,
                                 'tag_display' => $smartphone->translatedValue('tag'),
+                                'location_name_display' => $smartphone->translatedValue('location_name'),
                                 'is_sold_out' => $smartphone->is_sold_out,
                                 'content' => $smartphone->translatedValue('content'),
                                 'type' => 'smartphones',
@@ -1106,6 +1111,7 @@ class PostRepository implements IPostRepository
                     $post->title = $post->translatedValue('title');
                     $post->content = $post->translatedValue('content');
                     $post->tag_display = $post->translatedValue('tag');
+                    $post->location_name_display = $post->translatedValue('location_name');
                 }
 
                 $hasMore = $hasMore || ($posts->count() === $perPage);
@@ -1242,6 +1248,7 @@ class PostRepository implements IPostRepository
                                 'public_id' => $smartphone->public_id,
                                 'tag' => $smartphone->tag,
                                 'tag_display' => $smartphone->translatedValue('tag'),
+                                'location_name_display' => $smartphone->translatedValue('location_name'),
                                 'is_sold_out' => $smartphone->is_sold_out,
                                 'content' => $smartphone->translatedValue('content'),
                                 'type' => 'smartphones',
@@ -1296,6 +1303,7 @@ class PostRepository implements IPostRepository
                             $post->title = $post->translatedValue('title');
                             $post->content = $post->translatedValue('content');
                             $post->tag_display = $post->translatedValue('tag');
+                            $post->location_name_display = $post->translatedValue('location_name');
 
                             return $post;
                         });
@@ -1360,6 +1368,7 @@ class PostRepository implements IPostRepository
                         'public_id' => $sp->public_id,
                         'tag' => $sp->tag,
                         'tag_display' => $sp->translatedValue('tag'),
+                        'location_name_display' => $sp->translatedValue('location_name'),
                         'is_sold_out' => $sp->is_sold_out,
                         'content' => $sp->translatedValue('content'),
                         'type' => 'smartphones',
@@ -1561,6 +1570,7 @@ class PostRepository implements IPostRepository
                         $post->title = $post->translatedValue('title');
                         $post->content = $post->translatedValue('content');
                         $post->tag_display = $post->translatedValue('tag');
+                        $post->location_name_display = $post->translatedValue('location_name');
 
                         return $post;
                     });
@@ -1641,6 +1651,7 @@ class PostRepository implements IPostRepository
                             'public_id' => $smartphone->public_id,
                             'tag' => $smartphone->tag,
                             'tag_display' => $smartphone->translatedValue('tag'),
+                            'location_name_display' => $smartphone->translatedValue('location_name'),
                             'is_sold_out' => $smartphone->is_sold_out,
                             'content' => $smartphone->translatedValue('content'),
                             'type' => 'smartphones',
@@ -1787,6 +1798,7 @@ class PostRepository implements IPostRepository
                         'content' => $post->translatedValue('content'),
                         'tag' => $post->tag,
                         'tag_display' => $post->translatedValue('tag'),
+                        'location_name_display' => $post->translatedValue('location_name'),
                         'floor' => $post?->floor?->name,
                         'created_at' => $post->created_at->format('Y-m-d g:i A '),
                         'timestamp' => $post->created_at->timestamp,
@@ -1865,6 +1877,7 @@ class PostRepository implements IPostRepository
                         'addons' => $smartphone?->addons,
                         'tag' => $smartphone->tag,
                         'tag_display' => $smartphone->translatedValue('tag'),
+                        'location_name_display' => $smartphone->translatedValue('location_name'),
                         'is_sold_out' => $smartphone->is_sold_out,
                         'type' => 'smartphones',
                         'created_at' => $smartphone->created_at->format('Y-m-d g:i A '),
@@ -1917,6 +1930,8 @@ class PostRepository implements IPostRepository
                         'video_thumbnail' => $videoThumbnail,
                         'tag' => $product->tag,
                         'tag_display' => $product->translatedValue('tag'),
+                        'location_name' => $product->location_name,
+                        'location_name_display' => $product->translatedValue('location_name'),
                         'lowest_rate' => $rates->isEmpty() ? null : (float) $rates->min(),
                         'currency_code' => $currencyCode,
                         'created_at' => $product->created_at->format('Y-m-d g:i A '),

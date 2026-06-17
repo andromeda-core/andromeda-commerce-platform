@@ -642,6 +642,7 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
                                                     { key: 'title', label: 'Title', type: 'text' },
                                                     { key: 'content', label: 'Content', type: 'textarea' },
                                                     { key: 'tag', label: 'Tag', type: 'text' },
+                                                    { key: 'location_name', label: 'Location Name', type: 'text' },
                                                 ]}
                                             />
 

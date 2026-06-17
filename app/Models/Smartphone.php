@@ -16,7 +16,7 @@ class Smartphone extends Model
 {
     use HasContentTranslations;
 
-    protected array $translatableFields = ['content', 'tag', 'product_details'];
+    protected array $translatableFields = ['content', 'tag', 'product_details', 'location_name'];
 
     protected $fillable = [
         'public_id',
