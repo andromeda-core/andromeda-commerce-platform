@@ -2,8 +2,75 @@ import DisplayPrice from '@/Components/DisplayPrice';
 import Spinner from '@/Components/Spinner';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { router } from '@inertiajs/react';
-import React, { memo, useState } from 'react';
+import React, { memo, useEffect, useRef, useState } from 'react';
 
+const FeedImage = ({ src, alt, Placeholder, loadingStrategy, onLoadedChange }) => {
+    const [loaded, setLoaded] = useState(false);
+    const [inView, setInView] = useState(loadingStrategy === 'eager');
+    const imgRef = useRef(null);
+
+    const markLoaded = () => {
+        setLoaded(true);
+        if (typeof onLoadedChange === 'function') onLoadedChange(true);
+    };
+
+    useEffect(() => {
+        if (inView) return;
+        const el = imgRef.current;
+        if (!el) return;
+
+        const io = new IntersectionObserver(
+            (entries) => {
+                if (entries[0].isIntersecting) {
+                    setInView(true);
+                    io.disconnect();
+                }
+            },
+            { rootMargin: '600px 0px' },
+        );
+        io.observe(el);
+        return () => io.disconnect();
+    }, [inView]);
+
+    useEffect(() => {
+        if (!inView) return;
+        const el = imgRef.current;
+        if (el && el.complete && el.naturalWidth > 0) {
+            markLoaded();
+        }
+    }, [inView]);
+
+    return (
+        <>
+            <div
+                className="ease pointer-events-none absolute inset-0 z-[5] overflow-hidden transition-opacity duration-[400ms]"
+                style={{ opacity: loaded ? 0 : 1 }}
+            >
+                <div
+                    className={`absolute inset-0 bg-gradient-to-r from-surface-1-light via-surface-2-light to-surface-3-light dark:from-surface-1-dark dark:via-surface-2-dark dark:to-surface-3-dark ${inView ? 'animate-pulse' : ''}`}
+                />
+            </div>
+            {!loaded && <div style={{ width: '100%', paddingBottom: '100%' }} />}
+
+            <img
+                ref={imgRef}
+                src={inView ? src || Placeholder : undefined}
+                alt={alt}
+                decoding="async"
+                onLoad={markLoaded}
+                onError={(e) => {
+                    e.target.src = Placeholder;
+                    markLoaded();
+                }}
+                style={{
+                    width: '100%',
+                    height: 'auto',
+                }}
+                className="object-cover text-[10px] text-black dark:text-white"
+            />
+        </>
+    );
+};
 const MasonryFeedItem = memo(
     ({
         item,
@@ -15,6 +82,7 @@ const MasonryFeedItem = memo(
         setBookmarkStatusChanged,
         setBookmarkActionPost,
         windowSize,
+        onMeasure,
     }) => {
         const { __ } = useTranslation();
 
@@ -23,10 +91,35 @@ const MasonryFeedItem = memo(
         const [unmarking, setUnmarking] = useState(false);
         const loadingStrategy = Index < 6 ? 'eager' : 'lazy';
 
+        const articleRef = useRef(null);
+        const itemKey = `${item.type}-${item.id}`;
+        const lastReportedRef = useRef(0);
+
+        // Report real height once, then on any real size change (image load / scroll-in
+        // under content-visibility). RO fires only on actual size change, not on scroll.
+        useEffect(() => {
+            const el = articleRef.current;
+            if (!el || typeof onMeasure !== 'function') return;
+
+            const report = () => {
+                const h = el.offsetHeight;
+                if (h > 0 && Math.abs(h - lastReportedRef.current) > 1) {
+                    lastReportedRef.current = h;
+                    onMeasure(itemKey, h);
+                }
+            };
+
+            report();
+            const ro = new ResizeObserver(report);
+            ro.observe(el);
+            return () => ro.disconnect();
+        }, []);
+
         if (item.type === 'posts') {
             return (
                 <article
-                    className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
+                    ref={articleRef}
+                    className="group relative mb-2 cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
                     style={{
                         WebkitColumnBreakInside: 'avoid',
                         pageBreakInside: 'avoid',
@@ -57,15 +150,16 @@ const MasonryFeedItem = memo(
                                     }}
                                 />
 
-                                {!loaded && (
+                                {/* {!loaded && (
                                     <div
                                         className="relative w-full overflow-hidden"
                                         style={{ paddingBottom: '100%' }}
                                     >
                                         <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-surface-1-light via-surface-2-light to-surface-3-light dark:from-surface-1-dark dark:via-surface-2-dark dark:to-surface-3-dark" />
                                     </div>
-                                )}
-                                <img
+                                )} */}
+
+                                {/* <img
                                     src={item?.images[0]?.url || Placeholder}
                                     alt={item?.title}
                                     loading={loadingStrategy}
@@ -83,6 +177,14 @@ const MasonryFeedItem = memo(
                                         height: 'auto',
                                     }}
                                     className="object-cover text-[10px] text-black dark:text-white"
+                                /> */}
+
+                                <FeedImage
+                                    src={item?.images[0]?.url || Placeholder}
+                                    alt={item?.title}
+                                    Placeholder={Placeholder}
+                                    loadingStrategy={loadingStrategy}
+                                    onLoadedChange={setLoaded}
                                 />
                             </div>
 
@@ -96,7 +198,7 @@ const MasonryFeedItem = memo(
 
                                     {isBookmarkPage && (
                                         <div
-                                            className="absolute z-30 pointer-events-auto right-3 top-3"
+                                            className="pointer-events-auto absolute right-3 top-3 z-30"
                                             onClick={(e) => {
                                                 setUnmarking(true);
                                                 e.stopPropagation();
@@ -153,7 +255,7 @@ const MasonryFeedItem = memo(
 
                                     <div className="absolute inset-x-0 bottom-0 p-4">
                                         <div className="mt-1 flex items-center justify-between text-[13px] leading-[17px] lg:text-[14px]">
-                                            <p className="flex-1 min-w-0 font-semibold text-main-text-dark">
+                                            <p className="min-w-0 flex-1 font-semibold text-main-text-dark">
                                                 <span
                                                     className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
                                                     dangerouslySetInnerHTML={{
@@ -192,16 +294,16 @@ const MasonryFeedItem = memo(
                                     }}
                                 />
 
-                                {!loaded && (
+                                {/* {!loaded && (
                                     <div
                                         className="relative w-full overflow-hidden"
                                         style={{ paddingBottom: '100%' }}
                                     >
                                         <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-surface-1-light via-surface-2-light to-surface-3-light dark:from-surface-1-dark dark:via-surface-2-dark dark:to-surface-3-dark" />
                                     </div>
-                                )}
+                                )} */}
 
-                                <img
+                                {/* <img
                                     src={item?.videos[0]?.thumbnail_url || Placeholder}
                                     alt={item?.title}
                                     loading={loadingStrategy}
@@ -214,11 +316,18 @@ const MasonryFeedItem = memo(
                                         setLoaded(true);
                                     }}
                                     style={{
-                                        opacity: loaded ? 1 : 0,
                                         width: '100%',
                                         height: 'auto',
                                     }}
-                                    className="object-cover text-[10px] text-black dark:text-white"
+                                    className="object-cover text-[10px] text-black transition-opacity duration-300 dark:text-white"
+                                /> */}
+
+                                <FeedImage
+                                    src={item?.videos[0]?.thumbnail_url || Placeholder}
+                                    alt={item?.title}
+                                    Placeholder={Placeholder}
+                                    loadingStrategy={loadingStrategy}
+                                    onLoadedChange={setLoaded}
                                 />
                             </div>
 
@@ -232,7 +341,7 @@ const MasonryFeedItem = memo(
 
                                     {isBookmarkPage && (
                                         <div
-                                            className="absolute z-30 pointer-events-auto right-3 top-3"
+                                            className="pointer-events-auto absolute right-3 top-3 z-30"
                                             onClick={(e) => {
                                                 setUnmarking(true);
                                                 e.stopPropagation();
@@ -289,7 +398,7 @@ const MasonryFeedItem = memo(
 
                                     <div className="absolute inset-x-0 bottom-0 p-4">
                                         <div className="mt-1 flex items-center justify-between text-[13px] leading-[17px] lg:text-[14px]">
-                                            <p className="flex-1 min-w-0 font-semibold text-main-text-dark">
+                                            <p className="min-w-0 flex-1 font-semibold text-main-text-dark">
                                                 <span
                                                     className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
                                                     dangerouslySetInnerHTML={{
@@ -317,7 +426,7 @@ const MasonryFeedItem = memo(
 
                             {isBookmarkPage && (
                                 <div
-                                    className="absolute z-30 pointer-events-auto right-3 top-3"
+                                    className="pointer-events-auto absolute right-3 top-3 z-30"
                                     onClick={(e) => {
                                         setUnmarking(true);
                                         e.stopPropagation();
@@ -389,7 +498,8 @@ const MasonryFeedItem = memo(
         if (item.type === 'lodging') {
             return (
                 <article
-                    className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
+                    ref={articleRef}
+                    className="group relative mb-2 cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
                     style={{
                         WebkitColumnBreakInside: 'avoid',
                         pageBreakInside: 'avoid',
@@ -420,16 +530,16 @@ const MasonryFeedItem = memo(
                                     }}
                                 />
 
-                                {!loaded && (
+                                {/* {!loaded && (
                                     <div
                                         className="relative w-full overflow-hidden"
                                         style={{ paddingBottom: '100%' }}
                                     >
                                         <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-surface-1-light via-surface-2-light to-surface-3-light dark:from-surface-1-dark dark:via-surface-2-dark dark:to-surface-3-dark" />
                                     </div>
-                                )}
+                                )} */}
 
-                                <img
+                                {/* <img
                                     src={
                                         item?.lodging_image_urls?.[0] ||
                                         item?.cover_image_url ||
@@ -446,11 +556,22 @@ const MasonryFeedItem = memo(
                                         setLoaded(true);
                                     }}
                                     style={{
-                                        opacity: loaded ? 1 : 0,
                                         width: '100%',
                                         height: 'auto',
                                     }}
-                                    className="object-cover text-[10px] text-black dark:text-white"
+                                    className="object-cover text-[10px] text-black transition-opacity duration-300 dark:text-white"
+                                /> */}
+
+                                <FeedImage
+                                    src={
+                                        item?.lodging_image_urls?.[0] ||
+                                        item?.cover_image_url ||
+                                        Placeholder
+                                    }
+                                    alt={item?.property_name}
+                                    Placeholder={Placeholder}
+                                    loadingStrategy={loadingStrategy}
+                                    onLoadedChange={setLoaded}
                                 />
                             </div>
 
@@ -464,7 +585,7 @@ const MasonryFeedItem = memo(
                                         </div>
                                     )}
 
-                                    <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-12">
                                         <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                             {item.is_reservation_closed != false && (
                                                 <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -483,13 +604,13 @@ const MasonryFeedItem = memo(
                                                 </span>
                                             )}
 
-                                            <p className="w-full text-white truncate">
+                                            <p className="w-full truncate text-white">
                                                 {item.property_name}
                                             </p>
 
                                             {item.location_name && (
                                                 <p className="w-full truncate text-[11px] font-normal text-white">
-                                                    {item.location_name_display ?? item.location_name}
+                                                    {item.location_name}
                                                 </p>
                                             )}
                                         </div>
@@ -509,7 +630,7 @@ const MasonryFeedItem = memo(
                                     </span>
                                 </div>
                             )}
-                            <div className="flex flex-col flex-1 mt-10">
+                            <div className="mt-10 flex flex-1 flex-col">
                                 <div className="line-clamp-6 whitespace-pre-line break-all text-[13px] leading-[17px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
                                     <p className="font-semibold">{item.property_name}</p>
                                     <p
@@ -521,10 +642,10 @@ const MasonryFeedItem = memo(
 
                                 {item.location_name && (
                                     <p className="mt-1 text-[13px] text-sub-text-light dark:text-sub-text-dark">
-                                        {item.location_name_display ?? item.location_name}
+                                        {item.location_name}
                                     </p>
                                 )}
-                                <div className="pt-4 mt-auto">
+                                <div className="mt-auto pt-4">
                                     {item.lowest_rate && (
                                         <DisplayPrice
                                             usdAmount={item.lowest_rate}
@@ -544,7 +665,8 @@ const MasonryFeedItem = memo(
         // Smartphones
         return (
             <article
-                className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
+                ref={articleRef}
+                className="group relative mb-2 cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
                 style={{
                     WebkitColumnBreakInside: 'avoid',
                     pageBreakInside: 'avoid',
@@ -575,16 +697,16 @@ const MasonryFeedItem = memo(
                                 }}
                             />
 
-                            {!loaded && (
+                            {/* {!loaded && (
                                 <div
                                     className="relative w-full overflow-hidden"
                                     style={{ paddingBottom: '100%' }}
                                 >
                                     <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-surface-1-light via-surface-2-light to-surface-3-light dark:from-surface-1-dark dark:via-surface-2-dark dark:to-surface-3-dark" />
                                 </div>
-                            )}
+                            )} */}
 
-                            <img
+                            {/* <img
                                 src={item.images[0]?.url || Placeholder}
                                 alt={item.name}
                                 loading={loadingStrategy}
@@ -597,11 +719,18 @@ const MasonryFeedItem = memo(
                                     setLoaded(true);
                                 }}
                                 style={{
-                                    opacity: loaded ? 1 : 0,
                                     width: '100%',
                                     height: 'auto',
                                 }}
-                                className="object-cover text-[10px] text-black dark:text-white"
+                                className="object-cover text-[10px] text-black transition-opacity duration-300 dark:text-white"
+                            /> */}
+
+                            <FeedImage
+                                src={item.images[0]?.url || Placeholder}
+                                alt={item?.name}
+                                Placeholder={Placeholder}
+                                loadingStrategy={loadingStrategy}
+                                onLoadedChange={setLoaded}
                             />
                         </div>
 
@@ -613,7 +742,7 @@ const MasonryFeedItem = memo(
                                     </span>
                                 </div>
 
-                                <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-12">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                         {item.is_sold_out && (
                                             <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -631,7 +760,7 @@ const MasonryFeedItem = memo(
                                             ''
                                         )}
 
-                                        <p className="w-full text-white truncate">
+                                        <p className="w-full truncate text-white">
                                             {item.name} ({item.capacity})
                                         </p>
                                     </div>
@@ -662,18 +791,18 @@ const MasonryFeedItem = memo(
                                 }}
                             />
 
-                            {!loaded && (
+                            {/* {!loaded && (
                                 <div
                                     className="relative w-full overflow-hidden"
                                     style={{ paddingBottom: '100%' }}
                                 >
                                     <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-surface-1-light via-surface-2-light to-surface-3-light dark:from-surface-1-dark dark:via-surface-2-dark dark:to-surface-3-dark" />
                                 </div>
-                            )}
+                            )} */}
 
-                            <img
+                            {/* <img
                                 src={item?.videos[0]?.thumbnail_url || Placeholder}
-                                alt={item?.title}
+                                alt={item?.name}
                                 loading={loadingStrategy}
                                 decoding="async"
                                 onLoad={() => {
@@ -684,17 +813,24 @@ const MasonryFeedItem = memo(
                                     setLoaded(true);
                                 }}
                                 style={{
-                                    opacity: loaded ? 1 : 0,
                                     width: '100%',
                                     height: 'auto',
                                 }}
-                                className="object-cover text-[10px] text-black dark:text-white"
+                                className="object-cover text-[10px] text-black transition-opacity duration-300 dark:text-white"
+                            /> */}
+
+                            <FeedImage
+                                src={item?.videos[0]?.thumbnail_url || Placeholder}
+                                alt={item?.name}
+                                Placeholder={Placeholder}
+                                loadingStrategy={loadingStrategy}
+                                onLoadedChange={setLoaded}
                             />
                         </div>
 
                         {loaded && (
                             <>
-                                <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
+                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-12">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                         {item.is_sold_out && (
                                             <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -712,7 +848,7 @@ const MasonryFeedItem = memo(
                                             ''
                                         )}
 
-                                        <p className="w-full text-white truncate">
+                                        <p className="w-full truncate text-white">
                                             {item.name} ({item.capacity})
                                         </p>
                                     </div>
@@ -730,7 +866,7 @@ const MasonryFeedItem = memo(
                             </span>
                         </div>
 
-                        <div className="flex flex-col flex-1 mt-10">
+                        <div className="mt-10 flex flex-1 flex-col">
                             <p className="line-clamp-6 whitespace-pre-line break-words text-[13px] leading-[20px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
                                 <span
                                     dangerouslySetInnerHTML={{
@@ -744,7 +880,7 @@ const MasonryFeedItem = memo(
                             </p>
 
                             {/* PRICE - normal flow, pushed to bottom (no overlap) */}
-                            <div className="pt-4 mt-auto text-main-text-light dark:text-main-text-dark">
+                            <div className="mt-auto pt-4 text-main-text-light dark:text-main-text-dark">
                                 <div className="flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                     {item.is_sold_out && (
                                         <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">

@@ -1,7 +1,7 @@
 import useWindowSize from '@/Hooks/useWindowSize';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { Head, router, usePage } from '@inertiajs/react';
-import React, { memo, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { createPortal, flushSync } from 'react-dom';
 import axios from 'axios';
@@ -32,9 +32,9 @@ const interleaveFeedItems = (posts = [], smartphones = [], lodging_properties = 
 
     const toTime = (item) => {
         const raw = item?.created_at ?? item?.added_at ?? null;
-        if (!raw) return 0;                       // missing -> push to bottom
+        if (!raw) return 0; // missing -> push to bottom
         const t = dayjs.utc(raw).valueOf();
-        return Number.isNaN(t) ? 0 : t;           // invalid -> also bottom, never NaN
+        return Number.isNaN(t) ? 0 : t; // invalid -> also bottom, never NaN
     };
 
     return batch.sort((a, b) => {
@@ -42,11 +42,16 @@ const interleaveFeedItems = (posts = [], smartphones = [], lodging_properties = 
         const dateB = toTime(b);
 
         if (dateB !== dateA) return dateB - dateA; // newest first
-        return (b?.id ?? 0) - (a?.id ?? 0);        // stable tie-breaker
+        return (b?.id ?? 0) - (a?.id ?? 0); // stable tie-breaker
     });
 };
 
-const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_lodging = null }) => {
+const index = ({
+    previous_url,
+    direct_post = [],
+    direct_smartphone = [],
+    direct_lodging = null,
+}) => {
     // Translation Hook
     const { __, loading: translationLoading } = useTranslation();
     const t = (key) => (translationLoading ? key : __(key));
@@ -217,7 +222,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
                     // return [...prevFeed, ...newPosts, ...newSmartphones];
                     return [
                         ...prevFeed,
-                        ...interleaveFeedItems(newPosts, newSmartphones,newLodging),
+                        ...interleaveFeedItems(newPosts, newSmartphones, newLodging),
                     ];
                 });
 
@@ -288,12 +293,11 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
     };
 
     useEffect(() => {
-
-         const addBackBuffer = () => {
-        if (!redirectedPreviousUrl.current) {
-            window.history.pushState({}, '', window.location.href);
-        }
-    };
+        const addBackBuffer = () => {
+            if (!redirectedPreviousUrl.current) {
+                window.history.pushState({}, '', window.location.href);
+            }
+        };
 
         if (showFeedSkeleton) {
             // Let skeleton paint first
@@ -702,9 +706,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
             if (public_id) routeParams.public_id = public_id;
             if (slug) routeParams.slug = encodeURIComponent(slug);
 
-            const res = await axios.get(
-                route('website.products.get-single-lodging', routeParams),
-            );
+            const res = await axios.get(route('website.products.get-single-lodging', routeParams));
             const data = await res.data;
 
             if (data.status) {
@@ -822,7 +824,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
                     // return [...prevFeed, ...newPosts, ...newSmartphones];
                     return [
                         ...prevFeed,
-                        ...interleaveFeedItems(newPosts, newSmartphones,newLodging),
+                        ...interleaveFeedItems(newPosts, newSmartphones, newLodging),
                     ];
                 });
 
@@ -1075,7 +1077,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
                     fetchMorePostsAndProducts();
                 }
             },
-            { rootMargin: '200px 0px', threshold: 0 },
+            { rootMargin: '0px 0px 3000px 0px', threshold: 0 },
         );
 
         observer.observe(loaderRef.current);
@@ -1300,17 +1302,12 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
 
     // Sync MobileFeedGalleryOpen state changes
     useEffect(() => {
-         MobileFeedGalleryOpenRef.current = MobileFeedGalleryOpen;
-
-
-
+        MobileFeedGalleryOpenRef.current = MobileFeedGalleryOpen;
 
         if (MobileFeedGalleryOpen) {
-
-              if(redirectedPreviousUrl.current)
-        {
-            return;
-        }
+            if (redirectedPreviousUrl.current) {
+                return;
+            }
 
             const url = new URL(window.location.href);
             url.searchParams.set('mobile-feed-gallery', true);
@@ -1429,6 +1426,86 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
         /Safari/i.test(navigator.userAgent) &&
         !/Chrome|Chromium|CriOS/i.test(navigator.userAgent);
 
+    // Masonry (measured-height, append-only freeze)
+    const gridRef = useRef(null);
+    const columnCountRef = useRef(0);
+    const itemColumnMapRef = useRef({});
+
+    // --- Masonry layout (replaces CSS multi-column; measured-height auto-fill) START ---
+    // Column count = SAME breakpoints as the old Tailwind columns-* classes.
+    const getColumnCount = () => {
+        const width = windowSize.width || 1200;
+        if (feed.length <= 2) return 2;
+        if (width >= 1280) return isSafariMac ? 4 : 5; // xl
+        if (width >= 1024) return isSafariMac ? 3 : 4; // lg
+        if (width >= 768) return 3; // md
+        return 2; // base / sm
+    };
+    const columnCount = getColumnCount();
+
+    // Per-column width — first-paint estimate only (real height replaces it via onMeasure).
+    const estimateColWidth = () => {
+        const w = gridRef.current?.clientWidth || windowSize.width || 1200;
+        const gap = 8;
+        return Math.max(80, (w - gap * (columnCount - 1)) / columnCount);
+    };
+
+    // Media cards ~square (paddingBottom:100%); text cards get an average until measured.
+    const estimateHeight = (item, colWidth) => {
+        const hasMedia =
+            (item.type === 'posts' && (item.images || item.videos)) ||
+            (item.type === 'smartphones' && (item.images || item.videos)) ||
+            (item.type === 'lodging' && item.cover_image_url);
+        return hasMedia ? colWidth : 360;
+    };
+
+    // Build buckets. TWO rules = masonry-fill WITHOUT reflow:
+    //  1) Each item's column chosen ONCE (shortest column then) and FROZEN -> appends
+    //     never move a placed card.
+    //  2) Running heights rebuilt each pass from stored per-item heights (measured when
+    //     available) -> new items land in the shortest column -> gaps auto-fill.
+    const columnBuckets = useMemo(() => {
+        if (columnCountRef.current !== columnCount) {
+            columnCountRef.current = columnCount;
+            itemColumnMapRef.current = {}; // breakpoint change -> rebuild (resize is rare)
+        }
+
+        const cmap = itemColumnMapRef.current;
+        const heights = Array(columnCount).fill(0);
+        const buckets = Array.from({ length: columnCount }, () => []);
+        const colWidth = estimateColWidth();
+
+        feed.forEach((item, i) => {
+            const key = `${item.type}-${item.id}`;
+            let col;
+
+            if (cmap[key] !== undefined) {
+                col = cmap[key].col; // FROZEN
+            } else {
+                col = heights.indexOf(Math.min(...heights)); // shortest column now
+                cmap[key] = { col, height: estimateHeight(item, colWidth) };
+            }
+
+            heights[col] += cmap[key].height;
+            buckets[col].push({ item, index: i });
+        });
+
+        return buckets;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [feed, columnCount]);
+
+    // Card reports REAL height (mount + image load + content-visibility activation).
+    // Only updates stored height so the NEXT batch distributes accurately. Placed cards
+    // never move; this is a pure ref write -> no re-render.
+    const handleMeasure = useCallback((key, height) => {
+        const entry = itemColumnMapRef.current[key];
+        if (!entry || height <= 0) return;
+        if (Math.abs(entry.height - height) < 1) return;
+        entry.height = height;
+    }, []);
+
+    // --- Masonry layout (replaces CSS multi-column; measured-height auto-fill) END ---
+
     return (
         <MainLayout>
             <Head title={__('Home', true)} />
@@ -1482,7 +1559,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
                         }}
                     >
                         <div className="max-w-8xl mx-auto !overflow-hidden sm:px-6 lg:px-8">
-                            <div
+                            {/* <div
                                 className={`columns-2 gap-2 sm:columns-2 md:columns-3 ${feed.length <= 2 ? 'lg:columns-2 xl:columns-2' : isSafariMac ? 'lg:columns-3 xl:columns-4' : 'lg:columns-4 xl:columns-5'}`}
                             >
                                 {feed.map((item, index) => (
@@ -1495,6 +1572,25 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
                                         Index={index}
                                         windowSize={windowSize}
                                     />
+                                ))}
+                            </div> */}
+
+                            <div ref={gridRef} className="flex items-start gap-2">
+                                {columnBuckets.map((bucket, colIdx) => (
+                                    <div key={colIdx} className="flex flex-col flex-1 min-w-0">
+                                        {bucket.map(({ item, index }) => (
+                                            <MasonryFeedItem
+                                                key={`${item.type}-${item.id}`}
+                                                item={item}
+                                                index={index}
+                                                onClick={() => handleItemClick(item, index)}
+                                                Placeholder={Placeholder}
+                                                Index={index}
+                                                windowSize={windowSize}
+                                                onMeasure={handleMeasure}
+                                            />
+                                        ))}
+                                    </div>
                                 ))}
                             </div>
 
@@ -1865,9 +1961,7 @@ const index = ({ previous_url, direct_post = [], direct_smartphone = [], direct_
                                                                 true,
                                                                 true,
                                                             );
-                                                    } else if (
-                                                        feedGallery?.type === 'lodging'
-                                                    ) {
+                                                    } else if (feedGallery?.type === 'lodging') {
                                                         url =
                                                             window.location.origin +
                                                             generateLodgingURL(
