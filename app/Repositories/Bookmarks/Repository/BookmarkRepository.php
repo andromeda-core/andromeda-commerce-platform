@@ -175,7 +175,7 @@ class BookmarkRepository implements IBookmarkRepository
                 $bookmark->title = $bookmark->translatedValue('title');
                 $bookmark->content = $bookmark->translatedValue('content');
                 $bookmark->tag_display = $bookmark->translatedValue('tag');
-                $bookmark->location_name_display = $bookmark->translatedValue('location_name');
+                // $bookmark->location_name_display = $bookmark->translatedValue('location_name');
 
                 return $bookmark;
             });
