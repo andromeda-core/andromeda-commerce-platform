@@ -7,7 +7,6 @@ import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 import SelectInput from '@/Components/SelectInput';
 
-
 export default function edit({ countries, sales, currency, smartphone_country_price }) {
     // Create Data Form Data
     const { data, setData, put, processing, errors, reset } = useForm({
@@ -16,14 +15,11 @@ export default function edit({ countries, sales, currency, smartphone_country_pr
         price: smartphone_country_price.price || '',
     });
 
-
     // Create Data Form Request
     const submit = (e) => {
         e.preventDefault();
         put(route('dashboard.smartphone-country-prices.update', smartphone_country_price.id));
     };
-
-
 
     return (
         <>
@@ -40,7 +36,7 @@ export default function edit({ countries, sales, currency, smartphone_country_pr
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Smartphone Country Prices'}
                                     URL={route('dashboard.smartphone-country-prices.index')}
@@ -68,7 +64,6 @@ export default function edit({ countries, sales, currency, smartphone_country_pr
                                     Content={
                                         <>
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
                                                 <SelectInput
                                                     InputName={'Smartphone For Sale (Smartphone)'}
                                                     Id={'smartphone_for_sale_id'}
@@ -76,11 +71,12 @@ export default function edit({ countries, sales, currency, smartphone_country_pr
                                                     Error={errors.smartphone_for_sale_id}
                                                     Value={data.smartphone_for_sale_id}
                                                     Required={true}
-                                                    Action={(value) => setData('smartphone_for_sale_id', value)}
+                                                    Action={(value) =>
+                                                        setData('smartphone_for_sale_id', value)
+                                                    }
                                                     items={sales}
                                                     itemKey={'name'}
                                                 />
-
 
                                                 <SelectInput
                                                     InputName={'Country'}
@@ -94,8 +90,6 @@ export default function edit({ countries, sales, currency, smartphone_country_pr
                                                     itemKey={'name'}
                                                 />
 
-
-
                                                 <div className="flex items-center">
                                                     <Input
                                                         CustomCss={'w-[40px] mt-5'}
@@ -106,7 +100,9 @@ export default function edit({ countries, sales, currency, smartphone_country_pr
                                                         InputName={'Price'}
                                                         Error={errors.price}
                                                         Value={data.price}
-                                                        Action={(e) => setData('price', e.target.value)}
+                                                        Action={(e) =>
+                                                            setData('price', e.target.value)
+                                                        }
                                                         Placeholder={'Enter Price'}
                                                         Id={'price'}
                                                         Name={'price'}
@@ -114,17 +110,12 @@ export default function edit({ countries, sales, currency, smartphone_country_pr
                                                         Required={true}
                                                     />
                                                 </div>
-
-
-
                                             </div>
-
-
 
                                             <PrimaryButton
                                                 Text={'Update Smartphone Country Price'}
                                                 Type={'submit'}
-                                                CustomClass={'w-[300px]'}
+                                                CustomClass={'lg:w-[350px]'}
                                                 Disabled={
                                                     processing ||
                                                     data.country_id === '' ||
@@ -156,8 +147,6 @@ export default function edit({ countries, sales, currency, smartphone_country_pr
                         </>
                     }
                 />
-
-
             </AuthenticatedLayout>
         </>
     );

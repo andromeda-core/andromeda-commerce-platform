@@ -7,23 +7,37 @@ import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, useForm } from '@inertiajs/react';
 import SelectInput from '@/Components/SelectInput';
 
-
 export default function create({ countries, sales, currency }) {
+    // Pre-fill from query params when arriving from the "Missing for {country}" panel.
+    // Frontend only: reads ?smartphone_for_sale_id=&country_id= from the URL.
+    const presetParams =
+        typeof window !== 'undefined'
+            ? new URLSearchParams(window.location.search)
+            : new URLSearchParams();
+    const presetSaleId = presetParams.get('smartphone_for_sale_id') || '';
+    const presetCountryId = presetParams.get('country_id') || '';
+    const presetQ = presetParams.get('q') || '';
+
     // Create Data Form Data
+    // ROLLBACK: previous init had all three fields empty:
+    // const { data, setData, post, processing, errors, reset } = useForm({
+    //     smartphone_for_sale_id: '',
+    //     country_id: '',
+    //     price: '',
+    // });
     const { data, setData, post, processing, errors, reset } = useForm({
-        smartphone_for_sale_id: '',
-        country_id: '',
+        smartphone_for_sale_id: presetSaleId,
+        country_id: presetCountryId,
+        searched_country_id: presetCountryId,
+        searched_query: presetQ,
         price: '',
     });
-
 
     // Create Data Form Request
     const submit = (e) => {
         e.preventDefault();
         post(route('dashboard.smartphone-country-prices.store'));
     };
-
-
 
     return (
         <>
@@ -40,7 +54,7 @@ export default function create({ countries, sales, currency }) {
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Smartphone Country Prices'}
                                     URL={route('dashboard.smartphone-country-prices.index')}
@@ -68,7 +82,6 @@ export default function create({ countries, sales, currency }) {
                                     Content={
                                         <>
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-
                                                 <SelectInput
                                                     InputName={'Smartphone For Sale (Smartphone)'}
                                                     Id={'smartphone_for_sale_id'}
@@ -76,11 +89,12 @@ export default function create({ countries, sales, currency }) {
                                                     Error={errors.smartphone_for_sale_id}
                                                     Value={data.smartphone_for_sale_id}
                                                     Required={true}
-                                                    Action={(value) => setData('smartphone_for_sale_id', value)}
+                                                    Action={(value) =>
+                                                        setData('smartphone_for_sale_id', value)
+                                                    }
                                                     items={sales}
                                                     itemKey={'name'}
                                                 />
-
 
                                                 <SelectInput
                                                     InputName={'Country'}
@@ -94,8 +108,6 @@ export default function create({ countries, sales, currency }) {
                                                     itemKey={'name'}
                                                 />
 
-
-
                                                 <div className="flex items-center">
                                                     <Input
                                                         CustomCss={'w-[40px] mt-5'}
@@ -106,7 +118,9 @@ export default function create({ countries, sales, currency }) {
                                                         InputName={'Price'}
                                                         Error={errors.price}
                                                         Value={data.price}
-                                                        Action={(e) => setData('price', e.target.value)}
+                                                        Action={(e) =>
+                                                            setData('price', e.target.value)
+                                                        }
                                                         Placeholder={'Enter Price'}
                                                         Id={'price'}
                                                         Name={'price'}
@@ -114,17 +128,12 @@ export default function create({ countries, sales, currency }) {
                                                         Required={true}
                                                     />
                                                 </div>
-
-
-
                                             </div>
-
-
 
                                             <PrimaryButton
                                                 Text={'Create Smartphone Country Price'}
                                                 Type={'submit'}
-                                                CustomClass={'w-[300px]'}
+                                                CustomClass={'lg:w-[350px]'}
                                                 Disabled={
                                                     processing ||
                                                     data.country_id === '' ||
@@ -156,8 +165,6 @@ export default function create({ countries, sales, currency }) {
                         </>
                     }
                 />
-
-
             </AuthenticatedLayout>
         </>
     );

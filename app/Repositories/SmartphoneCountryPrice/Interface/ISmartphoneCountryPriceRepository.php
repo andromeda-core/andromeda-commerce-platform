@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 
 interface ISmartphoneCountryPriceRepository
 {
-    public function getAllSmartphoneCountryPrice();
+    public function getAllSmartphoneCountryPrice(Request $request);
+
+    public function getMissingSmartphonesForCountry(string $country_id);
 
     public function getSingleSmartphoneCountryPrice(?string $id = null);
 

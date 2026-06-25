@@ -3,6 +3,7 @@
 namespace App\Repositories\SmartphoneCountryPrice\Repository;
 
 use App\Models\SmartphoneCountryPrice;
+use App\Models\SmartphoneForSale;
 use App\Repositories\SmartphoneCountryPrice\Interface\ISmartphoneCountryPriceRepository;
 use Exception;
 use Illuminate\Http\Request;
@@ -11,12 +12,44 @@ use Illuminate\Validation\Rule;
 class SmartphoneCountryPriceRepository implements ISmartphoneCountryPriceRepository
 {
     public function __construct(
-        private SmartphoneCountryPrice $smartphone_country_price
+        private SmartphoneCountryPrice $smartphone_country_price,
+        private SmartphoneForSale $smartphone_for_sale
     ) {}
 
-    public function getAllSmartphoneCountryPrice()
+    public function getAllSmartphoneCountryPrice(Request $request)
     {
-        return $this->smartphone_country_price->with(['country', 'selling_info.smartphone.model_name'])->latest()->paginate(10);
+        // ROLLBACK: previous body returned all rows unfiltered:
+        // return $this->smartphone_country_price->with(['country', 'selling_info.smartphone.model_name'])->latest()->paginate(10);
+
+        return $this->smartphone_country_price
+            ->with(['country', 'selling_info.smartphone.model_name'])
+            ->when($request->filled('country_id'), function ($query) use ($request) {
+                $query->where('country_id', $request->input('country_id'));
+            })
+            ->when($request->filled('q'), function ($query) use ($request) {
+                $query->whereHas('selling_info.smartphone.model_name', function ($subQ) use ($request) {
+                    $subQ->where('name', 'like', '%'.$request->input('q').'%');
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+    }
+
+    public function getMissingSmartphonesForCountry(string $country_id)
+    {
+        return $this->smartphone_for_sale
+            ->whereDoesntHave('territory_prices', function ($query) use ($country_id) {
+                $query->where('country_id', $country_id);
+            })
+            ->with(['smartphone.model_name'])
+            ->get()
+            ->map(function ($sale) {
+                return [
+                    'id' => $sale->id,
+                    'name' => $sale->smartphone?->model_name?->name,
+                ];
+            });
     }
 
     public function getSingleSmartphoneCountryPrice(?string $id = null)

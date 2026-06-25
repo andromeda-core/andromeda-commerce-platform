@@ -32,11 +32,30 @@ class SmartphoneCountryPriceController extends Controller implements HasMiddlewa
         private ISmartphoneForSaleRepository $smartphone_for_sale
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
-        $smartphone_country_prices = $this->smartphone_country_price->getAllSmartphoneCountryPrice();
+        // ROLLBACK: previous body was a no-arg call returning all rows:
+        // $smartphone_country_prices = $this->smartphone_country_price->getAllSmartphoneCountryPrice();
+        // return Inertia::render('Dashboard/SmartphoneCountryPrices/index', compact('smartphone_country_prices'));
 
-        return Inertia::render('Dashboard/SmartphoneCountryPrices/index', compact('smartphone_country_prices'));
+        $smartphone_country_prices = $this->smartphone_country_price->getAllSmartphoneCountryPrice($request);
+
+        $countries = $this->setting->getCountries();
+
+        $country_id = $request->input('country_id');
+        $q = $request->input('q');
+
+        $missing_smartphones = $country_id
+            ? $this->smartphone_country_price->getMissingSmartphonesForCountry($country_id)
+            : [];
+
+        return Inertia::render('Dashboard/SmartphoneCountryPrices/index', compact(
+            'smartphone_country_prices',
+            'countries',
+            'missing_smartphones',
+            'country_id',
+            'q'
+        ));
     }
 
     public function create()
@@ -55,7 +74,14 @@ class SmartphoneCountryPriceController extends Controller implements HasMiddlewa
             return back()->with('error', $created['message']);
         }
 
-        return to_route('dashboard.smartphone-country-prices.index')->with('success', $created['message']);
+        $searched_q = $request->input('searched_query');
+        $searched_country_id = $request->input('searched_country_id');
+
+        return to_route('dashboard.smartphone-country-prices.index',
+            [
+                ...(! empty($searched_country_id) ? ['country_id' => $searched_country_id] : []),
+                ...(! empty($searched_q) ? ['q' => $searched_q] : [])])
+            ->with('success', $created['message']);
     }
 
     public function edit(string $id)
