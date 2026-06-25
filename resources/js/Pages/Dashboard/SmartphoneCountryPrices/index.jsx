@@ -10,6 +10,96 @@ import Input from '@/Components/Input';
 import { useEffect, useState } from 'react';
 import can from '@/Hooks/useCan';
 
+function PriceCell({ item }) {
+    const { props } = usePage();
+    const currency = props.currency?.symbol ?? '$';
+
+    const [editing, setEditing] = useState(false);
+    const [value, setValue] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    const startEdit = () => {
+        setValue(item?.price ?? '');
+        setEditing(true);
+    };
+
+    const cancel = () => setEditing(false);
+
+    const save = () => {
+        if (value === '' || Number(value) < 1) {
+            return;
+        }
+        setSaving(true);
+
+        // Preserve the active country filter + search so the redirect returns to the same view.
+        const params = new URLSearchParams(window.location.search);
+
+        router.put(
+            route('dashboard.smartphone-country-prices.update', item.id),
+            {
+                smartphone_for_sale_id: item.smartphone_for_sale_id,
+                country_id: item.country_id,
+                price: value,
+                searched_country_id: params.get('country_id') || '',
+                searched_query: params.get('q') || '',
+            },
+            {
+                preserveScroll: true,
+                preserveState: true,
+                onSuccess: () => setEditing(false),
+                onFinish: () => setSaving(false),
+            },
+        );
+    };
+
+    if (!editing) {
+        return (
+            <button
+                type="button"
+                onClick={startEdit}
+                title="Click to edit price"
+                className="rounded-lg bg-purple-500 p-3 text-white hover:bg-purple-600"
+            >
+                {currency}
+                {Number(item?.price).toLocaleString('en-US')}
+            </button>
+        );
+    }
+
+    return (
+        <div className="flex items-center gap-2">
+            <input
+                type="number"
+                min="1"
+                step="any"
+                autoFocus
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter') save();
+                    if (e.key === 'Escape') cancel();
+                }}
+                className="w-28 rounded-md border border-gray-300 bg-transparent px-2 py-1 text-sm text-gray-800 dark:border-gray-700 dark:bg-deepcharcoal dark:text-white"
+            />
+            <button
+                type="button"
+                onClick={save}
+                disabled={saving}
+                className="rounded-md bg-violet-500 px-3 py-1 text-xs font-medium text-white hover:bg-violet-600 disabled:opacity-60"
+            >
+                {saving ? 'Saving' : 'Save'}
+            </button>
+            <button
+                type="button"
+                onClick={cancel}
+                className="rounded-md border border-gray-300 px-3 py-1 text-xs text-main-text-light dark:border-gray-700 dark:text-main-text-dark"
+            >
+                Cancel
+            </button>
+        </div>
+    );
+}
+
 export default function index({
     smartphone_country_prices,
     countries = [],
@@ -94,16 +184,19 @@ export default function index({
                 },
             },
 
+            // ROLLBACK: New Price was a static badge:
+            // {
+            //     label: 'New Price',
+            //     render: (item) => (
+            //         <span className="rounded-lg bg-purple-500 p-3 text-white">
+            //             {props.currency?.symbol ?? '$'}
+            //             {Number(item?.price).toLocaleString('en-US')}{' '}
+            //         </span>
+            //     ),
+            // },
             {
                 label: 'New Price',
-                render: (item) => {
-                    return (
-                        <span className="rounded-lg bg-purple-500 p-3 text-white">
-                            {props.currency?.symbol ?? '$'}
-                            {Number(item?.price).toLocaleString('en-US')}{' '}
-                        </span>
-                    );
-                },
+                render: (item) => <PriceCell item={item} />,
             },
 
             { key: 'added_at', label: 'Added At' },

@@ -74,6 +74,9 @@ class SmartphoneCountryPriceController extends Controller implements HasMiddlewa
             return back()->with('error', $created['message']);
         }
 
+        // ROLLBACK: previously returned to the index without filters:
+        // return to_route('dashboard.smartphone-country-prices.index')->with('success', $updated['message']);
+
         $searched_q = $request->input('searched_query');
         $searched_country_id = $request->input('searched_country_id');
 
@@ -110,7 +113,16 @@ class SmartphoneCountryPriceController extends Controller implements HasMiddlewa
             return back()->with('error', $updated['message']);
         }
 
-        return to_route('dashboard.smartphone-country-prices.index')->with('success', $updated['message']);
+        // ROLLBACK: previously returned to the index without filters:
+        // return to_route('dashboard.smartphone-country-prices.index')->with('success', $updated['message']);
+
+        $searched_country_id = $request->input('searched_country_id');
+        $searched_q = $request->input('searched_query');
+
+        return to_route('dashboard.smartphone-country-prices.index', [
+            ...(! empty($searched_country_id) ? ['country_id' => $searched_country_id] : []),
+            ...(! empty($searched_q) ? ['q' => $searched_q] : []),
+        ])->with('success', $updated['message']);
     }
 
     public function destroy(string $id)
