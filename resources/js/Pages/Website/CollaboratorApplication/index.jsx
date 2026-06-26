@@ -52,14 +52,28 @@ const OPTIONS = {
         'Direct customer introduction',
         'Other',
     ],
+    // product_categories: [
+    //     'iPhone',
+    //     'Samsung / Android Phones',
+    //     'Smartphones',
+    //     'Consumer Electronics',
+    //     'Luxury / Premium Goods',
+    //     'Other',
+    // ],
+
     product_categories: [
-        'iPhone',
-        'Samsung / Android Phones',
-        'Smartphones',
-        'Consumer Electronics',
-        'Luxury / Premium Goods',
-        'Other',
-    ],
+    'iPhone / Apple Devices',
+    'Samsung / Android Phones',
+    'Mobile Accessories',
+    'Consumer Electronics',
+    'Luxury / Premium Goods',
+    'Hotels / Stays',
+    'Travel Packages / Tours',
+    'Local Experiences / Activities',
+    'K-Beauty / Lifestyle Products',
+    'All Categories',
+    'Other',
+],
 };
 
 const REQUIRED_TEXT_FIELDS = [
