@@ -8,12 +8,12 @@ use Illuminate\Support\Facades\Log;
 
 class IPResolverService
 {
-
     // FOR PROD
     public static function resolveCountryIDFromIP(?string $ip = null)
     {
         try {
             // STEP 1: Resolve actual IP first (this was completely missing)
+
             $ip = $ip ?? request()->ip();
 
             // STEP 2: Local dev fallback for testing
@@ -21,11 +21,14 @@ class IPResolverService
                 $ip = '39.45.0.1'; // Pakistan IP for local testing
             }
 
+            // FOR just testing KG IP
+            // $ip = '213.145.128.1';
             // STEP 3: Check cookie cache, but VALIDATE it points to an active country
-            if (request()->hasCookie('pricing_country_id')) {
+            if (request()->hasCookie('pricing_country_id') && request()->hasCookie('pricing_country_ip')) {
                 $cachedId = (int) request()->cookie('pricing_country_id');
+                $cachedIp = (string) request()->cookie('pricing_country_ip');
 
-                if ($cachedId > 0) {
+                if ($cachedId > 0 && $cachedIp === $ip) {
                     $exists = Country::where('id', $cachedId)
                         ->where('is_active', 1)
                         ->exists();
@@ -40,8 +43,9 @@ class IPResolverService
             // STEP 4: MMDB file check
             $mmdbPath = storage_path('app/geoip/GeoLite2-Country.mmdb');
 
-            if (!file_exists($mmdbPath)) {
-                Log::warning('GeoIP MMDB file missing at: ' . $mmdbPath);
+            if (! file_exists($mmdbPath)) {
+                Log::warning('GeoIP MMDB file missing at: '.$mmdbPath);
+
                 return null;
             }
 
@@ -57,8 +61,9 @@ class IPResolverService
                 ->where('is_active', 1)
                 ->first();
 
-            if (!$country) {
+            if (! $country) {
                 Log::info('Country not found or inactive', ['iso' => $iso]);
+
                 return null;
             }
 
@@ -73,16 +78,26 @@ class IPResolverService
                 true // httpOnly
             ));
 
+            cookie()->queue(cookie(
+                'pricing_country_ip',
+                $ip,
+                60 * 24 * 30, // 30 days in minutes
+                null,
+                null,
+                false,
+                true // httpOnly
+            ));
+
             return $country->id;
         } catch (\Exception $e) {
             Log::error('IPResolverService failed', [
                 'ip' => $ip ?? null,
                 'message' => $e->getMessage(),
             ]);
+
             return null;
         }
     }
-
 
     // FOR LOCAL DEV TESTING ONLY
     // public static function resolveCountryIDFromIP(?string $ip = null)

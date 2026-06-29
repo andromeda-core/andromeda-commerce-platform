@@ -503,6 +503,33 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $translatable_type
+ * @property int $translatable_id
+ * @property int $language_id
+ * @property string $field
+ * @property string|null $value
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Language $language
+ * @property-read \Illuminate\Database\Eloquent\Model|\Eloquent $translatable
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation whereField($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation whereLanguageId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation whereTranslatableId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation whereTranslatableType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|ContentTranslation whereValue($value)
+ */
+	class ContentTranslation extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string $name
  * @property string $iso_code
  * @property int $is_active
@@ -1033,6 +1060,703 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property string $name
+ * @property string|null $icon
+ * @property string|null $category
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LodgingProduct> $products
+ * @property-read int|null $products_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LodgingRoom> $rooms
+ * @property-read int|null $rooms_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingAmenity newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingAmenity newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingAmenity query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingAmenity whereCategory($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingAmenity whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingAmenity whereIcon($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingAmenity whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingAmenity whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingAmenity whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingAmenity whereUpdatedAt($value)
+ */
+	class LodgingAmenity extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $lodging_product_id
+ * @property string|null $policy_name
+ * @property string|null $free_cancellation_deadline
+ * @property array<array-key, mixed>|null $refund_schedule
+ * @property string|null $no_show_policy
+ * @property string|null $rejection_refund_policy
+ * @property string|null $non_refundable_reasons
+ * @property bool $requires_admin_confirmation
+ * @property numeric|null $service_fee
+ * @property bool $service_fee_online
+ * @property numeric|null $cleaning_fee
+ * @property bool $cleaning_fee_online
+ * @property numeric|null $tax_amount
+ * @property bool $tax_online
+ * @property numeric|null $extra_guest_fee
+ * @property string|null $extra_guest_fee_display_text
+ * @property numeric|null $child_fee
+ * @property string|null $child_fee_display_text
+ * @property numeric|null $pet_fee
+ * @property string|null $pet_fee_display_text
+ * @property numeric|null $extension_fee
+ * @property string|null $extension_fee_display_text
+ * @property numeric|null $security_deposit
+ * @property string|null $security_deposit_display_text
+ * @property numeric|null $onsite_payment_amount
+ * @property string|null $onsite_payment_amount_display_text
+ * @property numeric|null $damage_fee
+ * @property string|null $damage_fee_display_text
+ * @property numeric|null $minibar_incidental_fee
+ * @property string|null $minibar_incidental_fee_display_text
+ * @property numeric|null $onsite_tax
+ * @property string|null $onsite_tax_display_text
+ * @property string|null $damage_policy
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ContentTranslation> $contentTranslations
+ * @property-read int|null $content_translations_count
+ * @property-read \App\Models\LodgingProduct $lodgingProduct
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereChildFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereChildFeeDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereCleaningFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereCleaningFeeOnline($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereDamageFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereDamageFeeDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereDamagePolicy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereExtensionFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereExtensionFeeDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereExtraGuestFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereExtraGuestFeeDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereFreeCancellationDeadline($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereLodgingProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereMinibarIncidentalFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereMinibarIncidentalFeeDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereNoShowPolicy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereNonRefundableReasons($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereOnsitePaymentAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereOnsitePaymentAmountDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereOnsiteTax($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereOnsiteTaxDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy wherePetFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy wherePetFeeDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy wherePolicyName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereRefundSchedule($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereRejectionRefundPolicy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereRequiresAdminConfirmation($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereSecurityDeposit($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereSecurityDepositDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereServiceFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereServiceFeeOnline($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereTaxAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereTaxOnline($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCancellationPolicy whereUpdatedAt($value)
+ */
+	class LodgingCancellationPolicy extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $lodging_product_id
+ * @property string|null $checkin_time
+ * @property string|null $checkout_time
+ * @property bool $early_checkin_available
+ * @property numeric|null $early_checkin_fee
+ * @property string|null $early_checkin_fee_display_text
+ * @property bool $late_checkout_available
+ * @property numeric|null $late_checkout_fee
+ * @property string|null $late_checkout_fee_display_text
+ * @property string|null $checkin_method
+ * @property bool $front_desk_available
+ * @property bool $self_checkin_available
+ * @property bool $contactless_checkin_available
+ * @property bool $host_meet_checkin_available
+ * @property string|null $instructions_sent_when
+ * @property string|null $same_day_booking_notice
+ * @property string|null $early_entry_penalty
+ * @property string|null $late_checkout_penalty
+ * @property bool $id_verification_required
+ * @property string|null $minor_policy
+ * @property string|null $mixed_gender_policy
+ * @property string|null $noise_party_restriction
+ * @property string|null $party_policy
+ * @property string|null $checkin_instruction_message
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ContentTranslation> $contentTranslations
+ * @property-read int|null $content_translations_count
+ * @property-read \App\Models\LodgingProduct $lodgingProduct
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereCheckinInstructionMessage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereCheckinMethod($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereCheckinTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereCheckoutTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereContactlessCheckinAvailable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereEarlyCheckinAvailable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereEarlyCheckinFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereEarlyCheckinFeeDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereEarlyEntryPenalty($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereFrontDeskAvailable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereHostMeetCheckinAvailable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereIdVerificationRequired($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereInstructionsSentWhen($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereLateCheckoutAvailable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereLateCheckoutFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereLateCheckoutFeeDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereLateCheckoutPenalty($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereLodgingProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereMinorPolicy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereMixedGenderPolicy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereNoisePartyRestriction($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy wherePartyPolicy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereSameDayBookingNotice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereSelfCheckinAvailable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingCheckinPolicy whereUpdatedAt($value)
+ */
+	class LodgingCheckinPolicy extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property string|null $public_id
+ * @property int $lodging_product_id
+ * @property int|null $source_post_id
+ * @property int|null $source_product_id
+ * @property string|null $file_path
+ * @property string|null $file_url
+ * @property string|null $file_name
+ * @property string $type
+ * @property string|null $thumbnail_url
+ * @property string|null $mime_type
+ * @property int|null $size
+ * @property string $upload_status
+ * @property string|null $caption
+ * @property string|null $alt_text
+ * @property array<array-key, mixed>|null $hashtags
+ * @property string|null $space_ref
+ * @property string|null $time_ref
+ * @property string|null $evidence_role
+ * @property string|null $future_payload_ref
+ * @property string $visibility
+ * @property int|null $sort_order
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\LodgingProduct $lodgingProduct
+ * @property-read \App\Models\Post|null $sourcePost
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereAltText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereCaption($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereEvidenceRole($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereFileName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereFilePath($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereFileUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereFuturePayloadRef($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereHashtags($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereLodgingProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereMimeType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia wherePublicId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereSize($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereSortOrder($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereSourcePostId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereSourceProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereSpaceRef($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereThumbnailUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereTimeRef($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereUploadStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingMedia whereVisibility($value)
+ */
+	class LodgingMedia extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $lodging_product_id
+ * @property bool $parking_available
+ * @property bool $parking_free
+ * @property int|null $spaces_per_room
+ * @property string|null $parking_type
+ * @property bool $pre_registration_required
+ * @property string|null $parking_availability_time
+ * @property string|null $before_checkin_after_checkout
+ * @property string|null $full_lot_policy
+ * @property bool $nearby_parking_available
+ * @property bool $fee_paid_by_guest
+ * @property string|null $vehicle_height_limit
+ * @property string|null $large_vehicle_restrictions
+ * @property string|null $modified_vehicle_restriction
+ * @property string|null $supercar_restriction
+ * @property bool $ev_charging_available
+ * @property bool $refund_if_no_parking
+ * @property numeric|null $extra_parking_fee
+ * @property string|null $extra_parking_fee_display_text
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ContentTranslation> $contentTranslations
+ * @property-read int|null $content_translations_count
+ * @property-read \App\Models\LodgingProduct $lodgingProduct
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereBeforeCheckinAfterCheckout($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereEvChargingAvailable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereExtraParkingFee($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereExtraParkingFeeDisplayText($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereFeePaidByGuest($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereFullLotPolicy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereLargeVehicleRestrictions($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereLodgingProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereModifiedVehicleRestriction($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereNearbyParkingAvailable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereParkingAvailabilityTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereParkingAvailable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereParkingFree($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereParkingType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy wherePreRegistrationRequired($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereRefundIfNoParking($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereSpacesPerRoom($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereSupercarRestriction($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingParkingPolicy whereVehicleHeightLimit($value)
+ */
+	class LodgingParkingPolicy extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property string|null $public_id
+ * @property string|null $slug
+ * @property string $property_name
+ * @property string $property_type
+ * @property string|null $city_region
+ * @property string|null $location_description
+ * @property numeric|null $latitude
+ * @property numeric|null $longitude
+ * @property string|null $location_name
+ * @property int|null $floor_id
+ * @property int|null $floor_start_id
+ * @property int|null $floor_end_id
+ * @property string|null $tag
+ * @property string|null $content
+ * @property string|null $base_checkin_time
+ * @property string|null $base_checkout_time
+ * @property numeric|null $from_price
+ * @property bool $is_active
+ * @property bool $is_reservation_closed
+ * @property int|null $assigned_dashboard_user_id
+ * @property string $booking_source
+ * @property string $source_of_truth
+ * @property string $sync_status
+ * @property string|null $external_provider
+ * @property string|null $external_listing_id
+ * @property string|null $external_api_render_mode
+ * @property array<array-key, mixed>|null $external_api_payload_snapshot
+ * @property string|null $msap_uri
+ * @property string|null $msap_event_ref
+ * @property array<array-key, mixed>|null $element_bundle
+ * @property bool $msap_ready
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LodgingAmenity> $amenities
+ * @property-read int|null $amenities_count
+ * @property-read \App\Models\User|null $assignedDashboardUser
+ * @property-read \App\Models\LodgingCancellationPolicy|null $cancellationPolicy
+ * @property-read \App\Models\LodgingCheckinPolicy|null $checkinPolicy
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ContentTranslation> $contentTranslations
+ * @property-read int|null $content_translations_count
+ * @property-read \App\Models\Floor|null $floor
+ * @property-read \App\Models\Floor|null $floorEnd
+ * @property-read \App\Models\Floor|null $floorStart
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LodgingMedia> $media
+ * @property-read int|null $media_count
+ * @property-read \App\Models\LodgingParkingPolicy|null $parkingPolicy
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LodgingRoom> $rooms
+ * @property-read int|null $rooms_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereAssignedDashboardUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereBaseCheckinTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereBaseCheckoutTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereBookingSource($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereCityRegion($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereContent($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereElementBundle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereExternalApiPayloadSnapshot($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereExternalApiRenderMode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereExternalListingId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereExternalProvider($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereFloorEndId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereFloorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereFloorStartId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereFromPrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereIsReservationClosed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereLatitude($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereLocationDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereLocationName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereLongitude($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereMsapEventRef($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereMsapReady($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereMsapUri($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct wherePropertyName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct wherePropertyType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct wherePublicId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereSlug($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereSourceOfTruth($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereSyncStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereTag($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingProduct whereUpdatedAt($value)
+ */
+	class LodgingProduct extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $lodging_room_id
+ * @property string $name
+ * @property string|null $stay_type
+ * @property numeric|null $original_price
+ * @property numeric $sale_price
+ * @property numeric|null $discount_rate
+ * @property numeric|null $member_price
+ * @property bool $crypto_supported
+ * @property array<array-key, mixed>|null $payment_methods
+ * @property bool $is_cancellable
+ * @property bool $is_non_refundable
+ * @property bool $breakfast_included
+ * @property bool $free_parking_included
+ * @property bool $early_checkin_included
+ * @property bool $late_checkout_included
+ * @property bool $consecutive_nights_allowed
+ * @property int|null $remaining_room_count
+ * @property bool $is_bookable
+ * @property bool $is_active
+ * @property int|null $minimum_nights
+ * @property int|null $maximum_nights
+ * @property string|null $booking_cutoff_time
+ * @property bool $same_day_booking_allowed
+ * @property string|null $external_rate_plan_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ContentTranslation> $contentTranslations
+ * @property-read int|null $content_translations_count
+ * @property-read \App\Models\LodgingRoom $lodgingRoom
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereBookingCutoffTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereBreakfastIncluded($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereConsecutiveNightsAllowed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereCryptoSupported($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereDiscountRate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereEarlyCheckinIncluded($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereExternalRatePlanId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereFreeParkingIncluded($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereIsBookable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereIsCancellable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereIsNonRefundable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereLateCheckoutIncluded($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereLodgingRoomId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereMaximumNights($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereMemberPrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereMinimumNights($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereOriginalPrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan wherePaymentMethods($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereRemainingRoomCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereSalePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereSameDayBookingAllowed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereStayType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRatePlan whereUpdatedAt($value)
+ */
+	class LodgingRatePlan extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property string|null $public_id
+ * @property string|null $reservation_no
+ * @property int|null $customer_id
+ * @property int $lodging_product_id
+ * @property int|null $lodging_room_id
+ * @property int|null $lodging_rate_plan_id
+ * @property \Illuminate\Support\Carbon $checkin_date
+ * @property \Illuminate\Support\Carbon $checkout_date
+ * @property int $guest_count
+ * @property string|null $request_message
+ * @property string|null $property_name_snapshot
+ * @property string|null $room_name_snapshot
+ * @property string|null $rate_plan_name_snapshot
+ * @property numeric|null $price_snapshot
+ * @property int|null $nights
+ * @property numeric|null $online_amount
+ * @property string|null $currency_code
+ * @property string $status
+ * @property string|null $previous_status
+ * @property string $availability_mode
+ * @property bool $requires_hotel_approval
+ * @property int|null $assigned_dashboard_user_id
+ * @property string|null $hotel_approval_status
+ * @property int|null $hotel_approved_by
+ * @property \Illuminate\Support\Carbon|null $hotel_approved_at
+ * @property string|null $hotel_rejected_reason
+ * @property string|null $hotel_rejection_note
+ * @property string|null $alternative_room_suggestion
+ * @property string|null $alternative_date_suggestion
+ * @property string $payment_timing
+ * @property string $approval_source
+ * @property \Illuminate\Support\Carbon|null $approval_expires_at
+ * @property \Illuminate\Support\Carbon|null $hotel_response_deadline
+ * @property string $booking_source
+ * @property string $source_of_truth
+ * @property string $sync_status
+ * @property string|null $external_provider
+ * @property string|null $external_listing_id
+ * @property string|null $external_room_id
+ * @property string|null $external_rate_plan_id
+ * @property string|null $external_booking_id
+ * @property string|null $external_case_id
+ * @property string|null $msap_uri
+ * @property string|null $msap_event_ref
+ * @property string|null $event_id
+ * @property array<array-key, mixed>|null $element_bundle
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User|null $assignedDashboardUser
+ * @property-read \App\Models\Customer|null $customer
+ * @property-read \App\Models\User|null $hotelApprovedBy
+ * @property-read \App\Models\LodgingProduct $lodgingProduct
+ * @property-read \App\Models\LodgingRatePlan|null $lodgingRatePlan
+ * @property-read \App\Models\LodgingRoom|null $lodgingRoom
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LodgingReservationPayment> $payments
+ * @property-read int|null $payments_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereAlternativeDateSuggestion($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereAlternativeRoomSuggestion($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereApprovalExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereApprovalSource($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereAssignedDashboardUserId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereAvailabilityMode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereBookingSource($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereCheckinDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereCheckoutDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereCurrencyCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereCustomerId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereElementBundle($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereEventId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereExternalBookingId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereExternalCaseId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereExternalListingId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereExternalProvider($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereExternalRatePlanId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereExternalRoomId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereGuestCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereHotelApprovalStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereHotelApprovedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereHotelApprovedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereHotelRejectedReason($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereHotelRejectionNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereHotelResponseDeadline($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereLodgingProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereLodgingRatePlanId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereLodgingRoomId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereMsapEventRef($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereMsapUri($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereNights($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereOnlineAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation wherePaymentTiming($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation wherePreviousStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation wherePriceSnapshot($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation wherePropertyNameSnapshot($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation wherePublicId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereRatePlanNameSnapshot($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereRequestMessage($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereRequiresHotelApproval($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereReservationNo($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereRoomNameSnapshot($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereSourceOfTruth($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereSyncStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservation whereUpdatedAt($value)
+ */
+	class LodgingReservation extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $lodging_reservation_id
+ * @property string $status
+ * @property string $method_type
+ * @property numeric|null $amount
+ * @property numeric|null $price_amount
+ * @property string|null $price_currency
+ * @property string|null $pay_currency
+ * @property string|null $external_ref
+ * @property string|null $tx_hash
+ * @property string|null $nowpayments_invoice_id
+ * @property string|null $nowpayments_payment_id
+ * @property string|null $nowpayments_payment_url
+ * @property string|null $nowpayments_order_id
+ * @property string|null $nowpayments_payment_status
+ * @property \Illuminate\Support\Carbon|null $nowpayments_ipn_received_at
+ * @property \Illuminate\Support\Carbon|null $payment_link_created_at
+ * @property \Illuminate\Support\Carbon|null $payment_expires_at
+ * @property \Illuminate\Support\Carbon|null $payment_confirmed_at
+ * @property \Illuminate\Support\Carbon|null $failed_at
+ * @property string|null $msap_uri
+ * @property string|null $event_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\LodgingReservation $lodgingReservation
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereEventId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereExternalRef($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereFailedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereLodgingReservationId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereMethodType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereMsapUri($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereNowpaymentsInvoiceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereNowpaymentsIpnReceivedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereNowpaymentsOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereNowpaymentsPaymentId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereNowpaymentsPaymentStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereNowpaymentsPaymentUrl($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment wherePayCurrency($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment wherePaymentConfirmedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment wherePaymentExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment wherePaymentLinkCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment wherePriceAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment wherePriceCurrency($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereTxHash($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingReservationPayment whereUpdatedAt($value)
+ */
+	class LodgingReservationPayment extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
+ * @property int $lodging_product_id
+ * @property string $room_name
+ * @property string $room_type
+ * @property int $standard_guests
+ * @property int|null $max_guests
+ * @property int|null $bedrooms_count
+ * @property int|null $beds_count
+ * @property array<array-key, mixed>|null $bed_types
+ * @property string|null $bed_size
+ * @property int|null $bathrooms_count
+ * @property int|null $toilets_count
+ * @property bool $is_bathroom_private
+ * @property bool $has_jacuzzi
+ * @property bool $has_bathtub
+ * @property bool $has_shower_booth
+ * @property string|null $view_type
+ * @property string|null $view_type_other
+ * @property string|null $room_size
+ * @property string|null $room_floor_label
+ * @property bool $is_smoking_allowed
+ * @property bool $children_allowed
+ * @property bool $pets_allowed
+ * @property bool $is_random_assignment
+ * @property int|null $remaining_room_count
+ * @property bool $is_available
+ * @property string|null $external_room_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LodgingAmenity> $amenities
+ * @property-read int|null $amenities_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ContentTranslation> $contentTranslations
+ * @property-read int|null $content_translations_count
+ * @property-read \App\Models\LodgingProduct $lodgingProduct
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\LodgingRatePlan> $ratePlans
+ * @property-read int|null $rate_plans_count
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereBathroomsCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereBedSize($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereBedTypes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereBedroomsCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereBedsCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereChildrenAllowed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereExternalRoomId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereHasBathtub($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereHasJacuzzi($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereHasShowerBooth($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereIsAvailable($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereIsBathroomPrivate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereIsRandomAssignment($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereIsSmokingAllowed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereLodgingProductId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereMaxGuests($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom wherePetsAllowed($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereRemainingRoomCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereRoomFloorLabel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereRoomName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereRoomSize($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereRoomType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereStandardGuests($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereToiletsCount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereViewType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|LodgingRoom whereViewTypeOther($value)
+ */
+	class LodgingRoom extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property string $platform_user_id
  * @property int $user_id
  * @property string $platform
@@ -1115,6 +1839,8 @@ namespace App\Models{
  * @property int $is_active
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ContentTranslation> $contentTranslations
+ * @property-read int|null $content_translations_count
  * @property-read mixed $added_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Smartphone> $smartphones
  * @property-read int|null $smartphones_count
@@ -1710,6 +2436,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $bookmarkedByUsers
  * @property-read int|null $bookmarked_by_users_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ContentTranslation> $contentTranslations
+ * @property-read int|null $content_translations_count
  * @property-read \App\Models\Floor|null $floor
  * @property-read mixed $added_at
  * @property-read mixed $created_at_time
@@ -2127,6 +2855,8 @@ namespace App\Models{
  * @property-read int|null $cart_items_count
  * @property-read \App\Models\Category|null $category
  * @property-read \App\Models\Condition|null $condition
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ContentTranslation> $contentTranslations
+ * @property-read int|null $content_translations_count
  * @property-read \App\Models\Country|null $country
  * @property-read \App\Models\CourierCompany|null $courier_company
  * @property-read \App\Models\Floor|null $floor
@@ -2243,6 +2973,35 @@ namespace App\Models{
 namespace App\Models{
 /**
  * @property int $id
+ * @property int $smartphone_for_sale_id
+ * @property int $country_id
+ * @property int|null $shipping_fee_id
+ * @property int|null $import_tax_id
+ * @property bool $is_active
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\Country $country
+ * @property-read \App\Models\AdditionalFeeList|null $importTax
+ * @property-read \App\Models\AdditionalFeeList|null $shippingFee
+ * @property-read \App\Models\SmartphoneForSale $smartphoneForSale
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping whereCountryId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping whereImportTaxId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping whereShippingFeeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping whereSmartphoneForSaleId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|SmartphoneCountryShipping whereUpdatedAt($value)
+ */
+	class SmartphoneCountryShipping extends \Eloquent {}
+}
+
+namespace App\Models{
+/**
+ * @property int $id
  * @property int $smartphone_id
  * @property numeric $selling_price
  * @property string $total_price
@@ -2250,6 +3009,8 @@ namespace App\Models{
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property int|null $shipping_fee_id
  * @property int|null $import_tax_id
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\SmartphoneCountryShipping> $countryShippings
+ * @property-read int|null $country_shippings_count
  * @property-read mixed $added_at
  * @property-read string $total_price_with_tax
  * @property-read \App\Models\AdditionalFeeList|null $import_tax
