@@ -66,6 +66,8 @@ class OrderStatusPaidNotification extends Notification implements ShouldQueue
             ],
             'autoScriptToLang' => true,
             'autoLangToFont' => true,
+
+            'tempDir' => storage_path('app/temp/mpdf'),
         ]);
 
         $html = view('invoices.order_customer_invoice', [
@@ -82,14 +84,14 @@ class OrderStatusPaidNotification extends Notification implements ShouldQueue
 
         $mail = (new MailMessage)
             ->subject(Trans::get('Payment Received – Thank You for Your Order', $locale))
-            ->greeting(Trans::get('Hello', $locale) . ' ' . $notifiable->name . ',')
+            ->greeting(Trans::get('Hello', $locale).' '.$notifiable->name.',')
             ->line(Trans::get('Thank you for your payment! We’ve successfully received your payment for your order.', $locale))
-            ->line('**' . Trans::get('Order Number', $locale) . ':** ' . $this->order->order_no)
-            ->line('**' . Trans::get('Remaining Amount', $locale) . ':** ' . number_format($this->order->amount, 2) . ' ' . ($this->currency->name ?? 'USD'))
-            ->line('**' . Trans::get('Full Amount', $locale) . ':** ' . number_format($this->order->full_amount, 2) . ' ' . ($this->currency->name ?? 'USD'));
+            ->line('**'.Trans::get('Order Number', $locale).':** '.$this->order->order_no)
+            ->line('**'.Trans::get('Remaining Amount', $locale).':** '.number_format($this->order->amount, 2).' '.($this->currency->name ?? 'USD'))
+            ->line('**'.Trans::get('Full Amount', $locale).':** '.number_format($this->order->full_amount, 2).' '.($this->currency->name ?? 'USD'));
 
-        $mail->line('**' . Trans::get('Current Status', $locale) . ':** ' . Trans::get('PAID', $locale))
-            ->line('**' . Trans::get('Payment Method', $locale) . ':** ' . (
+        $mail->line('**'.Trans::get('Current Status', $locale).':** '.Trans::get('PAID', $locale))
+            ->line('**'.Trans::get('Payment Method', $locale).':** '.(
                 $this->order->payment_method === 'bank_transfer'
                 ? Trans::get('Bank Transfer', $locale)
                 : Trans::get('Points', $locale)

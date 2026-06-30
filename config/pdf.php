@@ -39,4 +39,6 @@ return [
     //  Enabled autoScriptToLang for automatic font switching
     'autoScriptToLang' => true,
     'autoLangToFont' => true,
+
+    'tempDir' => storage_path('app/temp/mpdf'),
 ];

@@ -2,3 +2,4 @@ pdf/
 !private/
 !public/
 !.gitignore
+temp/
