@@ -41,6 +41,9 @@ class PostRepository implements IPostRepository
     public function getAllPosts(Request $request)
     {
         $posts = $this->post
+            ->when(! $request->user()->hasRole('Admin'), function ($query) use ($request) {
+                $query->where('user_id', $request->user()->id);
+            })
             ->with(['floor', 'user'])
             ->latest()
             ->paginate(10);
@@ -48,10 +51,11 @@ class PostRepository implements IPostRepository
         return $posts;
     }
 
-    public function getSinglePostBySlug(string $identifier, ?Request $request = null)
+    public function getSinglePostBySlug(string $identifier, ?Request $request = null, $isBackend = false)
     {
 
         // $from_backend = ! empty($request) ? ($request->has('from_backend') ? $request->boolean('from_backend') : false) : false;
+
         $images = ! empty($request) ? ($request->has('images') ? $request->boolean('images') : true) : null;
         $videos = ! empty($request) ? ($request->has('videos') ? $request->boolean('videos') : true) : null;
         $text = ! empty($request) ? ($request->has('text') ? $request->boolean('text') : true) : null;
@@ -68,12 +72,12 @@ class PostRepository implements IPostRepository
             })
 
             // its For restricting The Text Only Posts -> Not needed Now
-            // ->when(! $from_backend, function ($q) {
-            //     $q->where(function ($sub) {
-            //         $sub->whereRaw('JSON_LENGTH(images) > 0')
-            //             ->orWhereRaw('JSON_LENGTH(videos) > 0');
-            //     });
-            // })
+            ->when($isBackend, function ($q) use ($request) {
+                $user = $request?->user();
+                if (! $user || ! $user->hasRole('Admin')) {
+                    $q->where('user_id', $user?->id);
+                }
+            })
             // ->when($request && $request->hasAny(['text', 'images', 'videos']), function ($q) use ($images, $videos, $text) {
             //     $q->where(function ($q) use ($images, $videos, $text) {
             //         if ($text) {

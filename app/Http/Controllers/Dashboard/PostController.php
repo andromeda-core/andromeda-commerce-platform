@@ -78,7 +78,7 @@ class PostController extends Controller implements HasMiddleware
             return to_route('dashboard.posts.index')->with('error', 'Post Slug Not Found');
         }
 
-        $post = $this->post->getSinglePostBySlug($slug, $request);
+        $post = $this->post->getSinglePostBySlug($slug, $request, isBackend: true);
         if (empty($post)) {
             return to_route('dashboard.posts.index')->with('error', 'Post Not Found');
         }
@@ -92,7 +92,7 @@ class PostController extends Controller implements HasMiddleware
             return to_route('dashboard.posts.index')->with('error', 'Post Slug Not Found');
         }
 
-        $post = $this->post->getSinglePostBySlug($slug, $request);
+        $post = $this->post->getSinglePostBySlug($slug, $request, isBackend: true);
 
         if (empty($post)) {
             return to_route('dashboard.posts.index')->with('error', 'Post Not Found');
