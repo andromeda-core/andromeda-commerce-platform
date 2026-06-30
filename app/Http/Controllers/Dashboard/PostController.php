@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Language;
 use App\Repositories\Floors\Interface\IFloorRepostitory;
 use App\Repositories\Posts\Interface\IPostRepository;
+use App\Services\AiTranslationService; // NEW (additive): reusable AI translation orchestrator
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -25,6 +26,11 @@ class PostController extends Controller implements HasMiddleware
             new Middleware('permission:Posts Edit', ['only' => 'update']),
             new Middleware('permission:Posts Delete', ['only' => 'destroy']),
             new Middleware('permission:Posts Delete', ['only' => 'destroyBySelection']),
+
+            // NEW (additive): AI translate endpoint gated by the SAME create/edit permissions
+            // (pipe = OR in Spatie) plus a throttle using the existing throttle:N,1 convention.
+            new Middleware('permission:Posts Create|Posts Edit', ['only' => 'aiTranslateField']),
+            new Middleware('throttle:200,1', ['only' => 'aiTranslateField']),
 
         ];
     }
@@ -202,5 +208,40 @@ class PostController extends Controller implements HasMiddleware
 
         return back();
 
+    }
+
+    // NEW (additive): pure AI translation generator. Returns translated text as JSON.
+    // It NEVER writes content_translations; the manual repeater + syncTranslations save
+    // path stay untouched. Protected via middleware() (Posts Create|Posts Edit + throttle).
+    public function aiTranslateField(Request $request, AiTranslationService $translator)
+    {
+        $validated = $request->validate([
+            'target_language_id' => ['required', 'integer', 'exists:languages,id'],
+            'field' => ['required', 'string', 'in:title,content,tag,location_name'],
+            // BUGFIX (Bug 3): was 'required'; allow empty so an accidental empty source
+            // returns a safe success (status:true, value:'') instead of a 422 error.
+            // FIX (422 size cap): was max:50000 -> 200000; raised to a sane 1000000 (~1MB) upper
+            // bound so large HTML content is never rejected before translation (not removed).
+            'value' => ['nullable', 'string', 'max:1000000'],
+        ]);
+
+        $result = $translator->translateField(
+            field: $validated['field'],
+            value: (string) ($validated['value'] ?? ''), // BUGFIX (Bug 3): coerce null/empty to ''
+            targetLanguageId: (int) $validated['target_language_id'],
+            allowedFields: ['title', 'content', 'tag', 'location_name'],
+            htmlFields: ['content'], // Post content is RAW HTML
+        );
+
+        if (($result['status'] ?? false) !== true) {
+            return response()->json(['status' => false, 'message' => $result['message'] ?? 'Translation failed'], 422);
+        }
+
+        return response()->json([
+            'status' => true,
+            'field' => $result['field'],
+            'language_id' => $result['language_id'],
+            'value' => $result['value'],
+        ]);
     }
 }

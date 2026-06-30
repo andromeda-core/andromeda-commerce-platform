@@ -399,6 +399,9 @@ Route::middleware(['auth'])->group(function () {
             // Google Locaiton AutoCompletion Route  For Posts
             Route::post('/posts-google-location-autocomplete', 'googleLocationAutoComplete')->name('google.location.autocomplete');
             Route::post('/posts-google-location-place-details', 'googleLocationPlaceDetails')->name('google.location.placedetails');
+
+            // NEW (additive): AI translation generator endpoint (gated in PostController::middleware()).
+            Route::post('/posts-ai-translate-field', 'aiTranslateField')->name('ai-translate-field');
         });
 
         // Floor Routes

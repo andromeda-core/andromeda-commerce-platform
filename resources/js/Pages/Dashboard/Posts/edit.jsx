@@ -10,6 +10,10 @@ import SelectInput from '@/Components/SelectInput';
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import RawHtmlContentInput from '@/Components/RawHtmlContentInput';
 import TranslationsRepeater from '@/Components/TranslationsRepeater';
+// NEW (additive): reusable AI translation generator (sits above the manual repeater)
+import AiTranslationRepeater from '@/Components/AiTranslationRepeater';
+import AiTranslationPanel from '@/Components/AiTranslationPanel';
+import useAiTranslation, { mergeTranslationField, cleanupIncompleteTranslation } from '@/Hooks/useAiTranslation';
 import { areTranslationsComplete } from '@/Hooks/useTranslationsComplete';
 import Toast from '@/Components/Toast';
 import Swal from 'sweetalert2';
@@ -409,6 +413,35 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
     // Frontend guard: disable submit while any open translation block is incomplete.
     const translationsOk = areTranslationsComplete(data.translations, ['title', 'content', 'tag']);
 
+    // NEW (additive): AI translation wiring (reusable hook + functional merge into data.translations).
+    const ai = useAiTranslation();
+    const aiSourceFields = {
+        title: data.title,
+        content: data.content,
+        tag: data.tag,
+        location_name: data.location_name,
+    };
+    const aiEndpoint = 'dashboard.posts.ai-translate-field';
+    // BUGFIX (Bug 1): Inertia setData('key', fn) stores fn AS THE VALUE (it does not call it),
+    // which turned data.translations into a function and wiped existing blocks. Use the
+    // whole-object functional form so the updater actually runs against live data and only
+    // the one translated field is merged into the matching language block.
+    // OLD (clobbered translations):
+    // const aiInject = (languageId, field, value) =>
+    //     setData('translations', (prev) => mergeTranslationField(prev, languageId, field, value));
+    const aiInject = (languageId, field, value) =>
+        setData((prev) => ({
+            ...prev,
+            translations: mergeTranslationField(prev.translations, languageId, field, value),
+        }));
+    // FIX (incomplete cleanup): undo a non-completing run's partial injects (remove the
+    // AI-created block, or revert pre-existing fields). Whole-object functional setData only.
+    const aiIncomplete = (languageId, info) =>
+        setData((prev) => ({
+            ...prev,
+            translations: cleanupIncompleteTranslation(prev.translations, { languageId, ...info }),
+        }));
+
     return (
         <>
             <AuthenticatedLayout>
@@ -634,6 +667,46 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
                                                 />
                                             </div>
 
+                                            {/* NEW (additive): AI translation generator above the manual repeater. */}
+                                            <AiTranslationRepeater
+                                                sourceFields={aiSourceFields}
+                                                languages={languages}
+                                                translations={data.translations}
+                                                endpointRouteName={aiEndpoint}
+                                                onInject={aiInject}
+                                                startTranslation={ai.startTranslation}
+                                                jobs={ai.jobs}
+                                                onIncomplete={aiIncomplete}
+                                            />
+
+                                            <AiTranslationPanel
+                                                jobs={ai.jobs}
+                                                onCancel={ai.cancel}
+                                                // FIX (incomplete cleanup): cleanup now happens on FAIL/CANCEL (in the
+                                                // hook), so dismiss just clears the row. A DONE job keeps its translation.
+                                                // OLD (removed partial block here on failed-dismiss):
+                                                // onDismiss={(languageId) => { ...remove block if failed...; ai.dismiss }}
+                                                onDismiss={ai.dismiss}
+                                                onRetry={(languageId) => {
+                                                    const lang = languages.find(
+                                                        (l) => Number(l.id) === Number(languageId),
+                                                    );
+                                                    if (!lang) return;
+                                                    // FIX (incomplete cleanup): snapshot block before re-running.
+                                                    const list = Array.isArray(data.translations)
+                                                        ? data.translations
+                                                        : [];
+                                                    const previousBlock =
+                                                        list.find(
+                                                            (b) => String(b?.language_id) === String(languageId),
+                                                        ) || null;
+                                                    ai.startTranslation(lang, aiSourceFields, aiEndpoint, aiInject, {
+                                                        previousBlock,
+                                                        onIncomplete: aiIncomplete,
+                                                    });
+                                                }}
+                                            />
+
                                             <TranslationsRepeater
                                                 languages={languages}
                                                 value={data.translations}
@@ -656,7 +729,8 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
                                                     data.content.trim() === '' ||
                                                     data.post_type.trim() === '' ||
                                                     data.status === '' ||
-                                                    !translationsOk
+                                                    !translationsOk ||
+                                                    ai.isBusy // NEW (additive): lock Save while AI translation runs
                                                 }
                                                 Spinner={processing}
                                                 Icon={
