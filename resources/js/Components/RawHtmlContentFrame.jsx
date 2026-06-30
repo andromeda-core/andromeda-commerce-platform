@@ -64,9 +64,9 @@ const buildFrameCss = (textColor) => `
         text-align: center;
         padding: 12px !important;
     }
-    body, p, h1, h2, h3, h4, h5, h6, span, div, li, td, blockquote, section, article {
-        text-align: center !important;
-    }
+    // body, p, h1, h2, h3, h4, h5, h6, span, div, li, td, blockquote, section, article {
+    //     text-align: center !important;
+    // }
     * { box-sizing: border-box; max-width: 100%; }
     video, iframe, table, canvas, svg { max-width: 100% !important; height: auto; }
     /* Center + make responsive every description image by default.
@@ -92,7 +92,7 @@ const prepareFrameHtml = (html, css, dark) => {
     let out = html;
 
     // 1. Inject our theme/responsive <style>
-const tag = `<style data-frame-theme="true">${css}</style><base target="_blank" rel="noopener noreferrer">`;
+    const tag = `<style data-frame-theme="true">${css}</style><base target="_blank" rel="noopener noreferrer">`;
     if (/<\/head>/i.test(out)) {
         out = out.replace(/<\/head>/i, `${tag}</head>`);
     } else if (/<head[^>]*>/i.test(out)) {
@@ -170,16 +170,16 @@ export const HtmlFrame = ({ html, interactive = false }) => {
             ref={iframeRef}
             srcDoc={finalHtml}
             title="product-description"
-           sandbox={
-    interactive
-        ? 'allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox'
-        : 'allow-same-origin allow-scripts'
-}
+            sandbox={
+                interactive
+                    ? 'allow-same-origin allow-scripts allow-popups allow-popups-to-escape-sandbox'
+                    : 'allow-same-origin allow-scripts'
+            }
             className="w-full border-0"
-           style={{
-    height: `${height}px`,
-    pointerEvents: interactive ? 'auto' : 'none',
-}}
+            style={{
+                height: `${height}px`,
+                pointerEvents: interactive ? 'auto' : 'none',
+            }}
         />
     );
 };
@@ -207,13 +207,7 @@ const RawHtmlContentFrame = forwardRef(function RawHtmlContentFrame(
         );
     }
 
-    return (
-        <div
-            ref={ref}
-            className={className}
-            dangerouslySetInnerHTML={{ __html: content }}
-        />
-    );
+    return <div ref={ref} className={className} dangerouslySetInnerHTML={{ __html: content }} />;
 });
 
 export default RawHtmlContentFrame;
