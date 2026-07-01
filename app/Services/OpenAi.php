@@ -310,7 +310,19 @@ PROMPT;
                 .'(4) Translate ONLY visible text between tags and human-readable attribute values that are actually shown to users (alt, title, placeholder, aria-label, and meta description or og:* content). Do NOT translate code, URLs, class or id names, or the contents of <style> or <script>. '
                 .'(5) The output length must be comparable to the input. A drastically shorter output means content was dropped, which is a failure. '
                 .'Output ONLY the resulting HTML, with no commentary, no markdown, and no code fences.'
-            : 'The value is plain text. Translate it fully and naturally into the target language. Output ONLY the translated text, with no commentary, no markdown, and no code fences.';
+            // FIX (plain-text <p> injection): the old plain-text rule only said "no markdown / no
+            // code fences", which did NOT stop the model from wrapping multi-paragraph text in
+            // <p> tags and did NOT ask it to keep the newlines. A single injected block tag flips
+            // the frontend onto the iframe path where newlines collapse and paragraphs merge. So
+            // the plain-text rule now explicitly forbids ALL HTML/markup and requires the exact
+            // line-break/paragraph structure to be preserved. (Only this isHtml=false branch is
+            // changed; the isHtml=true branch above is untouched.)
+            : 'The value is plain text. Translate it fully and naturally into the target language. '
+                .'Hard requirements: '
+                .'(1) Return ONLY the translated plain text. '
+                .'(2) Do NOT add any HTML tags or markup of any kind (no <p>, <div>, <br>, <span>, or any other tag). '
+                .'(3) Preserve ALL line breaks and blank lines EXACTLY as in the source: keep the same number of newlines and blank lines, and the same paragraph structure. '
+                .'Output ONLY the translated text, with no commentary, no markdown, and no code fences.';
 
         // Tag rule: keep a leading # and keep the value a single token (do not turn it into spaces).
         $tagRule = $field === 'tag'

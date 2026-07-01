@@ -90,6 +90,8 @@ use App\Repositories\Suppliers\Interface\ISupplierRepository;
 use App\Repositories\Suppliers\Repository\SupplierRepository;
 use App\Repositories\SystemLogs\Interface\ISystemLogsRepository;
 use App\Repositories\SystemLogs\Repository\SystemLogsRepository;
+use App\Repositories\Templates\Interface\ITemplateRepository;
+use App\Repositories\Templates\Repository\TemplateRepository;
 use App\Repositories\TermsOfService\Interface\ITermsOfServiceRepository;
 use App\Repositories\TermsOfService\Repository\TermsOfServiceRepository;
 use App\Repositories\TranslationSystem\Language\Interface\ILanguageRepository;
@@ -162,6 +164,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IAttributionRewardRepository::class, AttributionRewardRepository::class);
         $this->app->bind(IInternalProductImageRepository::class, InternalProductImageRepository::class);
         $this->app->bind(IPriceRangeRepository::class, PriceRangeRepository::class);
+        $this->app->bind(ITemplateRepository::class, TemplateRepository::class);
         $this->app->bind(ILodgingProductRepository::class, LodgingProductRepository::class);
         $this->app->bind(ILodgingReservationRepository::class, LodgingReservationRepository::class);
     }

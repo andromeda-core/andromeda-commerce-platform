@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Language;
+use App\Models\Template; // NEW (Phase 3): read-only source for the Apply-Template dropdown
 use App\Repositories\Floors\Interface\IFloorRepostitory;
 use App\Repositories\Posts\Interface\IPostRepository;
 use App\Repositories\Smartphones\Interface\ISmartphoneRepository;
@@ -63,7 +64,11 @@ class SmartphoneController extends Controller implements HasMiddleware
         $googleMapSettings = $this->post->getGoogleMapSettings();
         $languages = Language::where('code', '!=', config('app.fallback_locale', 'en'))->orderBy('name')->get(['id', 'name', 'code']);
 
-        return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'floors', 'conditions', 'googleMapSettings', 'courier_companies', 'return_policies', 'addons', 'languages'));
+        // NEW (Phase 3): read-only templates prop for the Apply-Template dropdown (client-side copy).
+        // Does NOT touch any smartphone table/validation/save; templates data only.
+        $templates = $this->getApplyTemplates();
+
+        return Inertia::render('Dashboard/Smartphones/create', compact('colors', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'floors', 'conditions', 'googleMapSettings', 'courier_companies', 'return_policies', 'addons', 'languages', 'templates'));
     }
 
     public function store(Request $request)
@@ -143,7 +148,44 @@ class SmartphoneController extends Controller implements HasMiddleware
             })
             ->values();
 
-        return Inertia::render('Dashboard/Smartphones/edit', compact('colors', 'floors', 'googleMapSettings', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'smartphone', 'addons', 'languages', 'existingTranslations'));
+        // NEW (Phase 3): read-only templates prop for the Apply-Template dropdown (client-side copy).
+        $templates = $this->getApplyTemplates();
+
+        return Inertia::render('Dashboard/Smartphones/edit', compact('colors', 'floors', 'googleMapSettings', 'model_names', 'capacities', 'shipping_policies', 'categories', 'countries', 'conditions', 'courier_companies', 'return_policies', 'smartphone', 'addons', 'languages', 'existingTranslations', 'templates'));
+    }
+
+    // NEW (Phase 3): read-only source for the Apply-Template dropdown on the smartphone forms.
+    // Returns templates shaped like the smartphone form's translations payload
+    // ([{ language_id:int, fields:{ content } }]) so the client can copy content + translations
+    // with NO smartphone backend/schema/save change. Reads the Templates module data only;
+    // does not touch smartphones or content_translations.
+    private function getApplyTemplates()
+    {
+        return Template::query()
+            ->with('templateTranslations')
+            ->latest()
+            ->get()
+            ->map(function ($t) {
+                $translations = $t->templateTranslations
+                    ->groupBy('language_id')
+                    ->map(function ($rows, $languageId) {
+                        $fields = [];
+                        foreach ($rows as $row) {
+                            // templates translate content only
+                            $fields[$row->field] = $row->value;
+                        }
+
+                        return ['language_id' => (int) $languageId, 'fields' => $fields];
+                    })
+                    ->values();
+
+                return [
+                    'id' => $t->id,
+                    'name' => $t->title,          // plain admin label
+                    'content' => $t->content ?? '',
+                    'translations' => $translations,
+                ];
+            });
     }
 
     public function update(Request $request, ?string $id = null)

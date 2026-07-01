@@ -72,11 +72,26 @@ class AiTranslationService
             return ['status' => false, 'message' => $result['error'] ?? 'Translation failed'];
         }
 
+        $translatedValue = $result['value'] ?? '';
+
+        // FIX (plain-text <p> injection): deterministic backstop, STRICTLY GATED on a TAGLESS
+        // source. Even with the tightened plain-text prompt the model can still wrap a plain-text
+        // body in block tags (e.g. <p>...</p>); a single block tag flips the frontend onto the
+        // iframe render path where newlines collapse and paragraphs merge. When the ORIGINAL
+        // $value had NO tags but the translation came back WITH tags, convert that injected markup
+        // back to plain text so the paragraph breaks survive as real newlines on the inline path.
+        // GATING IS CRITICAL: a genuine HTML source (looksLikeHtml($value) === true) is handled
+        // above by translateHtmlViaDom and NEVER reaches this branch, so real HTML markup, styles
+        // and structure are never stripped or altered by this backstop.
+        if (! $this->looksLikeHtml($value) && $this->looksLikeHtml($translatedValue)) {
+            $translatedValue = $this->normalizeInjectedHtmlToPlainText($translatedValue);
+        }
+
         return [
             'status' => true,
             'field' => $field,
             'language_id' => $targetLanguageId,
-            'value' => $result['value'] ?? '',
+            'value' => $translatedValue,
         ];
     }
 
@@ -84,6 +99,40 @@ class AiTranslationService
     private function looksLikeHtml(string $value): bool
     {
         return preg_match('/<\/?[a-zA-Z][^>]*>/', $value) === 1;
+    }
+
+    // FIX (plain-text <p> injection): deterministic backstop for the PLAIN-TEXT path only. Turns
+    // HTML that the model injected into a TAGLESS source back into plain text with real newlines,
+    // so paragraph breaks survive on the frontend inline render path. The caller gates this on
+    // ! looksLikeHtml($source), so a genuine HTML source (translated via translateHtmlViaDom)
+    // NEVER reaches here and its real markup/styles are never touched.
+    private function normalizeInjectedHtmlToPlainText(string $value): string
+    {
+        // <br> and closing block tags become a newline so line/paragraph breaks are preserved.
+        $value = preg_replace('/<\s*br\s*\/?\s*>/i', "\n", $value);
+        $value = preg_replace(
+            '/<\s*\/\s*(p|div|section|article|header|footer|h[1-6]|li|ul|ol|blockquote|pre|table|tr)\s*>/i',
+            "\n",
+            $value
+        );
+
+        // Opening block tags are removed outright (their break role is handled by the closing tag).
+        $value = preg_replace(
+            '/<\s*(p|div|section|article|header|footer|h[1-6]|li|ul|ol|blockquote|pre|table|tr)\b[^>]*>/i',
+            '',
+            $value
+        );
+
+        // Strip any remaining tags (e.g. a stray <span>) so nothing HTML-like survives.
+        $value = preg_replace('/<\/?[a-zA-Z][^>]*>/', '', $value);
+
+        // Decode any HTML entities the model may have introduced (e.g. &amp;, &#39;, &nbsp;).
+        $value = html_entity_decode($value, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        // Collapse 3+ consecutive newlines to at most 2 so paragraph spacing stays sane.
+        $value = preg_replace('/\n{3,}/', "\n\n", $value);
+
+        return $value;
     }
 
     // FIX (DOM HTML translation): parse the HTML, translate ONLY visible text nodes (never the

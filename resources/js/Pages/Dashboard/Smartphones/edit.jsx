@@ -15,6 +15,8 @@ import { Loader } from '@googlemaps/js-api-loader';
 import NativeScannerPreview from '@/Components/NativeScannerPreview';
 import TranslationsRepeater from '@/Components/TranslationsRepeater';
 import { areTranslationsComplete } from '@/Hooks/useTranslationsComplete';
+// NEW (Phase 3 follow-up): heroicon for the Apply-Template button (matches the Templates permission icon).
+import { DocumentTextIcon } from '@heroicons/react/24/outline';
 
 export default function edit({
     colors,
@@ -32,6 +34,7 @@ export default function edit({
     floors,
     languages,
     existingTranslations,
+    templates = [], // NEW (Phase 3): read-only list for the Apply-Template dropdown
 }) {
     // Edit Data Form Data
     const { data, setData, reset } = useForm({
@@ -60,6 +63,47 @@ export default function edit({
         created_at: smartphone?.created_at ? smartphone.created_at.slice(0, 16) : '',
         translations: existingTranslations ?? [],
     });
+
+    // NEW (Phase 3): Apply-template dropdown state + one-time client-side copy.
+    const [selectedTemplateId, setSelectedTemplateId] = useState('');
+
+    // applyTemplate: fill the English content and MERGE the template's per-language content into
+    // data.translations (replace matching languages, create missing ones; leave unrelated
+    // smartphone languages/fields intact). One atomic whole-object functional setData so the
+    // translations array is never clobbered. No smartphone backend/schema/save change.
+    const applyTemplate = (id) => {
+        const tpl = (templates || []).find((t) => String(t.id) === String(id));
+        if (!tpl) return;
+
+        setData((prev) => {
+            const allowedIds = new Set((languages || []).map((l) => Number(l.id)));
+            const current = Array.isArray(prev.translations) ? prev.translations : [];
+            const byLang = new Map(current.map((b) => [Number(b.language_id), b]));
+
+            (tpl.translations || []).forEach((t) => {
+                const langId = Number(t.language_id);
+                if (!allowedIds.has(langId)) return; // skip en / unknown langs
+                const src = t.fields || {};
+                const nextFields = { ...(byLang.get(langId)?.fields || {}) };
+                Object.keys(src).forEach((key) => {
+                    const v = src[key];
+                    nextFields[key] = Array.isArray(v)
+                        ? v.map((r) => ({ title: r?.title ?? '', value: r?.value ?? '' }))
+                        : (v ?? '');
+                });
+                byLang.set(langId, { language_id: langId, fields: nextFields });
+            });
+
+            return {
+                ...prev,
+                content: tpl.content ?? '',
+                translations: Array.from(byLang.values()),
+            };
+        });
+
+        // Reset selection so re-picking the same template re-applies intentionally.
+        setSelectedTemplateId('');
+    };
 
     // Location Get Success state
     const [LocationGotSuccessMessage, setLocationGotSuccessMessage] = useState(null);
@@ -559,7 +603,10 @@ export default function edit({
         });
     }, [googleMapLocatioModalOpen]);
     // Frontend guard: disable submit while any open translation block is incomplete.
-    const translationsOk = areTranslationsComplete(data.translations, ['content', 'tag']);
+    // OLD (tag required per language): areTranslationsComplete(data.translations, ['content', 'tag'])
+    // Tag is optional here (main tag input is Required={false}, backend tag is nullable); an empty
+    // per-language tag falls back to the English tag via translatedValue(), so require content only.
+    const translationsOk = areTranslationsComplete(data.translations, ['content']);
 
     return (
         <>
@@ -978,6 +1025,42 @@ export default function edit({
                                                     Multiple={true}
                                                     DefaultFile={video_urls}
                                                 />
+                                            </div>
+
+                                            {/* NEW (Phase 3): Apply a description template. Client-side copy only — fills the
+                                                content field and merges the template's per-language content into the
+                                                translations below. No smartphone backend/schema/save change. */}
+                                            <div className="my-4 rounded-lg border border-dashed border-gray-300 p-4 dark:border-gray-700">
+                                                <div className="flex flex-wrap items-end justify-between gap-3">
+                                                    <SelectInput
+                                                        InputName={'Apply Description Template'}
+                                                        Id={'apply_template'}
+                                                        Name={'apply_template'}
+                                                        items={templates}
+                                                        itemKey={'name'}
+                                                        Value={selectedTemplateId}
+                                                        Required={false}
+                                                        Action={(value) => setSelectedTemplateId(value)}
+                                                        CustomCss={'w-full max-w-xs'}
+                                                        customPlaceHolder={true}
+                                                        Placeholder={'Select a template'}
+                                                    />
+
+                                                    <PrimaryButton
+                                                        Text={'Apply Template'}
+                                                        Type={'button'}
+                                                        Id={'apply_template_btn'}
+                                                        CustomClass={'w-[200px]'}
+                                                        Disabled={!selectedTemplateId}
+                                                        Action={() => applyTemplate(selectedTemplateId)}
+                                                        Icon={<DocumentTextIcon className="h-5 w-5" />}
+                                                    />
+                                                </div>
+
+                                                <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                                    This replaces the content below and its translations for matching
+                                                    languages.
+                                                </p>
                                             </div>
 
                                             <div className="grid grid-cols-1 gap-4">

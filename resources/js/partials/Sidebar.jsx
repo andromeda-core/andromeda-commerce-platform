@@ -146,6 +146,7 @@ export default function Sidebar({
             'dashboard.settings.price-ranges.',
             'dashboard.inventory-verifications.',
             'dashboard.internal-product-images.',
+            'dashboard.templates.',
         ].some((prefix) => route().current().startsWith(prefix));
 
         const isLodgingRoute = [
@@ -265,6 +266,7 @@ export default function Sidebar({
             'Smartphone Country Price View',
             'Internal Product Images View',
             'Price Ranges View',
+            'Templates View',
         ]) ||
             (user?.role === 'Distributor'
                 ? can('Inventories Verification') &&
@@ -633,6 +635,17 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.batches.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Stock
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can('Templates View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route('dashboard.templates.index')}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.templates.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Templates
                                                         </Link>
                                                     </li>
                                                 )}

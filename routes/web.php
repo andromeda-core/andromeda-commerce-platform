@@ -39,6 +39,7 @@ use App\Http\Controllers\Dashboard\SmartphoneForSaleController;
 use App\Http\Controllers\Dashboard\SupplierAssignedOrderController;
 use App\Http\Controllers\Dashboard\SupplierController;
 use App\Http\Controllers\Dashboard\SystemLogsController;
+use App\Http\Controllers\Dashboard\TemplateController;
 use App\Http\Controllers\Dashboard\TranslationController;
 use App\Http\Controllers\Dashboard\TranslationKeyController;
 use App\Http\Controllers\Dashboard\TranslationSystemController;
@@ -542,6 +543,21 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/batches-update/{id?}', 'update')->name('update');
             Route::delete('/batches-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/batches-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+        });
+
+        // Template Routes
+        Route::controller(TemplateController::class)->name('templates.')->group(function () {
+
+            Route::get('/templates', 'index')->name('index');
+            Route::get('/templates-create', 'create')->name('create');
+            Route::post('/templates-store', 'store')->name('store');
+            Route::get('/templates-edit/{id?}', 'edit')->name('edit');
+            Route::put('/templates-update/{id?}', 'update')->name('update');
+            Route::delete('/templates-destroy/{id?}', 'destroy')->name('destroy');
+            Route::delete('/templates-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+
+            // NEW (Phase 2): AI translation generator endpoint (gated in TemplateController::middleware()).
+            Route::post('/templates-ai-translate-field', 'aiTranslateField')->name('ai-translate-field');
         });
 
         // Inventory Routes
