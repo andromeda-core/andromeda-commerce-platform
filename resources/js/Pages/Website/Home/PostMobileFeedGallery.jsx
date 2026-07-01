@@ -1,5 +1,6 @@
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
 import RawHtmlContentFrame from '@/Components/RawHtmlContentFrame';
+import PostBanner from '@/Components/PostBanner';
 import useProductCardHydration from '@/Hooks/useProductCardHydration';
 import { router } from '@inertiajs/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
@@ -511,11 +512,25 @@ const PostMobileFeedGallery = ({
                             )}
 
                             <div className="mb-4">
+                                {/* Per-post banner ad (top = before body) */}
+                                <PostBanner
+                                    place="top"
+                                    imageUrl={post?.banner_image_url}
+                                    redirectUrl={post?.banner_redirect_url}
+                                    position={post?.banner_position}
+                                />
                                 <RawHtmlContentFrame
                                     ref={postContentRef}
                                     content={post?.content_display ?? post?.content}
                                     className="prose prose-sm max-w-none flex-1 overflow-y-auto whitespace-pre-line break-all pr-2 text-[14px] font-normal text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                     interactive
+                                />
+                                {/* Per-post banner ad (bottom = after body) */}
+                                <PostBanner
+                                    place="bottom"
+                                    imageUrl={post?.banner_image_url}
+                                    redirectUrl={post?.banner_redirect_url}
+                                    position={post?.banner_position}
                                 />
                             </div>
 

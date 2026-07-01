@@ -5,6 +5,7 @@ import Spinner from '@/Components/Spinner';
 import { AnimatePresence, motion } from 'framer-motion';
 import SmartphoneDetails from '@/Components/SmartphoneDetails';
 import RawHtmlContentFrame from '@/Components/RawHtmlContentFrame';
+import PostBanner from '@/Components/PostBanner';
 import SmartphoneContentAccordion from '@/Components/SmartphoneContentAccordion';
 import ProductSelectInput from '@/Components/ProductSelectInput';
 import { useVideoStore } from '@/Hooks/useVideoStore';
@@ -1567,6 +1568,13 @@ const DesktopFeed = ({
 
                                             {/* Post Content - Scrollable */}
                                             <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin scrollbar-none">
+                                                {/* Per-post banner ad (top = before body) */}
+                                                <PostBanner
+                                                    place="top"
+                                                    imageUrl={feedGallery?.banner_image_url}
+                                                    redirectUrl={feedGallery?.banner_redirect_url}
+                                                    position={feedGallery?.banner_position}
+                                                />
                                                 <RawHtmlContentFrame
                                                     ref={postContentRef1}
                                                     content={
@@ -1577,6 +1585,13 @@ const DesktopFeed = ({
                                                     interactive
                                                 />
                                                 {productCardPortals1}
+                                                {/* Per-post banner ad (bottom = after body) */}
+                                                <PostBanner
+                                                    place="bottom"
+                                                    imageUrl={feedGallery?.banner_image_url}
+                                                    redirectUrl={feedGallery?.banner_redirect_url}
+                                                    position={feedGallery?.banner_position}
+                                                />
                                             </div>
                                         </div>
                                     </div>
@@ -1749,6 +1764,15 @@ const DesktopFeed = ({
                                                 <div className="relative flex h-full w-full justify-center lg:w-[50%] xl:w-[50%]">
                                                     <div className="flex h-full w-full max-w-[520px] flex-col">
                                                         <div className="min-h-0 flex-1 overflow-y-auto scrollbar-thin scrollbar-none">
+                                                            {/* Per-post banner ad is POSTS only. Removed from this
+                                                                text-only SMARTPHONES branch (smartphones have no
+                                                                banner fields). Kept in both posts branches. */}
+                                                            {/* <PostBanner
+                                                                place="top"
+                                                                imageUrl={feedGallery?.banner_image_url}
+                                                                redirectUrl={feedGallery?.banner_redirect_url}
+                                                                position={feedGallery?.banner_position}
+                                                            /> */}
                                                             <RawHtmlContentFrame
                                                                 ref={postContentRef2}
                                                                 content={
@@ -1759,6 +1783,14 @@ const DesktopFeed = ({
                                                                 interactive
                                                             />
                                                             {productCardPortals2}
+                                                            {/* Per-post banner ad is POSTS only. Removed from this
+                                                                text-only SMARTPHONES branch. */}
+                                                            {/* <PostBanner
+                                                                place="bottom"
+                                                                imageUrl={feedGallery?.banner_image_url}
+                                                                redirectUrl={feedGallery?.banner_redirect_url}
+                                                                position={feedGallery?.banner_position}
+                                                            /> */}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -3396,6 +3428,13 @@ const DesktopFeed = ({
                                                         </div>
 
                                                         {/* Post Content */}
+                                                        {/* Per-post banner ad (top = before body) */}
+                                                        <PostBanner
+                                                            place="top"
+                                                            imageUrl={feedGallery?.banner_image_url}
+                                                            redirectUrl={feedGallery?.banner_redirect_url}
+                                                            position={feedGallery?.banner_position}
+                                                        />
                                                         <RawHtmlContentFrame
                                                             ref={postContentRef3}
                                                             content={
@@ -3406,6 +3445,13 @@ const DesktopFeed = ({
                                                             interactive
                                                         />
                                                         {productCardPortals3}
+                                                        {/* Per-post banner ad (bottom = after body) */}
+                                                        <PostBanner
+                                                            place="bottom"
+                                                            imageUrl={feedGallery?.banner_image_url}
+                                                            redirectUrl={feedGallery?.banner_redirect_url}
+                                                            position={feedGallery?.banner_position}
+                                                        />
 
                                                         <div className="z-[90] my-4 flex items-center justify-start">
                                                             <div className="rounded-full bg-[#efefef] text-[#595959] transition-all duration-200 hover:scale-[1.02] hover:bg-[#e6e6e6] dark:bg-surface-2-dark dark:text-main-text-dark dark:hover:bg-surface-3-dark">

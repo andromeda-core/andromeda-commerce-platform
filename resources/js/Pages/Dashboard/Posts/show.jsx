@@ -18,6 +18,7 @@ import Spinner from '@/Components/Spinner';
 import useDarkMode from '@/Hooks/useDarkMode';
 import useProductCardHydration from '@/Hooks/useProductCardHydration';
 import RawHtmlContentFrame from '@/Components/RawHtmlContentFrame';
+import PostBanner from '@/Components/PostBanner';
 export default function view({ post }) {
     const { generalSetting } = usePage().props;
     const isDarkMode = useDarkMode();
@@ -461,6 +462,14 @@ export default function view({ post }) {
                                             {post?.title}
                                         </p>
 
+                                        {/* Per-post banner ad (top = before body) */}
+                                        <PostBanner
+                                            place="top"
+                                            imageUrl={post?.banner_image_url}
+                                            redirectUrl={post?.banner_redirect_url}
+                                            position={post?.banner_position}
+                                        />
+
                                         <RawHtmlContentFrame
                                             ref={postContentRef}
                                             content={post?.content_display ?? post?.content}
@@ -468,6 +477,14 @@ export default function view({ post }) {
                                             interactive
                                         />
                                         {productCardPortals}
+
+                                        {/* Per-post banner ad (bottom = after body) */}
+                                        <PostBanner
+                                            place="bottom"
+                                            imageUrl={post?.banner_image_url}
+                                            redirectUrl={post?.banner_redirect_url}
+                                            position={post?.banner_position}
+                                        />
 
                                         {/* Tag */}
                                         <div>

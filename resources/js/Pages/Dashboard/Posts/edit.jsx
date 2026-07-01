@@ -35,6 +35,10 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
         post_type: post?.post_type || '',
         status: post?.status ?? 1,
         created_at: post?.created_at ? post.created_at.slice(0, 16) : '',
+        // Per-post banner ad (single post page only)
+        banner_image_url: post?.banner_image_url || '',
+        banner_redirect_url: post?.banner_redirect_url || '',
+        banner_position: post?.banner_position || '',
         deleted_images: [],
         deleted_videos: [],
         new_images: [],
@@ -654,6 +658,46 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
                                                         </div>
                                                     </div>
                                                 )}
+
+                                                {/* Per-post banner ad (single post page only) */}
+                                                <Input
+                                                    InputName={'Banner Image URL'}
+                                                    Error={errors.banner_image_url}
+                                                    Value={data.banner_image_url}
+                                                    Action={(e) => setData('banner_image_url', e.target.value)}
+                                                    Placeholder={'Paste a copied internal product image CDN URL'}
+                                                    Id={'banner_image_url'}
+                                                    Name={'banner_image_url'}
+                                                    Type={'url'}
+                                                    Required={false}
+                                                />
+
+                                                <Input
+                                                    InputName={'Banner Redirect URL'}
+                                                    Error={errors.banner_redirect_url}
+                                                    Value={data.banner_redirect_url}
+                                                    Action={(e) => setData('banner_redirect_url', e.target.value)}
+                                                    Placeholder={'Where the banner should link (opens in a new tab)'}
+                                                    Id={'banner_redirect_url'}
+                                                    Name={'banner_redirect_url'}
+                                                    Type={'url'}
+                                                    Required={false}
+                                                />
+
+                                                <SelectInput
+                                                    InputName={'Banner Position (Top/Bottom)'}
+                                                    Id={'banner_position'}
+                                                    Name={'banner_position'}
+                                                    Error={errors.banner_position}
+                                                    Value={data.banner_position}
+                                                    Required={false}
+                                                    Action={(value) => setData('banner_position', value)}
+                                                    items={[
+                                                        { id: 'top', name: 'Top' },
+                                                        { id: 'bottom', name: 'Bottom' },
+                                                    ]}
+                                                    itemKey={'name'}
+                                                />
                                             </div>
 
                                             <div className="grid grid-cols-1 gap-4">
