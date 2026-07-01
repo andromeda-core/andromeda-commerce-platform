@@ -146,6 +146,7 @@ export default function Sidebar({
             'dashboard.settings.price-ranges.',
             'dashboard.inventory-verifications.',
             'dashboard.internal-product-images.',
+            'dashboard.internal-product-videos.',
             'dashboard.templates.',
         ].some((prefix) => route().current().startsWith(prefix));
 
@@ -265,6 +266,7 @@ export default function Sidebar({
             'Addon Items View',
             'Smartphone Country Price View',
             'Internal Product Images View',
+            'Internal Product Videos View',
             'Price Ranges View',
             'Templates View',
         ]) ||
@@ -688,6 +690,19 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current().startsWith('dashboard.internal-product-images.') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Product Images
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can('Internal Product Videos View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.internal-product-videos.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current().startsWith('dashboard.internal-product-videos.') ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Product Videos
                                                         </Link>
                                                     </li>
                                                 )}

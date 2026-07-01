@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Repositories\InternalProductImage\Repository;
+namespace App\Repositories\InternalProductVideos\Repository;
 
-use App\Jobs\InternalProductImageDestroyOnAWS;
-use App\Jobs\InternalProductImageStoreOnAWS;
-use App\Models\InternalProductImage;
-use App\Models\InternalProductImageFolder;
-use App\Repositories\InternalProductImage\Interface\IInternalProductImageRepository;
+use App\Jobs\InternalProductVideoDestroyOnAWS;
+use App\Jobs\InternalProductVideoStoreOnAWS;
+use App\Models\InternalProductVideo;
+use App\Models\InternalProductVideoFolder;
+use App\Repositories\InternalProductVideos\Interface\IInternalProductVideoRepository;
 use Exception;
 use Illuminate\Http\Request;
 
-class InternalProductImageRepository implements IInternalProductImageRepository
+class InternalProductVideoRepository implements IInternalProductVideoRepository
 {
-    private const S3_PARENT_FOLDER = 'Internal-Product-Images';
+    private const S3_PARENT_FOLDER = 'Internal-Product-Videos';
 
     public function __construct(
-        private InternalProductImage $model,
+        private InternalProductVideo $model,
     ) {}
 
-    public function getAllInternalProductImages(Request $request)
+    public function getAllInternalProductVideos(Request $request)
     {
         return $this->model
             ->with('uploadedBy')
@@ -35,7 +35,7 @@ class InternalProductImageRepository implements IInternalProductImageRepository
 
     public function getFolders()
     {
-        return InternalProductImageFolder::orderBy('name')->pluck('name');
+        return InternalProductVideoFolder::orderBy('name')->pluck('name');
     }
 
     public function createFolder(Request $request): array
@@ -46,14 +46,14 @@ class InternalProductImageRepository implements IInternalProductImageRepository
                 'string',
                 'regex:/^[a-zA-Z0-9-]+$/',
                 'max:100',
-                'unique:internal_product_image_folders,name',
+                'unique:internal_product_video_folders,name',
             ],
         ]);
 
         try {
             $name = strtolower($request->input('folder_name'));
 
-            InternalProductImageFolder::create([
+            InternalProductVideoFolder::create([
                 'name' => $name,
                 'created_by' => auth()->id(),
             ]);
@@ -74,18 +74,20 @@ class InternalProductImageRepository implements IInternalProductImageRepository
         }
     }
 
-    public function storeInternalProductImage(Request $request): array
+    public function storeInternalProductVideo(Request $request): array
     {
         $request->validate([
             'folder' => ['required', 'string', 'regex:/^[a-zA-Z0-9-]+$/'],
-            'images' => ['required', 'array', 'min:1'],
-            'images.*' => ['required', 'image', 'mimes:jpg,jpeg,png,gif,webp', 'max:10240'],
+            'videos' => ['required', 'array', 'min:1'],
+            // Video-specific rule: allow mp4/webm/mov/avi up to 1GB (max is in KB -> 1048576 = 1GB).
+            // The infra already accepts 1GB single-POST uploads (see Smartphone module), so no chunked upload.
+            'videos.*' => ['required', 'file', 'mimetypes:video/mp4,video/webm,video/quicktime,video/x-msvideo', 'mimes:mp4,webm,mov,avi', 'max:1048576'],
         ]);
 
         try {
-            foreach ($request->file('images') as $image) {
-                $originalName = $image->getClientOriginalName();
-                $localPath = $image->store('temp-uploads', 'local');
+            foreach ($request->file('videos') as $video) {
+                $originalName = $video->getClientOriginalName();
+                $localPath = $video->store('temp-uploads', 'local');
 
                 $record = $this->model->create([
                     'original_name' => $originalName,
@@ -94,7 +96,7 @@ class InternalProductImageRepository implements IInternalProductImageRepository
                     'uploaded_by' => auth()->id(),
                 ]);
 
-                InternalProductImageStoreOnAWS::dispatch(
+                InternalProductVideoStoreOnAWS::dispatch(
                     $localPath,
                     $record,
                     self::S3_PARENT_FOLDER.'/'.$request->input('folder').'/'
@@ -103,7 +105,7 @@ class InternalProductImageRepository implements IInternalProductImageRepository
 
             return [
                 'status' => true,
-                'message' => 'Images queued for upload successfully',
+                'message' => 'Videos queued for upload successfully',
             ];
         } catch (Exception $e) {
             return [
@@ -113,31 +115,31 @@ class InternalProductImageRepository implements IInternalProductImageRepository
         }
     }
 
-    public function destroyInternalProductImage(string $id): array
+    public function destroyInternalProductVideo(string $id): array
     {
         try {
             $record = $this->model->find($id);
 
             if (empty($record)) {
-                throw new Exception('Image Not Found');
+                throw new Exception('Video Not Found');
             }
 
             // Safety net: do not delete while the S3 upload Job is still running (pending). Otherwise the
             // queued upload can complete afterwards and leave an orphaned file on S3 with no DB row. This
-            // also guards destroyInternalProductImageBySelection, which delegates to this method.
+            // also guards destroyInternalProductVideoBySelection, which delegates to this method.
             if ($record->upload_status === 'pending') {
                 throw new Exception('Please wait until the upload finishes');
             }
 
             if (! empty($record->file_path)) {
-                InternalProductImageDestroyOnAWS::dispatch($record->file_path);
+                InternalProductVideoDestroyOnAWS::dispatch($record->file_path);
             }
 
             $record->delete();
 
             return [
                 'status' => true,
-                'message' => 'Image Deleted Successfully',
+                'message' => 'Video Deleted Successfully',
             ];
         } catch (Exception $e) {
             return [
@@ -147,17 +149,17 @@ class InternalProductImageRepository implements IInternalProductImageRepository
         }
     }
 
-    public function destroyInternalProductImageBySelection(Request $request): array
+    public function destroyInternalProductVideoBySelection(Request $request): array
     {
         try {
             $ids = $request->array('ids');
 
             if (blank($ids)) {
-                throw new Exception('Please Select At Least One Image To Delete');
+                throw new Exception('Please Select At Least One Video To Delete');
             }
 
             foreach ($ids as $id) {
-                $response = $this->destroyInternalProductImage($id);
+                $response = $this->destroyInternalProductVideo($id);
 
                 if ($response['status'] === false) {
                     throw new Exception($response['message']);
@@ -166,7 +168,7 @@ class InternalProductImageRepository implements IInternalProductImageRepository
 
             return [
                 'status' => true,
-                'message' => 'Selected Images Deleted Successfully',
+                'message' => 'Selected Videos Deleted Successfully',
             ];
         } catch (Exception $e) {
             return [

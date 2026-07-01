@@ -106,6 +106,8 @@ use App\Repositories\Users\Interface\IUserRepository;
 use App\Repositories\Users\Repository\UserRepository;
 use App\Repositories\InternalProductImage\Interface\IInternalProductImageRepository;
 use App\Repositories\InternalProductImage\Repository\InternalProductImageRepository;
+use App\Repositories\InternalProductVideos\Interface\IInternalProductVideoRepository;
+use App\Repositories\InternalProductVideos\Repository\InternalProductVideoRepository;
 use Illuminate\Support\ServiceProvider;
 
 class BinderServerProvider extends ServiceProvider
@@ -163,6 +165,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(IProductLinkRepository::class, ProductLinkRepository::class);
         $this->app->bind(IAttributionRewardRepository::class, AttributionRewardRepository::class);
         $this->app->bind(IInternalProductImageRepository::class, InternalProductImageRepository::class);
+        $this->app->bind(IInternalProductVideoRepository::class, InternalProductVideoRepository::class);
         $this->app->bind(IPriceRangeRepository::class, PriceRangeRepository::class);
         $this->app->bind(ITemplateRepository::class, TemplateRepository::class);
         $this->app->bind(ILodgingProductRepository::class, LodgingProductRepository::class);

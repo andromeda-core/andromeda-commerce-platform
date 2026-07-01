@@ -1602,6 +1602,36 @@ class PermissionSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id' => 392,
+                'name' => 'Internal Product Videos View',
+                'guard_name' => 'web',
+                'parent_name' => 'Products',
+                'alias' => null,
+                'icon' => 'VideoCameraIcon',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 393,
+                'name' => 'Internal Product Videos Create',
+                'guard_name' => 'web',
+                'parent_name' => 'Products',
+                'alias' => null,
+                'icon' => 'VideoCameraIcon',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'id' => 394,
+                'name' => 'Internal Product Videos Delete',
+                'guard_name' => 'web',
+                'parent_name' => 'Products',
+                'alias' => null,
+                'icon' => 'VideoCameraIcon',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         // DB::table('permissions')->upsert(

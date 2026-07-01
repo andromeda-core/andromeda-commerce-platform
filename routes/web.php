@@ -15,6 +15,7 @@ use App\Http\Controllers\Dashboard\DistributorController;
 use App\Http\Controllers\Dashboard\FloorController;
 use App\Http\Controllers\Dashboard\HomeController;
 use App\Http\Controllers\Dashboard\InternalProductImageController;
+use App\Http\Controllers\Dashboard\InternalProductVideoController;
 use App\Http\Controllers\Dashboard\InventoryController;
 use App\Http\Controllers\Dashboard\InventoryVerificationController;
 use App\Http\Controllers\Dashboard\LanguageController;
@@ -801,6 +802,16 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/internal-product-images-store-folder', 'storeFolder')->name('store-folder');
             Route::delete('/internal-product-images-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/internal-product-images-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+        });
+
+        // Internal Product Videos Routes
+        Route::controller(InternalProductVideoController::class)->name('internal-product-videos.')->group(function () {
+            Route::get('/internal-product-videos', 'index')->name('index');
+            Route::get('/internal-product-videos-create', 'create')->name('create');
+            Route::post('/internal-product-videos-store', 'store')->name('store');
+            Route::post('/internal-product-videos-store-folder', 'storeFolder')->name('store-folder');
+            Route::delete('/internal-product-videos-destroy/{id?}', 'destroy')->name('destroy');
+            Route::delete('/internal-product-videos-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
         });
 
         // Attribution Reward Routes

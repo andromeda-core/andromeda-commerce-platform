@@ -215,9 +215,9 @@ export default function CustomFileUploader({
 
                     {/* File Info */}
                     {fileName && (
-                        <div className="flex items-center justify-between p-4 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-2-dark">
-                            <div className="flex items-center gap-3">
-                                <div className="flex items-center justify-center w-10 h-10 rounded-md bg-surface-3-light dark:bg-surface-3-dark">
+                        <div className="flex items-center justify-between min-w-0 p-4 bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-2-dark">
+                            <div className="flex items-center min-w-0 gap-3">
+                                <div className="flex items-center justify-center w-10 h-10 rounded-md shrink-0 bg-surface-3-light dark:bg-surface-3-dark">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         fill="none"
@@ -233,8 +233,11 @@ export default function CustomFileUploader({
                                         />
                                     </svg>
                                 </div>
-                                <div>
-                                    <p className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
+                                <div className="min-w-0">
+                                    <p
+                                        className="text-sm font-semibold truncate text-main-text-light dark:text-main-text-dark"
+                                        title={fileName}
+                                    >
                                         {fileName}
                                     </p>
                                     <p className="text-xs text-sub-text-light dark:text-sub-text-dark">

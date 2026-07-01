@@ -30,7 +30,7 @@ function legacyCopy(text) {
     document.body.removeChild(el);
 }
 
-export default function index({ images, search, folder, folders }) {
+export default function index({ videos, search, folder, folders }) {
     const { props } = usePage();
 
     const [searchInput, setSearchInput] = useState(search ?? '');
@@ -48,23 +48,23 @@ export default function index({ images, search, folder, folders }) {
     const [deleteBulkOpen, setDeleteBulkOpen] = useState(false);
     const [deleteBulkProcessing, setDeleteBulkProcessing] = useState(false);
 
-    // Auto-refresh when any visible image is still pending
-    const hasPending = images.data.some((img) => img.upload_status === 'pending');
+    // Auto-refresh when any visible video is still pending
+    const hasPending = videos.data.some((video) => video.upload_status === 'pending');
     const pollRef = useRef(null);
 
     useEffect(() => {
         if (hasPending) {
             pollRef.current = setTimeout(() => {
-                router.reload({ only: ['images'] });
+                router.reload({ only: ['videos'] });
             }, 5000);
         }
         return () => clearTimeout(pollRef.current);
-    }, [hasPending, images.data]);
+    }, [hasPending, videos.data]);
 
     const debouncedSearch = useRef(
         debounce((value) => {
             router.get(
-                route('dashboard.internal-product-images.index'),
+                route('dashboard.internal-product-videos.index'),
                 { search: value || undefined, folder: folderFilter || undefined },
                 { preserveState: true, replace: true },
             );
@@ -81,7 +81,7 @@ export default function index({ images, search, folder, folders }) {
         const value = e.target.value;
         setFolderFilter(value);
         router.get(
-            route('dashboard.internal-product-images.index'),
+            route('dashboard.internal-product-videos.index'),
             { search: searchInput || undefined, folder: value || undefined },
             { preserveState: true, replace: true },
         );
@@ -96,9 +96,9 @@ export default function index({ images, search, folder, folders }) {
     // Only completed/failed rows may be selected for deletion. Pending rows are still uploading to
     // S3, so deleting one now would drop the DB row while the queued Job later completes, leaving an
     // orphaned file on S3 with no DB row.
-    const selectableIds = images.data
-        .filter((img) => img.upload_status !== 'pending')
-        .map((img) => img.id);
+    const selectableIds = videos.data
+        .filter((video) => video.upload_status !== 'pending')
+        .map((video) => video.id);
 
     const toggleSelectAll = () => {
         if (selectableIds.length > 0 && selectedIds.length === selectableIds.length) {
@@ -116,7 +116,7 @@ export default function index({ images, search, folder, folders }) {
     const confirmDeleteSingle = () => {
         if (!deleteSingleId) return;
         setDeletingId(deleteSingleId);
-        router.delete(route('dashboard.internal-product-images.destroy', deleteSingleId), {
+        router.delete(route('dashboard.internal-product-videos.destroy', deleteSingleId), {
             onSuccess: () => {
                 setDeletingId(null);
                 setDeleteSingleOpen(false);
@@ -131,7 +131,7 @@ export default function index({ images, search, folder, folders }) {
         setDeleteBulkProcessing(true);
         // Defensive: never send pending (still-uploading) ids to the backend, to avoid orphaned S3 files.
         const deletableIds = selectedIds.filter((id) => selectableIds.includes(id));
-        router.delete(route('dashboard.internal-product-images.destroybyselection'), {
+        router.delete(route('dashboard.internal-product-videos.destroybyselection'), {
             data: { ids: deletableIds },
             onSuccess: () => {
                 setDeleteBulkProcessing(false);
@@ -150,13 +150,13 @@ export default function index({ images, search, folder, folders }) {
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Internal Product Images" />
+                <Head title="Internal Product Videos" />
 
                 <BreadCrumb
-                    header={'Internal Product Images'}
+                    header={'Internal Product Videos'}
                     parent={'Dashboard'}
                     parent_link={route('dashboard')}
-                    child={'Product Images'}
+                    child={'Product Videos'}
                 />
 
                 <LinkCopiedModal
@@ -171,8 +171,8 @@ export default function index({ images, search, folder, folders }) {
                         setDeleteSingleOpen(false);
                         setDeleteSingleId(null);
                     }}
-                    title="Delete Image?"
-                    message="This image will be removed from the database and scheduled for deletion from S3. This cannot be undone."
+                    title="Delete Video?"
+                    message="This video will be removed from the database and scheduled for deletion from S3. This cannot be undone."
                     confirmText={deletingId !== null ? 'Deleting…' : 'Delete'}
                     cancelText="Cancel"
                     promiseResolve={(confirmed) => {
@@ -183,8 +183,8 @@ export default function index({ images, search, folder, folders }) {
                 <ConfirmationModal
                     isOpen={deleteBulkOpen}
                     onClose={() => setDeleteBulkOpen(false)}
-                    title={`Delete ${selectedIds.length} Image(s)?`}
-                    message="All selected images will be removed. This cannot be undone."
+                    title={`Delete ${selectedIds.length} Video(s)?`}
+                    message="All selected videos will be removed. This cannot be undone."
                     confirmText={deleteBulkProcessing ? 'Deleting…' : 'Delete All'}
                     cancelText="Cancel"
                     promiseResolve={(confirmed) => {
@@ -240,7 +240,7 @@ export default function index({ images, search, folder, folders }) {
 
                                 <div className="flex flex-wrap items-center justify-end gap-3">
                                     {/* Bulk delete */}
-                                    {can('Internal Product Images Delete') && selectedIds.length > 0 && (
+                                    {can('Internal Product Videos Delete') && selectedIds.length > 0 && (
                                         <button
                                             onClick={() => setDeleteBulkOpen(true)}
                                             disabled={deleteBulkProcessing}
@@ -269,7 +269,7 @@ export default function index({ images, search, folder, folders }) {
                                     )}
 
                                     {/* Select all toggle */}
-                                    {can('Internal Product Images Delete') && images.data.length > 0 && (
+                                    {can('Internal Product Videos Delete') && videos.data.length > 0 && (
                                         <button
                                             onClick={toggleSelectAll}
                                             className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-transparent px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:text-gray-300 dark:hover:bg-gray-800"
@@ -281,10 +281,10 @@ export default function index({ images, search, folder, folders }) {
                                     )}
 
                                     {/* Upload button */}
-                                    {can('Internal Product Images Create') && (
+                                    {can('Internal Product Videos Create') && (
                                         <LinkButton
-                                            Text={'Upload Images'}
-                                            URL={route('dashboard.internal-product-images.create')}
+                                            Text={'Upload Videos'}
+                                            URL={route('dashboard.internal-product-videos.create')}
                                             Icon={
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -307,7 +307,7 @@ export default function index({ images, search, folder, folders }) {
                             </div>
 
                             {/* Empty state */}
-                            {images.data.length === 0 && (
+                            {videos.data.length === 0 && (
                                 <div className="flex flex-col items-center justify-center py-16 text-center">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
@@ -320,37 +320,37 @@ export default function index({ images, search, folder, folders }) {
                                         <path
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
-                                            d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
+                                            d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"
                                         />
                                     </svg>
                                     <p className="text-sm text-gray-500 dark:text-gray-400">
-                                        No images found.
+                                        No videos found.
                                     </p>
                                 </div>
                             )}
 
                             {/* Card grid */}
-                            {images.data.length > 0 && (
+                            {videos.data.length > 0 && (
                                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                    {images.data.map((img) => (
-                                        <ImageCard
-                                            key={img.id}
-                                            img={img}
-                                            isSelected={selectedIds.includes(img.id)}
-                                            onToggleSelect={() => toggleSelect(img.id)}
-                                            onCopy={() => handleCopy(img.file_url)}
-                                            onDelete={() => openDeleteSingle(img.id)}
-                                            canDelete={can('Internal Product Images Delete')}
-                                            isDeleting={deletingId === img.id}
+                                    {videos.data.map((video) => (
+                                        <VideoCard
+                                            key={video.id}
+                                            video={video}
+                                            isSelected={selectedIds.includes(video.id)}
+                                            onToggleSelect={() => toggleSelect(video.id)}
+                                            onCopy={() => handleCopy(video.file_url)}
+                                            onDelete={() => openDeleteSingle(video.id)}
+                                            canDelete={can('Internal Product Videos Delete')}
+                                            isDeleting={deletingId === video.id}
                                         />
                                     ))}
                                 </div>
                             )}
 
                             {/* Pagination */}
-                            {images.last_page > 1 && (
+                            {videos.last_page > 1 && (
                                 <div className="mt-6 flex flex-wrap items-center justify-center gap-1">
-                                    {images.links.map((link, i) => (
+                                    {videos.links.map((link, i) => (
                                         <button
                                             key={i}
                                             disabled={!link.url}
@@ -375,10 +375,10 @@ export default function index({ images, search, folder, folders }) {
     );
 }
 
-function ImageCard({ img, isSelected, onToggleSelect, onCopy, onDelete, canDelete, isDeleting }) {
-    const isPending = img.upload_status === 'pending';
-    const isFailed = img.upload_status === 'failed';
-    const isCompleted = img.upload_status === 'completed';
+function VideoCard({ video, isSelected, onToggleSelect, onCopy, onDelete, canDelete, isDeleting }) {
+    const isPending = video.upload_status === 'pending';
+    const isFailed = video.upload_status === 'failed';
+    const isCompleted = video.upload_status === 'completed';
 
     return (
         <div
@@ -391,12 +391,13 @@ function ImageCard({ img, isSelected, onToggleSelect, onCopy, onDelete, canDelet
         >
             {/* Thumbnail */}
             <div className="relative h-44 overflow-hidden bg-gray-100 dark:bg-gray-800">
-                {isCompleted && img.file_url ? (
-                    <img
-                        src={img.file_url}
-                        alt={img.original_name}
+                {isCompleted && video.file_url ? (
+                    <video
+                        src={video.file_url}
+                        controls
+                        muted
+                        preload="metadata"
                         className="h-full w-full object-cover"
-                        loading="lazy"
                     />
                 ) : isPending ? (
                     <div className="flex h-full flex-col items-center justify-center gap-2">
@@ -468,27 +469,27 @@ function ImageCard({ img, isSelected, onToggleSelect, onCopy, onDelete, canDelet
                 {/* Original name */}
                 <p
                     className="truncate text-sm font-medium text-gray-900 dark:text-white"
-                    title={img.original_name}
+                    title={video.original_name}
                 >
-                    {img.original_name}
+                    {video.original_name}
                 </p>
 
                 {/* Folder badge */}
                 <span className="inline-flex w-fit items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-                    {img.folder}
+                    {video.folder}
                 </span>
 
                 {/* Meta */}
                 <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-                    <span>{img.human_size ?? '—'}</span>
-                    <span>{img.created_at_formatted ?? '—'}</span>
+                    <span>{video.human_size ?? '—'}</span>
+                    <span>{video.created_at_formatted ?? '—'}</span>
                 </div>
 
                 {/* URL row */}
-                {isCompleted && img.file_url && (
+                {isCompleted && video.file_url && (
                     <div className="flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-2 py-1.5 dark:border-gray-700 dark:bg-gray-800">
                         <p className="flex-1 truncate text-xs text-gray-600 dark:text-gray-400">
-                            {img.file_url}
+                            {video.file_url}
                         </p>
                         <button
                             type="button"
