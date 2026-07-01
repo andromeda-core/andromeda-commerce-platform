@@ -253,7 +253,7 @@ export default function Sidebar({
     const canSeeProducts = Boolean(
         can([
             'Smartphones View',
-            'Batch View',
+            'Batches View',
             'Categories View',
             'Inventories View',
             'Smartphone For Sales View',
@@ -626,7 +626,7 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-                                                {can('Batch View') && (
+                                                {can('Batches View') && (
                                                     <li>
                                                         <Link
                                                             href={route('dashboard.batches.index')}
@@ -1538,7 +1538,7 @@ export default function Sidebar({
                                                     </li>
                                                 )}
 
-                                                {can('Risk Signals') && (
+                                                {can('Risk Signals View') && (
                                                     <li>
                                                         <Link
                                                             href={route(
