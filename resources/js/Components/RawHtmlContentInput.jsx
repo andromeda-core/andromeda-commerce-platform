@@ -23,6 +23,10 @@ export default function RawHtmlContentInput({
     Required = false,
     Rows = 16,
     Placeholder = 'Paste the full HTML here. It will be saved exactly as entered.',
+    // Optional ref to the underlying <textarea> (mirrors Input.jsx InputRef).
+    // Used by AddSourceLinkButton to read the caret and insert an <a> at it.
+    // Does not touch the existing Value/Action contract.
+    InputRef = null,
 }) {
     return (
         <div className="my-4">
@@ -40,6 +44,7 @@ export default function RawHtmlContentInput({
             </label>
 
             <textarea
+                ref={InputRef}
                 id={Id}
                 name={Name}
                 rows={Rows}

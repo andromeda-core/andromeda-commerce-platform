@@ -9,6 +9,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import SelectInput from '@/Components/SelectInput';
 import FileUploaderInput from '@/Components/FileUploaderInput';
 import RawHtmlContentInput from '@/Components/RawHtmlContentInput';
+// NEW: authoring helper that inserts an <a> source link into the body at the caret.
+import AddSourceLinkButton from '@/Components/AddSourceLinkButton';
 import TranslationsRepeater from '@/Components/TranslationsRepeater';
 // NEW (additive): reusable AI translation generator (sits above the manual repeater)
 import AiTranslationRepeater from '@/Components/AiTranslationRepeater';
@@ -238,6 +240,8 @@ export default function create({ floors, googleMapSettings, languages }) {
 
     const mapRef = useRef(null);
     const mapSearchboxRef = useRef(null);
+    // NEW: ref to the body <textarea> so AddSourceLinkButton can insert at the caret.
+    const bodyContentRef = useRef(null);
     useEffect(() => {
         if (!googleMapLocatioModalOpen || !mapRef.current) {
             return;
@@ -643,6 +647,14 @@ export default function create({ floors, googleMapSettings, languages }) {
                                                     Required={true}
                                                     Value={data.content}
                                                     Action={(e) => setData('content', e.target.value)}
+                                                    InputRef={bodyContentRef}
+                                                />
+                                                {/* NEW: inserts an <a> source link into the body at the caret. */}
+                                                <AddSourceLinkButton
+                                                    textareaRef={bodyContentRef}
+                                                    value={data.content}
+                                                    onChange={(v) => setData('content', v)}
+                                                    Id={'content'}
                                                 />
                                             </div>
 

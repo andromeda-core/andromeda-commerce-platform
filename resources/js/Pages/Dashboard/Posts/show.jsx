@@ -473,7 +473,13 @@ export default function view({ post }) {
                                         <RawHtmlContentFrame
                                             ref={postContentRef}
                                             content={post?.content_display ?? post?.content}
-                                            className="prose max-w-none break-words text-gray-800 dark:prose-invert dark:text-white/80"
+                                            // whitespace-pre-line added so inline-only bodies
+                                            // (plain text + <a> links) keep their \n paragraph
+                                            // breaks on the inline render path, matching the
+                                            // frontend feed callers. Harmless for full-HTML
+                                            // posts, which render inside the iframe (no text
+                                            // nodes on this wrapper).
+                                            className="prose max-w-none whitespace-pre-line break-words text-gray-800 dark:prose-invert dark:text-white/80"
                                             interactive
                                         />
                                         {productCardPortals}

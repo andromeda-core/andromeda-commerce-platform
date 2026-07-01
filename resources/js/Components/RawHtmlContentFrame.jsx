@@ -35,6 +35,32 @@ export const containsHtml = (str) => {
 export const hasProductCards = (str) =>
     typeof str === 'string' && /data-type\s*=\s*["']product-card["']/i.test(str);
 
+// Are the ONLY tags in the content inline formatting tags? Post bodies are
+// plain text with real \n newlines plus, at most, a few inline links/emphasis
+// tags. Such content must render on the INLINE path (dangerouslySetInnerHTML)
+// so the wrapper's whitespace-pre-line keeps the \n paragraph breaks AND the
+// inline tags stay live/clickable. Routing it into the iframe would collapse
+// the newlines (standard HTML whitespace collapsing) and center the text.
+// Any block/document tag (p, div, table, style, html, head, section, figure,
+// img, ...) or product-card markup means it is NOT inline-only and belongs in
+// the isolated iframe path (unchanged), exactly like a full-HTML smartphone
+// description. We only inspect tag NAMES here; attributes are ignored.
+const INLINE_ONLY_TAGS = new Set(['a', 'b', 'strong', 'i', 'em', 'u', 'br', 'span']);
+export const isInlineOnlyHtml = (str) => {
+    if (typeof str !== 'string' || !str.trim()) return false;
+    if (hasProductCards(str)) return false;
+
+    let sawTag = false;
+    const tagRe = /<\s*\/?\s*([a-z][a-z0-9]*)/gi;
+    let match;
+    while ((match = tagRe.exec(str)) !== null) {
+        sawTag = true;
+        if (!INLINE_ONLY_TAGS.has(match[1].toLowerCase())) return false;
+    }
+    // true only when at least one tag was found and every one was inline-only.
+    return sawTag;
+};
+
 // Fallback text color based on dark/light mode
 const getTextColor = (dark) => (dark ? '#e5e7eb' : '#111111');
 
@@ -199,7 +225,14 @@ const RawHtmlContentFrame = forwardRef(function RawHtmlContentFrame(
 ) {
     if (!content) return null;
 
-    if (containsHtml(content) && !hasProductCards(content)) {
+    // Old routing (any tag -> iframe) collapsed paragraph breaks the moment a
+    // single <a> link was added to an otherwise plain-text post body:
+    // if (containsHtml(content) && !hasProductCards(content)) {
+    // Now: only genuine block/document HTML goes to the iframe. Content whose
+    // only tags are inline-only (e.g. a plain-text body with source <a> links)
+    // falls through to the INLINE path below, where whitespace-pre-line keeps
+    // the paragraph breaks and the <a> tags render clickable.
+    if (containsHtml(content) && !hasProductCards(content) && !isInlineOnlyHtml(content)) {
         return (
             <div ref={ref} className={className}>
                 <HtmlFrame html={content} interactive={interactive} />
