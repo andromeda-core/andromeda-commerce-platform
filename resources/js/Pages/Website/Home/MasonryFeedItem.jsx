@@ -119,7 +119,7 @@ const MasonryFeedItem = memo(
             return (
                 <article
                     ref={articleRef}
-                    className="group relative mb-2 cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
+                    className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
                     style={{
                         WebkitColumnBreakInside: 'avoid',
                         pageBreakInside: 'avoid',
@@ -198,7 +198,7 @@ const MasonryFeedItem = memo(
 
                                     {isBookmarkPage && (
                                         <div
-                                            className="pointer-events-auto absolute right-3 top-3 z-30"
+                                            className="absolute z-30 pointer-events-auto right-3 top-3"
                                             onClick={(e) => {
                                                 setUnmarking(true);
                                                 e.stopPropagation();
@@ -255,7 +255,7 @@ const MasonryFeedItem = memo(
 
                                     <div className="absolute inset-x-0 bottom-0 p-4">
                                         <div className="mt-1 flex items-center justify-between text-[13px] leading-[17px] lg:text-[14px]">
-                                            <p className="min-w-0 flex-1 font-semibold text-main-text-dark">
+                                            <p className="flex-1 min-w-0 font-semibold text-main-text-dark">
                                                 <span
                                                     className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
                                                     dangerouslySetInnerHTML={{
@@ -341,7 +341,7 @@ const MasonryFeedItem = memo(
 
                                     {isBookmarkPage && (
                                         <div
-                                            className="pointer-events-auto absolute right-3 top-3 z-30"
+                                            className="absolute z-30 pointer-events-auto right-3 top-3"
                                             onClick={(e) => {
                                                 setUnmarking(true);
                                                 e.stopPropagation();
@@ -398,7 +398,7 @@ const MasonryFeedItem = memo(
 
                                     <div className="absolute inset-x-0 bottom-0 p-4">
                                         <div className="mt-1 flex items-center justify-between text-[13px] leading-[17px] lg:text-[14px]">
-                                            <p className="min-w-0 flex-1 font-semibold text-main-text-dark">
+                                            <p className="flex-1 min-w-0 font-semibold text-main-text-dark">
                                                 <span
                                                     className="!display-['-webkit-box'] line-clamp-2 break-all [&_*]:inline"
                                                     dangerouslySetInnerHTML={{
@@ -415,18 +415,15 @@ const MasonryFeedItem = memo(
                             )}
                         </div>
                     ) : (
-                        <div
-                            className={`relative flex w-full flex-col bg-surface-2-light p-[18px] text-black transition-all duration-500 dark:bg-surface-2-dark dark:text-white lg:group-hover:scale-[1.02] ${windowSize.width > 1024 ? 'min-h-[clamp(300px,100%,100%)]' : ''}`}
-                        >
+                        <div className="relative flex min-h-[180px] w-full flex-col bg-surface-2-light p-[18px] text-black transition-all duration-500 dark:bg-surface-2-dark dark:text-white lg:min-h-[clamp(300px,100%,100%)] lg:group-hover:scale-[1.02]">
                             <div className="absolute left-4 top-3">
                                 <span className="text-[13px] font-semibold leading-[17px] text-black dark:text-white lg:text-[14px]">
                                     {item?.tag_display ?? item?.tag}
                                 </span>
                             </div>
-
                             {isBookmarkPage && (
                                 <div
-                                    className="pointer-events-auto absolute right-3 top-3 z-30"
+                                    className="absolute z-30 pointer-events-auto right-3 top-3"
                                     onClick={(e) => {
                                         setUnmarking(true);
                                         e.stopPropagation();
@@ -479,14 +476,13 @@ const MasonryFeedItem = memo(
                                 </div>
                             )}
 
-                            <div className="mt-10">
-                                <p className="line-clamp-6 whitespace-pre-line break-all text-[13px] leading-[17px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
-                                    <span
-                                        dangerouslySetInnerHTML={{
-                                            __html: item?.content?.trim(),
-                                        }}
-                                    ></span>
-                                </p>
+                            <div className="mt-8 lg:mt-10">
+                                <div
+                                    className="max-h-[130px] overflow-hidden break-all text-[13px] leading-[17px] opacity-90 sm:max-h-[170px] md:max-h-[204px] lg:max-h-[272px] lg:text-[14px] xl:max-h-[340px]"
+                                    dangerouslySetInnerHTML={{
+                                        __html: item?.content?.trim(),
+                                    }}
+                                />
                             </div>
                         </div>
                     )}
@@ -499,7 +495,7 @@ const MasonryFeedItem = memo(
             return (
                 <article
                     ref={articleRef}
-                    className="group relative mb-2 cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
+                    className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
                     style={{
                         WebkitColumnBreakInside: 'avoid',
                         pageBreakInside: 'avoid',
@@ -585,7 +581,7 @@ const MasonryFeedItem = memo(
                                         </div>
                                     )}
 
-                                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-12">
+                                    <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
                                         <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                             {item.is_reservation_closed != false && (
                                                 <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -604,7 +600,7 @@ const MasonryFeedItem = memo(
                                                 </span>
                                             )}
 
-                                            <p className="w-full truncate text-white">
+                                            <p className="w-full text-white truncate">
                                                 {item.property_name}
                                             </p>
 
@@ -630,7 +626,7 @@ const MasonryFeedItem = memo(
                                     </span>
                                 </div>
                             )}
-                            <div className="mt-10 flex flex-1 flex-col">
+                            <div className="flex flex-col flex-1 mt-10">
                                 <div className="line-clamp-6 whitespace-pre-line break-all text-[13px] leading-[17px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
                                     <p className="font-semibold">{item.property_name}</p>
                                     <p
@@ -645,7 +641,7 @@ const MasonryFeedItem = memo(
                                         {item.location_name}
                                     </p>
                                 )}
-                                <div className="mt-auto pt-4">
+                                <div className="pt-4 mt-auto">
                                     {item.lowest_rate && (
                                         <DisplayPrice
                                             usdAmount={item.lowest_rate}
@@ -666,7 +662,7 @@ const MasonryFeedItem = memo(
         return (
             <article
                 ref={articleRef}
-                className="group relative mb-2 cursor-pointer break-inside-avoid overflow-hidden rounded-md transition-all duration-300"
+                className="relative mb-2 overflow-hidden transition-all duration-300 rounded-md cursor-pointer group break-inside-avoid"
                 style={{
                     WebkitColumnBreakInside: 'avoid',
                     pageBreakInside: 'avoid',
@@ -742,7 +738,7 @@ const MasonryFeedItem = memo(
                                     </span>
                                 </div>
 
-                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-12">
+                                <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                         {item.is_sold_out && (
                                             <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -760,7 +756,7 @@ const MasonryFeedItem = memo(
                                             ''
                                         )}
 
-                                        <p className="w-full truncate text-white">
+                                        <p className="w-full text-white truncate">
                                             {item.name} ({item.capacity})
                                         </p>
                                     </div>
@@ -830,7 +826,7 @@ const MasonryFeedItem = memo(
 
                         {loaded && (
                             <>
-                                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent p-3 pt-12">
+                                <div className="absolute inset-x-0 bottom-0 p-3 pt-12 bg-gradient-to-t from-black/80 via-black/50 to-transparent">
                                     <div className="mt-2 flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                         {item.is_sold_out && (
                                             <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
@@ -848,7 +844,7 @@ const MasonryFeedItem = memo(
                                             ''
                                         )}
 
-                                        <p className="w-full truncate text-white">
+                                        <p className="w-full text-white truncate">
                                             {item.name} ({item.capacity})
                                         </p>
                                     </div>
@@ -857,30 +853,23 @@ const MasonryFeedItem = memo(
                         )}
                     </div>
                 ) : (
-                    <div
-                        className={`relative flex w-full flex-col bg-surface-2-light p-[18px] text-black transition-all duration-500 dark:bg-surface-2-dark dark:text-white lg:group-hover:scale-[1.02] ${windowSize.width > 1024 ? 'min-h-[clamp(300px,100%,100%)]' : ''}`}
-                    >
+                    <div className="relative flex min-h-[180px] w-full flex-col bg-surface-2-light p-[18px] text-black transition-all duration-500 dark:bg-surface-2-dark dark:text-white lg:min-h-[clamp(300px,100%,100%)] lg:group-hover:scale-[1.02]">
                         <div className="absolute left-4 top-3">
                             <span className="text-[13px] font-semibold leading-[17px] text-black dark:text-white lg:text-[14px]">
                                 {item?.tag_display ?? item?.tag}
                             </span>
                         </div>
 
-                        <div className="mt-10 flex flex-1 flex-col">
-                            <p className="line-clamp-6 whitespace-pre-line break-words text-[13px] leading-[20px] opacity-90 sm:line-clamp-[10] md:line-clamp-[12] lg:line-clamp-[16] lg:text-[14px] xl:line-clamp-[20]">
-                                <span
-                                    dangerouslySetInnerHTML={{
-                                        __html: (
-                                            item?.content_display ??
-                                            item?.content ??
-                                            ''
-                                        )?.trim(),
-                                    }}
-                                ></span>
-                            </p>
+                        <div className="flex flex-col flex-1 mt-8 lg:mt-10">
+                            <div
+                                className="max-h-[130px] overflow-hidden break-words text-[13px] leading-[20px] opacity-90 sm:max-h-[170px] md:max-h-[204px] lg:max-h-[272px] lg:text-[14px] xl:max-h-[340px]"
+                                dangerouslySetInnerHTML={{
+                                    __html: (item?.content_display ?? item?.content ?? '')?.trim(),
+                                }}
+                            />
 
                             {/* PRICE - normal flow, pushed to bottom (no overlap) */}
-                            <div className="mt-auto pt-4 text-main-text-light dark:text-main-text-dark">
+                            <div className="pt-4 mt-auto text-main-text-light dark:text-main-text-dark">
                                 <div className="flex w-full flex-col items-start text-[13px] font-semibold leading-[17px] lg:text-[14px]">
                                     {item.is_sold_out && (
                                         <span className="mt-1 inline-block rounded bg-red-600 px-2 py-0.5 text-[11px] font-semibold text-white">
