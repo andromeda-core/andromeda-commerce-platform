@@ -106,7 +106,7 @@ class PostRepository implements IPostRepository
             // })
             ->first();
 
-        if (! empty($post)) {
+        if (! empty($post) && ! $isBackend) {
             $related_posts = collect();
             $related_smartphones = collect();
 
