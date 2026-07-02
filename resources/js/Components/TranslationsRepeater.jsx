@@ -3,6 +3,8 @@ import Input from '@/Components/Input';
 import SelectInput from '@/Components/SelectInput';
 import TipTapEditor from '@/Components/TipTapEditor';
 import PrimaryButton from '@/Components/PrimaryButton';
+// NEW (RTL): direction-aware content textarea, keyed off each block's own target language.
+import { isRtlLocale } from '@/Helpers/rtlLocales';
 
 /**
  * Reusable, config-driven translations repeater.
@@ -155,6 +157,13 @@ export default function TranslationsRepeater({ value, onChange, languages = [], 
                             ? `lang-${block.language_id}`
                             : `new-${index}`;
 
+                    // NEW (RTL): resolve THIS block's selected language code (from the languages
+                    // prop via its language_id) so the content textarea lays out RTL for
+                    // right-to-left target languages (Arabic/Urdu), independent of the UI language.
+                    const blockLanguageCode = (languages || []).find(
+                        (l) => String(l.id) === String(block?.language_id),
+                    )?.code;
+
                     return (
                         <div
                             key={blockKey}
@@ -220,6 +229,7 @@ export default function TranslationsRepeater({ value, onChange, languages = [], 
                                                     id={fieldId}
                                                     name={fieldId}
                                                     rows={12}
+                                                    dir={isRtlLocale(blockLanguageCode) ? 'rtl' : 'ltr'}
                                                     value={typeof fieldVal === 'string' ? fieldVal : ''}
                                                     onChange={(e) =>
                                                         setFieldValue(index, f.key, e.target.value)

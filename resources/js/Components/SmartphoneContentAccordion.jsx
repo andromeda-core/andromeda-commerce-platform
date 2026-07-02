@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { HtmlFrame, containsHtml } from '@/Components/RawHtmlContentFrame';
+import { useLanguageStore } from '@/Hooks/useLanguageStore';
+import { isRtlLocale } from '@/Helpers/rtlLocales';
 
 const SmartphoneContentAccordion = ({
     label,
@@ -14,6 +16,11 @@ const SmartphoneContentAccordion = ({
 }) => {
     // const [isOpen, setIsOpen] = useState(defaultOpen);
     const [isOpen, setIsOpen] = useState(true);
+
+    // Lay the plain-text branch out RTL when the active website language is right-to-left
+    // (Arabic/Urdu). The HtmlFrame branch gets its dir from HtmlFrame itself. LTR is a no-op.
+    const activeLanguageLocale = useLanguageStore((state) => state.activeLanguageLocale);
+    const isRtl = isRtlLocale(activeLanguageLocale);
 
     const accordionRef = useRef(null);
     const shouldScrollRef = useRef(false);
@@ -87,7 +94,10 @@ const SmartphoneContentAccordion = ({
                         // OLD (no interactive prop — caused About-This-Product HTML to be non-clickable): <HtmlFrame html={content} />
                         <HtmlFrame html={content} interactive={interactive} />
                     ) : (
-                        <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                        <p
+                            dir={isRtl ? 'rtl' : 'ltr'}
+                            className="whitespace-pre-wrap break-words text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark"
+                        >
                             {content}
                         </p>
                     )}

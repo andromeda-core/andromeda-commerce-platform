@@ -169,7 +169,7 @@ const index = () => {
     const t = (key) => (translationLoading ? key : __(key));
 
     const activeLanguageLocale = useLanguageStore((state) => state.activeLanguageLocale);
-    const isRtl = activeLanguageLocale === 'ar';
+    const isRtl = ['ar', 'ur'].includes(activeLanguageLocale);
 
     const [form, setForm] = useState(createInitialState());
     const [processing, setProcessing] = useState(false);

@@ -283,6 +283,33 @@ PROMPT;
         sleep($seconds);
     }
 
+    // NEW (RTL): single source of truth for right-to-left target languages. Kept as a small
+    // hardcoded list (no schema change) matching the frontend twin in resources/js/Helpers/
+    // rtlLocales.js. ar = Arabic, ur = Urdu (primary use cases on this platform); the rest are
+    // included for completeness. To add more RTL languages later, both lists get one line.
+    private const RTL_LOCALE_CODES = ['ar', 'ur', 'he', 'fa', 'ps', 'sd', 'yi'];
+
+    private function isRtlLocale(string $code): bool
+    {
+        return in_array(strtolower($code), self::RTL_LOCALE_CODES, true);
+    }
+
+    // NEW (RTL): the extra prompt clause to append when the target language is RTL. Returns an
+    // EMPTY string for LTR (and when no code is supplied), so every existing prompt is byte-for-byte
+    // unchanged for LTR languages — this is a pure, conditional addition. It tells the model to keep
+    // Latin-script runs (numbers, URLs, emails, brand names) rendering left-to-right within the RTL
+    // flow rather than reversing them, and not to inject bidi control characters on its own.
+    private function buildRtlClause(string $targetLanguageCode): string
+    {
+        return $this->isRtlLocale($targetLanguageCode)
+            ? "\nThis is a right-to-left (RTL) language. Write the translation in natural RTL reading "
+                .'order. Keep numbers, URLs, emails, brand names, and any other Latin-script text '
+                .'displaying left-to-right within the RTL flow, exactly as a native RTL document would '
+                .'render them (do not reverse digits or Latin words character-by-character). Do not '
+                .'insert manual bidi control characters unless the source already contains them.'
+            : '';
+    }
+
     // NEW (additive): domain-agnostic single-field translation generator.
     // Pure generator: returns translated text only. It NEVER writes content_translations.
     // BUGFIX (Bug 2): returns the model output as RAW TEXT (no JSON wrapper, no
@@ -290,7 +317,7 @@ PROMPT;
     // failed to parse / truncated. One field per call. Uses its OWN large max_tokens
     // (16000) and long timeout (120) sized for big HTML, so the barcode method's 400/25
     // stay byte-for-byte unchanged.
-    public function translateField(string $field, string $value, string $targetLanguageName, bool $isHtml = false): array
+    public function translateField(string $field, string $value, string $targetLanguageName, bool $isHtml = false, string $targetLanguageCode = ''): array
     {
         // Nothing to translate. Caller normally skips empties, but stay safe (Bug 3).
         if (trim($value) === '') {
@@ -329,6 +356,10 @@ PROMPT;
             ? 'This value is a tag/hashtag. If it starts with "#", keep the leading "#". Do not introduce spaces; keep it as one tag token.'
             : '';
 
+        // NEW (RTL): appended ONLY when the target language is right-to-left; an empty string
+        // otherwise, so the prompt stays byte-for-byte identical for LTR languages.
+        $rtlClause = $this->buildRtlClause($targetLanguageCode);
+
         $prompt = <<<PROMPT
 You are a professional translation engine for a web application.
 Translate the provided value into {$targetLanguageName}.
@@ -337,7 +368,7 @@ Rules:
 - {$htmlRule}
 - {$tagRule}
 - Do not translate brand names, URLs, emails, numbers, or code.
-- Return ONLY the translated value itself. No explanation, no notes, no JSON wrapper, no code fences.
+- Return ONLY the translated value itself. No explanation, no notes, no JSON wrapper, no code fences.{$rtlClause}
 PROMPT;
 
         // FIX (auto-retry): run the single-field model call with a bounded retry (max 2 retries,
@@ -489,7 +520,7 @@ PROMPT;
     // NEW (additive): batch-translate an ordered list of PLAIN TEXT segments and return them in
     // the SAME order/count. Used by the DOM-based HTML translation so markup is NEVER sent to the
     // model (small payloads => no truncation). Does NOT touch the barcode method or translateField.
-    public function translateTextSegments(array $segments, string $targetLanguageName): array
+    public function translateTextSegments(array $segments, string $targetLanguageName, string $targetLanguageCode = ''): array
     {
         $segments = array_values($segments);
         if (count($segments) === 0) {

@@ -1,5 +1,7 @@
 import React, { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
 import useDarkMode from '@/Hooks/useDarkMode';
+import { useLanguageStore } from '@/Hooks/useLanguageStore';
+import { isRtlLocale } from '@/Helpers/rtlLocales';
 
 /**
  * Shared trusted raw-HTML renderer — the SAME isolated, theme-aware, auto-height
@@ -114,7 +116,7 @@ const buildFrameCss = (textColor) => `
 `;
 
 // Injects theme CSS + syncs the iframe's <html> dark class with the app
-const prepareFrameHtml = (html, css, dark) => {
+const prepareFrameHtml = (html, css, dark, isRtl = false) => {
     let out = html;
 
     // 1. Inject our theme/responsive <style>
@@ -129,15 +131,26 @@ const prepareFrameHtml = (html, css, dark) => {
         out = tag + out;
     }
 
-    // 2. Add/remove "dark" on the iframe's <html> so the author's
-    //    dark:* Tailwind classes activate correctly
+    // 2. Add/remove "dark" on the iframe's <html> so the author's dark:* Tailwind classes
+    //    activate correctly. For RTL target languages (Arabic/Urdu) also set dir="rtl" on
+    //    <html> so the browser's native bidi algorithm lays the translated content out
+    //    right-to-left (dir inherits down to <body> and all content). LTR is the browser
+    //    default, so nothing is added for LTR languages — the generated HTML stays
+    //    byte-for-byte identical to before, mirroring how the dark class is synced.
+    const dirPart = isRtl ? ' dir="rtl"' : '';
     if (/<html[^>]*>/i.test(out)) {
         out = out.replace(/<html([^>]*)>/i, (match, attrs) => {
-            const cleaned = attrs.replace(/\sclass=("[^"]*"|'[^']*')/i, '');
-            return `<html${cleaned} class="${dark ? 'dark' : ''}">`;
+            // For LTR leave attrs exactly as today (only class is normalized). For RTL also
+            // strip any author dir so ours wins.
+            const cleaned = isRtl
+                ? attrs
+                      .replace(/\sclass=("[^"]*"|'[^']*')/i, '')
+                      .replace(/\sdir=("[^"]*"|'[^']*')/i, '')
+                : attrs.replace(/\sclass=("[^"]*"|'[^']*')/i, '');
+            return `<html${cleaned} class="${dark ? 'dark' : ''}"${dirPart}>`;
         });
     } else {
-        out = `<html class="${dark ? 'dark' : ''}">${out}</html>`;
+        out = `<html class="${dark ? 'dark' : ''}"${dirPart}>${out}</html>`;
     }
 
     return out;
@@ -150,9 +163,16 @@ export const HtmlFrame = ({ html, interactive = false }) => {
     const [height, setHeight] = useState(300);
     const dark = useDarkMode();
 
+    // Mirror the dark-mode wiring: read the active website language and lay the isolated
+    // iframe out RTL when that language is right-to-left (Arabic/Urdu). Covers BOTH callers
+    // of HtmlFrame (RawHtmlContentFrame's iframe path + SmartphoneContentAccordion) in one
+    // place, so neither needs its own iframe dir logic. LTR is a no-op (byte-identical).
+    const activeLanguageLocale = useLanguageStore((state) => state.activeLanguageLocale);
+    const isRtl = isRtlLocale(activeLanguageLocale);
+
     const finalHtml = useMemo(
-        () => prepareFrameHtml(html, buildFrameCss(getTextColor(dark)), dark),
-        [html, dark],
+        () => prepareFrameHtml(html, buildFrameCss(getTextColor(dark)), dark, isRtl),
+        [html, dark, isRtl],
     );
 
     useEffect(() => {
@@ -223,6 +243,12 @@ const RawHtmlContentFrame = forwardRef(function RawHtmlContentFrame(
     { content, className, interactive = false },
     ref,
 ) {
+    // Read the active website language so translated RTL content (Arabic/Urdu) renders with the
+    // correct text direction on the INLINE path. Called before the early return to satisfy the
+    // Rules of Hooks. (The iframe path gets its dir from HtmlFrame itself.)
+    const activeLanguageLocale = useLanguageStore((state) => state.activeLanguageLocale);
+    const isRtl = isRtlLocale(activeLanguageLocale);
+
     if (!content) return null;
 
     // Old routing (any tag -> iframe) collapsed paragraph breaks the moment a
@@ -240,7 +266,14 @@ const RawHtmlContentFrame = forwardRef(function RawHtmlContentFrame(
         );
     }
 
-    return <div ref={ref} className={className} dangerouslySetInnerHTML={{ __html: content }} />;
+    return (
+        <div
+            ref={ref}
+            className={className}
+            dir={isRtl ? 'rtl' : 'ltr'}
+            dangerouslySetInnerHTML={{ __html: content }}
+        />
+    );
 });
 
 export default RawHtmlContentFrame;

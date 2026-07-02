@@ -16,13 +16,13 @@ class AiTranslationService
     /**
      * Translate a single field value into the target language.
      *
-     * @param  string  $field             the field key being translated
-     * @param  string  $value             raw source value (plain text or HTML)
-     * @param  int     $targetLanguageId  languages.id of the target language
-     * @param  array   $allowedFields     server-side whitelist of translatable field keys
-     * @param  array   $htmlFields        subset of $allowedFields whose value is HTML
+     * @param  string  $field  the field key being translated
+     * @param  string  $value  raw source value (plain text or HTML)
+     * @param  int  $targetLanguageId  languages.id of the target language
+     * @param  array  $allowedFields  server-side whitelist of translatable field keys
+     * @param  array  $htmlFields  subset of $allowedFields whose value is HTML
      * @return array { status, field, language_id, value } on success,
-     *               { status:false, message } on failure
+     *                                                     { status:false, message } on failure
      */
     public function translateField(
         string $field,
@@ -51,7 +51,7 @@ class AiTranslationService
         // intact. This replaces sending the whole document to the model, which truncated large
         // HTML. Plain text / non-HTML fields keep the existing single-call path below.
         if ($isHtml && $this->looksLikeHtml($value)) {
-            $dom = $this->translateHtmlViaDom($value, $language->name);
+            $dom = $this->translateHtmlViaDom($value, $language->name, $language->code);
 
             if (($dom['status'] ?? false) !== true) {
                 return ['status' => false, 'message' => $dom['message'] ?? 'Translation failed'];
@@ -66,7 +66,7 @@ class AiTranslationService
         }
 
         // Plain text (or an HTML field whose value has no tags): single-call plain translation.
-        $result = $this->openAi->translateField($field, $value, $language->name, false);
+        $result = $this->openAi->translateField($field, $value, $language->name, false, $language->code);
 
         if (($result['status'] ?? false) !== true) {
             return ['status' => false, 'message' => $result['error'] ?? 'Translation failed'];
@@ -138,11 +138,11 @@ class AiTranslationService
     // FIX (DOM HTML translation): parse the HTML, translate ONLY visible text nodes (never the
     // contents of <script>/<style>), then reconstruct. Tags, attributes, CSS, JS, links, ids,
     // classes and structure are left untouched at the code level. Domain-agnostic and reusable.
-    private function translateHtmlViaDom(string $html, string $targetLanguageName): array
+    private function translateHtmlViaDom(string $html, string $targetLanguageName, string $targetLanguageCode = ''): array
     {
         // Without ext-dom we cannot parse safely; fall back to a single whole-document call.
         if (! class_exists(\DOMDocument::class)) {
-            $fallback = $this->openAi->translateField('content', $html, $targetLanguageName, true);
+            $fallback = $this->openAi->translateField('content', $html, $targetLanguageName, true, $targetLanguageCode);
 
             return ($fallback['status'] ?? false) === true
                 ? ['status' => true, 'value' => $fallback['value'] ?? '']
@@ -239,7 +239,7 @@ class AiTranslationService
                 $segments[$i] = $m[2] ?? $original;
             }
 
-            $translated = $this->translateSegmentsChunked($segments, $targetLanguageName);
+            $translated = $this->translateSegmentsChunked($segments, $targetLanguageName, $targetLanguageCode);
             if (($translated['status'] ?? false) !== true) {
                 return ['status' => false, 'message' => $translated['message'] ?? 'Translation failed'];
             }
@@ -300,7 +300,7 @@ class AiTranslationService
                 $preLead = $pm[1] ?? '';
                 $preCore = $pm[2] ?? $preamble;
                 $preTrail = $pm[3] ?? '';
-                $preRes = $this->openAi->translateTextSegments([$preCore], $targetLanguageName);
+                $preRes = $this->openAi->translateTextSegments([$preCore], $targetLanguageName, $targetLanguageCode);
                 if (($preRes['status'] ?? false) === true && isset($preRes['segments'][0]) && is_string($preRes['segments'][0])) {
                     $finalPreamble = $preLead.$preRes['segments'][0].$preTrail;
                 }
@@ -331,7 +331,7 @@ class AiTranslationService
 
     // FIX (DOM HTML translation): translate segments in small SEQUENTIAL batches so each model
     // call stays well under its output limit (no truncation), preserving order.
-    private function translateSegmentsChunked(array $segments, string $targetLanguageName): array
+    private function translateSegmentsChunked(array $segments, string $targetLanguageName, string $targetLanguageCode = ''): array
     {
         $maxCharsPerCall = 4000; // small batches keep non-Latin (Arabic/Chinese) output safe
         $maxItemsPerCall = 80;
@@ -345,7 +345,7 @@ class AiTranslationService
             $len = mb_strlen((string) $text);
 
             if (count($batch) > 0 && (($batchLen + $len) > $maxCharsPerCall || count($batch) >= $maxItemsPerCall)) {
-                $flushed = $this->flushSegmentBatch($batch, $batchKeys, $targetLanguageName, $result);
+                $flushed = $this->flushSegmentBatch($batch, $batchKeys, $targetLanguageName, $targetLanguageCode, $result);
                 if (($flushed['status'] ?? false) !== true) {
                     return $flushed;
                 }
@@ -359,7 +359,7 @@ class AiTranslationService
             $batchLen += $len;
         }
 
-        $flushed = $this->flushSegmentBatch($batch, $batchKeys, $targetLanguageName, $result);
+        $flushed = $this->flushSegmentBatch($batch, $batchKeys, $targetLanguageName, $targetLanguageCode, $result);
         if (($flushed['status'] ?? false) !== true) {
             return $flushed;
         }
@@ -368,13 +368,13 @@ class AiTranslationService
     }
 
     // FIX (DOM HTML translation): translate one batch and merge results back by original key.
-    private function flushSegmentBatch(array $batch, array $batchKeys, string $targetLanguageName, array &$result): array
+    private function flushSegmentBatch(array $batch, array $batchKeys, string $targetLanguageName, string $targetLanguageCode, array &$result): array
     {
         if (count($batch) === 0) {
             return ['status' => true];
         }
 
-        $res = $this->openAi->translateTextSegments($batch, $targetLanguageName);
+        $res = $this->openAi->translateTextSegments($batch, $targetLanguageName, $targetLanguageCode);
         if (($res['status'] ?? false) !== true) {
             return ['status' => false, 'message' => $res['error'] ?? 'Translation failed'];
         }
