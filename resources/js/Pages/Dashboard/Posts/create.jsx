@@ -11,6 +11,8 @@ import FileUploaderInput from '@/Components/FileUploaderInput';
 import RawHtmlContentInput from '@/Components/RawHtmlContentInput';
 // NEW: authoring helper that inserts an <a> source link into the body at the caret.
 import AddSourceLinkButton from '@/Components/AddSourceLinkButton';
+// NEW (additive): read-only live preview of the body through the site render pipeline.
+import PostContentLivePreview from '@/Components/PostContentLivePreview';
 import TranslationsRepeater from '@/Components/TranslationsRepeater';
 // NEW (additive): reusable AI translation generator (sits above the manual repeater)
 import AiTranslationRepeater from '@/Components/AiTranslationRepeater';
@@ -656,6 +658,8 @@ export default function create({ floors, googleMapSettings, languages }) {
                                                     onChange={(v) => setData('content', v)}
                                                     Id={'content'}
                                                 />
+                                                {/* NEW (additive): read-only live preview of the final body content. */}
+                                                <PostContentLivePreview content={data.content} />
                                             </div>
 
                                             {/* NEW (additive): AI translation generator above the manual repeater. */}

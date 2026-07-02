@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Input from '@/Components/Input';
 import PrimaryButton from '@/Components/PrimaryButton';
+// NEW: detect this site's product URLs so they insert as a product card, not a link.
+import { matchProductCardUrl, buildProductCardMarkup } from '@/Helpers/productCardUrl';
 
 /**
  * "Add Source Link" authoring helper for the post body (RawHtmlContentInput).
@@ -71,6 +73,11 @@ export default function AddSourceLinkButton({ textareaRef, value = '', onChange,
         const text = (label || '').trim() || href;
         const anchor = `<a href="${href}" target="_blank" rel="noopener noreferrer">${text}</a>`;
 
+        // NEW: if the entered URL is one of this site's product URLs, insert
+        // product-card markup instead of a plain <a> link. Same caret mechanics.
+        const productMatch = matchProductCardUrl(href);
+        const markup = productMatch ? buildProductCardMarkup(productMatch) : anchor;
+
         const content = value ?? '';
         // Insert at the current/last caret; replace a selection when present;
         // fall back to the end of the body when no caret was ever placed.
@@ -81,8 +88,11 @@ export default function AddSourceLinkButton({ textareaRef, value = '', onChange,
             start = Math.min(caret.start, content.length);
             end = Math.min(caret.end, content.length);
         }
-        const newValue = content.slice(0, start) + anchor + content.slice(end);
-        const nextCaret = start + anchor.length;
+        // OLD (always inserted the anchor):
+        // const newValue = content.slice(0, start) + anchor + content.slice(end);
+        // const nextCaret = start + anchor.length;
+        const newValue = content.slice(0, start) + markup + content.slice(end);
+        const nextCaret = start + markup.length;
 
         onChange?.(newValue);
         // Keep our caret snapshot in sync so a follow-up insert lands correctly.
