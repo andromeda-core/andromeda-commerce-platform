@@ -1366,10 +1366,12 @@ const SmartphoneMobileGalleryModal = ({
                                     {/* Accordian */}
                                     {/* Product Content */}
                                     {mediaItems?.length > 0 && (
+                                        // OLD (no interactive prop — About-This-Product HTML was non-clickable; added `interactive` to match Posts): <SmartphoneContentAccordion content={smartphone?.content} label={__('About this product')} isHtml={true} onToggle={setToggleAccordion} defaultOpen={toggleAccordion} scrollContainerRef={scrollContainerRef} />
                                         <SmartphoneContentAccordion
                                             content={smartphone?.content}
                                             label={__('About this product')}
                                             isHtml={true}
+                                            interactive
                                             onToggle={setToggleAccordion}
                                             defaultOpen={toggleAccordion}
                                             scrollContainerRef={scrollContainerRef}

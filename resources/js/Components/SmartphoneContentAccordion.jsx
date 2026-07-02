@@ -8,6 +8,9 @@ const SmartphoneContentAccordion = ({
     defaultOpen = false,
     onToggle = null,
     scrollContainerRef = null,
+    // NEW: forwarded to HtmlFrame so About-This-Product HTML is clickable (matches Posts).
+    // Defaults to false to preserve prior behavior for any other caller.
+    interactive = false,
 }) => {
     // const [isOpen, setIsOpen] = useState(defaultOpen);
     const [isOpen, setIsOpen] = useState(true);
@@ -81,7 +84,8 @@ const SmartphoneContentAccordion = ({
             {isOpen && (
                 <div className="pb-2 pt-2" ref={accordionRef}>
                     {renderAsHtml ? (
-                        <HtmlFrame html={content} />
+                        // OLD (no interactive prop — caused About-This-Product HTML to be non-clickable): <HtmlFrame html={content} />
+                        <HtmlFrame html={content} interactive={interactive} />
                     ) : (
                         <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
                             {content}

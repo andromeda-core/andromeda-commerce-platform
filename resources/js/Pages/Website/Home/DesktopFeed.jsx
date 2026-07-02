@@ -4622,10 +4622,12 @@ const DesktopFeed = ({
 
                                                                 {/* Accordion */}
                                                                 {/* Product Content */}
+                                                                {/* OLD (no interactive prop — About-This-Product HTML was non-clickable; added `interactive` to match Posts): <SmartphoneContentAccordion content={feedGallery?.content} label={__('About this product')} isHtml={true} onToggle={setToggleAccordion} defaultOpen={toggleAccordion} scrollContainerRef={productRightPanelScrollRef} /> */}
                                                                 <SmartphoneContentAccordion
                                                                     content={feedGallery?.content}
                                                                     label={__('About this product')}
                                                                     isHtml={true}
+                                                                    interactive
                                                                     onToggle={setToggleAccordion}
                                                                     defaultOpen={toggleAccordion}
                                                                     scrollContainerRef={
