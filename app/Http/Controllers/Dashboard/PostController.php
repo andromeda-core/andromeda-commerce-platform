@@ -7,6 +7,7 @@ use App\Models\Language;
 use App\Repositories\Floors\Interface\IFloorRepostitory;
 use App\Repositories\Posts\Interface\IPostRepository;
 use App\Services\AiTranslationService; // NEW (additive): reusable AI translation orchestrator
+use Illuminate\Http\JsonResponse; // NEW (additive): return type for aiTranslateToEnglish
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -31,6 +32,11 @@ class PostController extends Controller implements HasMiddleware
             // (pipe = OR in Spatie) plus a throttle using the existing throttle:N,1 convention.
             new Middleware('permission:Posts Create|Posts Edit', ['only' => 'aiTranslateField']),
             new Middleware('throttle:200,1', ['only' => 'aiTranslateField']),
+
+            // NEW (additive): reverse (to-English) AI translate endpoint — SAME gating as
+            // aiTranslateField above so the twin endpoints share permission + throttle.
+            new Middleware('permission:Posts Create|Posts Edit', ['only' => 'aiTranslateToEnglish']),
+            new Middleware('throttle:200,1', ['only' => 'aiTranslateToEnglish']),
 
         ];
     }
@@ -241,6 +247,38 @@ class PostController extends Controller implements HasMiddleware
             'status' => true,
             'field' => $result['field'],
             'language_id' => $result['language_id'],
+            'value' => $result['value'],
+        ]);
+    }
+
+    // NEW (additive): reverse AI translation — translate a field's value INTO English.
+    // Mirrors aiTranslateField() but with English hardcoded as the target (no target_language_id).
+    // DEVIATION from the requested snippet: uses method injection for AiTranslationService exactly
+    // like aiTranslateField() — this controller has no $this->translator property.
+    public function aiTranslateToEnglish(Request $request, AiTranslationService $translator): JsonResponse
+    {
+        $validated = $request->validate([
+            'field' => 'required|string|in:title,content,tag,location_name',
+            'value' => 'required|string',
+        ]);
+
+        $result = $translator->translateFieldToEnglish(
+            field: $validated['field'],
+            value: (string) ($validated['value'] ?? ''),
+            allowedFields: ['title', 'content', 'tag', 'location_name'],
+            htmlFields: ['content'],
+        );
+
+        if (($result['status'] ?? false) !== true) {
+            return response()->json([
+                'status' => false,
+                'message' => $result['message'] ?? 'Translation failed',
+            ], 422);
+        }
+
+        return response()->json([
+            'status' => true,
+            'field' => $result['field'],
             'value' => $result['value'],
         ]);
     }

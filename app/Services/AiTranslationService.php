@@ -95,6 +95,48 @@ class AiTranslationService
         ];
     }
 
+    /**
+     * NEW (additive): reverse of translateField() — translate a field value INTO English.
+     *
+     * English is the app fallback locale, so there is no target_language_id: 'English'/'en'
+     * are passed directly to the same OpenAi + DOM paths translateField() uses. Same HTML DOM
+     * handling and same tagless-source plain-text backstop; returns { status, field, value }.
+     * Reuses this class's own (private) helpers; translateField() and its guard are untouched.
+     */
+    public function translateFieldToEnglish(
+        string $field,
+        string $value,
+        array $allowedFields,
+        array $htmlFields = []
+    ): array {
+        if (! in_array($field, $allowedFields, true)) {
+            return ['status' => false, 'message' => 'Field is not translatable'];
+        }
+
+        $isHtml = in_array($field, $htmlFields, true);
+
+        if ($isHtml && $this->looksLikeHtml($value)) {
+            $dom = $this->translateHtmlViaDom($value, 'English', 'en');
+            if (($dom['status'] ?? false) !== true) {
+                return ['status' => false, 'message' => $dom['message'] ?? 'Translation failed'];
+            }
+
+            return ['status' => true, 'field' => $field, 'value' => $dom['value'] ?? ''];
+        }
+
+        $result = $this->openAi->translateField($field, $value, 'English', false, 'en');
+        if (($result['status'] ?? false) !== true) {
+            return ['status' => false, 'message' => $result['error'] ?? 'Translation failed'];
+        }
+
+        $translatedValue = $result['value'] ?? '';
+        if (! $this->looksLikeHtml($value) && $this->looksLikeHtml($translatedValue)) {
+            $translatedValue = $this->normalizeInjectedHtmlToPlainText($translatedValue);
+        }
+
+        return ['status' => true, 'field' => $field, 'value' => $translatedValue];
+    }
+
     // FIX (DOM HTML translation): true when the value contains at least one HTML tag.
     private function looksLikeHtml(string $value): bool
     {

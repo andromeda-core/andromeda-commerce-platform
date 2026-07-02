@@ -11,6 +11,8 @@ import FileUploaderInput from '@/Components/FileUploaderInput';
 import RawHtmlContentInput from '@/Components/RawHtmlContentInput';
 // NEW: authoring helper that inserts an <a> source link into the body at the caret.
 import AddSourceLinkButton from '@/Components/AddSourceLinkButton';
+// NEW: one-click translate of the default (English) content field FROM whatever language staff typed INTO English.
+import TranslateToEnglishButton from '@/Components/TranslateToEnglishButton';
 // NEW (additive): read-only live preview of the body through the site render pipeline.
 import PostContentLivePreview from '@/Components/PostContentLivePreview';
 import TranslationsRepeater from '@/Components/TranslationsRepeater';
@@ -642,6 +644,24 @@ export default function create({ floors, googleMapSettings, languages }) {
                                             </div>
 
                                             <div className="grid grid-cols-1 gap-4">
+                                                {/* NEW: translate the default (English) fields INTO English (reverse of the AI repeater). */}
+                                                {/* OLD (content-only rollback):
+                                                <TranslateToEnglishButton
+                                                    value={data.content}
+                                                    onChange={(v) => setData('content', v)}
+                                                    englishLanguageId={languages.find((l) => l.code === 'en')?.id}
+                                                /> */}
+                                                <TranslateToEnglishButton
+                                                    value={data.content}
+                                                    onChange={(v) => setData('content', v)}
+                                                    titleValue={data.title}
+                                                    titleOnChange={(v) => setData('title', v)}
+                                                    tagValue={data.tag}
+                                                    tagOnChange={(v) => setData('tag', v)}
+                                                    locationValue={data.location_name}
+                                                    locationOnChange={(v) => setData('location_name', v)}
+                                                    englishLanguageId={languages.find((l) => l.code === 'en')?.id}
+                                                />
                                                 <RawHtmlContentInput
                                                     Label={'Content'}
                                                     Id={'content'}

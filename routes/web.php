@@ -404,6 +404,13 @@ Route::middleware(['auth'])->group(function () {
 
             // NEW (additive): AI translation generator endpoint (gated in PostController::middleware()).
             Route::post('/posts-ai-translate-field', 'aiTranslateField')->name('ai-translate-field');
+
+            // NEW (additive): reverse AI translation endpoint — source language -> English.
+            // DEVIATION from the requested snippet: this group already applies the ->name('posts.')
+            // prefix (under a parent 'dashboard.' group), so the SHORT name below resolves to the
+            // intended full name 'dashboard.posts.ai-translate-to-english'. Using the full name here
+            // would double-prefix it. Gated in PostController::middleware().
+            Route::post('/posts-ai-translate-to-english', 'aiTranslateToEnglish')->name('ai-translate-to-english');
         });
 
         // Floor Routes
