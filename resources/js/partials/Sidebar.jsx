@@ -167,6 +167,8 @@ export default function Sidebar({
             'dashboard.suppliers.',
             'dashboard.collaborators.',
             'dashboard.distributors.',
+            'dashboard.accommodation-operators.',
+            'dashboard.accommodation-distributors.',
         ].some((prefix) => route().current().startsWith(prefix));
 
         const isContentRoute = [
@@ -1175,6 +1177,8 @@ export default function Sidebar({
                                     'Suppliers View',
                                     'Collaborators View',
                                     'Distributors View',
+                                    'Accommodation Operators View',
+                                    'Accommodation Distributors View',
                                 ]) && (
                                     <li>
                                         <a
@@ -1252,6 +1256,32 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.distributors.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Distributors
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can('Accommodation Operators View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.accommodation-operators.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.accommodation-operators.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Accommodation Operators
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can('Accommodation Distributors View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.accommodation-distributors.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.accommodation-distributors.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Accommodation Distributors
                                                         </Link>
                                                     </li>
                                                 )}

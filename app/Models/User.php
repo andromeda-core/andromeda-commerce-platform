@@ -130,6 +130,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasOne(Distributor::class, 'user_id', 'id');
     }
 
+    public function accommodationOperator(): HasOne
+    {
+        return $this->hasOne(AccommodationOperator::class, 'user_id', 'id');
+    }
+
+    public function accommodationDistributor(): HasOne
+    {
+        return $this->hasOne(AccommodationDistributor::class, 'user_id', 'id');
+    }
+
     public function reward_points(): HasMany
     {
         return $this->hasMany(RewardPoint::class, 'user_id', 'id');

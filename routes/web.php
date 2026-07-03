@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Dashboard\AccommodationDistributorController;
+use App\Http\Controllers\Dashboard\AccommodationOperatorController;
 use App\Http\Controllers\Dashboard\AttributionRewardController;
 use App\Http\Controllers\Dashboard\BatchController;
 use App\Http\Controllers\Dashboard\BookmarkController;
@@ -483,6 +485,30 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/distributors-view/{id?}', 'show')->name('show');
             Route::delete('/distributors-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/distributors-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+        });
+
+        // Accommodation Operator Routes
+        Route::controller(AccommodationOperatorController::class)->name('accommodation-operators.')->group(function () {
+
+            Route::get('/accommodation-operators', 'index')->name('index');
+            Route::get('/accommodation-operators-create', 'create')->name('create');
+            Route::post('/accommodation-operators-store', 'store')->name('store');
+            Route::get('/accommodation-operators-edit/{id?}', 'edit')->name('edit');
+            Route::put('/accommodation-operators-update/{id?}', 'update')->name('update');
+            Route::delete('/accommodation-operators-destroy/{id?}', 'destroy')->name('destroy');
+            Route::delete('/accommodation-operators-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+        });
+
+        // Accommodation Distributor Routes
+        Route::controller(AccommodationDistributorController::class)->name('accommodation-distributors.')->group(function () {
+
+            Route::get('/accommodation-distributors', 'index')->name('index');
+            Route::get('/accommodation-distributors-create', 'create')->name('create');
+            Route::post('/accommodation-distributors-store', 'store')->name('store');
+            Route::get('/accommodation-distributors-edit/{id?}', 'edit')->name('edit');
+            Route::put('/accommodation-distributors-update/{id?}', 'update')->name('update');
+            Route::delete('/accommodation-distributors-destroy/{id?}', 'destroy')->name('destroy');
+            Route::delete('/accommodation-distributors-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
         });
 
         // Customer Routes

@@ -354,14 +354,14 @@ class SettingRepository implements ISettingRepository
 
         try {
             $system_defined_role_ids = [1, 2, 3, 4, 5];
-            $system_defined_role_names = ['Admin', 'Customer', 'Collaborator', 'Supplier', 'Distributor'];
+            $system_defined_role_names = ['Admin', 'Customer', 'Collaborator', 'Supplier', 'Distributor', 'Accommodation Operator', 'Accommodation Distributor'];
 
             $role = $this->getSingleRole($id);
             if (empty($role)) {
                 throw new Exception('Role Not Found');
             }
 
-            if (in_array($role->id, $system_defined_role_ids) && ! in_array($request->name, $system_defined_role_names)) {
+            if ((in_array($role->id, $system_defined_role_ids) || in_array($role->name, $system_defined_role_names)) && ! in_array($request->name, $system_defined_role_names)) {
                 throw new Exception('System Defined Role Can Not Be Changed');
             }
 
@@ -386,6 +386,8 @@ class SettingRepository implements ISettingRepository
         try {
 
             $system_defined_role_ids = [1, 2, 3, 4, 5];
+            $system_defined_role_names = ['Admin', 'Customer', 'Collaborator', 'Supplier', 'Distributor', 'Accommodation Operator', 'Accommodation Distributor'];
+
             if (in_array($id, $system_defined_role_ids)) {
                 throw new Exception('System Defined Role Can Not Be Deleted');
             }
@@ -393,6 +395,10 @@ class SettingRepository implements ISettingRepository
             $role = $this->getSingleRole($id);
             if (empty($role)) {
                 throw new Exception('Role Not Found');
+            }
+
+            if (in_array($role->name, $system_defined_role_names)) {
+                throw new Exception('System Defined Role Can Not Be Deleted');
             }
 
             if ($role->delete()) {
@@ -421,9 +427,15 @@ class SettingRepository implements ISettingRepository
             }
 
             $system_defined_role_ids = [1, 2, 3, 4, 5];
+            $system_defined_role_names = ['Admin', 'Customer', 'Collaborator', 'Supplier', 'Distributor', 'Accommodation Operator', 'Accommodation Distributor'];
 
             foreach ($ids as $id) {
                 if (in_array($id, $system_defined_role_ids)) {
+                    throw new Exception('System Defined Role Can Not Be Deleted');
+                }
+
+                $role = $this->getSingleRole($id);
+                if (! empty($role) && in_array($role->name, $system_defined_role_names)) {
                     throw new Exception('System Defined Role Can Not Be Deleted');
                 }
             }

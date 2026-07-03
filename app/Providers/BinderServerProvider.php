@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Repositories\AccommodationDistributors\Interface\IAccommodationDistributorRepository;
+use App\Repositories\AccommodationDistributors\Repository\AccommodationDistributorRepository;
+use App\Repositories\AccommodationOperators\Interface\IAccommodationOperatorRepository;
+use App\Repositories\AccommodationOperators\Repository\AccommodationOperatorRepository;
 use App\Repositories\AttributionReward\Interface\IAttributionRewardRepository;
 use App\Repositories\AttributionReward\Repository\AttributionRewardRepository;
 use App\Repositories\Batches\Interface\IBatchRepository;
@@ -170,6 +174,8 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(ITemplateRepository::class, TemplateRepository::class);
         $this->app->bind(ILodgingProductRepository::class, LodgingProductRepository::class);
         $this->app->bind(ILodgingReservationRepository::class, LodgingReservationRepository::class);
+        $this->app->bind(IAccommodationOperatorRepository::class, AccommodationOperatorRepository::class);
+        $this->app->bind(IAccommodationDistributorRepository::class, AccommodationDistributorRepository::class);
     }
 
     /**
