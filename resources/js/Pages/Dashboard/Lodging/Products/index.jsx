@@ -76,6 +76,21 @@ export default function index({ lodging_products }) {
                 label: 'Tag',
                 render: (item) => item?.tag || 'N/A',
             },
+            {
+                label: 'Distributor',
+                render: (item) => {
+                    const distributorUser = item?.accommodation_distributor?.user;
+                    if (!distributorUser) {
+                        return 'N/A';
+                    }
+                    return (
+                        <div className="flex flex-col">
+                            <span>{distributorUser.name}</span>
+                            <span className="text-xs text-gray-400">{distributorUser.email}</span>
+                        </div>
+                    );
+                },
+            },
         ];
 
         const customActions = [

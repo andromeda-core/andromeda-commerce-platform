@@ -1055,7 +1055,13 @@ class LodgingProductRepository implements ILodgingProductRepository
                 });
             })
             ->withCount(['rooms', 'media'])
-            ->with(['floor', 'floorStart', 'floorEnd'])
+            ->with([
+                'floor', 'floorStart', 'floorEnd',
+                // Column-constrained: withholds the distributor's bank/business fields from this
+                // list payload, which every viewer (incl. Operators/Distributors) receives.
+                'accommodationDistributor:id,user_id',
+                'accommodationDistributor.user:id,name,email',
+            ])
             ->latest()
             ->paginate(10)
             ->withQueryString();
@@ -1077,6 +1083,10 @@ class LodgingProductRepository implements ILodgingProductRepository
             'floorStart:id,name',
             'floorEnd:id,name',
             'assignedDashboardUser:id,name,email',
+            // Column-constrained: withholds the distributor's bank/business fields from this
+            // detail payload, which every viewer (incl. Operators/Distributors) receives.
+            'accommodationDistributor:id,user_id',
+            'accommodationDistributor.user:id,name,email',
             // Stage 3.4.2 — per-record content translations for the dashboard editor (admin still
             // authors English in the original columns; these are the per-language overrides).
             'contentTranslations',

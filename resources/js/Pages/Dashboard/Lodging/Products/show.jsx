@@ -468,6 +468,13 @@ export default function show({ lodging_product }) {
                             </div>
                         </Section>
 
+                        <Section title={'Assigned Distributor'}>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                                <Field label={'Name'} value={p.accommodation_distributor?.user?.name} />
+                                <Field label={'Email'} value={p.accommodation_distributor?.user?.email} />
+                            </div>
+                        </Section>
+
                         <Section title={`Media (${(p.media ?? []).length})`}>
                             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
                                 {(p.media ?? []).length === 0 && (
