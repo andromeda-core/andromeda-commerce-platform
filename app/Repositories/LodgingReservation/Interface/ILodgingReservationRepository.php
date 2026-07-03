@@ -55,4 +55,9 @@ interface ILodgingReservationRepository
 
     // Stage 3.1 — customer single reservation DETAIL by reservation_no / public_id (customer-scoped, read-only).
     public function getCustomerSingleReservation(Request $request, string $reservation_no);
+
+    // Referral fix — pure lookup/preview (no reservation created/modified); validates a referral
+    // code and previews the reward points it would earn, reusing the exact same calculation the
+    // real CONFIRMED-time award uses so the preview can never drift.
+    public function previewReferralCode(Request $request): array;
 }

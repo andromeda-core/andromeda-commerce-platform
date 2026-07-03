@@ -66,6 +66,9 @@ class CollaboratorRepository implements ICollaboratorRepository
             'swift_code' => ['required', 'string', 'max:255'],
             'point_accumulation_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            // Accommodation-commission fix — separate lodging-only rate, mirrors commission_rate's
+            // own validation exactly. commission_rate above stays the phone-order rate, unchanged.
+            'accommodation_commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ], [
             'type.required' => 'The Collaborator Type Field Is Required.',
             'type.in' => 'The Collaborator Type Must Be Company Or Indivisual.',
@@ -77,6 +80,10 @@ class CollaboratorRepository implements ICollaboratorRepository
 
         if ($validated_req['point_accumulation_rate'] == 0) {
             $validated_req['point_accumulation_rate'] = null;
+        }
+
+        if (($validated_req['accommodation_commission_rate'] ?? null) == 0) {
+            $validated_req['accommodation_commission_rate'] = null;
         }
 
         try {
@@ -108,6 +115,7 @@ class CollaboratorRepository implements ICollaboratorRepository
                 'swift_code' => $validated_req['swift_code'],
                 'point_accumulation_rate' => $validated_req['point_accumulation_rate'],
                 'commission_rate' => $validated_req['commission_rate'] ?? null,
+                'accommodation_commission_rate' => $validated_req['accommodation_commission_rate'] ?? null,
             ]);
 
             if (empty($collaborator)) {
@@ -180,6 +188,9 @@ class CollaboratorRepository implements ICollaboratorRepository
             'swift_code' => ['required', 'string', 'max:255'],
             'point_accumulation_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            // Accommodation-commission fix — separate lodging-only rate, mirrors commission_rate's
+            // own validation exactly. commission_rate above stays the phone-order rate, unchanged.
+            'accommodation_commission_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ], [
             'type.required' => 'The Collaborator Type Field Is Required.',
             'type.in' => 'The Collaborator Type Must Be Company Or Indivisual.',
@@ -191,6 +202,10 @@ class CollaboratorRepository implements ICollaboratorRepository
 
         if ($validated_req['point_accumulation_rate'] == 0) {
             $validated_req['point_accumulation_rate'] = null;
+        }
+
+        if (($validated_req['accommodation_commission_rate'] ?? null) == 0) {
+            $validated_req['accommodation_commission_rate'] = null;
         }
 
         try {
@@ -217,6 +232,7 @@ class CollaboratorRepository implements ICollaboratorRepository
                 'swift_code' => $validated_req['swift_code'],
                 'point_accumulation_rate' => $validated_req['point_accumulation_rate'],
                 'commission_rate' => $validated_req['commission_rate'] ?? null,
+                'accommodation_commission_rate' => $validated_req['accommodation_commission_rate'] ?? null,
 
             ]);
 

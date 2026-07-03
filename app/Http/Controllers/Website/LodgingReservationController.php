@@ -48,6 +48,18 @@ class LodgingReservationController extends Controller
     }
 
     /**
+     * Referral fix — lightweight "Apply" preview (mirrors CartController::referalCode()'s
+     * response shape). Pure lookup, never creates/modifies a reservation. Always returns JSON —
+     * this is only ever called via axios from the reservation panel, never an Inertia visit.
+     */
+    public function previewReferralCode(Request $request)
+    {
+        $response = $this->lodgingReservation->previewReferralCode($request);
+
+        return response()->json($response);
+    }
+
+    /**
      * Stage 3.1 — customer My Reservations LIST. Auth-gated (route middleware 'auth') +
      * strictly customer-scoped inside the repository. Mirrors Website\OrderController::index:
      * returns JSON for the infinite-scroll load-more (ajax) and an Inertia page otherwise.

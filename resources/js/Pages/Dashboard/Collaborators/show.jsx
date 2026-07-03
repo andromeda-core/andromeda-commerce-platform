@@ -283,6 +283,27 @@ export default function edit({ collaborator }) {
                                                         )}
                                                     </div>
                                                 </div>
+
+                                                {/* Accommodation Commission Rate */}
+                                                <div>
+                                                    <label className="block mb-1 text-sm font-medium text-gray-600 dark:text-white/70">
+                                                        Accommodation Commission Rate
+                                                    </label>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {collaborator?.accommodation_commission_rate ? (
+                                                            <span className="px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full dark:bg-green-900 dark:text-white">
+                                                                {
+                                                                    collaborator?.accommodation_commission_rate
+                                                                }
+                                                                %
+                                                            </span>
+                                                        ) : (
+                                                            <span className="px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full dark:bg-blue-900 dark:text-white">
+                                                                Default
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

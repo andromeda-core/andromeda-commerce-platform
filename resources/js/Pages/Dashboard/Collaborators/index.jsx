@@ -80,6 +80,21 @@ export default function index({ collaborators }) {
             },
 
             {
+                label: 'Accommodation Commission Rate',
+                render: (item) => {
+                    if (item.accommodation_commission_rate) {
+                        return (
+                            <span className="p-2 text-white bg-blue-500 rounded-lg">
+                                {item.accommodation_commission_rate}%
+                            </span>
+                        );
+                    } else {
+                        return 'Default';
+                    }
+                },
+            },
+
+            {
                 key: 'type',
                 label: 'Collaborator Type',
                 badge: (value) => 'rounded-lg bg-blue-500 p-2 text-white',

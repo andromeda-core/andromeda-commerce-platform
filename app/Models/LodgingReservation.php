@@ -22,6 +22,13 @@ class LodgingReservation extends Model
         'lodging_room_id',
         'lodging_rate_plan_id',
 
+        // Phase 4 — referral. collaborator_id + referral_code are set only via the controlled
+        // lookup in storeReservationRequest (never mass-assigned from raw request input directly);
+        // both stay in $fillable since that lookup passes them through create() itself, matching
+        // how the rest of this method already builds its create() payload.
+        'collaborator_id',
+        'referral_code',
+
         // Booking inputs
         'checkin_date',
         'checkout_date',
@@ -93,6 +100,11 @@ class LodgingReservation extends Model
         return $this->belongsTo(LodgingRatePlan::class, 'lodging_rate_plan_id', 'id');
     }
 
+    public function collaborator(): BelongsTo
+    {
+        return $this->belongsTo(Collaborator::class, 'collaborator_id', 'id');
+    }
+
     public function assignedDashboardUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_dashboard_user_id', 'id');
@@ -142,6 +154,7 @@ class LodgingReservation extends Model
         'hotel_approved_at' => 'datetime',
         'approval_expires_at' => 'datetime',
         'hotel_response_deadline' => 'datetime',
+        'reward_points_awarded_at' => 'datetime',
         'element_bundle' => 'array',
     ];
 

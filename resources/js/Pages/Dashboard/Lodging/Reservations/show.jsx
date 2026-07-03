@@ -350,6 +350,25 @@ export default function show({ lodging_reservation }) {
                             </div>
                         </Section>
 
+                        <Section title={'Referral'}>
+                            <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+                                <Field
+                                    label={'Collaborator Name'}
+                                    value={r.collaborator?.user?.name}
+                                />
+                                <Field
+                                    label={'Collaborator Email'}
+                                    value={r.collaborator?.user?.email}
+                                    breakAll={true}
+                                />
+                                <Field
+                                    label={'Referral Code Used'}
+                                    value={r.referral_code}
+                                    breakAll={true}
+                                />
+                            </div>
+                        </Section>
+
                         <Section title={'Booking (Snapshots at Create)'}>
                             <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                                 <Field label={'Property (snapshot)'} value={r.property_name_snapshot} />

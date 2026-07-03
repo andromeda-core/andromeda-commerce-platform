@@ -303,6 +303,10 @@ Route::group(['as' => 'website.'], function () {
     Route::controller(WebsiteLodgingReservationController::class)->middleware('auth')->name('lodging-reservations.')->group(function () {
         Route::post('/lodging-reservations-store', 'store')->name('store');
 
+        // Referral fix — "Apply" preview (lookup + points preview only, correctly spelled
+        // referral-code; no session/cart state like the phone side's referal-code endpoint).
+        Route::post('/lodging-reservations-referral-code', 'previewReferralCode')->name('referral-code');
+
         // Stage 2.4 Fix 2 — NOWPayments success_url landing (read-only, status-aware).
         Route::get('/lodging-reservations/payment-success/{reservation_no?}', 'paymentSuccess')->name('payment-success');
 

@@ -3,8 +3,10 @@ import { useForm } from '@inertiajs/react';
 import { createPortal } from 'react-dom';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import axios from 'axios';
 import useWindowSize from '@/Hooks/useWindowSize';
 import Spinner from '@/Components/Spinner';
+import Toast from '@/Components/Toast';
 
 /**
  * Stage 3.3 — rate-plan-level reservation slide-in.
@@ -94,12 +96,64 @@ const LodgingReservationPanel = ({
         checkout_date: '',
         guest_count: 1,
         request_message: '',
+        referral_code: '',
     });
+
+    // Referral fix — "Apply" preview state. `appliedReferral` holds the validated {referral_code,
+    // total_points} once Apply succeeds; it is cleared the moment the input changes so a stale
+    // "applied" badge never shows for a code that no longer matches what's typed. Phase 4's
+    // submission-time validation is unchanged and still re-checks the code server-side regardless
+    // of whether Apply was ever clicked — this is additive UX, not a replacement safety check.
+    const [applyingReferral, setApplyingReferral] = useState(false);
+    const [appliedReferral, setAppliedReferral] = useState(null);
+    const [referralErrorMessage, setReferralErrorMessage] = useState(null);
+    const [showReferralErrorToast, setShowReferralErrorToast] = useState(false);
+
+    const handleReferralCodeChange = (value) => {
+        setData('referral_code', value);
+        if (appliedReferral) setAppliedReferral(null);
+    };
+
+    const handleApplyReferral = async () => {
+        const code = data.referral_code.trim();
+        if (!code || applyingReferral) return;
+
+        setApplyingReferral(true);
+
+        try {
+            const res = await axios.post(route('website.lodging-reservations.referral-code'), {
+                code,
+                lodging_rate_plan_id: data.lodging_rate_plan_id,
+                checkin_date: data.checkin_date,
+                checkout_date: data.checkout_date,
+            });
+            const response = res.data;
+
+            if (!response.status) {
+                setAppliedReferral(null);
+                setReferralErrorMessage(response.message);
+                setShowReferralErrorToast(true);
+                return;
+            }
+
+            setAppliedReferral({
+                referral_code: response.referral_code,
+                total_points: response.total_points,
+            });
+        } catch (error) {
+            setAppliedReferral(null);
+            setReferralErrorMessage(
+                error?.response?.data?.message || error.message || __('Invalid Referral Code'),
+            );
+            setShowReferralErrorToast(true);
+        } finally {
+            setApplyingReferral(false);
+        }
+    };
 
     const currency = lodging?.currency_code ?? '';
     const salePrice = Number(selectedRatePlan?.sale_price) || 0;
-    const maxGuests =
-        selectedRoom?.max_guests != null ? Number(selectedRoom.max_guests) : null;
+    const maxGuests = selectedRoom?.max_guests != null ? Number(selectedRoom.max_guests) : null;
     const minNights =
         selectedRatePlan?.minimum_nights != null ? Number(selectedRatePlan.minimum_nights) : null;
     const maxNights =
@@ -233,12 +287,13 @@ const LodgingReservationPanel = ({
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (!canSubmit) return;
+        if (!canSubmit || applyingReferral) return;
         post(route('website.lodging-reservations.store'), {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {
                 reset();
+                setAppliedReferral(null);
                 onClose();
             },
         });
@@ -266,6 +321,19 @@ const LodgingReservationPanel = ({
 
     return createPortal(
         <div className="fixed inset-0 z-[120] flex">
+            {/* Referral apply error — same Toast component the submission-time error path
+                surfaces through (via Inertia flash); this axios-driven apply call constructs its
+                own local flash-shaped object since it never goes through an Inertia visit. */}
+            {showReferralErrorToast && (
+                <Toast
+                    flash={{ error: referralErrorMessage }}
+                    onClosed={() => {
+                        setShowReferralErrorToast(false);
+                        setReferralErrorMessage(null);
+                    }}
+                />
+            )}
+
             {/* Backdrop */}
             <div
                 className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"
@@ -300,15 +368,15 @@ const LodgingReservationPanel = ({
             >
                 {/* Mobile drag handle */}
                 {!isDesktop && (
-                    <div className="flex justify-center pt-3 pb-1">
-                        <div className="w-10 h-1 rounded-full bg-surface-3-light dark:bg-surface-3-dark" />
+                    <div className="flex justify-center pb-1 pt-3">
+                        <div className="h-1 w-10 rounded-full bg-surface-3-light dark:bg-surface-3-dark" />
                     </div>
                 )}
 
                 {/* Header */}
-                <div className="flex items-start justify-between gap-3 px-5 py-4 border-b shrink-0 border-surface-3-light dark:border-surface-3-dark">
+                <div className="flex shrink-0 items-start justify-between gap-3 border-b border-surface-3-light px-5 py-4 dark:border-surface-3-dark">
                     <div className="min-w-0">
-                        <h2 className="text-lg font-semibold truncate text-main-text-light dark:text-main-text-dark">
+                        <h2 className="truncate text-lg font-semibold text-main-text-light dark:text-main-text-dark">
                             {lodging?.property_name}
                         </h2>
                         <p className="mt-0.5 truncate text-sm text-sub-text-light dark:text-sub-text-dark">
@@ -340,11 +408,11 @@ const LodgingReservationPanel = ({
                 </div>
 
                 {/* Body */}
-                <div className="flex-1 px-5 py-4 overflow-y-auto scrollbar-none">
+                <div className="flex-1 overflow-y-auto px-5 py-4 scrollbar-none">
                     {!isCustomer ? (
                         // Belt-and-suspenders: the Reserve button gates this, but never show the form
                         // to a non-customer.
-                        <div className="p-4 text-center border rounded-md border-surface-3-light bg-surface-1-light dark:border-surface-3-dark dark:bg-surface-2-dark">
+                        <div className="rounded-md border border-surface-3-light bg-surface-1-light p-4 text-center dark:border-surface-3-dark dark:bg-surface-2-dark">
                             <p className="text-sm text-sub-text-light dark:text-sub-text-dark">
                                 {__('Login to Reserve')}
                             </p>
@@ -369,11 +437,11 @@ const LodgingReservationPanel = ({
                                 </p>
                             )}
 
-                            <div className="w-full h-px bg-surface-3-light dark:bg-surface-3-dark" />
+                            <div className="h-px w-full bg-surface-3-light dark:bg-surface-3-dark" />
 
                             {/* Check-in */}
                             <div>
-                                <label className="block mb-1 text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                <label className="mb-1 block text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                     {__('Check-in')}
                                 </label>
                                 <input
@@ -383,10 +451,12 @@ const LodgingReservationPanel = ({
                                     placeholder={__('Check-in')}
                                     value={data.checkin_date}
                                     onChange={() => {}}
-                                    className="w-full px-3 py-2 text-sm border rounded-md outline-none border-surface-3-light bg-backgroundLight text-main-text-light focus:border-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark"
+                                    className="w-full rounded-md border border-surface-3-light bg-backgroundLight px-3 py-2 text-sm text-main-text-light outline-none focus:border-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark"
                                 />
                                 {errors.checkin_date && (
-                                    <p className="mt-1 text-xs text-red-500">{errors.checkin_date}</p>
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.checkin_date}
+                                    </p>
                                 )}
                                 {/* Same-day / cutoff rate-plan rule (UX mirror of the server guard). */}
                                 {sameDayError && (
@@ -396,7 +466,7 @@ const LodgingReservationPanel = ({
 
                             {/* Check-out */}
                             <div>
-                                <label className="block mb-1 text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                <label className="mb-1 block text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                     {__('Check-out')}
                                 </label>
                                 <input
@@ -406,7 +476,7 @@ const LodgingReservationPanel = ({
                                     placeholder={__('Check-out')}
                                     value={data.checkout_date}
                                     onChange={() => {}}
-                                    className="w-full px-3 py-2 text-sm border rounded-md outline-none border-surface-3-light bg-backgroundLight text-main-text-light focus:border-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark"
+                                    className="w-full rounded-md border border-surface-3-light bg-backgroundLight px-3 py-2 text-sm text-main-text-light outline-none focus:border-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark"
                                 />
                                 {errors.checkout_date && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -424,15 +494,19 @@ const LodgingReservationPanel = ({
                                     {nights}
                                 </span>
                             </div>
-                            {nightsError && <p className="-mt-2 text-xs text-red-500">{nightsError}</p>}
+                            {nightsError && (
+                                <p className="-mt-2 text-xs text-red-500">{nightsError}</p>
+                            )}
                             {/* Consecutive-nights rate-plan rule (UX mirror of the server guard). */}
                             {consecutiveNightsError && (
-                                <p className="-mt-2 text-xs text-red-500">{consecutiveNightsError}</p>
+                                <p className="-mt-2 text-xs text-red-500">
+                                    {consecutiveNightsError}
+                                </p>
                             )}
 
                             {/* Guests */}
                             <div>
-                                <label className="block mb-1 text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                <label className="mb-1 block text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                     {__('Guests')}
                                 </label>
                                 <input
@@ -443,19 +517,21 @@ const LodgingReservationPanel = ({
                                     onChange={(e) =>
                                         setData('guest_count', Number(e.target.value) || 1)
                                     }
-                                    className="w-full px-3 py-2 text-sm border rounded-md outline-none border-surface-3-light bg-backgroundLight text-main-text-light focus:border-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark"
+                                    className="w-full rounded-md border border-surface-3-light bg-backgroundLight px-3 py-2 text-sm text-main-text-light outline-none focus:border-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark"
                                 />
                                 {guestError && (
                                     <p className="mt-1 text-xs text-red-500">{guestError}</p>
                                 )}
                                 {errors.guest_count && (
-                                    <p className="mt-1 text-xs text-red-500">{errors.guest_count}</p>
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.guest_count}
+                                    </p>
                                 )}
                             </div>
 
                             {/* Request message */}
                             <div>
-                                <label className="block mb-1 text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                <label className="mb-1 block text-sm font-medium text-main-text-light dark:text-main-text-dark">
                                     {__('Request message (optional)')}
                                 </label>
                                 <textarea
@@ -463,7 +539,7 @@ const LodgingReservationPanel = ({
                                     maxLength={2000}
                                     value={data.request_message}
                                     onChange={(e) => setData('request_message', e.target.value)}
-                                    className="w-full px-3 py-2 text-sm border rounded-md outline-none resize-none border-surface-3-light bg-backgroundLight text-main-text-light focus:border-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark"
+                                    className="w-full resize-none rounded-md border border-surface-3-light bg-backgroundLight px-3 py-2 text-sm text-main-text-light outline-none focus:border-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark"
                                 />
                                 {errors.request_message && (
                                     <p className="mt-1 text-xs text-red-500">
@@ -472,7 +548,102 @@ const LodgingReservationPanel = ({
                                 )}
                             </div>
 
-                            <div className="w-full h-px bg-surface-3-light dark:bg-surface-3-dark" />
+                            {/* Referral code (optional) */}
+                            <div>
+                                <label className="mb-1 block text-sm font-medium text-main-text-light dark:text-main-text-dark">
+                                    {__('Referral code (optional)')}
+                                </label>
+                                {!appliedReferral ? (
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="text"
+                                            maxLength={255}
+                                            placeholder={__('Enter referral code')}
+                                            value={data.referral_code}
+                                            onChange={(e) =>
+                                                handleReferralCodeChange(e.target.value)
+                                            }
+                                            className="w-full flex-1 rounded-md border border-surface-3-light bg-backgroundLight px-3 py-2 text-sm text-main-text-light outline-none focus:border-main-text-light dark:border-surface-3-dark dark:bg-surface-1-dark dark:text-main-text-dark"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleApplyReferral}
+                                            disabled={
+                                                !data.referral_code.trim() || applyingReferral
+                                            }
+                                            className="h-[38px] shrink-0 rounded-md border border-surface-3-light bg-backgroundLight px-4 text-sm font-semibold text-main-text-light transition-colors disabled:cursor-not-allowed disabled:opacity-50 dark:border-surface-3-dark dark:bg-surface-3-dark dark:text-main-text-dark lg:hover:bg-surface-1-light dark:lg:hover:bg-surface-3-dark/80"
+                                        >
+                                            {applyingReferral ? (
+                                                <Spinner customSize={'size-4'} />
+                                            ) : (
+                                                __('Apply')
+                                            )}
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center justify-between gap-2 rounded-md border border-green-200 bg-green-50 p-3 dark:border-green-800 dark:bg-green-900/20">
+                                        <div className="flex items-center gap-2">
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                                className="h-5 w-5 shrink-0 text-green-600 dark:text-green-400"
+                                            >
+                                                <path
+                                                    fillRule="evenodd"
+                                                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z"
+                                                    clipRule="evenodd"
+                                                />
+                                            </svg>
+                                            <div>
+                                                <p className="text-sm font-medium text-green-900 dark:text-green-400">
+                                                    {appliedReferral.referral_code} {__('applied')}
+                                                </p>
+                                                {appliedReferral.total_points != null && (
+                                                    <p className="text-xs text-green-700 dark:text-green-500">
+                                                        {__("You'll earn")} ~
+                                                        {appliedReferral.total_points}{' '}
+                                                        {__(
+                                                            'points once this reservation is confirmed',
+                                                        )}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setAppliedReferral(null);
+                                                setData('referral_code', '');
+                                            }}
+                                            className="shrink-0 text-green-600 transition-colors hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+                                            title={__('Remove referral code')}
+                                        >
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                strokeWidth={2}
+                                                stroke="currentColor"
+                                                className="h-5 w-5"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    d="M6 18L18 6M6 6l12 12"
+                                                />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                )}
+                                {errors.referral_code && (
+                                    <p className="mt-1 text-xs text-red-500">
+                                        {errors.referral_code}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div className="h-px w-full bg-surface-3-light dark:bg-surface-3-dark" />
 
                             {/* Online amount breakdown (display-only) */}
                             <div className="flex flex-col gap-1.5">
@@ -493,7 +664,7 @@ const LodgingReservationPanel = ({
                                         <span>{fmt(line.amount)}</span>
                                     </div>
                                 ))}
-                                <div className="flex items-center justify-between pt-2 mt-1 border-t border-surface-3-light dark:border-surface-3-dark">
+                                <div className="mt-1 flex items-center justify-between border-t border-surface-3-light pt-2 dark:border-surface-3-dark">
                                     <span className="text-sm font-semibold text-main-text-light dark:text-main-text-dark">
                                         {__('You pay online')}
                                     </span>
@@ -513,12 +684,12 @@ const LodgingReservationPanel = ({
 
                 {/* Footer */}
                 {isCustomer && (
-                    <div className="px-5 py-4 border-t shrink-0 border-surface-3-light dark:border-surface-3-dark">
+                    <div className="shrink-0 border-t border-surface-3-light px-5 py-4 dark:border-surface-3-dark">
                         <button
                             type="button"
                             onClick={handleSubmit}
-                            disabled={!canSubmit}
-                            className="flex items-center justify-center w-full h-12 gap-2 font-semibold transition rounded-md bg-main-text-light text-md text-main-text-dark hover:bg-main-text-light/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
+                            disabled={!canSubmit || applyingReferral}
+                            className="text-md flex h-12 w-full items-center justify-center gap-2 rounded-md bg-main-text-light font-semibold text-main-text-dark transition hover:bg-main-text-light/80 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-main-text-dark dark:text-main-text-light dark:hover:bg-main-text-dark/80"
                         >
                             {processing && <Spinner customSize={'size-4'} />}
                             {__('Submit reservation request')}

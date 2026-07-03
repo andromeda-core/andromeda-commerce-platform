@@ -3,13 +3,17 @@
 namespace App\Repositories\LodgingReservation\Repository;
 
 use App\Helpers\Trans;
+use App\Models\Collaborator;
 use App\Models\CommissionSetting;
 use App\Models\Currency;
+use App\Models\LodgingCollaboratorCommission;
 use App\Models\LodgingDistributorCommission;
 use App\Models\LodgingPlatformCommission;
 use App\Models\LodgingRatePlan;
 use App\Models\LodgingReservation;
 use App\Models\LodgingReservationPayment;
+use App\Models\RewardPoint;
+use App\Models\RewardSetting;
 use App\Models\User;
 use App\Notifications\Lodging\LodgingReservationApproved;
 use App\Notifications\Lodging\LodgingReservationConfirmed;
@@ -63,9 +67,24 @@ class LodgingReservationRepository implements ILodgingReservationRepository
             'checkout_date' => ['required', 'date', 'after:checkin_date'],
             'guest_count' => ['required', 'integer', 'min:1'],
             'request_message' => ['nullable', 'string', 'max:2000'],
+            'referral_code' => ['nullable', 'string', 'max:255'],
         ]);
 
         try {
+            // Phase 4 — referral code lookup. A code that doesn't match any collaborator is
+            // rejected outright (mirrors the phone side's "Invalid Referal Code" behavior, correct
+            // spelling here); no code entered is a normal, valid reservation.
+            $collaboratorId = null;
+            $referralCode = null;
+            if (! empty($validated['referral_code'])) {
+                $collaborator = Collaborator::where('referral_code', $validated['referral_code'])->first();
+                if (empty($collaborator)) {
+                    return ['status' => false, 'message' => Trans::get('Invalid Referral Code')];
+                }
+                $collaboratorId = $collaborator->id;
+                $referralCode = $validated['referral_code'];
+            }
+
             // Re-validate the chosen rate plan against the chosen room + product (locked rule).
             $ratePlan = $this->lodging_rate_plan
                 ->with(['lodgingRoom.lodgingProduct.cancellationPolicy'])
@@ -159,23 +178,8 @@ class LodgingReservationRepository implements ILodgingReservationRepository
             //     + cleaning_fee (only if cleaning_fee_online)
             //     + tax_amount   (only if tax_online)
             // On-site fees are NOT included online.
-            $cancellation = $product->cancellationPolicy;
             $priceSnapshot = (float) $salePrice;
-            $onlineAmount = $priceSnapshot * $nights;
-
-            if (! empty($cancellation)) {
-                if ($cancellation->service_fee_online && is_numeric($cancellation->service_fee)) {
-                    $onlineAmount += (float) $cancellation->service_fee;
-                }
-                if ($cancellation->cleaning_fee_online && is_numeric($cancellation->cleaning_fee)) {
-                    $onlineAmount += (float) $cancellation->cleaning_fee;
-                }
-                if ($cancellation->tax_online && is_numeric($cancellation->tax_amount)) {
-                    $onlineAmount += (float) $cancellation->tax_amount;
-                }
-            }
-
-            $onlineAmount = round($onlineAmount, 2);
+            $onlineAmount = $this->calculateOnlineAmount($priceSnapshot, $nights, $product->cancellationPolicy);
 
             // currency_code from the active BASE currency (dynamic, never hardcoded).
             $baseCurrency = Cache::get('currency') ?? Currency::where('is_active', true)->first();
@@ -206,6 +210,8 @@ class LodgingReservationRepository implements ILodgingReservationRepository
                 'online_amount' => $onlineAmount,
                 'currency_code' => $currencyCode,
                 'hotel_response_deadline' => now()->addHours(24),
+                'collaborator_id' => $collaboratorId,
+                'referral_code' => $referralCode,
             ]);
 
             if (empty($reservation)) {
@@ -275,6 +281,11 @@ class LodgingReservationRepository implements ILodgingReservationRepository
                 'assignedDashboardUser:id,name,email',
                 'hotelApprovedBy:id,name,email',
                 'payments',
+                // Referral fix — column-constrained (not a bare 'collaborator'), same reasoning as
+                // the Phase 2 accommodationDistributor eager-load fix: an unconstrained load would
+                // expose bank_account_no/iban/swift_code/commission rates to this show page.
+                'collaborator:id,user_id',
+                'collaborator.user:id,name,email',
             ])
             ->where(function ($query) use ($identifier) {
                 $query->where('reservation_no', $identifier)
@@ -969,8 +980,9 @@ class LodgingReservationRepository implements ILodgingReservationRepository
 
     /**
      * Phase 3 — Distributor + Platform commission ledger rows, created once the reservation
-     * reaches CONFIRMED. Collaborator commission creation is wired in Phase 4 once the referral
-     * code exists on the reservation; only the settings/ledger/model machinery exists for it now.
+     * reaches CONFIRMED. Collaborator commission (+ reward points) is a separate concern, wired in
+     * Phase 4's awardReferralRewards() below since it only fires when a referral code identified a
+     * collaborator at booking time — everything else here is unchanged from Phase 3.
      *
      * Ledger only — no money actually moves. Base amount is always `online_amount`. Rate
      * precedence: the partner's own individual rate, else the global accommodation setting, else
@@ -1011,6 +1023,199 @@ class LodgingReservationRepository implements ILodgingReservationRepository
                 ]
             );
         }
+    }
+
+    /**
+     * Phase 4 — collaborator commission + reward points, only when a referral code identified a
+     * collaborator at reservation creation (Phase 3 built the ledger table/model; this wires the
+     * row-creation). Same base as the other two ledgers: `online_amount` (lodging has no
+     * amount-vs-full_amount split like phone orders, so commission AND points share one base —
+     * by design, not an oversight). Rate precedence: individual
+     * Collaborator.accommodation_commission_rate, else the global `accommodation_collaborator`
+     * CommissionSetting, else no commission row at all.
+     *
+     * firstOrCreate keyed on reservation_id is mandatory here too, same discipline as
+     * calculateAccommodationCommissions.
+     *
+     * Reward points reuse the EXISTING RewardPoint/RewardSetting system verbatim (same rate
+     * precedence and accumulate-into-one-row shape the phone Order model uses), but the phone
+     * side has NO idempotency guard against awarding the same order twice — a known gap this
+     * deliberately does not copy. Guard chosen: `reward_points_awarded_at`, a nullable timestamp
+     * on the reservation itself (not mass-assignable, set only here). LodgingReservation is a
+     * single row per booking (unlike RewardPoint, which accumulates across many orders/reservations
+     * into one running total per user), so a flag directly on the reservation is the natural,
+     * race-safe place to record "points already awarded for this booking" — race-safe because this
+     * method only ever runs inside applyRemotePaymentOutcome's transaction, which already holds
+     * lockForUpdate() on this exact reservation row, so two concurrent confirms of the same
+     * reservation serialize on that lock rather than both passing the flag check.
+     */
+    private function awardReferralRewards(LodgingReservation $reservation): void
+    {
+        if (empty($reservation->collaborator_id)) {
+            return;
+        }
+
+        $collaborator = $reservation->collaborator;
+        if (empty($collaborator)) {
+            return;
+        }
+
+        $rate = $collaborator->accommodation_commission_rate
+            ?? CommissionSetting::where('type', 'accommodation_collaborator')->value('commission_rate');
+
+        if (! empty($rate)) {
+            LodgingCollaboratorCommission::firstOrCreate(
+                ['reservation_id' => $reservation->id],
+                [
+                    'collaborator_id' => $collaborator->id,
+                    'commission_rate' => $rate,
+                    'commission_amount' => $reservation->online_amount * $rate / 100,
+                ]
+            );
+        }
+
+        if (! empty($reservation->reward_points_awarded_at)) {
+            return;
+        }
+
+        $rewardRate = $this->resolveRewardRate($collaborator);
+        if (empty($rewardRate)) {
+            return;
+        }
+
+        $userId = $reservation->customer?->user_id;
+        if (empty($userId)) {
+            return;
+        }
+
+        $totalPoints = $reservation->online_amount * $rewardRate / 100;
+
+        $rewardPoint = RewardPoint::where('user_id', $userId)->first();
+        if (empty($rewardPoint)) {
+            RewardPoint::create([
+                'user_id' => $userId,
+                'points' => $totalPoints,
+                'expires_at' => now()->addYears(5),
+            ]);
+        } else {
+            $rewardPoint->points += round($totalPoints);
+            $rewardPoint->save();
+        }
+
+        $reservation->reward_points_awarded_at = now();
+        $reservation->save();
+    }
+
+    /**
+     * Referral fix — pure lookup/preview, mirrors CartRepository::referalCode()'s intent for the
+     * phone side but does NOT create or modify a reservation, and does NOT use session state (a
+     * lodging reservation is a one-shot submission, not an accumulating cart). Correctly spelled
+     * `referral_code`/`referral-code` throughout (the phone side's `referal`/`referal-code`
+     * misspelling is a legacy constraint that does not apply to this new domain).
+     *
+     * The points preview reuses calculateOnlineAmount() + resolveRewardRate() — the SAME private
+     * helpers awardReferralRewards() calls at the real CONFIRMED-time award — so the previewed
+     * number can never drift from what actually gets awarded later. Booking details
+     * (lodging_rate_plan_id + dates) are optional: the code-validity result is always returned
+     * even when they're missing/unresolvable, and the points preview simply degrades to null
+     * (best-effort only; a failure here must never block the code-validity result, which is this
+     * endpoint's primary purpose).
+     */
+    public function previewReferralCode(Request $request): array
+    {
+        $code = trim((string) $request->input('code'));
+        if ($code === '') {
+            return ['status' => false, 'message' => Trans::get('Please Enter Referral Code')];
+        }
+
+        $collaborator = Collaborator::where('referral_code', $code)->first();
+        if (empty($collaborator)) {
+            return ['status' => false, 'message' => Trans::get('Invalid Referral Code')];
+        }
+
+        $response = [
+            'status' => true,
+            'message' => Trans::get('Referral Code Applied'),
+            'collaborator_id' => $collaborator->id,
+            'referral_code' => $collaborator->referral_code,
+            'total_points' => null,
+        ];
+
+        $ratePlanId = $request->input('lodging_rate_plan_id');
+        $checkinDate = $request->input('checkin_date');
+        $checkoutDate = $request->input('checkout_date');
+
+        if (! empty($ratePlanId) && ! empty($checkinDate) && ! empty($checkoutDate)) {
+            try {
+                $ratePlan = $this->lodging_rate_plan
+                    ->with(['lodgingRoom.lodgingProduct.cancellationPolicy'])
+                    ->find($ratePlanId);
+
+                $salePrice = $ratePlan->sale_price ?? null;
+
+                if (! empty($ratePlan) && $salePrice !== null && is_numeric($salePrice)) {
+                    $nights = (int) abs(
+                        Carbon::parse($checkinDate)->startOfDay()->diffInDays(Carbon::parse($checkoutDate)->startOfDay())
+                    );
+
+                    if ($nights >= 1) {
+                        $onlineAmount = $this->calculateOnlineAmount(
+                            (float) $salePrice,
+                            $nights,
+                            $ratePlan->lodgingRoom?->lodgingProduct?->cancellationPolicy
+                        );
+
+                        $rewardRate = $this->resolveRewardRate($collaborator);
+                        if (! empty($rewardRate)) {
+                            $response['total_points'] = round($onlineAmount * $rewardRate / 100);
+                        }
+                        $response['online_amount'] = $onlineAmount;
+                    }
+                }
+            } catch (Exception $e) {
+                // Preview-only best-effort — a bad/unresolvable booking detail must never block
+                // the code-validity result above; it just skips the points preview.
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * online_amount per Joseph Adjustment 1 (locked): price_snapshot * nights + service_fee (only
+     * if service_fee_online) + cleaning_fee (only if cleaning_fee_online) + tax_amount (only if
+     * tax_online). On-site fees are NEVER included online. Shared by storeReservationRequest (the
+     * authoritative calculation) and previewReferralCode (the preview) so the two can never drift.
+     */
+    private function calculateOnlineAmount(float $priceSnapshot, int $nights, $cancellationPolicy): float
+    {
+        $onlineAmount = $priceSnapshot * $nights;
+
+        if (! empty($cancellationPolicy)) {
+            if ($cancellationPolicy->service_fee_online && is_numeric($cancellationPolicy->service_fee)) {
+                $onlineAmount += (float) $cancellationPolicy->service_fee;
+            }
+            if ($cancellationPolicy->cleaning_fee_online && is_numeric($cancellationPolicy->cleaning_fee)) {
+                $onlineAmount += (float) $cancellationPolicy->cleaning_fee;
+            }
+            if ($cancellationPolicy->tax_online && is_numeric($cancellationPolicy->tax_amount)) {
+                $onlineAmount += (float) $cancellationPolicy->tax_amount;
+            }
+        }
+
+        return round($onlineAmount, 2);
+    }
+
+    /**
+     * Reward-points rate precedence (locked in Phase 4): the collaborator's own individual
+     * point_accumulation_rate, else the global RewardSetting fallback, else no points. Shared by
+     * awardReferralRewards (the real award) and previewReferralCode (the preview).
+     */
+    private function resolveRewardRate(Collaborator $collaborator): ?float
+    {
+        $rate = $collaborator->point_accumulation_rate ?? RewardSetting::first()?->reward_rate;
+
+        return empty($rate) ? null : (float) $rate;
     }
 
     /**
@@ -1115,6 +1320,7 @@ class LodgingReservationRepository implements ILodgingReservationRepository
                 $this->transitionStatus($reservation, 'CONFIRMED');
 
                 $this->calculateAccommodationCommissions($reservation);
+                $this->awardReferralRewards($reservation);
 
                 return ['outcome' => 'confirmed', 'reservation_no' => $reservation->reservation_no];
             }

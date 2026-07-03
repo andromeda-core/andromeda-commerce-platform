@@ -25,6 +25,7 @@ export default function create() {
         swift_code: '',
         point_accumulation_rate: '',
         commission_rate: '',
+        accommodation_commission_rate: '',
     });
 
     const [togglePassword, setTogglePassword] = useState(false);
@@ -51,7 +52,7 @@ export default function create() {
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
                                     Text={'Back To Collaborators'}
                                     URL={route('dashboard.collaborators.index')}
@@ -298,6 +299,41 @@ export default function create() {
                                                     />
                                                 </div>
 
+                                                <div className="flex items-center">
+                                                    <Input
+                                                        CustomCss={'w-[40px] mt-5'}
+                                                        Value={'%'}
+                                                        readOnly={true}
+                                                    />
+
+                                                    <div className="flex-1">
+                                                        <Input
+                                                            InputName={
+                                                                'Accommodation Commission Rate'
+                                                            }
+                                                            Error={
+                                                                errors.accommodation_commission_rate
+                                                            }
+                                                            Id={'accommodation_commission_rate'}
+                                                            Name={'accommodation_commission_rate'}
+                                                            Value={
+                                                                data.accommodation_commission_rate
+                                                            }
+                                                            Action={(e) =>
+                                                                setData(
+                                                                    'accommodation_commission_rate',
+                                                                    e.target.value,
+                                                                )
+                                                            }
+                                                            Placeholder={
+                                                                'Enter Accommodation Commission Rate'
+                                                            }
+                                                            Required={false}
+                                                            Type={'number'}
+                                                        />
+                                                    </div>
+                                                </div>
+
                                                 <div>
                                                     <label
                                                         htmlFor="address"
@@ -324,8 +360,6 @@ export default function create() {
                                                         </span>
                                                     )}
                                                 </div>
-
-
                                             </div>
 
                                             <PrimaryButton
@@ -345,7 +379,7 @@ export default function create() {
                                                     data.password.trim() === '' ||
                                                     data.password_confirmation.trim() === '' ||
                                                     data.password.trim() !==
-                                                    data.password_confirmation.trim() ||
+                                                        data.password_confirmation.trim() ||
                                                     data.type.trim() === '' ||
                                                     data.address.trim() === ''
                                                 }
