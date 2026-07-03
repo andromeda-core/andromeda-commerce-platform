@@ -298,6 +298,36 @@ class AiTranslationService
                 return ['status' => false, 'message' => 'HTML reconstruction failed'];
             }
 
+            // FIX (spurious block wrap): libxml2's loadHTML()/saveHTML() round-trip on a loose fragment
+            // (bare text + inline tags only, no <html>/<body> wrapper) can implicitly wrap the ENTIRE output
+            // in a single <p>...</p> or <div>...</div> that was never in the source. This turns previously
+            // inline-only content (tagless text + <a>/<b>/etc.) into block-level content, which changes how
+            // the frontend classifies and renders it (routes to the iframe path instead of the inline path,
+            // collapsing \n\n paragraph breaks). Detect and strip ONLY when it is unambiguously spurious:
+            // exactly one open tag and exactly one matching close tag of that SAME element in the entire
+            // output, wrapping it start-to-end, AND the original source did not itself start with that tag
+            // (so we never touch genuinely <p>- or <div>-authored content, single or multi-paragraph).
+            $rebuiltTrimmed = trim((string) $rebuilt);
+            $originalTrimmed = trim($html);
+
+            foreach (['p', 'div'] as $wrapperTag) {
+                $originalStartsWithTag = (bool) preg_match('/^<'.$wrapperTag.'[\s>]/i', $originalTrimmed);
+                if ($originalStartsWithTag) {
+                    continue; // source genuinely authored this tag, never strip
+                }
+
+                $openCount = preg_match_all('/<'.$wrapperTag.'\b[^>]*>/i', $rebuiltTrimmed);
+                $closeCount = preg_match_all('/<\/'.$wrapperTag.'>/i', $rebuiltTrimmed);
+
+                if ($openCount === 1 && $closeCount === 1
+                    && preg_match('/^<'.$wrapperTag.'\b[^>]*>([\s\S]*)<\/'.$wrapperTag.'>\s*$/i', $rebuiltTrimmed, $m)
+                ) {
+                    $rebuilt = $m[1];
+                    Log::info("[AiTranslation DOM] Stripped spurious wrapping <{$wrapperTag}> tag added by DOM round-trip");
+                    break; // only one wrapper type can legitimately match; stop once stripped
+                }
+            }
+
             // saveHTML emits non-ASCII as NUMERIC entities (e.g. Arabic -> &#1575;). Decode ONLY
             // numeric character references back to real UTF-8 so translated text is stored and
             // edited as characters, not entities. Named entities (&amp; &lt; &gt; &quot; &nbsp;)

@@ -89,7 +89,6 @@ const buildFrameCss = (textColor) => `
         overflow-wrap: break-word;
         overflow-x: hidden;
         -webkit-text-size-adjust: 100%;
-        text-align: center;
         padding: 12px !important;
     }
     // body, p, h1, h2, h3, h4, h5, h6, span, div, li, td, blockquote, section, article {
