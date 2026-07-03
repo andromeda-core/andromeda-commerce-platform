@@ -19,6 +19,9 @@ class Collaborator extends Model
         'bank_account_no',
         'point_accumulation_rate',
         'commission_rate',
+        // Phase 3 (Accommodation Commissions) — separate rate for lodging reservation commissions;
+        // 'commission_rate' above stays the phone-order rate, unchanged.
+        'accommodation_commission_rate',
     ];
 
     protected $appends = ['added_at'];

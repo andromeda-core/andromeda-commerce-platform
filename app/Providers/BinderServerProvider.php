@@ -22,6 +22,12 @@ use App\Repositories\Commissions\CollaboratorCommissions\Interface\ICollaborator
 use App\Repositories\Commissions\CollaboratorCommissions\Repository\CollaboratorCommissionRepository;
 use App\Repositories\Commissions\DistributorCommissions\Interface\IDistributorCommissionRepository;
 use App\Repositories\Commissions\DistributorCommissions\Repository\DistributorCommissionRepository;
+use App\Repositories\Commissions\LodgingCollaboratorCommissions\Interface\ILodgingCollaboratorCommissionRepository;
+use App\Repositories\Commissions\LodgingCollaboratorCommissions\Repository\LodgingCollaboratorCommissionRepository;
+use App\Repositories\Commissions\LodgingDistributorCommissions\Interface\ILodgingDistributorCommissionRepository;
+use App\Repositories\Commissions\LodgingDistributorCommissions\Repository\LodgingDistributorCommissionRepository;
+use App\Repositories\Commissions\LodgingPlatformCommissions\Interface\ILodgingPlatformCommissionRepository;
+use App\Repositories\Commissions\LodgingPlatformCommissions\Repository\LodgingPlatformCommissionRepository;
 use App\Repositories\Commissions\PlatformCommissions\Interface\IPlatformCommissionRepository;
 use App\Repositories\Commissions\PlatformCommissions\Repository\PlatformCommissionRepository;
 use App\Repositories\Commissions\SupplierCommissions\Interface\ISupplierCommissionRepository;
@@ -176,6 +182,9 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(ILodgingReservationRepository::class, LodgingReservationRepository::class);
         $this->app->bind(IAccommodationOperatorRepository::class, AccommodationOperatorRepository::class);
         $this->app->bind(IAccommodationDistributorRepository::class, AccommodationDistributorRepository::class);
+        $this->app->bind(ILodgingDistributorCommissionRepository::class, LodgingDistributorCommissionRepository::class);
+        $this->app->bind(ILodgingPlatformCommissionRepository::class, LodgingPlatformCommissionRepository::class);
+        $this->app->bind(ILodgingCollaboratorCommissionRepository::class, LodgingCollaboratorCommissionRepository::class);
     }
 
     /**

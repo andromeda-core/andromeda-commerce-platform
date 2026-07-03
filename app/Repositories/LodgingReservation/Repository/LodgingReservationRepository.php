@@ -3,7 +3,10 @@
 namespace App\Repositories\LodgingReservation\Repository;
 
 use App\Helpers\Trans;
+use App\Models\CommissionSetting;
 use App\Models\Currency;
+use App\Models\LodgingDistributorCommission;
+use App\Models\LodgingPlatformCommission;
 use App\Models\LodgingRatePlan;
 use App\Models\LodgingReservation;
 use App\Models\LodgingReservationPayment;
@@ -965,6 +968,52 @@ class LodgingReservationRepository implements ILodgingReservationRepository
     }
 
     /**
+     * Phase 3 — Distributor + Platform commission ledger rows, created once the reservation
+     * reaches CONFIRMED. Collaborator commission creation is wired in Phase 4 once the referral
+     * code exists on the reservation; only the settings/ledger/model machinery exists for it now.
+     *
+     * Ledger only — no money actually moves. Base amount is always `online_amount`. Rate
+     * precedence: the partner's own individual rate, else the global accommodation setting, else
+     * no commission row at all (mirrors the phone side's "no rate = no commission" behavior).
+     *
+     * firstOrCreate keyed on reservation_id is mandatory here (not plain create()) — this is the
+     * deliberate fix for the duplicate-commission-row bug found on the phone side
+     * (CollaboratorCommission::create() with no idempotency guard + a second dispatch site).
+     */
+    private function calculateAccommodationCommissions(LodgingReservation $reservation): void
+    {
+        $lodgingProduct = $reservation->lodgingProduct;
+
+        if (! empty($lodgingProduct?->accommodation_distributor_id)) {
+            $distributor = $lodgingProduct->accommodationDistributor;
+            $rate = $distributor->commission_rate
+                ?? CommissionSetting::where('type', 'accommodation_distributor')->value('commission_rate');
+
+            if (! empty($rate)) {
+                LodgingDistributorCommission::firstOrCreate(
+                    ['reservation_id' => $reservation->id],
+                    [
+                        'accommodation_distributor_id' => $distributor->id,
+                        'commission_rate' => $rate,
+                        'commission_amount' => $reservation->online_amount * $rate / 100,
+                    ]
+                );
+            }
+        }
+
+        $platformRate = CommissionSetting::where('type', 'accommodation_platform')->value('commission_rate');
+        if (! empty($platformRate)) {
+            LodgingPlatformCommission::firstOrCreate(
+                ['reservation_id' => $reservation->id],
+                [
+                    'commission_rate' => $platformRate,
+                    'commission_amount' => $reservation->online_amount * $platformRate / 100,
+                ]
+            );
+        }
+    }
+
+    /**
      * Parse a rate plan's `booking_cutoff_time` ('HH:MM', 24h) into a Carbon instant at that time
      * TODAY in the app timezone (UTC). Returns null for an empty / unrecognized value so a malformed
      * cutoff can never block a booking (fail-open — consistent with the conditional-guard intent).
@@ -1064,6 +1113,8 @@ class LodgingReservationRepository implements ILodgingReservationRepository
 
                 $this->transitionStatus($reservation, 'PAYMENT_CONFIRMED');
                 $this->transitionStatus($reservation, 'CONFIRMED');
+
+                $this->calculateAccommodationCommissions($reservation);
 
                 return ['outcome' => 'confirmed', 'reservation_no' => $reservation->reservation_no];
             }

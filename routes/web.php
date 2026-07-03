@@ -9,6 +9,9 @@ use App\Http\Controllers\Dashboard\CategoryController;
 use App\Http\Controllers\Dashboard\CollaboratorController;
 use App\Http\Controllers\Dashboard\Commissions\CollaboratorCommissionController;
 use App\Http\Controllers\Dashboard\Commissions\DistributorCommissionController;
+use App\Http\Controllers\Dashboard\Commissions\LodgingCollaboratorCommissionController;
+use App\Http\Controllers\Dashboard\Commissions\LodgingDistributorCommissionController;
+use App\Http\Controllers\Dashboard\Commissions\LodgingPlatformCommissionController;
 use App\Http\Controllers\Dashboard\Commissions\PlatformCommissionController;
 use App\Http\Controllers\Dashboard\Commissions\SupplierCommissionController;
 use App\Http\Controllers\Dashboard\CustomerController;
@@ -755,6 +758,37 @@ Route::middleware(['auth'])->group(function () {
                 Route::put('/platform-commissions/{id?}', 'update')->name('update');
                 Route::delete('/platform-commissions/{id?}', 'destroy')->name('destroy');
                 Route::delete('/platform-commissions-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+            });
+        });
+
+        // Accommodation Commissions Route Group (Phase 3 — isolated from the phone commissions above)
+        Route::prefix('/accommodation-commissions')->name('accommodation-commissions.')->group(function () {
+
+            // Accommodation Distributor Commission Route Group
+            Route::controller(LodgingDistributorCommissionController::class)->name('distributor-commissions.')->group(function () {
+                Route::get('/lodging-distributor-commissions', 'index')->name('index');
+                Route::get('/lodging-distributor-commissions/{id?}', 'edit')->name('edit');
+                Route::put('/lodging-distributor-commissions/{id?}', 'update')->name('update');
+                Route::delete('/lodging-distributor-commissions/{id?}', 'destroy')->name('destroy');
+                Route::delete('/lodging-distributor-commissions-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+            });
+
+            // Accommodation Platform Commission Route Group
+            Route::controller(LodgingPlatformCommissionController::class)->name('platform-commissions.')->group(function () {
+                Route::get('/lodging-platform-commissions', 'index')->name('index');
+                Route::get('/lodging-platform-commissions/{id?}', 'edit')->name('edit');
+                Route::put('/lodging-platform-commissions/{id?}', 'update')->name('update');
+                Route::delete('/lodging-platform-commissions/{id?}', 'destroy')->name('destroy');
+                Route::delete('/lodging-platform-commissions-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
+            });
+
+            // Accommodation Collaborator Commission Route Group (rows populate in Phase 4)
+            Route::controller(LodgingCollaboratorCommissionController::class)->name('collaborator-commissions.')->group(function () {
+                Route::get('/lodging-collaborator-commissions', 'index')->name('index');
+                Route::get('/lodging-collaborator-commissions/{id?}', 'edit')->name('edit');
+                Route::put('/lodging-collaborator-commissions/{id?}', 'update')->name('update');
+                Route::delete('/lodging-collaborator-commissions/{id?}', 'destroy')->name('destroy');
+                Route::delete('/lodging-collaborator-commissions-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
             });
         });
 

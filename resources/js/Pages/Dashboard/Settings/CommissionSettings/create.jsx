@@ -76,6 +76,9 @@ export default function create() {
                                                         { name: 'distributor' },
                                                         { name: 'supplier' },
                                                         { name: 'platform' },
+                                                        { id: 'accommodation_distributor', name: 'Accommodation Distributor' },
+                                                        { id: 'accommodation_collaborator', name: 'Accommodation Collaborator' },
+                                                        { id: 'accommodation_platform', name: 'Accommodation Platform' },
                                                     ]}
                                                     itemKey={'name'}
                                                     Placeholder={'Select  Type'}

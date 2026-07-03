@@ -4,42 +4,51 @@ import LinkButton from '@/Components/LinkButton';
 import PrimaryButton from '@/Components/PrimaryButton';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import React from 'react';
 import SelectInput from '@/Components/SelectInput';
 
-export default function edit({ commission_setting }) {
+export default function edit({ lodging_collaborator_commission }) {
     // Create Data Form Data
-    const { data, setData, put, processing, errors } = useForm({
-        type: commission_setting.type || '',
-        commission_rate: commission_setting.commission_rate || '',
+    const { data, setData, put, processing, errors, reset } = useForm({
+        commission_rate: lodging_collaborator_commission?.commission_rate,
+        commission_amount: lodging_collaborator_commission?.commission_amount,
+        status: lodging_collaborator_commission?.status,
     });
 
+    const { currency } = usePage().props;
     // Edit Data Form Request
     const submit = (e) => {
         e.preventDefault();
-        put(route('dashboard.settings.commission-settings.update', commission_setting.id));
+        put(
+            route(
+                'dashboard.accommodation-commissions.collaborator-commissions.update',
+                lodging_collaborator_commission?.id,
+            ),
+        );
     };
 
     return (
         <>
             <AuthenticatedLayout>
-                <Head title="Settings - Commission Settings" />
+                <Head title="Accommodation Collaborator Commissions" />
 
                 <BreadCrumb
-                    header={'Settings - Create Commission Setting'}
-                    parent={'Commission Settings'}
-                    parent_link={route('dashboard.settings.commission-settings.index')}
-                    child={'Create Commission Setting'}
+                    header={'Edit Accommodation Collaborator Commission'}
+                    parent={'Accommodation Collaborator Commissions'}
+                    parent_link={route('dashboard.accommodation-commissions.collaborator-commissions.index')}
+                    child={'Edit Accommodation Collaborator Commission'}
                 />
 
                 <Card
                     Content={
                         <>
-                            <div className="flex flex-wrap justify-end my-3">
+                            <div className="my-3 flex flex-wrap justify-end">
                                 <LinkButton
-                                    Text={'Back To Commission Settings'}
-                                    URL={route('dashboard.settings.commission-settings.index')}
+                                    Text={'Back To Accommodation Collaborator Commissions'}
+                                    URL={route(
+                                        'dashboard.accommodation-commissions.collaborator-commissions.index',
+                                    )}
                                     Icon={
                                         <svg
                                             xmlns="http://www.w3.org/2000/svg"
@@ -64,27 +73,6 @@ export default function edit({ commission_setting }) {
                                     Content={
                                         <>
                                             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                                                <SelectInput
-                                                    InputName={'Type'}
-                                                    Id={'type'}
-                                                    Name={'type'}
-                                                    Value={data.type}
-                                                    Error={errors.type}
-                                                    Action={(value) => setData('type', value)}
-                                                    items={[
-                                                        { name: 'collaborator' },
-                                                        { name: 'distributor' },
-                                                        { name: 'supplier' },
-                                                        { name: 'platform' },
-                                                        { id: 'accommodation_distributor', name: 'Accommodation Distributor' },
-                                                        { id: 'accommodation_collaborator', name: 'Accommodation Collaborator' },
-                                                        { id: 'accommodation_platform', name: 'Accommodation Platform' },
-                                                    ]}
-                                                    itemKey={'name'}
-                                                    Placeholder={'Select  Type'}
-                                                    Required={true}
-                                                />
-
                                                 <div className="flex items-center">
                                                     <Input
                                                         CustomCss={'w-[40px] mt-5'}
@@ -109,16 +97,58 @@ export default function edit({ commission_setting }) {
                                                         Required={true}
                                                     />
                                                 </div>
+
+                                                <div className="flex items-center">
+                                                    <Input
+                                                        CustomCss={'w-[40px] mt-5'}
+                                                        Value={currency?.symbol}
+                                                        readOnly={true}
+                                                    />
+
+                                                    <Input
+                                                        InputName={'Commission Amount'}
+                                                        Error={errors.commission_amount}
+                                                        Value={data.commission_amount}
+                                                        Action={(e) =>
+                                                            setData(
+                                                                'commission_amount',
+                                                                e.target.value,
+                                                            )
+                                                        }
+                                                        Placeholder={'Enter Commission Amount'}
+                                                        Id={'commission_amount'}
+                                                        Name={'commission_amount'}
+                                                        Type={'number'}
+                                                        Required={true}
+                                                    />
+                                                </div>
+
+                                                <SelectInput
+                                                    InputName={'Commission Status'}
+                                                    Id={'status'}
+                                                    Name={'status'}
+                                                    Error={errors.status}
+                                                    items={[
+                                                        { id: 'paid', name: 'Paid' },
+                                                        { id: 'unpaid', name: 'Un-Paid' },
+                                                    ]}
+                                                    itemKey={'name'}
+                                                    Value={data.status}
+                                                    Required={true}
+                                                    Multiple={false}
+                                                    Action={(value) => setData('status', value)}
+                                                />
                                             </div>
 
                                             <PrimaryButton
-                                                Text={'Update Commission Setting'}
+                                                Text={'Update Accommodation Collaborator Commission'}
                                                 Type={'submit'}
-                                                CustomClass={'w-[300px] '}
+                                                CustomClass={'w-[380px]'}
                                                 Disabled={
                                                     processing ||
-                                                    data.type == '' ||
-                                                    data.commission_rate == ''
+                                                    data.commission_amount === '' ||
+                                                    data.commission_rate === '' ||
+                                                    data.status === ''
                                                 }
                                                 Spinner={processing}
                                                 Icon={
@@ -133,7 +163,7 @@ export default function edit({ commission_setting }) {
                                                         <path
                                                             strokeLinecap="round"
                                                             strokeLinejoin="round"
-                                                            d="M12 4.5v15m7.5-7.5h-15"
+                                                            d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
                                                         />
                                                     </svg>
                                                 }

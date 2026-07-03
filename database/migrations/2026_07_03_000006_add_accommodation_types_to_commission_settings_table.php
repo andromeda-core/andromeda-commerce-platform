@@ -1,0 +1,31 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('commission_settings', function (Blueprint $table) {
+            $table->enum('type', [
+                'collaborator', 'distributor', 'supplier', 'platform',
+                'accommodation_distributor', 'accommodation_collaborator', 'accommodation_platform',
+            ])->change();
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('commission_settings', function (Blueprint $table) {
+            $table->enum('type', ['collaborator', 'distributor', 'supplier', 'platform'])->change();
+        });
+    }
+};

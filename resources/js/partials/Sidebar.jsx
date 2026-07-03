@@ -159,9 +159,11 @@ export default function Sidebar({
             route().current().startsWith(prefix),
         );
 
-        const isFinanceRoute = ['dashboard.commissions.', 'dashboard.unsettled-accounts.'].some(
-            (prefix) => route().current().startsWith(prefix),
-        );
+        const isFinanceRoute = [
+            'dashboard.commissions.',
+            'dashboard.accommodation-commissions.',
+            'dashboard.unsettled-accounts.',
+        ].some((prefix) => route().current().startsWith(prefix));
 
         const isPartnersRoute = [
             'dashboard.suppliers.',
@@ -226,9 +228,10 @@ export default function Sidebar({
         } else if (isFinanceRoute) {
             setSelected('Finance');
 
-            const isCommissionsRoute = ['dashboard.commissions.'].some((prefix) =>
-                route().current().startsWith(prefix),
-            );
+            const isCommissionsRoute = [
+                'dashboard.commissions.',
+                'dashboard.accommodation-commissions.',
+            ].some((prefix) => route().current().startsWith(prefix));
 
             if (isCommissionsRoute) {
                 setSelectedSubMenu('Commissions');
@@ -1010,6 +1013,9 @@ export default function Sidebar({
                                     'Supplier Commissions View',
                                     'Collaborator Commissions View',
                                     'Distributor Commissions View',
+                                    'Accommodation Distributor Commissions View',
+                                    'Accommodation Platform Commissions View',
+                                    'Accommodation Collaborator Commissions View',
                                 ]) && (
                                     <li>
                                         <a
@@ -1057,6 +1063,9 @@ export default function Sidebar({
                                                     'Collaborator Commissions View',
                                                     'Distributor Commissions View',
                                                     'Platform Commissions View',
+                                                    'Accommodation Distributor Commissions View',
+                                                    'Accommodation Platform Commissions View',
+                                                    'Accommodation Collaborator Commissions View',
                                                 ]) && (
                                                     <li>
                                                         <a
@@ -1149,21 +1158,66 @@ export default function Sidebar({
                                                                     </li>
                                                                 )}
 
-                                                                {can(
-                                                                    'Platform Commissions View',
-                                                                ) && (
-                                                                    <li>
-                                                                        <Link
-                                                                            href={route(
-                                                                                'dashboard.commissions.platform-commissions.index',
-                                                                            )}
-                                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.platform-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
-                                                                        >
-                                                                            Platform Commissions
-                                                                        </Link>
-                                                                    </li>
-                                                                )}
-                                                            </ul>
+                                                {can(
+                                                    'Platform Commissions View',
+                                                ) && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.commissions.platform-commissions.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.commissions.platform-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Platform Commissions
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can(
+                                                    'Accommodation Distributor Commissions View',
+                                                ) && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.accommodation-commissions.distributor-commissions.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.accommodation-commissions.distributor-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Accommodation Distributor Commissions
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can(
+                                                    'Accommodation Collaborator Commissions View',
+                                                ) && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.accommodation-commissions.collaborator-commissions.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.accommodation-commissions.collaborator-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Accommodation Collaborator Commissions
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can(
+                                                    'Accommodation Platform Commissions View',
+                                                ) && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.accommodation-commissions.platform-commissions.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.accommodation-commissions.platform-commissions.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Accommodation Platform Commissions
+                                                        </Link>
+                                                    </li>
+                                                )}
+                                            </ul>
                                                         </div>
                                                     </li>
                                                 )}
