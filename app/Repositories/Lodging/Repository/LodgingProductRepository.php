@@ -1336,6 +1336,18 @@ class LodgingProductRepository implements ILodgingProductRepository
                 throw new Exception('Lodging Product Not Found');
             }
 
+            // Owner-controlled per-property distributor management: applyOwnershipScope already
+            // guarantees a Distributor caller only ever reaches a property assigned to THEM, but
+            // that alone is not enough per Joseph's requirement — they must also have been
+            // explicitly granted management access on this specific property via the toggle
+            // endpoint. Additive on top of the Spatie "Lodging Products Edit" gate (already
+            // enforced by middleware), never a replacement for it. Admin and Accommodation
+            // Operator are untouched — this check only triggers for the Distributor role.
+            $actingUser = auth()->user();
+            if (! empty($actingUser) && $actingUser->hasRole('Accommodation Distributor') && ! $product->accommodation_distributor_can_manage) {
+                throw new Exception('You are not permitted to manage this property yet. Ask the property owner to enable management access.');
+            }
+
             $deletedMediaPaths = collect();
 
             DB::transaction(function () use ($request, $validated, $product, &$deletedMediaPaths) {
@@ -1505,6 +1517,65 @@ class LodgingProductRepository implements ILodgingProductRepository
             return [
                 'status' => true,
                 'message' => $message,
+            ];
+        } catch (Exception $e) {
+            return [
+                'status' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
+    }
+
+    /**
+     * Owner-controlled per-property distributor management toggle. Reachable ONLY by Admin, or
+     * by the Accommodation Operator who owns this exact property — deliberately NOT reused via
+     * applyOwnershipScope (that scope also lets a Distributor reach their own assigned row, which
+     * must NOT be allowed to toggle their own manage flag; a narrower rule than the read-scope).
+     * Mirrors applyOwnershipScope's own whereHas('accommodationOperator', ...) query style rather
+     * than a raw property comparison, avoiding a null-equals-null false-positive on unowned rows.
+     *
+     * Guards against enabling management on a property with no assigned distributor at the
+     * endpoint itself (not just the frontend) — toggling on is meaningless without a distributor
+     * to grant it to.
+     */
+    public function toggleAccommodationDistributorManagement(string $id)
+    {
+        try {
+            $product = $this->applyOwnershipScope($this->lodging_product->newQuery())
+                ->where('id', $id)
+                ->first();
+            if (empty($product)) {
+                throw new Exception('Lodging Product Not Found');
+            }
+
+            $user = auth()->user();
+            $isAdmin = ! empty($user) && $user->hasRole('Admin');
+
+            if (! $isAdmin) {
+                $ownsProperty = ! empty($user) && $user->hasRole('Accommodation Operator')
+                    && $this->lodging_product->where('id', $id)
+                        ->whereHas('accommodationOperator', function ($subQuery) use ($user) {
+                            $subQuery->where('user_id', $user->id);
+                        })
+                        ->exists();
+
+                if (! $ownsProperty) {
+                    throw new Exception('You are not permitted to manage this property\'s distributor access.');
+                }
+            }
+
+            if (empty($product->accommodation_distributor_id)) {
+                throw new Exception('This property has no assigned distributor.');
+            }
+
+            $product->accommodation_distributor_can_manage = ! $product->accommodation_distributor_can_manage;
+            $product->save();
+
+            return [
+                'status' => true,
+                'message' => $product->accommodation_distributor_can_manage
+                    ? 'Distributor management access enabled for this property.'
+                    : 'Distributor management access disabled for this property.',
             ];
         } catch (Exception $e) {
             return [

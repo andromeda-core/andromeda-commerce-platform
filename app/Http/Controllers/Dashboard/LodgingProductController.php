@@ -20,6 +20,7 @@ class LodgingProductController extends Controller implements HasMiddleware
             new Middleware('permission:Lodging Products Create', ['only' => 'store']),
             new Middleware('permission:Lodging Products Edit', ['only' => 'edit']),
             new Middleware('permission:Lodging Products Edit', ['only' => 'update']),
+            new Middleware('permission:Lodging Products Edit', ['only' => 'toggleAccommodationDistributorManagement']),
             new Middleware('permission:Lodging Products Delete', ['only' => 'destroy']),
             new Middleware('permission:Lodging Products Delete', ['only' => 'destroyBySelection']),
         ];
@@ -81,6 +82,18 @@ class LodgingProductController extends Controller implements HasMiddleware
             return to_route('dashboard.lodging-products.index')->with('error', 'Lodging Product not found');
         }
 
+        // Owner-controlled per-property distributor management: getSingleLodgingProduct's
+        // ownership scope already guarantees a Distributor only ever loads a property assigned
+        // to THEM, but the show() action shares this same lookup and must stay usable for a
+        // view-only Distributor regardless of the manage toggle — so this additional gate lives
+        // here in edit() specifically, not in the shared repository method. Additive on top of
+        // the Spatie "Lodging Products Edit" permission (already enforced by middleware). Admin
+        // and Accommodation Operator are unaffected.
+        $actingUser = auth()->user();
+        if (! empty($actingUser) && $actingUser->hasRole('Accommodation Distributor') && ! $lodging_product->accommodation_distributor_can_manage) {
+            return to_route('dashboard.lodging-products.index')->with('error', 'You are not permitted to manage this property yet. Ask the property owner to enable management access.');
+        }
+
         $formData = $this->lodgingProduct->getCreateFormData();
         $googleMapSettings = $this->lodgingProduct->getGoogleMapSettings();
 
@@ -99,6 +112,20 @@ class LodgingProductController extends Controller implements HasMiddleware
         }
 
         return to_route('dashboard.lodging-products.index')->with('success', $updated['message']);
+    }
+
+    public function toggleAccommodationDistributorManagement(?string $id = null)
+    {
+        if (empty($id)) {
+            return back()->with('error', 'Lodging Product Id not found');
+        }
+
+        $response = $this->lodgingProduct->toggleAccommodationDistributorManagement($id);
+        if ($response['status'] === false) {
+            return back()->with('error', $response['message']);
+        }
+
+        return back()->with('success', $response['message']);
     }
 
     public function destroy(?string $id = null)

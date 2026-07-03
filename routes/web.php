@@ -553,6 +553,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/lodging-products-store', 'store')->name('store');
             Route::get('/lodging-products-edit/{id?}', 'edit')->name('edit');
             Route::put('/lodging-products-update/{id?}', 'update')->name('update');
+            // Owner-controlled per-property distributor management toggle (mirrors the
+            // smartphones toggle-sold-out route naming/style).
+            Route::put('/lodging-products-toggle-distributor-management/{id?}', 'toggleAccommodationDistributorManagement')->name('toggle-distributor-management');
             Route::get('/lodging-products-view/{id?}', 'show')->name('show');
             Route::delete('/lodging-products-destroy/{id?}', 'destroy')->name('destroy');
             Route::delete('/lodging-products-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');

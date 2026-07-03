@@ -167,5 +167,7 @@ class LodgingProduct extends Model
         'is_active' => 'boolean',
         'is_reservation_closed' => 'boolean',
         'msap_ready' => 'boolean',
+        // NOT in $fillable (see migration comment) — set only via the dedicated toggle endpoint.
+        'accommodation_distributor_can_manage' => 'boolean',
     ];
 }

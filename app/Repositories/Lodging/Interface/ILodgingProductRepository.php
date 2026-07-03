@@ -16,6 +16,9 @@ interface ILodgingProductRepository
 
     public function updateLodgingProduct(Request $request, string $id);
 
+    // Owner-controlled per-property distributor management toggle (Admin or the owning Operator only).
+    public function toggleAccommodationDistributorManagement(string $id);
+
     public function destroyLodgingProduct(string $id);
 
     public function destroyLodgingProductBySelection(Request $request);
