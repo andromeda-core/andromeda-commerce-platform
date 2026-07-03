@@ -5,6 +5,7 @@ namespace App\Repositories\Lodging\Repository;
 use App\Jobs\CompressLodgingMediaVideoWithFFMPEG;
 use App\Jobs\LodgingMediaDestroyOnAWS;
 use App\Jobs\LodgingMediaStoreOnAWS;
+use App\Models\AccommodationDistributor;
 use App\Models\ContentTranslation;
 use App\Models\Currency;
 use App\Models\Floor;
@@ -76,7 +77,35 @@ class LodgingProductRepository implements ILodgingProductRepository
         private Smartphone $smartphone,
         // Stage 3.4.1 — injected for later stages (3.4.2) to call syncTranslations(); inert for now.
         private ContentTranslationService $contentTranslationService,
+        // Phase 2 (Accommodation Operator/Distributor) — assignable-distributor list for the Admin edit form.
+        private AccommodationDistributor $accommodation_distributor,
     ) {}
+
+    /**
+     * Phase 2 ownership scoping. Admin and any other non-Operator/Distributor role are left
+     * completely unscoped (unchanged behavior) — only the two new roles are restricted, so
+     * existing Admin/Staff-style permission grants are never accidentally narrowed.
+     */
+    private function applyOwnershipScope($query)
+    {
+        $user = auth()->user();
+
+        if (empty($user)) {
+            return $query;
+        }
+
+        return $query
+            ->when($user->hasRole('Accommodation Operator'), function ($q) use ($user) {
+                $q->whereHas('accommodationOperator', function ($subQuery) use ($user) {
+                    $subQuery->where('user_id', $user->id);
+                });
+            })
+            ->when($user->hasRole('Accommodation Distributor'), function ($q) use ($user) {
+                $q->whereHas('accommodationDistributor', function ($subQuery) use ($user) {
+                    $subQuery->where('user_id', $user->id);
+                });
+            });
+    }
 
     // ---------------------------------------------------------------------
     // Stage 3.2 — public feed integration (lodging as a third feed type).
@@ -1015,7 +1044,7 @@ class LodgingProductRepository implements ILodgingProductRepository
 
     public function getAllLodgingProducts(Request $request)
     {
-        $lodging_products = $this->lodging_product
+        $lodging_products = $this->applyOwnershipScope($this->lodging_product)
             ->when(! empty($request->input('search')), function ($query) use ($request) {
                 $search = $request->input('search');
                 $query->where(function ($subQ) use ($search) {
@@ -1036,7 +1065,7 @@ class LodgingProductRepository implements ILodgingProductRepository
 
     public function getSingleLodgingProduct(string $id)
     {
-        $lodging_product = $this->lodging_product->with([
+        $lodging_product = $this->applyOwnershipScope($this->lodging_product)->with([
             'rooms.ratePlans',
             'rooms.amenities:id,name',
             'amenities:id,name',
@@ -1133,11 +1162,21 @@ class LodgingProductRepository implements ILodgingProductRepository
 
     public function getCreateFormData()
     {
+        $actingUser = auth()->user();
+
         return [
             'from_floors' => $this->floor->orderBy('id', 'asc')->get(['id', 'name']),
             'to_floors' => $this->floor->orderBy('id', 'desc')->get(['id', 'name']),
             'amenities' => $this->lodging_amenity->where('is_active', true)->orderBy('name')->get(['id', 'name', 'icon', 'category']),
             'dashboard_users' => $this->user->where('status', 'active')->orderBy('name')->get(['id', 'name', 'email']),
+            // Phase 2 — only Admin assigns/reassigns a property's distributor, so the list (and the
+            // select it feeds) is withheld from every other role rather than shipped and hidden.
+            'accommodation_distributors' => (! empty($actingUser) && $actingUser->hasRole('Admin'))
+                ? $this->accommodation_distributor->with('user:id,name')->get(['id', 'user_id'])->map(fn ($distributor) => [
+                    'id' => $distributor->id,
+                    'name' => $distributor->user->name ?? ('Distributor #'.$distributor->id),
+                ])
+                : [],
             // Stage 3.4.2 — non-default languages for the dashboard TranslationsRepeater (English is
             // the original column, never a translation target). Passed to BOTH create() and edit().
             'languages' => Language::where('code', '!=', config('app.fallback_locale', 'en'))->orderBy('name')->get(['id', 'name', 'code']),
@@ -1178,6 +1217,14 @@ class LodgingProductRepository implements ILodgingProductRepository
                 ])->toArray();
 
                 $productData = $this->normalizeProductData($productData);
+
+                // Ownership is never trusted from client input — derived server-side from the
+                // authenticated Operator's own linked record. Admin-created products are left
+                // unowned (null) unless a future phase adds an explicit admin-assignment picker.
+                $actingUser = auth()->user();
+                if (! empty($actingUser) && $actingUser->hasRole('Accommodation Operator')) {
+                    $productData['accommodation_operator_id'] = $actingUser->accommodationOperator?->id;
+                }
 
                 $product = $this->lodging_product->create($productData);
                 if (empty($product)) {
@@ -1274,7 +1321,7 @@ class LodgingProductRepository implements ILodgingProductRepository
         }
 
         try {
-            $product = $this->lodging_product->find($id);
+            $product = $this->applyOwnershipScope($this->lodging_product)->find($id);
             if (empty($product)) {
                 throw new Exception('Lodging Product Not Found');
             }
@@ -1287,6 +1334,13 @@ class LodgingProductRepository implements ILodgingProductRepository
                 ])->toArray();
 
                 $productData = $this->normalizeProductData($productData);
+
+                // Distributor assignment is Admin-only. Strip it unconditionally for anyone else —
+                // even if maliciously included in the payload — regardless of what the validator let
+                // through, so this is never gated by the frontend hiding the field alone.
+                if (empty(auth()->user()) || ! auth()->user()->hasRole('Admin')) {
+                    unset($productData['accommodation_distributor_id']);
+                }
 
                 $updated = $product->update($productData);
                 if (! $updated) {
@@ -1453,7 +1507,7 @@ class LodgingProductRepository implements ILodgingProductRepository
     public function destroyLodgingProduct(string $id)
     {
         try {
-            $product = $this->lodging_product->with('media')->find($id);
+            $product = $this->applyOwnershipScope($this->lodging_product)->with('media')->find($id);
             if (empty($product)) {
                 throw new Exception('Lodging Product Not Found');
             }
@@ -1954,6 +2008,9 @@ class LodgingProductRepository implements ILodgingProductRepository
             // Kept-image display order (first = main image); array of lodging_media ids.
             $rules['existing_image_order'] = ['nullable', 'array'];
             $rules['existing_image_order.*'] = ['integer'];
+            // Phase 2 — Admin-only distributor (re)assignment. Shape-validated here regardless of
+            // role; actual write access is enforced in updateLodgingProduct(), not by this rule.
+            $rules['accommodation_distributor_id'] = ['nullable', 'exists:accommodation_distributors,id'];
         }
 
         return $rules;

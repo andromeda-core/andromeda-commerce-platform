@@ -1,4 +1,4 @@
-import { Head, useForm } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
@@ -48,6 +48,8 @@ const productDefaults = () => ({
     is_active: true,
     is_reservation_closed: false,
     created_at: '',
+    // Phase 2 — Admin-only distributor assignment; never sent/rendered outside the edit+Admin view.
+    accommodation_distributor_id: '',
     // Stage 3.4.2 — product-level content translations ([{language_id, fields:{}}]); not a DB column.
     translations: [],
 });
@@ -195,12 +197,16 @@ export default function Form({
     to_floors = [],
     amenities = [],
     dashboard_users = [],
+    accommodation_distributors = [],
     enums = {},
     languages = [],
     lodging_product = null,
     googleMapSettings = null,
 }) {
     const isEdit = mode === 'edit';
+
+    const { auth } = usePage().props;
+    const isAdmin = auth?.user?.role === 'Admin';
 
     const { data, setData, post, processing, errors, transform } = useForm(
         buildInitialData(mode, lodging_product),
@@ -492,6 +498,22 @@ export default function Form({
                                                 Error={errors.from_price}
                                                 Action={(e) => setData('from_price', e.target.value)}
                                             />
+                                            {/* Phase 2 — distributor (re)assignment is an Admin-only action, only
+                                                shown on the edit view; Operators never see or set this field. */}
+                                            {isEdit && isAdmin && (
+                                                <SelectInput
+                                                    InputName={'Assigned Distributor'}
+                                                    Id={'accommodation_distributor_id'}
+                                                    Name={'accommodation_distributor_id'}
+                                                    items={accommodation_distributors}
+                                                    itemKey={'name'}
+                                                    Value={data.accommodation_distributor_id}
+                                                    Error={errors.accommodation_distributor_id}
+                                                    Required={false}
+                                                    Multiple={false}
+                                                    Action={(value) => setData('accommodation_distributor_id', value)}
+                                                />
+                                            )}
                                         </div>
 
                                         <div className="grid grid-cols-1 mt-2 gap-x-6 md:grid-cols-2">

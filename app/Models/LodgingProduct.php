@@ -23,6 +23,8 @@ class LodgingProduct extends Model
 
     protected $fillable = [
         'public_id',
+        'accommodation_operator_id',
+        'accommodation_distributor_id',
         'property_name',
         'property_type',
         'city_region',
@@ -99,6 +101,16 @@ class LodgingProduct extends Model
     public function assignedDashboardUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_dashboard_user_id', 'id');
+    }
+
+    public function accommodationOperator(): BelongsTo
+    {
+        return $this->belongsTo(AccommodationOperator::class, 'accommodation_operator_id', 'id');
+    }
+
+    public function accommodationDistributor(): BelongsTo
+    {
+        return $this->belongsTo(AccommodationDistributor::class, 'accommodation_distributor_id', 'id');
     }
 
     // Pivot
