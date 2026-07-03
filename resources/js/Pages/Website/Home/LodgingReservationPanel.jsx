@@ -543,7 +543,7 @@ const LodgingReservationPanel = ({
                                                 onChange={(e) =>
                                                     handleReferralCodeChange(e.target.value)
                                                 }
-                                                placeholder={__('Enter referral code')}
+                                                placeholder={__('Enter your referral code')}
                                                 className="focus:outline-hidden h-[40px] w-full flex-1 rounded-md border border-surface-3-light px-4 py-2.5 text-sm placeholder:text-[14px] placeholder:font-medium placeholder:text-[#b4b4b4] focus:border-surface-3-light focus:outline-none focus:ring-0 focus:ring-main-text-light dark:border-surface-3-dark dark:bg-surface-2-dark dark:text-main-text-dark dark:placeholder:text-sub-text-dark dark:focus:border-surface-3-dark"
                                             />
                                         </div>

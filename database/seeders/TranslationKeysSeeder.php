@@ -1828,6 +1828,32 @@ class TranslationKeysSeeder extends Seeder
             // panel __(). No trailing period so both layers reuse the key.
             ['key' => 'This rate plan is available for one-night stays only', 'created_at' => $now, 'updated_at' => $now],
 
+            // Referral code Apply-preview fix (customer-facing lodging reservation panel). Clean
+            // ASCII keys. 'Invalid Referral Code' is shared by the reservation backend Trans::get
+            // (both storeReservationRequest and previewReferralCode) and the panel's __() catch-
+            // block fallback. 'Apply' is already seeded above (Stage 3-adjacent Search/Filters
+            // section) and reused here, not duplicated. Two strings below were deliberately
+            // reworded from the panel/backend's original wording (code call sites updated to
+            // match): the MySQL translation_keys.key column collation is case-INSENSITIVE
+            // (utf8mb4_unicode_ci), so a key differing from an existing one ONLY by letter case is
+            // a real collision, not a cosmetic difference - Trans::get()'s WHERE key = ? lookup can
+            // return either colliding row non-deterministically once any locale has a value for
+            // either one. 'Enter referral code' collided with the pre-existing 'Enter Referral
+            // Code' (id 269, already has 19 real translations attached - reusing or shadowing it
+            // was not an option); reworded to 'Enter your referral code'. 'Referral Code Applied'
+            // (the backend apply-preview success message, not currently rendered by the panel)
+            // collided with this same section's own 'Referral code applied' (the panel's visible
+            // applied-state fallback text) - reworded the backend-only, invisible one to 'Referral
+            // Code Applied Successfully' rather than touch the visible panel text.
+            ['key' => 'Referral code (optional)', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Enter your referral code', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => "points you'll earn once confirmed", 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Referral code applied', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Remove referral code', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Invalid Referral Code', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Please Enter Referral Code', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Referral Code Applied Successfully', 'created_at' => $now, 'updated_at' => $now],
+
             // Lodging GLOBAL LABELS (System 2) - Stage 3.4.3. Preset/enum dropdown values + amenity
             // master names. The KEY is the exact humanize() output the customer UI passes to __()
             // (Title Case for enum values). Stored DB values stay raw keys. Clean ASCII; idempotent.

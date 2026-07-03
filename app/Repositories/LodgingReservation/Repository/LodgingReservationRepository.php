@@ -1135,7 +1135,7 @@ class LodgingReservationRepository implements ILodgingReservationRepository
 
         $response = [
             'status' => true,
-            'message' => Trans::get('Referral Code Applied'),
+            'message' => Trans::get('Referral Code Applied Successfully'),
             'collaborator_id' => $collaborator->id,
             'referral_code' => $collaborator->referral_code,
             'total_points' => null,
