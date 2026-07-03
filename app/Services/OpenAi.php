@@ -289,7 +289,10 @@ PROMPT;
     // included for completeness. To add more RTL languages later, both lists get one line.
     private const RTL_LOCALE_CODES = ['ar', 'ur', 'he', 'fa', 'ps', 'sd', 'yi'];
 
-    private function isRtlLocale(string $code): bool
+    // FIX (RTL structural attributes): widened from private to public so AiTranslationService
+    // can gate its DOM-level dir/lang + text-align mirroring on the same single source of truth,
+    // instead of duplicating the RTL locale list. No behavior change to this method itself.
+    public function isRtlLocale(string $code): bool
     {
         return in_array(strtolower($code), self::RTL_LOCALE_CODES, true);
     }

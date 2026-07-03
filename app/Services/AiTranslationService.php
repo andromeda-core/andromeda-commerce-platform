@@ -293,6 +293,42 @@ class AiTranslationService
                 $node->nodeValue = $affixes[$i]['lead'].$core.$affixes[$i]['trail'];
             }
 
+            // FIX (RTL structural attributes): AI translation only touches text nodes and never
+            // sees author-declared dir/lang attributes. When the source document hardcodes
+            // dir="ltr"/lang="en..." on any element (common in full custom HTML templates), that
+            // declaration is MORE specific than any outer dir="rtl" the frontend sets, and silently
+            // overrides it. Flip every dir="ltr" found anywhere in the parsed document to dir="rtl",
+            // and every lang starting with "en" to the target language code, so the translated
+            // document is internally consistent with its own content. Gated on RTL targets only:
+            // zero behavior change for LTR output.
+            if ($this->openAi->isRtlLocale($targetLanguageCode)) {
+                $dirXPath = new \DOMXPath($dom);
+                $ltrElements = $dirXPath->query('//*[@dir="ltr" or @dir="LTR"]');
+                foreach ($ltrElements as $el) {
+                    $el->setAttribute('dir', 'rtl');
+                }
+
+                $langElements = $dirXPath->query('//*[starts-with(@lang, "en")]');
+                foreach ($langElements as $el) {
+                    $el->setAttribute('lang', $targetLanguageCode);
+                }
+
+                // FIX (RTL structural attributes): mirror `text-align` inside embedded <style>
+                // blocks only. Placeholder swap avoids double-flipping (left -> right -> left)
+                // from two sequential replacements. Scoped strictly to text-align; no other
+                // directional CSS property (margin/padding/positioning/border) is touched.
+                $styleElements = $dirXPath->query('//style');
+                foreach ($styleElements as $styleEl) {
+                    $css = $styleEl->textContent;
+
+                    $css = preg_replace('/text-align\s*:\s*left/i', 'text-align: __RTL_RIGHT__', $css);
+                    $css = preg_replace('/text-align\s*:\s*right/i', 'text-align: left', $css);
+                    $css = str_replace('__RTL_RIGHT__', 'right', $css);
+
+                    $styleEl->textContent = $css;
+                }
+            }
+
             $rebuilt = $dom->saveHTML();
             if ($rebuilt === false || trim((string) $rebuilt) === '') {
                 return ['status' => false, 'message' => 'HTML reconstruction failed'];
