@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
 import RawHtmlContentFrame from '@/Components/RawHtmlContentFrame';
 import useProductCardHydration from '@/Hooks/useProductCardHydration';
+// NEW: hydrates ad-banner embed markers inserted via AddAdBannerButton, mirrors useProductCardHydration.
+import useAdBannerHydration from '@/Hooks/useAdBannerHydration';
 
 /**
  * The actual rendered body of the live preview.
@@ -17,6 +19,7 @@ function PostContentLivePreviewBody({ content }) {
     // its inline dangerouslySetInnerHTML on every content change, so the portal targets need
     // re-finding). The hook's own 50ms debounce prevents refetching on every keystroke.
     const productCardPortals = useProductCardHydration(previewRef, content);
+    const adBannerPortals = useAdBannerHydration(previewRef, content);
 
     return (
         <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-white/5">
@@ -27,6 +30,7 @@ function PostContentLivePreviewBody({ content }) {
                 interactive
             />
             {productCardPortals}
+            {adBannerPortals}
         </div>
     );
 }

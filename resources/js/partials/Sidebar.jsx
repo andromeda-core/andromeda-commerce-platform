@@ -177,6 +177,7 @@ export default function Sidebar({
             'dashboard.posts.',
             'dashboard.bookmarks.',
             'dashboard.floors.',
+            'dashboard.ad-banners.',
         ].some((prefix) => route().current().startsWith(prefix));
 
         const isSystemRoute = [
@@ -1418,7 +1419,7 @@ export default function Sidebar({
                                 )}
 
                                 {/* Content */}
-                                {can(['Posts View', 'Bookmarks View', 'Floors View']) && (
+                                {can(['Posts View', 'Bookmarks View', 'Floors View', 'Ad Banners View']) && (
                                     <li>
                                         <a
                                             onClick={() => {
@@ -1491,6 +1492,19 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.bookmarks.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Bookmarks
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can('Ad Banners View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.ad-banners.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.ad-banners.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Ad Banners
                                                         </Link>
                                                     </li>
                                                 )}

@@ -1,6 +1,8 @@
 import React from 'react';
 // NEW: auto-convert a pasted product URL into product-card markup at the caret.
 import { matchProductCardUrl, buildProductCardMarkup } from '@/Helpers/productCardUrl';
+// NEW: auto-convert a pasted bare Ad Banner shortcode (public_id) into its embed marker at the caret.
+import { matchAdBannerShortcode, buildAdBannerMarkup } from '@/Helpers/adBannerUrl';
 
 /**
  * Shared raw-HTML content INPUT (trusted-author authoring).
@@ -29,6 +31,10 @@ export default function RawHtmlContentInput({
     // Used by AddSourceLinkButton to read the caret and insert an <a> at it.
     // Does not touch the existing Value/Action contract.
     InputRef = null,
+    // NEW: opt-in gate for the paste auto-convert (product card / ad banner) below.
+    // Defaults OFF so every existing usage (e.g. Templates) stays a plain textarea;
+    // only Posts create/edit explicitly pass true.
+    enablePasteEmbeds = false,
 }) {
     return (
         <div className="my-4">
@@ -56,33 +62,69 @@ export default function RawHtmlContentInput({
                 // URLs, replace it with product-card markup at the caret instead
                 // of pasting the plain URL. Any other paste behaves normally.
                 onPaste={(e) => {
+                    // NEW: gate the whole auto-convert block behind the opt-in prop. When
+                    // false/omitted (every usage except Posts create/edit), fall through and
+                    // let the browser paste normally — no detection runs at all.
+                    if (!enablePasteEmbeds) return;
+
                     const pasted = e.clipboardData?.getData('text') ?? '';
-                    const match = matchProductCardUrl(pasted);
-                    if (!match) return; // not our product URL -> normal paste
 
-                    e.preventDefault();
+                    const productMatch = matchProductCardUrl(pasted);
+                    if (productMatch) {
+                        e.preventDefault();
 
-                    const el = e.target;
-                    const start = el.selectionStart;
-                    const end = el.selectionEnd;
-                    const markup = buildProductCardMarkup(match);
-                    const current = el.value ?? '';
-                    const newValue = current.slice(0, start) + markup + current.slice(end);
+                        const el = e.target;
+                        const start = el.selectionStart;
+                        const end = el.selectionEnd;
+                        const markup = buildProductCardMarkup(productMatch);
+                        const current = el.value ?? '';
+                        const newValue = current.slice(0, start) + markup + current.slice(end);
 
-                    // Mirror the parent's Value/Action contract: Action receives an
-                    // event and reads e.target.value (Action={(e)=>setData('content',
-                    // e.target.value)}), so hand it a matching synthetic event.
-                    Action?.({ target: { value: newValue } });
+                        // Mirror the parent's Value/Action contract: Action receives an
+                        // event and reads e.target.value (Action={(e)=>setData('content',
+                        // e.target.value)}), so hand it a matching synthetic event.
+                        Action?.({ target: { value: newValue } });
 
-                    // Restore the caret just after the inserted markup once React has
-                    // committed the new controlled value.
-                    requestAnimationFrame(() => {
-                        const pos = start + markup.length;
-                        try {
-                            el.selectionStart = el.selectionEnd = pos;
-                        } catch (err) {}
-                        el.focus();
-                    });
+                        // Restore the caret just after the inserted markup once React has
+                        // committed the new controlled value.
+                        requestAnimationFrame(() => {
+                            const pos = start + markup.length;
+                            try {
+                                el.selectionStart = el.selectionEnd = pos;
+                            } catch (err) {}
+                            el.focus();
+                        });
+                        return;
+                    }
+
+                    // NEW: if the pasted text is (in full) a bare Ad Banner shortcode
+                    // (public_id, e.g. "ad_xxxxxxxx-xxxx-..."), replace it with the ad-banner
+                    // embed marker at the caret — same mechanics as the product-card branch
+                    // above, just a different match/markup pair. Any other paste behaves normally.
+                    const adMatch = matchAdBannerShortcode(pasted);
+                    if (adMatch) {
+                        e.preventDefault();
+
+                        const el = e.target;
+                        const start = el.selectionStart;
+                        const end = el.selectionEnd;
+                        const markup = buildAdBannerMarkup(adMatch);
+                        const current = el.value ?? '';
+                        const newValue = current.slice(0, start) + markup + current.slice(end);
+
+                        Action?.({ target: { value: newValue } });
+
+                        requestAnimationFrame(() => {
+                            const pos = start + markup.length;
+                            try {
+                                el.selectionStart = el.selectionEnd = pos;
+                            } catch (err) {}
+                            el.focus();
+                        });
+                        return;
+                    }
+
+                    // neither matched -> let the browser paste normally
                 }}
                 placeholder={Placeholder}
                 className="w-full resize-y rounded-lg border bg-white p-4 font-mono text-sm leading-relaxed text-gray-800 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-slate-900 focus:outline-none dark:border-gray-600 dark:bg-deepcharcoal dark:text-white"

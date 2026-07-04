@@ -1,7 +1,10 @@
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
 import RawHtmlContentFrame from '@/Components/RawHtmlContentFrame';
-import PostBanner from '@/Components/PostBanner';
+// OLD (removed Phase 2 — superseded by the Ad Banner Archive content-embed system):
+// import PostBanner from '@/Components/PostBanner';
 import useProductCardHydration from '@/Hooks/useProductCardHydration';
+// NEW: hydrates ad-banner embed markers inserted via AddAdBannerButton, mirrors useProductCardHydration.
+import useAdBannerHydration from '@/Hooks/useAdBannerHydration';
 import { router } from '@inertiajs/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -31,6 +34,7 @@ const PostMobileFeedGallery = ({
     const scrollContainerRef = useRef(null);
     const postContentRef = useRef(null);
     const productCardPortals = useProductCardHydration(postContentRef, post?.id || post?.slug);
+    const adBannerPortals = useAdBannerHydration(postContentRef, post?.id || post?.slug);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -512,26 +516,30 @@ const PostMobileFeedGallery = ({
                             )}
 
                             <div className="mb-4">
-                                {/* Per-post banner ad (top = before body) */}
+                                {/* OLD (removed Phase 2 — superseded by the Ad Banner Archive
+                                    content-embed shortcode system):
                                 <PostBanner
                                     place="top"
                                     imageUrl={post?.banner_image_url}
                                     redirectUrl={post?.banner_redirect_url}
                                     position={post?.banner_position}
                                 />
+                                */}
                                 <RawHtmlContentFrame
                                     ref={postContentRef}
                                     content={post?.content_display ?? post?.content}
                                     className="prose prose-sm max-w-none flex-1 overflow-y-auto whitespace-pre-line break-all pr-2 text-[14px] font-normal text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                     interactive
                                 />
-                                {/* Per-post banner ad (bottom = after body) */}
+                                {/* OLD (removed Phase 2 — superseded by the Ad Banner Archive
+                                    content-embed shortcode system):
                                 <PostBanner
                                     place="bottom"
                                     imageUrl={post?.banner_image_url}
                                     redirectUrl={post?.banner_redirect_url}
                                     position={post?.banner_position}
                                 />
+                                */}
                             </div>
 
                             <div className="z-[90] my-4 flex items-center justify-start">
@@ -778,6 +786,7 @@ const PostMobileFeedGallery = ({
                 document.getElementById('modal-root') || document.body,
             )}
             {productCardPortals}
+            {adBannerPortals}
 
             {spatiotemporalInfoModal && (
                 <SpatiotemporalInfoModal

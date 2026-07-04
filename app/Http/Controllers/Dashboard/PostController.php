@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Dashboard;
 
 use App\Http\Controllers\Controller;
 use App\Models\Language;
+use App\Repositories\AdBanners\Interface\IAdBannerRepository; // NEW: powers the "Add Ad Banner" picker in the post body editor
 use App\Repositories\Floors\Interface\IFloorRepostitory;
 use App\Repositories\Posts\Interface\IPostRepository;
 use App\Services\AiTranslationService; // NEW (additive): reusable AI translation orchestrator
@@ -43,7 +44,8 @@ class PostController extends Controller implements HasMiddleware
 
     public function __construct(
         private IPostRepository $post,
-        private IFloorRepostitory $floor
+        private IFloorRepostitory $floor,
+        private IAdBannerRepository $adBanner
     ) {}
 
     public function index(Request $request)
@@ -62,8 +64,10 @@ class PostController extends Controller implements HasMiddleware
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
         $languages = Language::where('code', '!=', config('app.fallback_locale', 'en'))->orderBy('name')->get(['id', 'name', 'code']);
+        // NEW: feeds AddAdBannerButton's picker. Additive only — no existing Post field/behavior changes.
+        $adBanners = $this->adBanner->getAllAdBannerNames();
 
-        return Inertia::render('Dashboard/Posts/create', compact('floors', 'googleMapSettings', 'languages'));
+        return Inertia::render('Dashboard/Posts/create', compact('floors', 'googleMapSettings', 'languages', 'adBanners'));
     }
 
     public function store(Request $request)
@@ -107,6 +111,8 @@ class PostController extends Controller implements HasMiddleware
         $floors = $this->floor->getAllWithoutPaginateFloors();
         $googleMapSettings = $this->post->getGoogleMapSettings();
         $languages = Language::where('code', '!=', config('app.fallback_locale', 'en'))->orderBy('name')->get(['id', 'name', 'code']);
+        // NEW: feeds AddAdBannerButton's picker. Additive only — no existing Post field/behavior changes.
+        $adBanners = $this->adBanner->getAllAdBannerNames();
 
         $post->load('contentTranslations');
 
@@ -130,7 +136,7 @@ class PostController extends Controller implements HasMiddleware
             })
             ->values();
 
-        return Inertia::render('Dashboard/Posts/edit', compact('post', 'floors', 'googleMapSettings', 'languages', 'existingTranslations'));
+        return Inertia::render('Dashboard/Posts/edit', compact('post', 'floors', 'googleMapSettings', 'languages', 'existingTranslations', 'adBanners'));
     }
 
     public function update(Request $request, ?string $slug = null)

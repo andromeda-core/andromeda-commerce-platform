@@ -291,11 +291,10 @@ class PostRepository implements IPostRepository
             'location_name' => ['nullable', 'string'],
             'status' => ['required', 'boolean'],
             'created_at' => ['nullable', 'date'],
-            // Per-post banner ad (single post page only). These validated keys flow
-            // straight into create() (they are not stripped by the array_filter below).
-            'banner_image_url' => ['nullable', 'url'],
-            'banner_redirect_url' => ['nullable', 'url'],
-            'banner_position' => ['nullable', 'in:top,bottom'],
+            // OLD (removed Phase 2 — superseded by the Ad Banner Archive content-embed system):
+            // 'banner_image_url' => ['nullable', 'url'],
+            // 'banner_redirect_url' => ['nullable', 'url'],
+            // 'banner_position' => ['nullable', 'in:top,bottom'],
         ], [
             'images.max' => 'The :attribute field must not exceed 35 files.',
             'videos.max' => 'The :attribute field must not exceed 5 files.',
@@ -468,11 +467,10 @@ class PostRepository implements IPostRepository
             'location_name' => ['nullable', 'string'],
             'status' => ['required', 'boolean'],
             'created_at' => ['nullable', 'date'],
-            // Per-post banner ad (single post page only). These validated keys flow
-            // straight into update() (they are not stripped by the array_filter below).
-            'banner_image_url' => ['nullable', 'url'],
-            'banner_redirect_url' => ['nullable', 'url'],
-            'banner_position' => ['nullable', 'in:top,bottom'],
+            // OLD (removed Phase 2 — superseded by the Ad Banner Archive content-embed system):
+            // 'banner_image_url' => ['nullable', 'url'],
+            // 'banner_redirect_url' => ['nullable', 'url'],
+            // 'banner_position' => ['nullable', 'in:top,bottom'],
         ], [
             'images.max' => 'The :attribute field must not exceed 35 files.',
             'videos.max' => 'The :attribute field must not exceed 5 files.',

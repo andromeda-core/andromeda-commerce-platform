@@ -10,6 +10,9 @@ import SmartphoneDetailsAccordion from '@/Components/SmartphoneDetailsAccordion'
 import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
 import DisplayPrice from '@/Components/DisplayPrice';
+import useProductCardHydration from '@/Hooks/useProductCardHydration';
+// NEW: hydrates ad-banner embed markers inserted via AddAdBannerButton, mirrors useProductCardHydration.
+import useAdBannerHydration from '@/Hooks/useAdBannerHydration';
 
 const SmartphoneMobileGalleryModal = ({
     smartphone,
@@ -41,6 +44,17 @@ const SmartphoneMobileGalleryModal = ({
     const thumbnailContainerRef = useRef(null);
     const scrollContainerRef = useRef(null);
     const ThumbScrollContainerRef = useRef(null);
+    const smartphoneContentRef = useRef(null);
+    // Hydrates product-card / ad-banner embed markers inside the text-only (no media) branch below,
+    // mirroring DesktopFeed.jsx's postContentRef2 wiring for smartphone content.
+    const productCardPortals = useProductCardHydration(
+        smartphoneContentRef,
+        smartphone?.id || smartphone?.slug,
+    );
+    const adBannerPortals = useAdBannerHydration(
+        smartphoneContentRef,
+        smartphone?.id || smartphone?.slug,
+    );
 
     // Handle Media scroll Smartphone Media
     const handleScroll = (e) => {
@@ -860,6 +874,7 @@ const SmartphoneMobileGalleryModal = ({
                                 <div className="mb-4">
                                     {smartphone?.content && (
                                         <div
+                                            ref={smartphoneContentRef}
                                             // className="prose break-words text-[16px] font-medium leading-[22px] text-main-text-light dark:text-main-text-dark"
                                             className="prose prose-sm max-w-none flex-1 overflow-y-auto whitespace-pre-line break-all pr-2 text-[14px] font-normal text-main-text-light dark:prose-invert dark:text-main-text-dark"
                                             dangerouslySetInnerHTML={{
@@ -867,6 +882,8 @@ const SmartphoneMobileGalleryModal = ({
                                             }}
                                         />
                                     )}
+                                    {productCardPortals}
+                                    {adBannerPortals}
                                 </div>
                             )}
 

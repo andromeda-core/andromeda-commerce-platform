@@ -34,10 +34,10 @@ class Post extends Model
         'event_id',
         'msap_uri',
         'created_at',
-        // Per-post banner ad (single post page only): plain strings, no cast needed.
-        'banner_image_url',
-        'banner_redirect_url',
-        'banner_position',
+        // OLD (removed Phase 2 — superseded by the Ad Banner Archive content-embed system):
+        // 'banner_image_url',
+        // 'banner_redirect_url',
+        // 'banner_position',
     ];
 
     protected $appends = ['added_at', 'post_image_urls', 'post_video_urls', 'created_at_time', 'is_bookmarked'];

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Dashboard\AccommodationDistributorController;
 use App\Http\Controllers\Dashboard\AccommodationOperatorController;
+use App\Http\Controllers\Dashboard\AdBannerController;
 use App\Http\Controllers\Dashboard\AttributionRewardController;
 use App\Http\Controllers\Dashboard\BatchController;
 use App\Http\Controllers\Dashboard\BookmarkController;
@@ -55,6 +56,7 @@ use App\Http\Controllers\DeviceFingerPrintController;
 use App\Http\Controllers\MetaController;
 use App\Http\Controllers\OpenAiController;
 use App\Http\Controllers\SitemapController;
+use App\Http\Controllers\Website\AdBannerController as WebsiteAdBannerController;
 use App\Http\Controllers\Website\AttributionController;
 use App\Http\Controllers\Website\BookmarkController as WebsiteBookmarkController;
 use App\Http\Controllers\Website\CartController;
@@ -253,6 +255,12 @@ Route::group(['as' => 'website.'], function () {
 
         // Stage 3.2 — single lodging property for the feed (client-side direct_lodging fetch).
         Route::get('/products/get-single-lodging/{public_id?}/{slug?}', 'getSingleLodgingForFeed')->name('get-single-lodging');
+    });
+
+    // Ad Banner Preview Route (public, no auth — needed so the ad-banner embed marker can
+    // hydrate on posts visible to guests; mirrors the Product preview route above exactly).
+    Route::controller(WebsiteAdBannerController::class)->name('ad-banners.')->group(function () {
+        Route::get('/ad-banners/preview/{public_id}', 'preview')->name('preview');
     });
 
     // Cart Routes
@@ -602,6 +610,18 @@ Route::middleware(['auth'])->group(function () {
 
             // NEW (Phase 2): AI translation generator endpoint (gated in TemplateController::middleware()).
             Route::post('/templates-ai-translate-field', 'aiTranslateField')->name('ai-translate-field');
+        });
+
+        // Ad Banner Routes
+        Route::controller(AdBannerController::class)->name('ad-banners.')->group(function () {
+
+            Route::get('/ad-banners', 'index')->name('index');
+            Route::get('/ad-banners-create', 'create')->name('create');
+            Route::post('/ad-banners-store', 'store')->name('store');
+            Route::get('/ad-banners-edit/{id?}', 'edit')->name('edit');
+            Route::put('/ad-banners-update/{id?}', 'update')->name('update');
+            Route::delete('/ad-banners-destroy/{id?}', 'destroy')->name('destroy');
+            Route::delete('/ad-banners-destroy-by-selection', 'destroyBySelection')->name('destroybyselection');
         });
 
         // Inventory Routes

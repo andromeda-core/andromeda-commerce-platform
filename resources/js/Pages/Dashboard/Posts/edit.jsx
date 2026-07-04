@@ -11,6 +11,8 @@ import FileUploaderInput from '@/Components/FileUploaderInput';
 import RawHtmlContentInput from '@/Components/RawHtmlContentInput';
 // NEW: authoring helper that inserts an <a> source link into the body at the caret.
 import AddSourceLinkButton from '@/Components/AddSourceLinkButton';
+// NEW: authoring helper that inserts a reusable Ad Banner embed marker into the body at the caret.
+import AddAdBannerButton from '@/Components/AddAdBannerButton';
 // NEW: one-click translate of the default (English) content field FROM whatever language staff typed INTO English.
 import TranslateToEnglishButton from '@/Components/TranslateToEnglishButton';
 // NEW (additive): read-only live preview of the body through the site render pipeline.
@@ -25,7 +27,7 @@ import Toast from '@/Components/Toast';
 import Swal from 'sweetalert2';
 import { Loader } from '@googlemaps/js-api-loader';
 
-export default function edit({ post, floors, googleMapSettings, languages, existingTranslations }) {
+export default function edit({ post, floors, googleMapSettings, languages, existingTranslations, adBanners }) {
     // EDIT Data Form Data
     const { data, setData, reset } = useForm({
         _method: 'PUT',
@@ -41,10 +43,10 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
         post_type: post?.post_type || '',
         status: post?.status ?? 1,
         created_at: post?.created_at ? post.created_at.slice(0, 16) : '',
-        // Per-post banner ad (single post page only)
-        banner_image_url: post?.banner_image_url || '',
-        banner_redirect_url: post?.banner_redirect_url || '',
-        banner_position: post?.banner_position || '',
+        // OLD (removed Phase 2 — superseded by the Ad Banner Archive content-embed system):
+        // banner_image_url: post?.banner_image_url || '',
+        // banner_redirect_url: post?.banner_redirect_url || '',
+        // banner_position: post?.banner_position || '',
         deleted_images: [],
         deleted_videos: [],
         new_images: [],
@@ -667,7 +669,8 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
                                                     </div>
                                                 )}
 
-                                                {/* Per-post banner ad (single post page only) */}
+                                                {/* OLD (removed Phase 2 — superseded by the Ad Banner Archive
+                                                    content-embed shortcode system, see AddAdBannerButton):
                                                 <Input
                                                     InputName={'Banner Image URL'}
                                                     Error={errors.banner_image_url}
@@ -706,6 +709,7 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
                                                     ]}
                                                     itemKey={'name'}
                                                 />
+                                                */}
                                             </div>
 
                                             <div className="grid grid-cols-1 gap-4">
@@ -735,12 +739,21 @@ export default function edit({ post, floors, googleMapSettings, languages, exist
                                                     Value={data.content}
                                                     Action={(e) => setData('content', e.target.value)}
                                                     InputRef={bodyContentRef}
+                                                    enablePasteEmbeds={true}
                                                 />
                                                 {/* NEW: inserts an <a> source link into the body at the caret. */}
                                                 <AddSourceLinkButton
                                                     textareaRef={bodyContentRef}
                                                     value={data.content}
                                                     onChange={(v) => setData('content', v)}
+                                                    Id={'content'}
+                                                />
+                                                {/* NEW: inserts a reusable Ad Banner embed marker into the body at the caret. */}
+                                                <AddAdBannerButton
+                                                    textareaRef={bodyContentRef}
+                                                    value={data.content}
+                                                    onChange={(v) => setData('content', v)}
+                                                    adBanners={adBanners}
                                                     Id={'content'}
                                                 />
                                                 {/* NEW (additive): read-only live preview of the final body content. */}

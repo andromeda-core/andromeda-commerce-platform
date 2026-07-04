@@ -17,8 +17,11 @@ import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import Spinner from '@/Components/Spinner';
 import useDarkMode from '@/Hooks/useDarkMode';
 import useProductCardHydration from '@/Hooks/useProductCardHydration';
+// NEW: hydrates ad-banner embed markers inserted via AddAdBannerButton, mirrors useProductCardHydration.
+import useAdBannerHydration from '@/Hooks/useAdBannerHydration';
 import RawHtmlContentFrame from '@/Components/RawHtmlContentFrame';
-import PostBanner from '@/Components/PostBanner';
+// OLD (removed Phase 2 — superseded by the Ad Banner Archive content-embed system):
+// import PostBanner from '@/Components/PostBanner';
 export default function view({ post }) {
     const { generalSetting } = usePage().props;
     const isDarkMode = useDarkMode();
@@ -29,6 +32,7 @@ export default function view({ post }) {
     const dropDownRef = useRef(null);
     const postContentRef = useRef(null);
     const productCardPortals = useProductCardHydration(postContentRef, post?.id || post?.public_id);
+    const adBannerPortals = useAdBannerHydration(postContentRef, post?.id || post?.public_id);
 
     const [bookmarkStatusChanged, setBookmarkStatusChanged] = useState(false);
     const [linkCopied, setLinkCopied] = useState(false);
@@ -462,13 +466,15 @@ export default function view({ post }) {
                                             {post?.title}
                                         </p>
 
-                                        {/* Per-post banner ad (top = before body) */}
+                                        {/* OLD (removed Phase 2 — superseded by the Ad Banner Archive
+                                            content-embed shortcode system):
                                         <PostBanner
                                             place="top"
                                             imageUrl={post?.banner_image_url}
                                             redirectUrl={post?.banner_redirect_url}
                                             position={post?.banner_position}
                                         />
+                                        */}
 
                                         <RawHtmlContentFrame
                                             ref={postContentRef}
@@ -483,14 +489,17 @@ export default function view({ post }) {
                                             interactive
                                         />
                                         {productCardPortals}
+                                        {adBannerPortals}
 
-                                        {/* Per-post banner ad (bottom = after body) */}
+                                        {/* OLD (removed Phase 2 — superseded by the Ad Banner Archive
+                                            content-embed shortcode system):
                                         <PostBanner
                                             place="bottom"
                                             imageUrl={post?.banner_image_url}
                                             redirectUrl={post?.banner_redirect_url}
                                             position={post?.banner_position}
                                         />
+                                        */}
 
                                         {/* Tag */}
                                         <div>

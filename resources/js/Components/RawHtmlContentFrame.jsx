@@ -37,6 +37,12 @@ export const containsHtml = (str) => {
 export const hasProductCards = (str) =>
     typeof str === 'string' && /data-type\s*=\s*["']product-card["']/i.test(str);
 
+// NEW: does the content embed an ad-banner marker? Same rationale as
+// hasProductCards — such content must render INLINE so the parent surface's
+// useAdBannerHydration can hydrate the banner via a portal.
+export const hasAdBanners = (str) =>
+    typeof str === 'string' && /data-type\s*=\s*["']ad-banner["']/i.test(str);
+
 // Are the ONLY tags in the content inline formatting tags? Post bodies are
 // plain text with real \n newlines plus, at most, a few inline links/emphasis
 // tags. Such content must render on the INLINE path (dangerouslySetInnerHTML)
@@ -50,7 +56,8 @@ export const hasProductCards = (str) =>
 const INLINE_ONLY_TAGS = new Set(['a', 'b', 'strong', 'i', 'em', 'u', 'br', 'span']);
 export const isInlineOnlyHtml = (str) => {
     if (typeof str !== 'string' || !str.trim()) return false;
-    if (hasProductCards(str)) return false;
+    // OLD (product cards only): if (hasProductCards(str)) return false;
+    if (hasProductCards(str) || hasAdBanners(str)) return false;
 
     let sawTag = false;
     const tagRe = /<\s*\/?\s*([a-z][a-z0-9]*)/gi;
@@ -257,7 +264,9 @@ const RawHtmlContentFrame = forwardRef(function RawHtmlContentFrame(
     // only tags are inline-only (e.g. a plain-text body with source <a> links)
     // falls through to the INLINE path below, where whitespace-pre-line keeps
     // the paragraph breaks and the <a> tags render clickable.
-    if (containsHtml(content) && !hasProductCards(content) && !isInlineOnlyHtml(content)) {
+    // OLD (product cards only):
+    // if (containsHtml(content) && !hasProductCards(content) && !isInlineOnlyHtml(content)) {
+    if (containsHtml(content) && !hasProductCards(content) && !hasAdBanners(content) && !isInlineOnlyHtml(content)) {
         return (
             <div ref={ref} className={className}>
                 <HtmlFrame html={content} interactive={interactive} />

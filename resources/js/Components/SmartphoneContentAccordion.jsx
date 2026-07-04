@@ -1,7 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { HtmlFrame, containsHtml } from '@/Components/RawHtmlContentFrame';
+import { HtmlFrame, containsHtml, hasProductCards, hasAdBanners } from '@/Components/RawHtmlContentFrame';
 import { useLanguageStore } from '@/Hooks/useLanguageStore';
 import { isRtlLocale } from '@/Helpers/rtlLocales';
+import useProductCardHydration from '@/Hooks/useProductCardHydration';
+// NEW: hydrates ad-banner embed markers inserted via AddAdBannerButton, mirrors useProductCardHydration.
+import useAdBannerHydration from '@/Hooks/useAdBannerHydration';
 
 const SmartphoneContentAccordion = ({
     label,
@@ -24,9 +27,20 @@ const SmartphoneContentAccordion = ({
 
     const accordionRef = useRef(null);
     const shouldScrollRef = useRef(false);
+    const embedContentRef = useRef(null);
 
     // Use content exactly as it is. No processing.
     const renderAsHtml = isHtml && containsHtml(content);
+
+    // HtmlFrame renders content in a sandboxed iframe — portals cannot reach inside it. Content
+    // embedding product-card / ad-banner markers must render INLINE instead so the hooks below
+    // can hydrate them via portals, same rationale as RawHtmlContentFrame's own routing.
+    const hasEmbeds = renderAsHtml && (hasProductCards(content) || hasAdBanners(content));
+    // isOpen folded into the key: the ref-bearing div below unmounts/remounts on each
+    // accordion toggle, so the hydration effect must re-run on every reopen, not just once.
+    const embedHydrationKey = `${content}-${isOpen ? 'open' : 'closed'}`;
+    const productCardPortals = useProductCardHydration(embedContentRef, embedHydrationKey);
+    const adBannerPortals = useAdBannerHydration(embedContentRef, embedHydrationKey);
 
     // console.log(
     //     'IS HTML?',
@@ -91,8 +105,19 @@ const SmartphoneContentAccordion = ({
             {isOpen && (
                 <div className="pb-2 pt-2" ref={accordionRef}>
                     {renderAsHtml ? (
-                        // OLD (no interactive prop — caused About-This-Product HTML to be non-clickable): <HtmlFrame html={content} />
-                        <HtmlFrame html={content} interactive={interactive} />
+                        hasEmbeds ? (
+                            // NEW: inline (not the sandboxed iframe) so product-card / ad-banner
+                            // portals below can hydrate the embedded markers.
+                            <div
+                                ref={embedContentRef}
+                                dir={isRtl ? 'rtl' : 'ltr'}
+                                className="prose prose-sm max-w-none whitespace-pre-line break-words text-sm leading-relaxed text-sub-text-light dark:prose-invert dark:text-sub-text-dark"
+                                dangerouslySetInnerHTML={{ __html: content }}
+                            />
+                        ) : (
+                            // OLD (no interactive prop — caused About-This-Product HTML to be non-clickable): <HtmlFrame html={content} />
+                            <HtmlFrame html={content} interactive={interactive} />
+                        )
                     ) : (
                         <p
                             dir={isRtl ? 'rtl' : 'ltr'}
@@ -100,6 +125,12 @@ const SmartphoneContentAccordion = ({
                         >
                             {content}
                         </p>
+                    )}
+                    {hasEmbeds && (
+                        <>
+                            {productCardPortals}
+                            {adBannerPortals}
+                        </>
                     )}
                 </div>
             )}

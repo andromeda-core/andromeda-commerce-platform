@@ -6,6 +6,8 @@ use App\Repositories\AccommodationDistributors\Interface\IAccommodationDistribut
 use App\Repositories\AccommodationDistributors\Repository\AccommodationDistributorRepository;
 use App\Repositories\AccommodationOperators\Interface\IAccommodationOperatorRepository;
 use App\Repositories\AccommodationOperators\Repository\AccommodationOperatorRepository;
+use App\Repositories\AdBanners\Interface\IAdBannerRepository;
+use App\Repositories\AdBanners\Repository\AdBannerRepository;
 use App\Repositories\AttributionReward\Interface\IAttributionRewardRepository;
 use App\Repositories\AttributionReward\Repository\AttributionRewardRepository;
 use App\Repositories\Batches\Interface\IBatchRepository;
@@ -185,6 +187,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(ILodgingDistributorCommissionRepository::class, LodgingDistributorCommissionRepository::class);
         $this->app->bind(ILodgingPlatformCommissionRepository::class, LodgingPlatformCommissionRepository::class);
         $this->app->bind(ILodgingCollaboratorCommissionRepository::class, LodgingCollaboratorCommissionRepository::class);
+        $this->app->bind(IAdBannerRepository::class, AdBannerRepository::class);
     }
 
     /**
