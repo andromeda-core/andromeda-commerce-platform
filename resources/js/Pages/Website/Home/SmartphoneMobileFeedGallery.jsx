@@ -57,6 +57,20 @@ const SmartphoneMobileGalleryModal = ({
         smartphone?.id || smartphone?.slug,
     );
 
+    // Meta Pixel ViewContent — fires whenever this mobile smartphone detail view mounts (or the
+    // underlying item changes), mirroring DesktopFeed.jsx's feedGallery-driven ViewContent effect.
+    useEffect(() => {
+        if (!smartphone) return;
+
+        trackPixelEvent('ViewContent', {
+            content_ids: [smartphone?.public_id].filter(Boolean),
+            content_type: 'product',
+            content_category: 'smartphone',
+            value: Number(smartphone.selling_info?.total_price || 0),
+            currency: currency?.name,
+        });
+    }, [smartphone]);
+
     // Handle Media scroll Smartphone Media
     const handleScroll = (e) => {
         const container = e.target;

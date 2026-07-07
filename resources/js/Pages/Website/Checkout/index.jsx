@@ -361,17 +361,6 @@ export default function index({
             payload.points_to_use = pointsToUse;
         }
 
-        // Meta Pixel AddPaymentInfo — fires only for crypto/points at submission (bank_transfer's
-        // AddPaymentInfo fires separately, on proof upload, since payment info is entered there).
-        if (payload.payment_method === 'crypto' || payload.payment_method === 'points') {
-            trackPixelEvent('AddPaymentInfo', {
-                content_type: 'product',
-                content_category: 'smartphone',
-                value: Number(total_summary?.total || 0),
-                currency: currency?.name,
-            });
-        }
-
         // Your order processing logic here
         await axios
             .post(route('website.checkout.store'), {
@@ -380,6 +369,20 @@ export default function index({
             .then((res) => {
                 const response = res.data;
                 if (response.status === true) {
+                    // Meta Pixel AddPaymentInfo — fires only for crypto/points at submission (bank_transfer's
+                    // AddPaymentInfo fires separately, on proof upload, since payment info is entered there).
+                    if (
+                        payload.payment_method === 'crypto' ||
+                        payload.payment_method === 'points'
+                    ) {
+                        trackPixelEvent('AddPaymentInfo', {
+                            content_type: 'product',
+                            content_category: 'smartphone',
+                            value: Number(total_summary?.total || 0),
+                            currency: currency?.name,
+                        });
+                    }
+
                     setSuccessMessage(response.message);
                     setShowSuccessMessage(true);
 

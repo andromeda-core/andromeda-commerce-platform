@@ -1,11 +1,12 @@
 import InstagramStyledVideoPlayer from '@/Components/InstagramStyledVideoPlayer';
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
 import LodgingDetailSections, { humanize } from './LodgingDetailSections';
 import { useLanguageStore } from '@/Hooks/useLanguageStore';
 import DisplayPrice from '@/Components/DisplayPrice';
+import { trackPixelEvent } from '@/Helpers/metaPixel';
 
 /**
  * Stage 3.2 — mobile feed gallery for a LODGING property.
@@ -39,6 +40,24 @@ const LodgingMobileFeedGallery = ({
     // Translations may still be loading when the lodging viewer mounts; gate the lodging detail
     // chips on it so they never flash "Loading...." labels (or "[object Object]" joined values).
     const translationsLoading = useLanguageStore((state) => state.loading);
+
+    // `currency` isn't threaded down as a prop on this branch (unlike the smartphone gallery), so
+    // it's read directly from the same Inertia shared prop DesktopFeed.jsx receives via index.jsx.
+    const { currency } = usePage().props;
+
+    // Meta Pixel ViewContent — fires whenever this mobile lodging detail view mounts (or the
+    // underlying item changes), mirroring DesktopFeed.jsx's feedGallery-driven ViewContent effect.
+    useEffect(() => {
+        if (!lodging) return;
+
+        trackPixelEvent('ViewContent', {
+            content_ids: [lodging?.public_id].filter(Boolean),
+            content_type: 'accommodation',
+            content_category: 'lodging',
+            value: Number(lodging.lowest_rate || 0),
+            currency: currency?.name,
+        });
+    }, [lodging]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
