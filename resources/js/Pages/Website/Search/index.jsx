@@ -353,6 +353,7 @@ const index = ({
         isFetchingMore: false,
         isFetchingMoreHistories: false,
         searchHistoryLoading: false,
+        historyResultsLoading: false,
         canScrollLeft: false,
         canScrollRight: false,
     });
@@ -500,6 +501,8 @@ const index = ({
 
         if (results.length === 0 && hasPerformedSearch()) return;
 
+        updateState({ historyResultsLoading: true });
+
         try {
             const res = await axios.get(route('website.global-search.history-results'), {
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -513,6 +516,8 @@ const index = ({
             }
         } catch (err) {
             console.error(__('Error fetching history results') + ':', err);
+        } finally {
+            updateState({ historyResultsLoading: false });
         }
     }, [auth.user]);
 
@@ -1015,6 +1020,12 @@ const index = ({
         fetchHistoryResults();
     }, []);
 
+    // True only while the "All" tab's initial history-results fetch is in flight
+    const isAllTabInitialLoading =
+        state.activeTab === 'all' &&
+        state.historyResultsLoading &&
+        state.historyResults.length === 0;
+
     return (
         <MainLayout>
             <Head title={__('Search', true)} />
@@ -1389,7 +1400,8 @@ const index = ({
                     <div
                         role="feed"
                         aria-busy={
-                            state.searchHistoryLoading && typeof state.activeTab === 'number'
+                            (state.searchHistoryLoading && typeof state.activeTab === 'number') ||
+                            isAllTabInitialLoading
                         }
                         className={
                             activeView === 'grid'
@@ -1397,7 +1409,8 @@ const index = ({
                                 : 'flex flex-col'
                         }
                     >
-                        {state.searchHistoryLoading && typeof state.activeTab === 'number' ? (
+                        {(state.searchHistoryLoading && typeof state.activeTab === 'number') ||
+                        isAllTabInitialLoading ? (
                             <div
                                 className="flex items-center justify-center py-16"
                                 role="status"
@@ -1440,7 +1453,8 @@ const index = ({
                     {/* No Results */}
                     {displayResults.length === 0 &&
                         !state.searchHistoryLoading &&
-                        !(state.searchHistoryLoading && typeof state.activeTab === 'number') && (
+                        !(state.searchHistoryLoading && typeof state.activeTab === 'number') &&
+                        !isAllTabInitialLoading && (
                             <div className="py-16 text-center" role="status">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
