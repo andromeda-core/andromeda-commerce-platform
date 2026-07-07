@@ -6,7 +6,11 @@ import { ChevronLeft } from 'lucide-react';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import utc from 'dayjs/plugin/utc';
-import { trackPixelEvent, buildEventId } from '@/Helpers/metaPixel';
+import {
+    trackPixelEvent,
+    buildEventId,
+    isConfirmedOrLaterReservationStatus,
+} from '@/Helpers/metaPixel';
 
 dayjs.extend(duration);
 dayjs.extend(utc);
@@ -120,16 +124,18 @@ function Row({ label, value, mono = false }) {
 export default function show({ reservation }) {
     const { __ } = useTranslation();
 
-    // Meta Pixel Schedule — STRICT: only when the reservation's real status is exactly
-    // 'CONFIRMED'. This page is the customer's natural revisit point (unlike the one-time
-    // PaymentSuccess.jsx NOWPayments landing page, where confirmation has almost never happened
-    // yet), so this is where the async backend confirmation actually gets observed. Same
+    // Meta Pixel Schedule — fires once the reservation's real status is 'CONFIRMED' OR any status
+    // only reachable after having been confirmed (see CONFIRMED_OR_LATER_RESERVATION_STATUSES).
+    // This page is the customer's natural revisit point (unlike the one-time PaymentSuccess.jsx
+    // NOWPayments landing page, where confirmation has almost never happened yet), so this is where
+    // the async backend confirmation actually gets observed. Broadened from an exact 'CONFIRMED'
+    // match so a reservation first viewed after it has already progressed further still fires. Same
     // localStorage key format as PaymentSuccess.jsx so the two locations never double-fire for
     // the same reservation. content_ids omitted, matching PaymentSuccess.jsx: this page's
     // `reservation.public_id` is the RESERVATION's own id (rsv_ prefix), not the lodging
     // product's (lod_ prefix) — the product id isn't in this page's props.
     useEffect(() => {
-        if (reservation?.status !== 'CONFIRMED') return;
+        if (!isConfirmedOrLaterReservationStatus(reservation?.status)) return;
 
         const firedKey = `meta_schedule_fired_${reservation.reservation_no}`;
         if (localStorage.getItem(firedKey)) return;

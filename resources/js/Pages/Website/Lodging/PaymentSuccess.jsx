@@ -3,7 +3,11 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { CheckCircle2, Clock, XCircle, AlertTriangle, ChevronLeft } from 'lucide-react';
-import { trackPixelEvent, buildEventId } from '@/Helpers/metaPixel';
+import {
+    trackPixelEvent,
+    buildEventId,
+    isConfirmedOrLaterReservationStatus,
+} from '@/Helpers/metaPixel';
 
 /**
  * Stage 2.4 Fix 2 — Lodging payment success page (NOWPayments success_url landing).
@@ -18,14 +22,15 @@ export default function PaymentSuccess() {
 
     const state = reservation?.display_state ?? 'processing';
 
-    // Meta Pixel Schedule — STRICT: only when the reservation's real status is exactly
-    // 'CONFIRMED' (not REQUESTED/HOTEL_REVIEW_PENDING/any pending/review status — those belong to
-    // the earlier funnel, not Schedule). This page is not itself a polling loop (the backend
-    // confirms asynchronously), so this fires whenever the customer is viewing it with a
-    // already-confirmed reservation. content_ids omitted: this page's props carry only
+    // Meta Pixel Schedule — fires once the reservation's real status is 'CONFIRMED' OR any status
+    // only reachable after having been confirmed (see CONFIRMED_OR_LATER_RESERVATION_STATUSES;
+    // not REQUESTED/HOTEL_REVIEW_PENDING/any pending/review status — those belong to the earlier
+    // funnel, not Schedule). This page is not itself a polling loop (the backend confirms
+    // asynchronously), so this fires whenever the customer is viewing it with an already-confirmed
+    // (or further-progressed) reservation. content_ids omitted: this page's props carry only
     // reservation-level fields, not the lodging product's public_id.
     useEffect(() => {
-        if (reservation?.status !== 'CONFIRMED') return;
+        if (!isConfirmedOrLaterReservationStatus(reservation?.status)) return;
 
         const firedKey = `meta_schedule_fired_${reservation.reservation_no}`;
         if (localStorage.getItem(firedKey)) return;

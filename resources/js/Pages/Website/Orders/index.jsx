@@ -12,7 +12,7 @@ import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import utc from 'dayjs/plugin/utc';
 import { useConfirm } from '@/Hooks/useConfirm';
-import { trackPixelEvent, buildEventId } from '@/Helpers/metaPixel';
+import { trackPixelEvent, buildEventId, isPaidOrLaterOrderStatus } from '@/Helpers/metaPixel';
 
 dayjs.extend(duration);
 dayjs.extend(utc);
@@ -73,14 +73,16 @@ export default function index({ orders, next_page_url }) {
         setAllOrders(orders || []);
     }, [orders]);
 
-    // Meta Pixel Purchase — fires per-order, only for entries whose real status is exactly
-    // 'paid'. Watches the full accumulated allOrders (not just the initial `orders` prop) so
-    // infinite-scroll load-more pages are covered too. Same localStorage key format as
-    // Orders/show.jsx so neither location double-fires for the same order. Mirrors the identical
-    // fix already applied to Reservations/index.jsx for Schedule.
+    // Meta Pixel Purchase — fires per-order for entries whose real status is 'paid' OR any status
+    // only reachable after having been paid (see PAID_OR_LATER_ORDER_STATUSES), so an order first
+    // seen in this list after it already progressed past 'paid' still fires. Watches the full
+    // accumulated allOrders (not just the initial `orders` prop) so infinite-scroll load-more pages
+    // are covered too. Same localStorage key format as Orders/show.jsx so neither location
+    // double-fires for the same order. Mirrors the identical fix already applied to
+    // Reservations/index.jsx for Schedule.
     useEffect(() => {
         (allOrders || []).forEach((order) => {
-            if (order?.status !== 'paid') return;
+            if (!isPaidOrLaterOrderStatus(order?.status)) return;
 
             const firedKey = `meta_purchase_fired_${order.order_no}`;
             if (localStorage.getItem(firedKey)) return;

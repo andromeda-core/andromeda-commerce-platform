@@ -14,7 +14,7 @@ import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import duration from 'dayjs/plugin/duration';
 import utc from 'dayjs/plugin/utc';
 import dayjs from 'dayjs';
-import { trackPixelEvent, buildEventId } from '@/Helpers/metaPixel';
+import { trackPixelEvent, buildEventId, isPaidOrLaterOrderStatus } from '@/Helpers/metaPixel';
 dayjs.extend(duration);
 dayjs.extend(utc);
 
@@ -279,14 +279,17 @@ export default function OrderView({ order, countries }) {
         }
     }, [selectedPackageVideoID]);
 
-    // Meta Pixel Purchase — STRICT: only when the order's real status is exactly 'paid'. This is
-    // the single unified firing point for all 3 payment methods. points reaches 'paid' on first
-    // load of this page; bank_transfer/crypto reach it only once backend/admin has confirmed it,
-    // whenever the customer next loads or reloads this page. Never fires for awaiting_payment,
-    // blockchain_confirmation_pending, pending, or any other non-'paid' status. localStorage guards
-    // against re-firing on repeat visits to an already-fired order.
+    // Meta Pixel Purchase — fires once the order's real status is 'paid' OR any status only
+    // reachable after having been paid (shipped/delivered/refunded/etc, see
+    // PAID_OR_LATER_ORDER_STATUSES). This is the single unified firing point for all 3 payment
+    // methods. points reaches 'paid' on first load of this page; bank_transfer/crypto reach it only
+    // once backend/admin has confirmed it. Broadened from an exact 'paid' match so an order first
+    // viewed after it has already progressed past 'paid' (e.g. shipped/delivered) still fires.
+    // Never fires for awaiting_payment, blockchain_confirmation_pending, pending, or any other
+    // pre-payment status. localStorage guards against re-firing on repeat visits to an already-fired
+    // order.
     useEffect(() => {
-        if (order?.status !== 'paid') return;
+        if (!isPaidOrLaterOrderStatus(order?.status)) return;
 
         const firedKey = `meta_purchase_fired_${order.order_no}`;
         if (localStorage.getItem(firedKey)) return;

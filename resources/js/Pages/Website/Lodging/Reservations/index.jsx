@@ -9,7 +9,11 @@ import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import utc from 'dayjs/plugin/utc';
-import { trackPixelEvent, buildEventId } from '@/Helpers/metaPixel';
+import {
+    trackPixelEvent,
+    buildEventId,
+    isConfirmedOrLaterReservationStatus,
+} from '@/Helpers/metaPixel';
 
 dayjs.extend(duration);
 dayjs.extend(utc);
@@ -45,7 +49,11 @@ const STATUS_LABELS = {
 const TAB_GROUPS = {
     all: null,
     pending_approval: ['REQUESTED', 'HOTEL_REVIEW_PENDING'],
-    awaiting_payment: ['HOTEL_APPROVED_AWAITING_PAYMENT', 'PAYMENT_LINK_CREATED', 'PAYMENT_PENDING'],
+    awaiting_payment: [
+        'HOTEL_APPROVED_AWAITING_PAYMENT',
+        'PAYMENT_LINK_CREATED',
+        'PAYMENT_PENDING',
+    ],
     confirmed_upcoming: ['PAYMENT_CONFIRMED', 'CONFIRMED'],
     completed: ['COMPLETED'],
     cancelled_expired: [
@@ -116,15 +124,17 @@ export default function index({ reservations, next_page_url }) {
         setAllReservations(reservations || []);
     }, [reservations]);
 
-    // Meta Pixel Schedule — STRICT: fires per-reservation, only for entries whose real status is
-    // exactly 'CONFIRMED'. Watches allReservations (not the raw `reservations` prop) so infinite
-    // -scroll "load more" pages are covered too. Same localStorage key format as
+    // Meta Pixel Schedule — fires per-reservation for entries whose real status is 'CONFIRMED' OR
+    // any status only reachable after having been confirmed (see
+    // CONFIRMED_OR_LATER_RESERVATION_STATUSES), so a reservation first seen in this list after it
+    // already progressed further still fires. Watches allReservations (not the raw `reservations`
+    // prop) so infinite-scroll "load more" pages are covered too. Same localStorage key format as
     // PaymentSuccess.jsx / Reservations/show.jsx so none of the three locations double-fire for
     // the same reservation. content_ids omitted — this list's items don't carry the lodging
     // product's own public_id (lod_ prefix), only the reservation's.
     useEffect(() => {
         (allReservations || []).forEach((reservation) => {
-            if (reservation?.status !== 'CONFIRMED') return;
+            if (!isConfirmedOrLaterReservationStatus(reservation?.status)) return;
 
             const firedKey = `meta_schedule_fired_${reservation.reservation_no}`;
             if (localStorage.getItem(firedKey)) return;
@@ -250,19 +260,19 @@ export default function index({ reservations, next_page_url }) {
         <MainLayout>
             <Head title={__('Reservations', true)} />
 
-            <div className="min-h-screen pb-20 my-0 lg:my-3">
-                <div className="w-full mx-auto overflow-x-hidden text-black max-w-7xl dark:text-main-text-dark sm:px-8">
-                    <div className="px-4 mt-2 sm:px-0">
+            <div className="my-0 min-h-screen pb-20 lg:my-3">
+                <div className="mx-auto w-full max-w-7xl overflow-x-hidden text-black dark:text-main-text-dark sm:px-8">
+                    <div className="mt-2 px-4 sm:px-0">
                         {/* Status filter tabs (mirrors My Orders) */}
                         {allReservations.length > 0 && (
-                            <div className="w-full mt-3 mb-4">
+                            <div className="mb-4 mt-3 w-full">
                                 <div className="relative grid w-full grid-cols-1 overflow-hidden">
-                                    <div className="relative flex items-center w-full">
+                                    <div className="relative flex w-full items-center">
                                         {/* Left Arrow */}
                                         {canScrollLeft && (
                                             <button
                                                 onClick={scrollLeft}
-                                                className="absolute left-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                                className="absolute left-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-1-light p-2 transition-all duration-200 hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
                                                 style={{ left: '0px' }}
                                             >
                                                 <svg
@@ -284,7 +294,7 @@ export default function index({ reservations, next_page_url }) {
 
                                         <div
                                             ref={scrollContainerRef}
-                                            className="flex items-center w-full overflow-x-auto flex-nowrap gap-7 scroll-smooth scrollbar-none"
+                                            className="flex w-full flex-nowrap items-center gap-7 overflow-x-auto scroll-smooth scrollbar-none"
                                             style={{
                                                 transform: 'translateZ(0)',
                                                 WebkitOverflowScrolling: 'touch',
@@ -309,7 +319,7 @@ export default function index({ reservations, next_page_url }) {
                                         {canScrollRight && (
                                             <button
                                                 onClick={scrollRight}
-                                                className="absolute right-0 z-20 flex items-center justify-center flex-shrink-0 p-2 transition-all duration-200 rounded-full bg-surface-1-light hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
+                                                className="absolute right-0 z-20 flex flex-shrink-0 items-center justify-center rounded-full bg-surface-1-light p-2 transition-all duration-200 hover:scale-110 hover:bg-surface-1-light dark:bg-surface-3-dark dark:hover:bg-surface-3-dark md:flex"
                                             >
                                                 <svg
                                                     xmlns="http://www.w3.org/2000/svg"
@@ -354,7 +364,7 @@ export default function index({ reservations, next_page_url }) {
             {nextPageUrlRef.current && (
                 <div
                     ref={loaderRef}
-                    className="flex items-center justify-center gap-2 py-10 text-center transition-all duration-100 animate-pulse text-main-text-light dark:text-main-text-dark"
+                    className="flex animate-pulse items-center justify-center gap-2 py-10 text-center text-main-text-light transition-all duration-100 dark:text-main-text-dark"
                 >
                     <Spinner />
                     {__('Loading More')}...
@@ -409,7 +419,7 @@ function ReservationCard({ reservation, __, setLinkCopied }) {
         const expiry = dayjs.utc(expiresAt);
 
         if (expiry.isBefore(now)) {
-           return __('a few moments',true);
+            return __('a few moments', true);
         }
 
         const diffMs = expiry.diff(now);
@@ -428,7 +438,7 @@ function ReservationCard({ reservation, __, setLinkCopied }) {
     const remainingTime = getRemainingTime(reservation?.approval_expires_at);
 
     return (
-        <div className="overflow-hidden transition-all bg-white border rounded-md border-surface-3-light dark:border-surface-3-dark dark:bg-surface-1-dark">
+        <div className="overflow-hidden rounded-md border border-surface-3-light bg-white transition-all dark:border-surface-3-dark dark:bg-surface-1-dark">
             {/* Header */}
             <div className="flex flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
                 <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
@@ -470,7 +480,10 @@ function ReservationCard({ reservation, __, setLinkCopied }) {
                     </span>
 
                     <Link
-                        href={route('website.lodging-reservations.show', reservation.reservation_no)}
+                        href={route(
+                            'website.lodging-reservations.show',
+                            reservation.reservation_no,
+                        )}
                         className="flex items-center gap-1 font-semibold text-main-text-light dark:text-main-text-dark lg:hover:text-main-text-light/80 dark:lg:hover:text-main-text-dark/80"
                     >
                         <span>{__('View Details')}</span>
@@ -480,7 +493,7 @@ function ReservationCard({ reservation, __, setLinkCopied }) {
                             viewBox="0 0 24 24"
                             strokeWidth={2}
                             stroke="currentColor"
-                            className="w-3 h-3"
+                            className="h-3 w-3"
                         >
                             <path
                                 strokeLinecap="round"
@@ -516,8 +529,7 @@ function ReservationCard({ reservation, __, setLinkCopied }) {
                         {__('Guests')}: {reservation.guest_count}
                     </p>
                     <p className="mt-2 text-[17px] font-semibold text-main-text-light dark:text-main-text-dark">
-                        {__('Total')}:{' '}
-                        {Number(reservation.online_amount).toLocaleString('en-US')}{' '}
+                        {__('Total')}: {Number(reservation.online_amount).toLocaleString('en-US')}{' '}
                         {reservation.currency_code}
                     </p>
                 </div>
@@ -549,7 +561,7 @@ function EmptyReservations({ __ }) {
                     {__('You have no reservations yet.')}
                 </h3>
 
-                <p className="max-w-xs mt-2 mb-8 text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
+                <p className="mb-8 mt-2 max-w-xs text-sm leading-relaxed text-sub-text-light dark:text-sub-text-dark">
                     {__('Your reservations will appear here once you book a stay.')}
                 </p>
 
