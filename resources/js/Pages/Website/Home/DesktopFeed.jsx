@@ -21,6 +21,7 @@ import useProductCardHydration from '@/Hooks/useProductCardHydration';
 import useAdBannerHydration from '@/Hooks/useAdBannerHydration';
 import LodgingDetailSections, { humanize } from './LodgingDetailSections';
 import { useLanguageStore } from '@/Hooks/useLanguageStore';
+import { trackPixelEvent } from '@/Helpers/metaPixel';
 
 const DesktopFeed = ({
     feedGallery,
@@ -316,6 +317,30 @@ const DesktopFeed = ({
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, [feedGallery, currentFeedIndex, feedItems, spatiotemporalInfoModal]);
+
+    // Meta Pixel ViewContent — fires whenever the open feed item is a smartphone or lodging
+    // product. Read-only observer of feedGallery, does not touch URL-update logic elsewhere.
+    useEffect(() => {
+        if (!feedGallery) return;
+
+        if (feedGallery.type === 'smartphones') {
+            trackPixelEvent('ViewContent', {
+                content_ids: [feedGallery.public_id].filter(Boolean),
+                content_type: 'product',
+                content_category: 'smartphone',
+                value: Number(feedGallery.selling_info?.total_price || 0),
+                currency: currency?.name,
+            });
+        } else if (feedGallery.type === 'lodging') {
+            trackPixelEvent('ViewContent', {
+                content_ids: [feedGallery.public_id].filter(Boolean),
+                content_type: 'accommodation',
+                content_category: 'lodging',
+                value: Number(feedGallery.lowest_rate || 0),
+                currency: currency?.name,
+            });
+        }
+    }, [feedGallery]);
 
     // updating the viewable Feed Object when Current Feed Index changes
     useEffect(() => {
@@ -1012,6 +1037,27 @@ const DesktopFeed = ({
                     //         setErrorMessage(Object.values(errors)[0] || 'Something went wrong');
                     //         setShowErrorMessage(true);
                     //     },
+                    // Meta Pixel AddToCart: only the rollback-noted dead onSuccess/onError above is
+                    // pre-existing commented code, left untouched. This onSuccess is newly added.
+                    // data.smartphones/data.addons carry smartphone_id (internal id), not
+                    // public_id — both arrays are already scoped to the single open feedGallery
+                    // item, so feedGallery.public_id is the correct content_ids value.
+                    onSuccess: () => {
+                        trackPixelEvent('AddToCart', {
+                            content_ids: [feedGallery?.public_id].filter(Boolean),
+                            content_type: 'product',
+                            content_category: 'smartphone',
+                            value: [...data.smartphones, ...data.addons].reduce(
+                                (sum, s) => sum + Number(s.price || 0),
+                                0,
+                            ),
+                            currency: currency?.name,
+                            num_items: [...data.smartphones, ...data.addons].reduce(
+                                (sum, s) => sum + Number(s.quantity || 0),
+                                0,
+                            ),
+                        });
+                    },
                     onFinish: () => {
                         setCartProcessing(false);
                     },
@@ -1400,6 +1446,24 @@ const DesktopFeed = ({
                                                                                         () => {
                                                                                             feedGallery.is_bookmarked =
                                                                                                 !feedGallery.is_bookmarked;
+                                                                                            if (
+                                                                                                feedGallery.is_bookmarked
+                                                                                            ) {
+                                                                                                trackPixelEvent(
+                                                                                                    'AddToWishlist',
+                                                                                                    {
+                                                                                                        content_ids: [
+                                                                                                            feedGallery?.public_id,
+                                                                                                        ].filter(
+                                                                                                            Boolean,
+                                                                                                        ),
+                                                                                                        content_type:
+                                                                                                            'content',
+                                                                                                        content_category:
+                                                                                                            'post',
+                                                                                                    },
+                                                                                                );
+                                                                                            }
                                                                                             setShowPostDesktopActionsDropdown(
                                                                                                 false,
                                                                                             );
@@ -3242,6 +3306,24 @@ const DesktopFeed = ({
                                                                                                     () => {
                                                                                                         feedGallery.is_bookmarked =
                                                                                                             !feedGallery.is_bookmarked;
+                                                                                                        if (
+                                                                                                            feedGallery.is_bookmarked
+                                                                                                        ) {
+                                                                                                            trackPixelEvent(
+                                                                                                                'AddToWishlist',
+                                                                                                                {
+                                                                                                                    content_ids: [
+                                                                                                                        feedGallery?.public_id,
+                                                                                                                    ].filter(
+                                                                                                                        Boolean,
+                                                                                                                    ),
+                                                                                                                    content_type:
+                                                                                                                        'content',
+                                                                                                                    content_category:
+                                                                                                                        'post',
+                                                                                                                },
+                                                                                                            );
+                                                                                                        }
                                                                                                         setShowPostDesktopActionsDropdown(
                                                                                                             false,
                                                                                                         );

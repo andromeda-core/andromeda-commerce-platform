@@ -12,6 +12,7 @@ import Spinner from './Spinner';
 import WebSelectInput from './WebSelectInput';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { ChevronLeft } from 'lucide-react';
+import { trackPixelEvent } from '@/Helpers/metaPixel';
 
 
 const GlobalSearch = ({
@@ -400,6 +401,11 @@ const GlobalSearch = ({
                 }
             );
 
+            if (searchQueryRef.current) {
+                trackPixelEvent('Search', {
+                    search_string: searchQueryRef.current,
+                });
+            }
 
             setIsPrefChanged(false);
             isSearchApplyingRef.current = false;

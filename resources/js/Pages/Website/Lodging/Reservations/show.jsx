@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { useTranslation } from '@/Hooks/useTranslation';
@@ -6,6 +6,7 @@ import { ChevronLeft } from 'lucide-react';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import utc from 'dayjs/plugin/utc';
+import { trackPixelEvent, buildEventId } from '@/Helpers/metaPixel';
 
 dayjs.extend(duration);
 dayjs.extend(utc);
@@ -118,6 +119,36 @@ function Row({ label, value, mono = false }) {
 
 export default function show({ reservation }) {
     const { __ } = useTranslation();
+
+    // Meta Pixel Schedule — STRICT: only when the reservation's real status is exactly
+    // 'CONFIRMED'. This page is the customer's natural revisit point (unlike the one-time
+    // PaymentSuccess.jsx NOWPayments landing page, where confirmation has almost never happened
+    // yet), so this is where the async backend confirmation actually gets observed. Same
+    // localStorage key format as PaymentSuccess.jsx so the two locations never double-fire for
+    // the same reservation. content_ids omitted, matching PaymentSuccess.jsx: this page's
+    // `reservation.public_id` is the RESERVATION's own id (rsv_ prefix), not the lodging
+    // product's (lod_ prefix) — the product id isn't in this page's props.
+    useEffect(() => {
+        if (reservation?.status !== 'CONFIRMED') return;
+
+        const firedKey = `meta_schedule_fired_${reservation.reservation_no}`;
+        if (localStorage.getItem(firedKey)) return;
+
+        const eventId = buildEventId('Schedule', reservation.reservation_no);
+        trackPixelEvent(
+            'Schedule',
+            {
+                reservation_id: reservation.reservation_no,
+                content_type: 'accommodation',
+                content_category: 'lodging',
+                value: Number(reservation.online_amount || 0),
+                currency: reservation.currency_code,
+            },
+            eventId,
+        );
+
+        localStorage.setItem(firedKey, '1');
+    }, [reservation?.status]);
 
     // PRESERVED 1:1 — show "Complete Payment" ONLY before the customer has gone to NOWPayments: an
     // approved, not-yet-paid reservation (awaiting-payment / pending) whose NP_id is still empty.

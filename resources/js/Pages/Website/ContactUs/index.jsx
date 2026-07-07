@@ -8,6 +8,7 @@ import React from 'react';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { ChevronLeft } from 'lucide-react';
 import goBackOrHome from '@/Helpers/backNavigationHelper';
+import { trackPixelEvent } from '@/Helpers/metaPixel';
 
 const index = () => {
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -30,6 +31,7 @@ const index = () => {
             preserveScroll: true,
             preserveState: true,
             onSuccess: () => {
+                trackPixelEvent('Lead');
                 reset();
             },
         });

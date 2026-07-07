@@ -26,7 +26,7 @@ class ContactController extends Controller
             'email' => ['required', 'string', 'email', 'max:255'],
             'phone' => ['required', 'regex:/^\+\d+$/', 'max:50'],
             'subject' => ['required', 'string', 'max:255', 'min:10'],
-            'message' => ['required', 'string', 'max:255', 'min:30'],
+            'message' => ['required', 'string', 'max:1000', 'min:30'],
 
         ], [
             'name.required' => $this->trans->get('Please enter your full name.'),
@@ -51,7 +51,7 @@ class ContactController extends Controller
             'message.required' => $this->trans->get('Please enter your message.'),
             'message.string' => $this->trans->get('Message must be valid text.'),
             'message.min' => $this->trans->get('Message must be at least 30 characters long.'),
-            'message.max' => $this->trans->get('Message cannot exceed 255 characters.'),
+            'message.max' => $this->trans->get('Message cannot exceed 1000 characters.'),
         ]);
 
         dispatch(new ContactFormSubmissionJob($validated_req));

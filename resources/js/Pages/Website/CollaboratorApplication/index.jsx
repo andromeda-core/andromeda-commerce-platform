@@ -11,6 +11,7 @@ import axios from 'axios';
 import { ChevronLeft } from 'lucide-react';
 import React, { useState } from 'react';
 import goBackOrHome from '@/Helpers/backNavigationHelper';
+import { trackPixelEvent } from '@/Helpers/metaPixel';
 // Canonical English option values. Display labels are translated with t(),
 // but the value submitted to the server (and shown in the admin email) stays English.
 const OPTIONS = {
@@ -240,6 +241,7 @@ const index = () => {
             );
 
             if (response?.data?.status) {
+                trackPixelEvent('Lead');
                 showSuccess(
                     response.data.message ||
                         t('Thank you. Your application has been submitted successfully.'),

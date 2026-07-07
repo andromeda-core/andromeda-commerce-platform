@@ -9,6 +9,7 @@ import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
 import utc from 'dayjs/plugin/utc';
+import { trackPixelEvent, buildEventId } from '@/Helpers/metaPixel';
 
 dayjs.extend(duration);
 dayjs.extend(utc);
@@ -114,6 +115,36 @@ export default function index({ reservations, next_page_url }) {
     useEffect(() => {
         setAllReservations(reservations || []);
     }, [reservations]);
+
+    // Meta Pixel Schedule — STRICT: fires per-reservation, only for entries whose real status is
+    // exactly 'CONFIRMED'. Watches allReservations (not the raw `reservations` prop) so infinite
+    // -scroll "load more" pages are covered too. Same localStorage key format as
+    // PaymentSuccess.jsx / Reservations/show.jsx so none of the three locations double-fire for
+    // the same reservation. content_ids omitted — this list's items don't carry the lodging
+    // product's own public_id (lod_ prefix), only the reservation's.
+    useEffect(() => {
+        (allReservations || []).forEach((reservation) => {
+            if (reservation?.status !== 'CONFIRMED') return;
+
+            const firedKey = `meta_schedule_fired_${reservation.reservation_no}`;
+            if (localStorage.getItem(firedKey)) return;
+
+            const eventId = buildEventId('Schedule', reservation.reservation_no);
+            trackPixelEvent(
+                'Schedule',
+                {
+                    reservation_id: reservation.reservation_no,
+                    content_type: 'accommodation',
+                    content_category: 'lodging',
+                    value: Number(reservation.online_amount || 0),
+                    currency: reservation.currency_code,
+                },
+                eventId,
+            );
+
+            localStorage.setItem(firedKey, '1');
+        });
+    }, [allReservations]);
 
     const fetchMore = () => {
         if (!nextPageUrlRef.current) return;

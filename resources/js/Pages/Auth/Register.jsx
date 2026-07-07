@@ -4,6 +4,7 @@ import { useTranslation } from '@/Hooks/useTranslation';
 import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import { trackPixelEvent } from '@/Helpers/metaPixel';
 
 export default function Register({ countries, redirect }) {
     // Toggle Show Password States
@@ -27,18 +28,19 @@ export default function Register({ countries, redirect }) {
         e.preventDefault();
 
         post(route('register'), {
+            onSuccess: () => {
+                trackPixelEvent('CompleteRegistration');
+            },
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };
 
     return (
         <GuestLayout>
-            <Head title={__("Register", true)} />
+            <Head title={__('Register', true)} />
 
-            <div className="flex flex-col flex-1 w-full px-4 md:my-5 lg:w-1/2">
-
-                <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-
+            <div className="flex w-full flex-1 flex-col px-4 md:my-5 lg:w-1/2">
+                <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
                     {/* <div className="w-full mb-10">
                         <Link
                             href={route('home')}
@@ -66,7 +68,7 @@ export default function Register({ countries, redirect }) {
 
                     <div>
                         <div className="mb-5 sm:mb-8">
-                            <h1 className="mb-2 text-[21px] font-semibold text-main-text-light sm:text-title-md dark:text-main-text-dark">
+                            <h1 className="sm:text-title-md mb-2 text-[21px] font-semibold text-main-text-light dark:text-main-text-dark">
                                 {__('Register')}
                             </h1>
                             <p className="text-[12px] font-normal text-sub-text-light dark:text-sub-text-dark">
@@ -99,7 +101,6 @@ export default function Register({ countries, redirect }) {
                                         Type={'email'}
                                         Required={true}
                                     />
-
 
                                     <WebInput
                                         InputName={__('Password')}
@@ -135,7 +136,7 @@ export default function Register({ countries, redirect }) {
                                         <div>
                                             <label
                                                 htmlFor="is_agreed_to_terms"
-                                                className="flex items-center text-[13px] font-normal cursor-pointer select-none text-main-text-light dark:text-main-text-dark"
+                                                className="flex cursor-pointer select-none items-center text-[13px] font-normal text-main-text-light dark:text-main-text-dark"
                                             >
                                                 <div className="relative">
                                                     <input
@@ -144,19 +145,24 @@ export default function Register({ countries, redirect }) {
                                                         className="sr-only"
                                                         value={data.is_agreed_to_terms}
                                                         onChange={() =>
-                                                            setData('is_agreed_to_terms', !data.is_agreed_to_terms)
+                                                            setData(
+                                                                'is_agreed_to_terms',
+                                                                !data.is_agreed_to_terms,
+                                                            )
                                                         }
                                                     />
                                                     <div
                                                         className={
                                                             data.is_agreed_to_terms === true
-                                                                ? 'mr-3 flex h-4 w-4 items-center justify-center rounded-sm border-[1.25px] border-black dark:border-surafce-3-dark bg-black dark:bg-surface-1-dark dark:border-gray-700'
+                                                                ? 'dark:border-surafce-3-dark mr-3 flex h-4 w-4 items-center justify-center rounded-sm border-[1.25px] border-black bg-black dark:border-gray-700 dark:bg-surface-1-dark'
                                                                 : 'mr-3 flex h-4 w-4 items-center justify-center rounded-sm border-[1.25px] border-gray-300 bg-transparent'
                                                         }
                                                     >
                                                         <span
                                                             className={
-                                                                data.is_agreed_to_terms ? '' : 'opacity-0'
+                                                                data.is_agreed_to_terms
+                                                                    ? ''
+                                                                    : 'opacity-0'
                                                             }
                                                         >
                                                             <svg
@@ -177,26 +183,27 @@ export default function Register({ countries, redirect }) {
                                                         </span>
                                                     </div>
                                                 </div>
-                                                <span className="text-[13px] text-main-text-light leading-5 dark:text-main-text-dark">
+                                                <span className="text-[13px] leading-5 text-main-text-light dark:text-main-text-dark">
                                                     {__('I agree to the')}{' '}
                                                     <Link
-                                                        href={route('website.terms-of-service.index')}
-                                                        className="text-[13px] font-medium text-[#003aa5] underline underline-offset-[3px] decoration-[#003aa5]"
+                                                        href={route(
+                                                            'website.terms-of-service.index',
+                                                        )}
+                                                        className="text-[13px] font-medium text-[#003aa5] underline decoration-[#003aa5] underline-offset-[3px]"
                                                     >
                                                         {__('Terms of Service')}
                                                     </Link>{' '}
                                                     {__('and related policies and acknowledge the')}{' '}
                                                     <Link
                                                         href={route('website.privacy-policy.index')}
-                                                        className="text-[13px] font-medium text-[#003aa5] underline underline-offset-[3px] decoration-[#003aa5]"
+                                                        className="text-[13px] font-medium text-[#003aa5] underline decoration-[#003aa5] underline-offset-[3px]"
                                                     >
                                                         {__('Privacy Notice')}
-                                                    </Link>.
+                                                    </Link>
+                                                    .
                                                 </span>
                                             </label>
                                         </div>
-
-
                                     </div>
                                     <p className="text-sm text-red-500">
                                         {errors.is_agreed_to_terms}
@@ -215,7 +222,6 @@ export default function Register({ countries, redirect }) {
                                                 !data.is_agreed_to_terms
                                             }
                                             Type={'submit'}
-
                                             Spinner={processing}
                                         />
                                     </div>
@@ -223,11 +229,11 @@ export default function Register({ countries, redirect }) {
                             </form>
 
                             <div className="mt-5">
-                                <p className="text-sm font-normal text-center text-main-text-light dark:text-main-text-dark sm:text-start">
+                                <p className="text-center text-sm font-normal text-main-text-light dark:text-main-text-dark sm:text-start">
                                     {__('Already have an account')}?{' '}
                                     <Link
                                         href={route('login')}
-                                        className="text-sm font-bold text-main-text-light dark:text-main-text-dark dark:hover:text-main-text-dark hover:text-main-text-light/80"
+                                        className="text-sm font-bold text-main-text-light hover:text-main-text-light/80 dark:text-main-text-dark dark:hover:text-main-text-dark"
                                     >
                                         {' '}
                                         {'  '}

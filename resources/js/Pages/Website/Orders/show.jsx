@@ -14,6 +14,7 @@ import LinkCopiedModal from '@/Components/LinkCopiedModal';
 import duration from 'dayjs/plugin/duration';
 import utc from 'dayjs/plugin/utc';
 import dayjs from 'dayjs';
+import { trackPixelEvent, buildEventId } from '@/Helpers/metaPixel';
 dayjs.extend(duration);
 dayjs.extend(utc);
 
@@ -116,6 +117,14 @@ export default function OrderView({ order, countries }) {
             await router.post(route('website.orders.upload-payment-proof'), formData, {
                 preserveScroll: true,
                 onSuccess: () => {
+                    // Meta Pixel AddPaymentInfo — bank_transfer's payment-info moment (crypto/points
+                    // fire at checkout submission instead; see Checkout/index.jsx handlePlaceOrder).
+                    trackPixelEvent('AddPaymentInfo', {
+                        content_type: 'product',
+                        content_category: 'smartphone',
+                        value: Number(order?.full_amount || 0),
+                        currency: currency?.name,
+                    });
                     setPaymentProofFile(null);
                     setPaymentProofPreview(null);
                 },
@@ -269,6 +278,41 @@ export default function OrderView({ order, countries }) {
             );
         }
     }, [selectedPackageVideoID]);
+
+    // Meta Pixel Purchase — STRICT: only when the order's real status is exactly 'paid'. This is
+    // the single unified firing point for all 3 payment methods. points reaches 'paid' on first
+    // load of this page; bank_transfer/crypto reach it only once backend/admin has confirmed it,
+    // whenever the customer next loads or reloads this page. Never fires for awaiting_payment,
+    // blockchain_confirmation_pending, pending, or any other non-'paid' status. localStorage guards
+    // against re-firing on repeat visits to an already-fired order.
+    useEffect(() => {
+        if (order?.status !== 'paid') return;
+
+        const firedKey = `meta_purchase_fired_${order.order_no}`;
+        if (localStorage.getItem(firedKey)) return;
+
+        const eventId = buildEventId('Purchase', order.order_no);
+        trackPixelEvent(
+            'Purchase',
+            {
+                order_id: order.order_no,
+                content_ids: (order.order_items || [])
+                    .map((item) => item.smartphone?.public_id)
+                    .filter(Boolean),
+                content_type: 'product',
+                content_category: 'smartphone',
+                value: Number(order.full_amount || 0),
+                currency: currency?.name,
+                num_items: (order.order_items || []).reduce(
+                    (sum, item) => sum + Number(item.quantity || 0),
+                    0,
+                ),
+            },
+            eventId,
+        );
+
+        localStorage.setItem(firedKey, '1');
+    }, [order?.status]);
 
     return (
         <MainLayout>

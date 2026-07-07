@@ -1035,6 +1035,7 @@ class TranslationKeysSeeder extends Seeder
             ['key' => 'Message must be valid text.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Message must be at least 30 characters long.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Message cannot exceed 255 characters.', 'created_at' => $now, 'updated_at' => $now],
+            ['key' => 'Message cannot exceed 1000 characters.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Password must be a valid text.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => 'Please enter your password.', 'created_at' => $now, 'updated_at' => $now],
             ['key' => "We can't find a user with that email address.", 'created_at' => $now, 'updated_at' => $now],

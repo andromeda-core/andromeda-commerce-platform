@@ -13,6 +13,7 @@ import DisplayPrice from '@/Components/DisplayPrice';
 import useProductCardHydration from '@/Hooks/useProductCardHydration';
 // NEW: hydrates ad-banner embed markers inserted via AddAdBannerButton, mirrors useProductCardHydration.
 import useAdBannerHydration from '@/Hooks/useAdBannerHydration';
+import { trackPixelEvent } from '@/Helpers/metaPixel';
 
 const SmartphoneMobileGalleryModal = ({
     smartphone,
@@ -546,6 +547,27 @@ const SmartphoneMobileGalleryModal = ({
                     //     setErrorMessage(Object.values(errors)[0] || 'Something went wrong');
                     //     setShowErrorMessage(true);
                     // },
+                    // Meta Pixel AddToCart: only the rollback-noted dead onSuccess/onError above is
+                    // pre-existing commented code, left untouched. This onSuccess is newly added.
+                    // data.smartphones/data.addons carry smartphone_id (internal id), not
+                    // public_id — this modal is scoped to the single `smartphone` prop, so
+                    // smartphone.public_id is the correct content_ids value.
+                    onSuccess: () => {
+                        trackPixelEvent('AddToCart', {
+                            content_ids: [smartphone?.public_id].filter(Boolean),
+                            content_type: 'product',
+                            content_category: 'smartphone',
+                            value: [...data.smartphones, ...data.addons].reduce(
+                                (sum, s) => sum + Number(s.price || 0),
+                                0,
+                            ),
+                            currency: currency?.name,
+                            num_items: [...data.smartphones, ...data.addons].reduce(
+                                (sum, s) => sum + Number(s.quantity || 0),
+                                0,
+                            ),
+                        });
+                    },
                     onFinish: () => {
                         setCartProcessing(false);
                     },

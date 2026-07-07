@@ -9,6 +9,7 @@ import { router } from '@inertiajs/react';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import SpatiotemporalInfoModal from '@/Components/SpatiotemporalInfoModal';
+import { trackPixelEvent } from '@/Helpers/metaPixel';
 
 const PostMobileFeedGallery = ({
     post,
@@ -380,6 +381,24 @@ const PostMobileFeedGallery = ({
                                                                             post.is_bookmarked =
                                                                                 !post.is_bookmarked;
 
+                                                                            if (post.is_bookmarked) {
+                                                                                trackPixelEvent(
+                                                                                    'AddToWishlist',
+                                                                                    {
+                                                                                        content_ids:
+                                                                                            [
+                                                                                                post?.public_id,
+                                                                                            ].filter(
+                                                                                                Boolean,
+                                                                                            ),
+                                                                                        content_type:
+                                                                                            'content',
+                                                                                        content_category:
+                                                                                            'post',
+                                                                                    },
+                                                                                );
+                                                                            }
+
                                                                             setBookmarkStatusChanged(
                                                                                 true,
                                                                             );
@@ -645,6 +664,24 @@ const PostMobileFeedGallery = ({
                                                                         onSuccess: () => {
                                                                             post.is_bookmarked =
                                                                                 !post.is_bookmarked;
+
+                                                                            if (post.is_bookmarked) {
+                                                                                trackPixelEvent(
+                                                                                    'AddToWishlist',
+                                                                                    {
+                                                                                        content_ids:
+                                                                                            [
+                                                                                                post?.public_id,
+                                                                                            ].filter(
+                                                                                                Boolean,
+                                                                                            ),
+                                                                                        content_type:
+                                                                                            'content',
+                                                                                        content_category:
+                                                                                            'post',
+                                                                                    },
+                                                                                );
+                                                                            }
 
                                                                             setBookmarkStatusChanged(
                                                                                 true,

@@ -15,6 +15,7 @@ import WebSelectInput from '@/Components/WebSelectInput';
 import { createPortal } from 'react-dom';
 import WebTextArea from '@/Components/WebTextArea';
 import { useConfirm } from '@/Hooks/useConfirm';
+import { trackPixelEvent } from '@/Helpers/metaPixel';
 
 export default function index({
     cart_items,
@@ -273,6 +274,25 @@ export default function index({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // Meta Pixel InitiateCheckout — fires once on landing on this page, covering both the
+    // cart-based and buy-now single-product checkout flows (both render this same page).
+    useEffect(() => {
+        trackPixelEvent('InitiateCheckout', {
+            content_ids: [...cart_items, ...addon_items]
+                .map((item) => item.smartphone?.public_id)
+                .filter(Boolean),
+            content_type: 'product',
+            content_category: 'smartphone',
+            value: Number(total_summary?.total || 0),
+            currency: currency?.name,
+            num_items: [...cart_items, ...addon_items].reduce(
+                (sum, item) => sum + Number(item.quantity || 0),
+                0,
+            ),
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const handlePlaceOrder = async () => {
         if (pointsError !== '') {
             setErrorMessage(__('Please Adjust Your Points Before Placing An Order'));
@@ -339,6 +359,17 @@ export default function index({
 
         if (pointsToUse) {
             payload.points_to_use = pointsToUse;
+        }
+
+        // Meta Pixel AddPaymentInfo — fires only for crypto/points at submission (bank_transfer's
+        // AddPaymentInfo fires separately, on proof upload, since payment info is entered there).
+        if (payload.payment_method === 'crypto' || payload.payment_method === 'points') {
+            trackPixelEvent('AddPaymentInfo', {
+                content_type: 'product',
+                content_category: 'smartphone',
+                value: Number(total_summary?.total || 0),
+                currency: currency?.name,
+            });
         }
 
         // Your order processing logic here

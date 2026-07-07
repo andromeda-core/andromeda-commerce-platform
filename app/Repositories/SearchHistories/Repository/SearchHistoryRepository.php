@@ -24,7 +24,15 @@ class SearchHistoryRepository implements ISearchHistoryRepository
             ];
         }
 
-        $histories = $this->searchHistory->where('user_id', $request->user()?->id)
+        // OLD (select * pulled every column, including the large `results` JSON blob, into
+        // memory during the ORDER BY filesort, causing "Out of sort memory" once table size
+        // crossed a threshold):
+        // $histories = $this->searchHistory->where('user_id', $request->user()?->id)
+        //     ->latest('created_at')
+        //     ->paginate(10)
+        //     ->withPath(route('website.global-search.history-results-getmore'));
+        $histories = $this->searchHistory->select(['id', 'user_id', 'query', 'filters', 'filter_summary', 'filters_hash', 'results_count', 'created_at'])
+            ->where('user_id', $request->user()?->id)
             ->latest('created_at')
             ->paginate(10)
             ->withPath(route('website.global-search.history-results-getmore'));

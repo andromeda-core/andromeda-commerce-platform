@@ -45,4 +45,8 @@ return [
         'cancel_url' => env('NOWPAYMENTS_CANCEL_URL'),
     ],
 
+    'meta_pixel' => [
+        'id' => env('META_PIXEL_ID', '1707084700603221'),
+    ],
+
 ];

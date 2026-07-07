@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import MainLayout from '@/Layouts/Website/MainLayout';
 import { useTranslation } from '@/Hooks/useTranslation';
 import { CheckCircle2, Clock, XCircle, AlertTriangle, ChevronLeft } from 'lucide-react';
+import { trackPixelEvent, buildEventId } from '@/Helpers/metaPixel';
 
 /**
  * Stage 2.4 Fix 2 — Lodging payment success page (NOWPayments success_url landing).
@@ -16,6 +17,34 @@ export default function PaymentSuccess() {
     const { __ } = useTranslation();
 
     const state = reservation?.display_state ?? 'processing';
+
+    // Meta Pixel Schedule — STRICT: only when the reservation's real status is exactly
+    // 'CONFIRMED' (not REQUESTED/HOTEL_REVIEW_PENDING/any pending/review status — those belong to
+    // the earlier funnel, not Schedule). This page is not itself a polling loop (the backend
+    // confirms asynchronously), so this fires whenever the customer is viewing it with a
+    // already-confirmed reservation. content_ids omitted: this page's props carry only
+    // reservation-level fields, not the lodging product's public_id.
+    useEffect(() => {
+        if (reservation?.status !== 'CONFIRMED') return;
+
+        const firedKey = `meta_schedule_fired_${reservation.reservation_no}`;
+        if (localStorage.getItem(firedKey)) return;
+
+        const eventId = buildEventId('Schedule', reservation.reservation_no);
+        trackPixelEvent(
+            'Schedule',
+            {
+                reservation_id: reservation.reservation_no,
+                content_type: 'accommodation',
+                content_category: 'lodging',
+                value: Number(reservation.online_amount || 0),
+                currency: reservation.currency_code,
+            },
+            eventId,
+        );
+
+        localStorage.setItem(firedKey, '1');
+    }, [reservation?.status]);
 
     // Map the server-derived display state -> icon + heading + message (all translated).
     const STATES = {
