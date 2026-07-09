@@ -8,6 +8,9 @@ interface IPostRepository
 {
     public function getAllPosts(Request $request);
 
+    // Users who have authored at least one post — feeds the dashboard "Posted By" filter dropdown.
+    public function getPostAuthorsForFilter(Request $request);
+
     public function getSinglePostBySlug(string $identifier, Request $request);
 
     public function getSinglePostById(string $id);

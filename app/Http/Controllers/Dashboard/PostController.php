@@ -52,10 +52,13 @@ class PostController extends Controller implements HasMiddleware
     {
 
         $posts = $this->post->getAllPosts($request);
+        $postAuthors = $this->post->getPostAuthorsForFilter($request);
+        $search = $request->input('search');
+        $user_id = $request->input('user_id');
 
         // return $posts;
 
-        return Inertia::render('Dashboard/Posts/index', compact('posts'));
+        return Inertia::render('Dashboard/Posts/index', compact('posts', 'postAuthors', 'search', 'user_id'));
     }
 
     public function create()

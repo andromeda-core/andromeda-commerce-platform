@@ -4,14 +4,17 @@ import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import BreadCrumb from '@/Components/BreadCrumb';
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import Table from '@/Components/Table';
+import SelectInput from '@/Components/SelectInput';
 
 import { useEffect, useState } from 'react';
 import can from '@/Hooks/useCan';
 
-export default function index({ posts }) {
+export default function index({ posts, postAuthors }) {
     // Bulk Delete Form Data
     const { props } = usePage();
     const canEdit = can('Posts Edit');
+    const [postedBy, setPostedBy] = useState(props.user_id ?? '');
+    const [parentSearched, setParentSearched] = useState(false);
     const {
         data: BulkselectedIds,
         setData: setBulkSelectedIds,
@@ -121,8 +124,12 @@ export default function index({ posts }) {
                 <Card
                     Content={
                         <>
-                            {can('Posts Create') && (
-                                <div className="my-3 flex flex-wrap justify-end">
+                            <div className="my-3 flex flex-wrap items-center justify-between gap-3">
+                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                                    Total Posts: {posts?.total ?? 0}
+                                </p>
+
+                                {can('Posts Create') && (
                                     <LinkButton
                                         Text={'Create Post'}
                                         URL={route('dashboard.posts.create')}
@@ -143,8 +150,8 @@ export default function index({ posts }) {
                                             </svg>
                                         }
                                     />
-                                </div>
-                            )}
+                                )}
+                            </div>
 
                             <Table
                                 setBulkSelectedIds={setBulkSelectedIds}
@@ -159,11 +166,29 @@ export default function index({ posts }) {
                                 SearchRoute={'dashboard.posts.index'}
                                 DeleteAction={can('Posts Delete')}
                                 canSelect={can('Posts Edit')}
-                                Search={false}
+                                Search={true}
+                                DefaultSearchInput={true}
                                 items={posts}
                                 props={props}
                                 columns={columns}
                                 customActions={actions}
+                                searchProps={{ user_id: postedBy }}
+                                ParentSearched={parentSearched}
+                                customSearch={
+                                    <div className="relative">
+                                        <SelectInput
+                                            CustomCss={'w-auto md:w-[250px]'}
+                                            InputName={'Posted By'}
+                                            items={postAuthors}
+                                            itemKey={'name'}
+                                            Value={postedBy}
+                                            Action={(value) => {
+                                                setPostedBy(value ?? '');
+                                                setParentSearched(true);
+                                            }}
+                                        />
+                                    </div>
+                                }
                             />
                         </>
                     }

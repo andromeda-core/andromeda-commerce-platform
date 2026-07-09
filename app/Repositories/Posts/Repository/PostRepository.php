@@ -12,6 +12,7 @@ use App\Models\Floor;
 use App\Models\LodgingProduct;
 use App\Models\Post;
 use App\Models\Smartphone;
+use App\Models\User;
 use App\Repositories\Lodging\Interface\ILodgingProductRepository;
 use App\Repositories\Posts\Interface\IPostRepository;
 use App\Services\ContentTranslationService;
@@ -44,11 +45,31 @@ class PostRepository implements IPostRepository
             ->when(! $request->user()->hasRole('Admin'), function ($query) use ($request) {
                 $query->where('user_id', $request->user()->id);
             })
+            ->when(! empty($request->input('search')), function ($query) use ($request) {
+                $query->where('title', 'like', '%'.$request->input('search').'%');
+            })
+            ->when(! empty($request->input('user_id')), function ($query) use ($request) {
+                $query->where('user_id', $request->input('user_id'));
+            })
             ->with(['floor', 'user'])
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
 
         return $posts;
+    }
+
+    // Users who authored at least one post, scoped the same way getAllPosts() scopes the list itself
+    // (non-Admins only ever see their own posts, so their filter dropdown must not leak other authors).
+    public function getPostAuthorsForFilter(Request $request)
+    {
+        return User::query()
+            ->whereHas('posts')
+            ->when(! $request->user()->hasRole('Admin'), function ($query) use ($request) {
+                $query->where('id', $request->user()->id);
+            })
+            ->orderBy('name')
+            ->get(['id', 'name']);
     }
 
     public function getSinglePostBySlug(string $identifier, ?Request $request = null, $isBackend = false)
