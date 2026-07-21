@@ -1842,6 +1842,16 @@ class PermissionSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+            [
+                'id' => 416,
+                'name' => 'Wholesale Dealer Applications View',
+                'guard_name' => 'web',
+                'parent_name' => 'System',
+                'alias' => null,
+                'icon' => 'GlobeEuropeAfricaIcon',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
         ];
 
         // DB::table('permissions')->upsert(

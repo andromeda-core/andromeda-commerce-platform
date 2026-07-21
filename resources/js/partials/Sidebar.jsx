@@ -1520,6 +1520,7 @@ export default function Sidebar({
                                     'SystemLogs View',
                                     'Risk Signals View',
                                     'Data Deletion Requests View',
+                                    'Wholesale Dealer Applications View',
                                     'Unsettled Accounts View',
                                 ]) && (
                                     <li>
@@ -1699,6 +1700,19 @@ export default function Sidebar({
                                                             className={`menu-dropdown-item group ${route().current() === 'dashboard.data-deletion-requests.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
                                                         >
                                                             Data Deletion Requests
+                                                        </Link>
+                                                    </li>
+                                                )}
+
+                                                {can('Wholesale Dealer Applications View') && (
+                                                    <li>
+                                                        <Link
+                                                            href={route(
+                                                                'dashboard.wholesale-dealer-applications.index',
+                                                            )}
+                                                            className={`menu-dropdown-item group ${route().current() === 'dashboard.wholesale-dealer-applications.index' ? 'menu-dropdown-item-active' : 'menu-dropdown-item-inactive'}`}
+                                                        >
+                                                            Wholesale Dealer Applications
                                                         </Link>
                                                     </li>
                                                 )}

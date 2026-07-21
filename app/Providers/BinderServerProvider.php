@@ -116,6 +116,8 @@ use App\Repositories\UnsettledAccounts\Interface\IUnsettledAccountsRepository;
 use App\Repositories\UnsettledAccounts\Repository\UnsettledAccountsRepository;
 use App\Repositories\Users\Interface\IUserRepository;
 use App\Repositories\Users\Repository\UserRepository;
+use App\Repositories\WholesaleDealerApplication\Interface\IWholesaleDealerApplicationRepository;
+use App\Repositories\WholesaleDealerApplication\Repository\WholesaleDealerApplicationRepository;
 use App\Repositories\InternalProductImage\Interface\IInternalProductImageRepository;
 use App\Repositories\InternalProductImage\Repository\InternalProductImageRepository;
 use App\Repositories\InternalProductVideos\Interface\IInternalProductVideoRepository;
@@ -188,6 +190,7 @@ class BinderServerProvider extends ServiceProvider
         $this->app->bind(ILodgingPlatformCommissionRepository::class, LodgingPlatformCommissionRepository::class);
         $this->app->bind(ILodgingCollaboratorCommissionRepository::class, LodgingCollaboratorCommissionRepository::class);
         $this->app->bind(IAdBannerRepository::class, AdBannerRepository::class);
+        $this->app->bind(IWholesaleDealerApplicationRepository::class, WholesaleDealerApplicationRepository::class);
     }
 
     /**

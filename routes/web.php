@@ -17,6 +17,7 @@ use App\Http\Controllers\Dashboard\Commissions\PlatformCommissionController;
 use App\Http\Controllers\Dashboard\Commissions\SupplierCommissionController;
 use App\Http\Controllers\Dashboard\CustomerController;
 use App\Http\Controllers\Dashboard\DataDeletionRequestController;
+use App\Http\Controllers\Dashboard\WholesaleDealerApplicationController;
 use App\Http\Controllers\Dashboard\DistributorController;
 use App\Http\Controllers\Dashboard\FloorController;
 use App\Http\Controllers\Dashboard\HomeController;
@@ -358,6 +359,14 @@ Route::group(['as' => 'website.'], function () {
     Route::post('/collaborator-application', [\App\Http\Controllers\Website\CollaboratorApplicationController::class, 'store'])
         ->middleware('throttle:10,1')
         ->name('collaborator-application.store');
+
+    // Wholesale Dealer application (public, native page; persisted + emails to verification@andromeda.blue)
+    Route::get('/wholesale-dealer-application', [\App\Http\Controllers\Website\WholesaleDealerApplicationController::class, 'index'])
+        ->name('wholesale-dealer-application.index');
+
+    Route::post('/wholesale-dealer-application', [\App\Http\Controllers\Website\WholesaleDealerApplicationController::class, 'store'])
+        ->middleware('throttle:10,1')
+        ->name('wholesale-dealer-application.store');
 
     // Notification Routes
     Route::controller(NotificationController::class)->middleware('auth')->name('notifications.')->group(function () {
@@ -875,6 +884,12 @@ Route::middleware(['auth'])->group(function () {
         // Data Deletion Request Routes
         Route::controller(DataDeletionRequestController::class)->name('data-deletion-requests.')->group(function () {
             Route::get('/data-deletion-requests', 'index')->name('index');
+        });
+
+        // Wholesale Dealer Application Routes (read-only lead review)
+        Route::controller(WholesaleDealerApplicationController::class)->name('wholesale-dealer-applications.')->group(function () {
+            Route::get('/wholesale-dealer-applications', 'index')->name('index');
+            Route::get('/wholesale-dealer-applications/view/{public_id?}', 'show')->name('show');
         });
 
         // Order Cancelation Requests
